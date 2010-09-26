@@ -33,6 +33,7 @@ import freemarker.template.TemplateModel;
 
 /**
  * Get from http://axhack.javaeye.com/blog/542441
+ * 尚未调整
  * @author axhack
  *
  */
