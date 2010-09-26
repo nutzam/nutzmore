@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="nutz" default="run" basedir="../">
+	<description>
+        用于构建快照版,稍作修改也可用于正式版的构建
+		By wendal (wendal1985@gmail.com)
+		
+		说明:
+			1. 用于构建正式版时,修改nutz.jar.pre
+		
+		本构建用来生成一个 zip 包，其中包括
+			* API 文档
+			* JDK1.5 版本 jar
+			* JDK1.6 版本 jar
+			* JUnit 测试结果
+			* Emma 代码覆盖率报告
+			* 用户手册(中英文,html文件)
+		
+		build/deps 包含了所有依赖 jar，它们应该包括：
+			1. log4j 1.2.12+ 以及 log4j.properties 
+			2. JUnit 4
+			3. Nutzdoc
+			4. Servlet-API 2.4+
+			5. nutz-test.properties 以及其相应的数据库驱动(默认是H2)
+			6. commons-dbcp
+			7. commons-pool
+			8. emma 用于生成代码覆盖率报告
+		
+		环境变量 ${OUTPUT} 声明了 zip 文件包的输出位置
+		
+		构建结束后，会删除所有临时文件
+    </description>
+	
+	<property environment="env" />
+	
+	<property name="OUTPUT" value="${env.OUTPUT}" />
+	
+	<property name="nutz-version" value="1.a.32"></property>
+	<tstamp>
+		<format property="now-date" locale="zh" pattern="yyyyMMdd_hhmm" timezone=""/>
+	</tstamp>
+	<property name="tmp-dir" value="build/tmp"></property>
+	<property name="pub-dir" value="build/pub"></property>
+	<property name="classes-dir-jdk5" value="${tmp-dir}/jdk5"></property>
+	<property name="classes-dir-jdk6" value="${tmp-dir}/jdk6"></property>
+	<property name="classes-dir-test" value="${tmp-dir}/test"></property>
+	<property name="classes-dir-emma" value="${tmp-dir}/emma"></property>
+	<property name="javadoc-dir" value="${pub-dir}/api"></property>
+	<property name="tmp-junitreport-dir" value="${tmp-dir}/junit-report"></property>
+	<property name="pub-junitreport-dir" value="${pub-dir}/junit-report"></property>
+	<property name="zdoc-dir" value="${pub-dir}/manual"></property>
+	<property name="zdoc-en-dir" value="${pub-dir}/manual_en"></property>
+
+	<property name="nutz.jar.pre" value="nutz-more-${nutz-version}-snapshot-${now-date}"></property>
+	<!-- <property name="nutz.jar.pre" value="nutz-${nutz-version}"></property> --> <!-- 用于正式版 -->
+
+	<property name="nutz.jar.source" value="${pub-dir}/${nutz.jar.pre}-source.jar"></property>
+	<property name="nutz.jar.jdk5" value="${pub-dir}/${nutz.jar.pre}-jdk5.jar"></property>
+	<property name="nutz.jar.jdk6" value="${pub-dir}/${nutz.jar.pre}-jdk6.jar"></property>
+	<property name="nutz.pub.zip" value="${OUTPUT}/${nutz.jar.pre}.zip"></property>
+	
+	<!-- 允许emma -->
+	<property name="emma.enabled" value="true" />
+
+	
+	<path id="nutz-classpath">
+		<pathelement location="${basedir}/build/deps" />
+		<path >
+			<fileset dir="${basedir}/build/deps" includes="*.jar"></fileset>
+		</path>
+		<pathelement location="${JAVA_HOME}/lib/tools.jar" />
+	</path>
+	
+	<taskdef resource="emma_ant.properties" classpathref="nutz-classpath" />
+	
+	<target name="clean">
+		<delete dir="${tmp-dir}"></delete>
+		<delete dir="${pub-dir}"></delete>
+	</target>
+	
+	<target name="init">
+		<mkdir dir="${tmp-dir}"/>
+		<mkdir dir="${classes-dir-jdk5}"/>
+		<mkdir dir="${classes-dir-jdk6}"/>
+		<mkdir dir="${classes-dir-test}"/>
+		<mkdir dir="${classes-dir-emma}"/>
+		<mkdir dir="${tmp-junitreport-dir}"/>
+		<mkdir dir="${pub-dir}"/>
+		<mkdir dir="${pub-junitreport-dir}"/>
+		<mkdir dir="${pub-dir}/emma"/>
+		<mkdir dir="${javadoc-dir}"/>
+		<mkdir dir="${zdoc-dir}"/>
+		<mkdir dir="${zdoc-en-dir}"/>
+	</target>
+	
+	<target name="create-jar">
+		<jar destfile="${nutz.jar.source}" basedir="src" encoding="utf-8" ></jar>
+		
+		<javac destdir="${classes-dir-jdk5}" debuglevel="lines,vars,source" debug="true" srcdir="src" source="1.5" target="1.5" encoding="utf-8"
+			classpathref="nutz-classpath" includeantruntime="false">
+		</javac>
+		<copy todir="${classes-dir-jdk5}/META-INF">
+			<fileset dir="META-INF" includes="**/*.xml"></fileset>
+		</copy>
+		<copy todir="${classes-dir-jdk5}">
+			<fileset file="License.txt"></fileset>
+			<fileset dir="src" excludes="**/*.java"></fileset>
+		</copy>
+		<jar destfile="${nutz.jar.jdk5}" basedir="${classes-dir-jdk5}"></jar>
+		<javac destdir="${classes-dir-jdk6}" debuglevel="lines,vars,source" debug="true" srcdir="src" source="1.6" target="1.6" encoding="utf-8"
+			classpathref="nutz-classpath" includeantruntime="false">
+		</javac>
+		<copy todir="${classes-dir-jdk6}/META-INF">
+			<fileset dir="META-INF" includes="**/*.xml"></fileset>
+		</copy>
+		<copy todir="${classes-dir-jdk6}">
+			<fileset file="License.txt"></fileset>
+			<fileset dir="src" excludes="**/*.java"></fileset>
+		</copy>
+		<jar destfile="${nutz.jar.jdk6}" basedir="${classes-dir-jdk6}"></jar>
+	</target>
+	
+	<target name="test">
+		<emma enabled="${emma.enabled}">
+			<instr instrpath="${classes-dir-jdk6}" 
+				destdir="${classes-dir-emma}" 
+				metadatafile="${classes-dir-emma}/metadata.emma" 
+				merge="true">
+				<filter excludes="org.nutz.repo.*" />
+			</instr>
+		</emma>
+		<javac destdir="${classes-dir-test}" debuglevel="lines,vars,source" debug="true" srcdir="test" target="1.6" encoding="utf-8"
+			includeantruntime="false">
+			<classpath>
+				<path refid="nutz-classpath"></path>
+				<path path="${classes-dir-jdk6}"></path>
+			</classpath>
+		</javac>
+		<copy todir="${classes-dir-test}">
+			<fileset excludes="**/*.java" dir="test"></fileset>
+		</copy>
+		<junit fork="true" showoutput="true" printsummary="yes" filtertrace="true" maxmemory="256M" 
+			haltonerror="false" haltonfailure="false">
+			<classpath>
+				<path path="${classes-dir-jdk6}"></path>
+				<path path="${classes-dir-test}"></path>
+				<path path="${classes-dir-emma}"></path>
+				<path refid="nutz-classpath"/>
+			</classpath>
+			<batchtest todir="${tmp-junitreport-dir}">
+				<fileset dir="test">
+					<include name="org/nutz/TestAll.java"/>
+				</fileset>
+				<formatter type="xml"/>
+			</batchtest>
+			<jvmarg value="-Demma.coverage.out.file=${basedir}/${classes-dir-emma}/session.emma" />
+			<jvmarg value="-Demma.coverage.out.merge=true" />
+		</junit>
+		<junitreport todir="${pub-junitreport-dir}">
+			<report format="frames" todir="${pub-junitreport-dir}"/>
+			<fileset dir="${tmp-junitreport-dir}" includes="*.xml"></fileset>
+		</junitreport>
+	    <emma enabled="${emma.enabled}" >
+	      <report sourcepath="src" encoding="utf-8">
+	        <fileset dir="${classes-dir-emma}" >
+	          <include name="*.emma" />
+	        </fileset>
+	        <html outfile="${basedir}/${pub-dir}/emma/coverage.html" />
+	      	<txt outfile="${basedir}/${pub-dir}/emma/coverage.txt" />
+	      </report>
+	    </emma>
+	</target>
+	
+	<target name="jdoc">
+		<javadoc sourcepath="src" classpathref="nutz-classpath" encoding="UTF-8" destdir="${javadoc-dir}" charset="utf-8" docencoding="utf-8"/>
+	</target>
+	
+	<target name="manual">
+		<java classname="org.nutz.doc.Doc" fork="true">
+			<sysproperty key="jaxp.debug" value="true"/>
+			<classpath>
+				<path refid="nutz-classpath"></path>
+				<path path="${classes-dir-jdk6}"></path>
+			</classpath>
+			<arg value="${basedir}/doc/manual"/>
+			<arg value="${basedir}/${zdoc-dir}"/>
+			<arg value=".html"/>
+		</java>
+	</target>
+	
+	<target name="manual_en">
+			<java classname="org.nutz.doc.Doc" fork="true">
+				<sysproperty key="jaxp.debug" value="true"/>
+				<classpath>
+					<path refid="nutz-classpath"></path>
+					<path path="${classes-dir-jdk6}"></path>
+				</classpath>
+				<arg value="${basedir}/doc/manual_en"/>
+				<arg value="${basedir}/${zdoc-en-dir}"/>
+				<arg value=".html"/>
+			</java>
+		</target>
+	
+	<target name="create-zip">
+		<zip destfile="${nutz.pub.zip}">
+			<fileset dir="${pub-dir}"></fileset>
+		</zip>
+	</target>
+	
+	<target name="run">
+		<antcall target="clean"></antcall>
+		<antcall target="init"></antcall>
+		<antcall target="create-jar"></antcall>
+		<antcall target="test"></antcall>
+		<antcall target="jdoc"></antcall>
+		<antcall target="manual"></antcall>
+		<antcall target="manual_en"></antcall>
+		<antcall target="create-zip"></antcall>
+		<antcall target="clean"></antcall>
+	</target>
+</project>
