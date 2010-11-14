@@ -21,7 +21,7 @@ import org.nutz.mvc.init.MessageMap;
  * @author landraxee
  *
  */
-public class MessageLoader implements org.nutz.mvc.MessageLoader {
+public class NormalMessageLoader implements org.nutz.mvc.MessageLoader {
 
 	private static final String MSG_SUFFIX = ".properties";
 	private File dir;
