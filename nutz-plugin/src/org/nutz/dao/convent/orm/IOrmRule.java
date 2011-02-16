@@ -2,13 +2,13 @@ package org.nutz.dao.convent.orm;
 
 public interface IOrmRule {
 	/**
-	 * 类名转表�?
+	 * 类名转表名
 	 * @param className 类名
 	 * @return 表名
 	 */
 	public String class2TableName(String className);
 	/**
-	 * 表名转类�?
+	 * 表名转类名
 	 * @param tableName 表名
 	 * @return 类名
 	 */
@@ -20,9 +20,9 @@ public interface IOrmRule {
 	 */
 	public String javaField2DbField(String javaField);
 	/**
-	 * 数据库中的列名转java中的属�?�名
-	 * @param dbField 数据库中的列�?
-	 * @return java中的属�?�名
+	 * 数据库中的列名转java中的属性名
+	 * @param dbField 数据库中的列名
+	 * @return java中的属性名
 	 */
 	public String dbField2JavaField(String dbField);
 }

@@ -8,25 +8,25 @@ import java.util.List;
 
 /**
  * <pre>
- * Title:¹¦ÄÜÃèÊö
- * Description:¹¦ÄÜÃèÊö
+ * Title:åŠŸèƒ½æè¿°
+ * Description:åŠŸèƒ½æè¿°
  * </pre>
  * @author liaohongliu liaohl@yuchengtech.com
  * @version 1.0   2009-7-29
  * 
  * <pre>
- * ĞŞ¸Ä¼ÇÂ¼
- * 	  ĞŞ¸Äºó°æ±¾:      ĞŞ¸ÄÈË:     ĞŞ¸ÄÊ±¼ä:       ĞŞ¸ÄÄÚÈİ
+ * ä¿®æ”¹è®°å½•
+ * 	  ä¿®æ”¹åç‰ˆæœ¬:      ä¿®æ”¹äºº:     ä¿®æ”¹æ—¶é—´:       ä¿®æ”¹å†…å®¹
  * </pre>
  */
 public class MyTable {
-	private String tableChineseName;//±íµÄÖĞÎÄÃû
-	private String tableName;//±íÃû
-	private MyField[] fields;//±í¶ÔÓ¦µÄ×Ö¶Î
-	private String insertSql;//²åÈëÒ»Ìõ¼ÇÂ¼µÄsql
-	private String updateSql;//ÒÔÖ÷¼üÎª¸üĞÂÌõ¼şµÄsql
-	private String deleteSql;//ÒÔÖ÷¼üÎªÉ¾³ıÌõ¼şµÄsql
-	private String selectSql;//ÒÔÖ÷¼üÎªÌõ¼şµÄ²éÑ¯sql
+	private String tableChineseName;//è¡¨çš„ä¸­æ–‡å
+	private String tableName;//è¡¨å
+	private MyField[] fields;//è¡¨å¯¹åº”çš„å­—æ®µ
+	private String insertSql;//æ’å…¥ä¸€æ¡è®°å½•çš„sql
+	private String updateSql;//ä»¥ä¸»é”®ä¸ºæ›´æ–°æ¡ä»¶çš„sql
+	private String deleteSql;//ä»¥ä¸»é”®ä¸ºåˆ é™¤æ¡ä»¶çš„sql
+	private String selectSql;//ä»¥ä¸»é”®ä¸ºæ¡ä»¶çš„æŸ¥è¯¢sql
 
 	public String getSelectSql() {
 		return selectSql;
@@ -39,7 +39,7 @@ public class MyTable {
 	}
 	public List<MyField> getFieldList() {
 		if(fields==null||fields.length==0){
-			throw new RuntimeException("±íµÄ×Ö¶Î¶ÔÏóÊı×éÎª¿Õ,Çë¼ì²éÆäÕıÈ·ĞÔ!");
+			throw new RuntimeException("è¡¨çš„å­—æ®µå¯¹è±¡æ•°ç»„ä¸ºç©º,è¯·æ£€æŸ¥å…¶æ­£ç¡®æ€§!");
 		}
 		List<MyField> fieldList=new ArrayList<MyField>();
 		for(int i=0;i<fields.length;i++){
@@ -85,7 +85,7 @@ public class MyTable {
 		this.tableName = tableName;
 	}
 	public MyTable() {
-		// TODO ×Ô¶¯Éú³É¹¹Ôìº¯Êı´æ¸ù
+		// TODO è‡ªåŠ¨ç”Ÿæˆæ„é€ å‡½æ•°å­˜æ ¹
 	}
 	public MyTable(String tableId, String tableChineseName) {
 		super();

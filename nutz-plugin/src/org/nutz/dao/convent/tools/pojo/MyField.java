@@ -2,52 +2,52 @@ package org.nutz.dao.convent.tools.pojo;
 
 public class MyField {
 	/**
-	 * ×Ö¶ÎÃû
+	 * å­—æ®µå
 	 */
 	protected String fieldName;
 	/**
-	 * ×Ö¶ÎÀàĞÍ
+	 * å­—æ®µç±»å‹
 	 */
 	protected Class fieldType;
 	/**
-	 * ×Ö¶Î³¤¶È
+	 * å­—æ®µé•¿åº¦
 	 */
 	protected int fieldLength;
 	/**
-	 * ÊÇ·ñÔÊĞíÎª¿Õ
+	 * æ˜¯å¦å…è®¸ä¸ºç©º
 	 */
 	protected boolean allowNull;
 	/**
-	 * ¶ÔÓ¦java.sql.TypesÖĞµÄÀàĞÍ
+	 * å¯¹åº”java.sql.Typesä¸­çš„ç±»å‹
 	 */
 	protected int dataType;
 	/**
-	 * ÔÚÊı¾İ¿âÖĞÀàĞÍ
+	 * åœ¨æ•°æ®åº“ä¸­ç±»å‹
 	 */
 	protected String dbFieldType;
 	/**
-	 * ÊÇ·ñÊÇÖ÷¼ü
+	 * æ˜¯å¦æ˜¯ä¸»é”®
 	 */
 	protected boolean key;
 	/**
-	 * Ä¬ÈÏÖµ
+	 * é»˜è®¤å€¼
 	 */
 	protected Object defaultValue;
 	/**
-	 * ÊÇ·ñÓĞÍâ¼ü
+	 * æ˜¯å¦æœ‰å¤–é”®
 	 */
 	protected boolean foreignKey;
 	/**
-	 * ¾«¶È(Ğ¡ÊıÎ»)
+	 * ç²¾åº¦(å°æ•°ä½)
 	 */
 	protected int scale;
 	/**
-	 * Ğ¡Êı×ÜÎ»Êı,Õâ¸öÊÇÕë¶ÔoracleÉè¼ÆµÄ×Ö¶Î
+	 * å°æ•°æ€»ä½æ•°,è¿™ä¸ªæ˜¯é’ˆå¯¹oracleè®¾è®¡çš„å­—æ®µ
 	 */
 	protected int precision;
-	//protected String chineseName;//ÖĞÎÄÃû
+	//protected String chineseName;//ä¸­æ–‡å
 	/**
-	 * ÁĞ×¢ÊÍ
+	 * åˆ—æ³¨é‡Š
 	 */
 	protected String remarks;
 	
