@@ -45,7 +45,6 @@ public class BaseBuildMyTable {
 	 */
 	public String buildUpdateSql(String tableName,MyField[] fields){
 		String sql="update "+tableName+" set ";
-//		Field[] fields=this.getTableField(tableName);
 		String sql1="";//非主键拼接的sql
 		String sql2=" where 1=1 ";//主键拼接的sql
 		for(int i=0;i<fields.length;i++){
