@@ -8,19 +8,19 @@ import org.nutz.dao.convent.tools.pojo.MyTable;
 
 
 /**
- * ±¾¹¤¾ß°üËùÓĞËÑ¼¯µ½µÄĞÅÏ¢
+ * æœ¬å·¥å…·åŒ…æ‰€æœ‰æœé›†åˆ°çš„ä¿¡æ¯
  * @author finallygo
  *
  */
 public class CollectData {
-	public static Map tableMap=new HashMap();//´æ´¢ÁËËùÓĞµÄ±í,keyÎª±íÃû,valueÎªÎÒ·â×°µÄ±í¶ÔÏó
-	public static Map foreignMap=new HashMap();//´æ´¢ÁËËùÓĞµÄÍâ¼üĞÅÏ¢
-	public static Map insertFieldsCache=new HashMap();//»º´æÒ»ÕÅ±íĞèÒª²åÈëµÄ×Ö¶Î
-	public static Map updateFieldsCache=new HashMap();//»º´æÒ»ÕÅ±íĞèÒª¸üĞÂµÄ×Ö¶Î(ÒÔÖ÷¼ü)
-	public static Map deleteFieldsCache=new HashMap();//»º´æÒ»ÕÅ±íĞèÒªÉ¾³ıµÄ×Ö¶Î(ÒÔÖ÷¼ü)
-	public static Map selectFieldsCache=new HashMap();//»º´æÑ¡ÔñÒ»ÕÅ±íĞèÒªµÄ×Ö¶Î(ÒÔÖ÷¼ü)
+	public static Map tableMap=new HashMap();//å­˜å‚¨äº†æ‰€æœ‰çš„è¡¨,keyä¸ºè¡¨å,valueä¸ºæˆ‘å°è£…çš„è¡¨å¯¹è±¡
+	public static Map foreignMap=new HashMap();//å­˜å‚¨äº†æ‰€æœ‰çš„å¤–é”®ä¿¡æ¯
+	public static Map insertFieldsCache=new HashMap();//ç¼“å­˜ä¸€å¼ è¡¨éœ€è¦æ’å…¥çš„å­—æ®µ
+	public static Map updateFieldsCache=new HashMap();//ç¼“å­˜ä¸€å¼ è¡¨éœ€è¦æ›´æ–°çš„å­—æ®µ(ä»¥ä¸»é”®)
+	public static Map deleteFieldsCache=new HashMap();//ç¼“å­˜ä¸€å¼ è¡¨éœ€è¦åˆ é™¤çš„å­—æ®µ(ä»¥ä¸»é”®)
+	public static Map selectFieldsCache=new HashMap();//ç¼“å­˜é€‰æ‹©ä¸€å¼ è¡¨éœ€è¦çš„å­—æ®µ(ä»¥ä¸»é”®)
 //	public static ResourceBundle rb=ResourceBundle.getBundle("collect");
-//	public static boolean isLazy=Boolean.valueOf(rb.getString("Lazy")).booleanValue();//ÊÇ·ñÊÇÀÁ¼ÓÔØ
+//	public static boolean isLazy=Boolean.valueOf(rb.getString("Lazy")).booleanValue();//æ˜¯å¦æ˜¯æ‡’åŠ è½½
 	public static boolean isLazy=true;
 //	public static IBuildMyTable builder=(IBuildMyTable) MethodTimeProxy.createProxy(BuildMyTableForMySql.class);
 	//public static BuildMyTableForCommon builder=new BuildMyTableForCommon(null);
@@ -41,18 +41,18 @@ public class CollectData {
 		if(table!=null){
 			return table;
 		}
-		//ÅĞ¶ÏÊÇ·ñÊÇÀÁ¼ÓÔØ
-		if(!isLazy){//Èç¹û²»ÊÇÀÁ¼ÓÔØ,ÓÖÕÒ²»µ½¾Í±¨´í
-			throw new RuntimeException("ÕÒ²»µ½¸Ã±íÃû¶ÔÓ¦µÄ±í:"+tableName);
-		}else{//Èç¹ûÊÇÀÁ¼ÓÔØÔòÈ¡µ±Ç°MyTable
+		//åˆ¤æ–­æ˜¯å¦æ˜¯æ‡’åŠ è½½
+		if(!isLazy){//å¦‚æœä¸æ˜¯æ‡’åŠ è½½,åˆæ‰¾ä¸åˆ°å°±æŠ¥é”™
+			throw new RuntimeException("æ‰¾ä¸åˆ°è¯¥è¡¨åå¯¹åº”çš„è¡¨:"+tableName);
+		}else{//å¦‚æœæ˜¯æ‡’åŠ è½½åˆ™å–å½“å‰MyTable
 			BuildMyTableForCommon builder=new BuildMyTableForCommon(conn);
 			builder.setAutoClose(autoClose);
 			table=builder.getMyTable(tableName);
 			if(table!=null){
-				tableMap.put(table.getTableName().toUpperCase(), table);//·ÅÈë»º´æ
+				tableMap.put(table.getTableName().toUpperCase(), table);//æ”¾å…¥ç¼“å­˜
 				return table;
 			}
-			throw new RuntimeException("ÕÒ²»µ½¸Ã±íÃû¶ÔÓ¦µÄ±í:"+tableName);
+			throw new RuntimeException("æ‰¾ä¸åˆ°è¯¥è¡¨åå¯¹åº”çš„è¡¨:"+tableName);
 		}
 		
 	}

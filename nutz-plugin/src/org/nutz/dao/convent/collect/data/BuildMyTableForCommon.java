@@ -38,7 +38,7 @@ public class BuildMyTableForCommon extends BaseBuildMyTable {
 				foreignMap.putAll(this.getForeignKey(rs.getString("TABLE_NAME")));
 			}
 		} catch (SQLException e) {
-			throw new RuntimeException("»ñÈ¡ËùÓĞ±íµÄÍâ¼üĞÅÏ¢Òì³£!",e);
+			throw new RuntimeException("è·å–æ‰€æœ‰è¡¨çš„å¤–é”®ä¿¡æ¯å¼‚å¸¸!",e);
 		} finally{
 			DataBaseHelper.closeRs(rs);
 			if(this.autoClose){
@@ -57,15 +57,15 @@ public class BuildMyTableForCommon extends BaseBuildMyTable {
 			rs=metaData.getImportedKeys(conn.getCatalog(), metaData.getUserName(), tableName);
 			
 			while(rs.next()){
-				String pkTableName=rs.getString("PKTABLE_NAME");//Ö÷±íÃû
-				String pkColumnName=rs.getString("PKCOLUMN_NAME");//Ö÷±íÁĞ
-				String fkTableName=rs.getString("FKTABLE_NAME");//Íâ±íÃû
-				String fkColumnName=rs.getString("FKCOLUMN_NAME");//Íâ±íÁĞ
+				String pkTableName=rs.getString("PKTABLE_NAME");//ä¸»è¡¨å
+				String pkColumnName=rs.getString("PKCOLUMN_NAME");//ä¸»è¡¨åˆ—
+				String fkTableName=rs.getString("FKTABLE_NAME");//å¤–è¡¨å
+				String fkColumnName=rs.getString("FKCOLUMN_NAME");//å¤–è¡¨åˆ—
 				foreignMap.put((fkTableName+"."+fkColumnName).toUpperCase(), (pkTableName+"."+pkColumnName).toUpperCase());
 			}
 			
 		} catch (SQLException e) {
-			//ÕâÀï³öÏÖµÄÒì³£ÔõÃ´°ìÄØ?
+			//è¿™é‡Œå‡ºç°çš„å¼‚å¸¸æ€ä¹ˆåŠå‘¢?
 			e.printStackTrace();
 		} finally{
 			DataBaseHelper.closeRs(rs);
@@ -77,13 +77,13 @@ public class BuildMyTableForCommon extends BaseBuildMyTable {
 	}
 	public MyTable getMyTable(String tableName) {
 		MyTable table=new MyTable();
-		table.setTableName(tableName);//ÉèÖÃ±íÃû
-		MyField[] fields=this.getTableField(tableName);//µÃµ½±íµÄÊôĞÔÊı×é
+		table.setTableName(tableName);//è®¾ç½®è¡¨å
+		MyField[] fields=this.getTableField(tableName);//å¾—åˆ°è¡¨çš„å±æ€§æ•°ç»„
 		table.setFields(fields);
-		table.setInsertSql(this.buildInsertSql(tableName,fields));//ÉèÖÃ²åÈëÓï¾ä(¾ßÌå²Î¿¼MyTableÀà)
-		table.setUpdateSql(this.buildUpdateSql(tableName, fields));//ÉèÖÃ¸üĞÂÓï¾ä
-		table.setDeleteSql(this.buildDeleteSql(tableName, fields));//ÉèÖÃÉ¾³ıÓï¾ä
-		table.setSelectSql(this.buildSelectSql(tableName, fields));//ÉèÖÃÑ¡ÔñÓï¾ä
+		table.setInsertSql(this.buildInsertSql(tableName,fields));//è®¾ç½®æ’å…¥è¯­å¥(å…·ä½“å‚è€ƒMyTableç±»)
+		table.setUpdateSql(this.buildUpdateSql(tableName, fields));//è®¾ç½®æ›´æ–°è¯­å¥
+		table.setDeleteSql(this.buildDeleteSql(tableName, fields));//è®¾ç½®åˆ é™¤è¯­å¥
+		table.setSelectSql(this.buildSelectSql(tableName, fields));//è®¾ç½®é€‰æ‹©è¯­å¥
 		return table;
 	}
 
@@ -99,7 +99,7 @@ public class BuildMyTableForCommon extends BaseBuildMyTable {
 				tables.add(table);
 			}
 		} catch (Exception e) {
-			throw new RuntimeException("½«Êı¾İ¿âµÄ±í×ª»»Îª¶ÔÏóµÄÊ±ºò³ö´í",e);
+			throw new RuntimeException("å°†æ•°æ®åº“çš„è¡¨è½¬æ¢ä¸ºå¯¹è±¡çš„æ—¶å€™å‡ºé”™",e);
 		} finally{
 			DataBaseHelper.closeRs(rs);
 			if(this.autoClose){
@@ -140,7 +140,7 @@ public class BuildMyTableForCommon extends BaseBuildMyTable {
 				field.setRemarks(remarks);
 				fields.add(field);
 			}
-			//²éÑ¯Ö÷¼üĞÅÏ¢
+			//æŸ¥è¯¢ä¸»é”®ä¿¡æ¯
 			rs2=metaData.getPrimaryKeys(conn.getCatalog(), metaData.getUserName(), tableName);
 			List keys=new ArrayList();
 			while(rs2.next()){
@@ -153,7 +153,7 @@ public class BuildMyTableForCommon extends BaseBuildMyTable {
 				}
 			}
 		} catch (Exception e) {
-			throw new RuntimeException("½«±í"+tableName+"µÄÁĞ×ª»»ÎªField¶ÔÏóµÄÊ±ºò³ö´í",e);
+			throw new RuntimeException("å°†è¡¨"+tableName+"çš„åˆ—è½¬æ¢ä¸ºFieldå¯¹è±¡çš„æ—¶å€™å‡ºé”™",e);
 		} finally{
 			DataBaseHelper.closeRs(rs);
 			DataBaseHelper.closeRs(rs2);

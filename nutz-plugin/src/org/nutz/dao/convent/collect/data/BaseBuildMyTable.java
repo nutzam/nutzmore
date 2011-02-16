@@ -13,10 +13,10 @@ import org.nutz.dao.convent.utils.DataBaseHelper;
 
 public class BaseBuildMyTable {
 	/**
-	 * ´´½¨²åÈëÓï¾ä
-	 * @param tableName ±íÃû
-	 * @param fields ×Ö¶Î
-	 * @return insertÓï¾ä
+	 * åˆ›å»ºæ’å…¥è¯­å¥
+	 * @param tableName è¡¨å
+	 * @param fields å­—æ®µ
+	 * @return insertè¯­å¥
 	 */
 	public String buildInsertSql(String tableName,MyField[] fields){
 		String front="insert into "+tableName;
@@ -38,16 +38,16 @@ public class BaseBuildMyTable {
 		return front+sql;
 	}
 	/**
-	 * ¸ù¾ÝÖ÷¼ü¸üÐÂµÄupdateÓï¾ä
-	 * @param tableName ±íÃû
-	 * @param fields ×Ö¶Î
-	 * @return updateÓï¾ä
+	 * æ ¹æ®ä¸»é”®æ›´æ–°çš„updateè¯­å¥
+	 * @param tableName è¡¨å
+	 * @param fields å­—æ®µ
+	 * @return updateè¯­å¥
 	 */
 	public String buildUpdateSql(String tableName,MyField[] fields){
 		String sql="update "+tableName+" set ";
 //		Field[] fields=this.getTableField(tableName);
-		String sql1="";//·ÇÖ÷¼üÆ´½ÓµÄsql
-		String sql2=" where 1=1 ";//Ö÷¼üÆ´½ÓµÄsql
+		String sql1="";//éžä¸»é”®æ‹¼æŽ¥çš„sql
+		String sql2=" where 1=1 ";//ä¸»é”®æ‹¼æŽ¥çš„sql
 		for(int i=0;i<fields.length;i++){
 			if(!fields[i].isKey()){
 				sql1=sql1+fields[i].getFieldName()+"=?,";
@@ -56,16 +56,16 @@ public class BaseBuildMyTable {
 			}
 		}
 		if(sql1.length()>1){
-			sql1=sql1.substring(0, sql1.length()-1);//½ØÈ¡×îºóÒ»¸ö¶ººÅ
+			sql1=sql1.substring(0, sql1.length()-1);//æˆªå–æœ€åŽä¸€ä¸ªé€—å·
 		}
 		sql=sql+sql1+sql2;
 		return sql;
 	}
 	/**
-	 * ¸ù¾ÝÖ÷¼üÉ¾³ýµÄdeleteÓï¾ä
-	 * @param tableName ±íÃû
-	 * @param fields ×Ö¶Î
-	 * @return deleteÓï¾ä
+	 * æ ¹æ®ä¸»é”®åˆ é™¤çš„deleteè¯­å¥
+	 * @param tableName è¡¨å
+	 * @param fields å­—æ®µ
+	 * @return deleteè¯­å¥
 	 */
 	public String buildDeleteSql(String tableName,MyField[] fields){
 		String sql="delete from "+tableName+" where 1=1 ";
@@ -103,7 +103,7 @@ public class BaseBuildMyTable {
 			}
 			
 		} catch (SQLException e) {
-			//ÕâÀï³öÏÖµÄÒì³£ÔõÃ´°ìÄØ?
+			//è¿™é‡Œå‡ºçŽ°çš„å¼‚å¸¸æ€Žä¹ˆåŠžå‘¢?
 		} finally{
 			DataBaseHelper.closeRs(rs);
 			DataBaseHelper.closeConn(conn);
