@@ -44,7 +44,7 @@ public class DefaultOrmRule implements IOrmRule {
 		return name.toString().toLowerCase();
 	}
 	public String dbField2JavaField(String dbField){
-//		�?"_"分割之后让首字母大写(除了第一个单�?)
+//		用"_"分割之后让首字母大写(除了第一个单词)
 		String[] names=dbField.toLowerCase().split("_");
 		StringBuffer javaField=new StringBuffer(names[0]);
 		for(int i=1;i<names.length;i++){
