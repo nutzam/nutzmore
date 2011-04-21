@@ -3,8 +3,12 @@
  */
 package org.nutz.dao.cache.method;
 
+import java.util.Map;
+import java.util.Set;
+
 import org.nutz.dao.Chain;
 import org.nutz.dao.Condition;
+import org.nutz.dao.cache.Cache;
 import org.nutz.dao.cache.ObsArgClass;
 import org.nutz.dao.convent.utils.CommonUtils;
 
@@ -35,6 +39,14 @@ public class UpdateMethodHandler implements IDaoCacheMethodHandler {
 				//int update(String tableName, Chain chain, Condition condition);
 				//清除该表对应的所有对象
 				String className=msg.getCacheStrategy().getClassNameByTableName((String)args[0]);
+				Cache cache=msg.getCache();
+				Map<Object, Object> cacheMap=cache.toMap();
+				Set<Object> keySet=cacheMap.keySet();
+				for (Object key : keySet) {//这里暂时假设key是字符串
+					if(key.toString().startsWith(className)){
+						cache.remove(key);
+					}
+				}
 			}
 		}
 		return returnValue;
