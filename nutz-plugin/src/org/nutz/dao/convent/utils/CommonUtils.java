@@ -6,6 +6,8 @@ package org.nutz.dao.convent.utils;
 import java.io.Closeable;
 import java.io.File;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.text.ParseException;
@@ -304,6 +306,40 @@ public class CommonUtils {
 			return fields;
 		} catch (Exception e) {
 			throw new RuntimeException("获取类的定义属性出现异常!");
+		}
+	}
+	public static void setProperty(Object obj,String fieldName,Object value){
+		try {
+			Field field=obj.getClass().getDeclaredField(fieldName);
+			field.setAccessible(true);
+			field.set(obj, value);
+		} catch (Exception e) {
+			throw new RuntimeException("通过反射给对象赋值失败",e);
+		} 
+	}
+	public static Object invokeMethod(Object obj,String methodName,Class[] parameterTypes,Object[] args){
+		try {
+			Method method=obj.getClass().getDeclaredMethod(methodName, parameterTypes);
+			return method.invoke(obj, args);
+		} catch (Exception e) {
+			throw new RuntimeException("通过反射给调用方法失败",e);
+		}
+	}
+	public static Object invokeMethod(Method method,Object obj,Object[] args){
+		try {
+			return method.invoke(obj, args);
+		} catch (Exception e) {
+			throw new RuntimeException("通过反射给调用方法失败",e);
+		} 
+	}
+	public static Object getProperty(Object obj,String fieldName){
+		try {
+			Class clazz=obj.getClass();
+			Field field=clazz.getDeclaredField(fieldName);
+			field.setAccessible(true);
+			return field.get(obj);
+		} catch (Exception e) {
+			throw new RuntimeException("通过反射给获取属性值失败",e);
 		}
 	}
 }

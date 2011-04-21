@@ -80,8 +80,10 @@ public class ConventionEntityMaker implements EntityMaker{
 		}
 		String viewName=null;
 		View viewAnnotation=type.getAnnotation(View.class);
-		if(viewAnnotation==null){//如果有table标签
+		if(viewAnnotation==null&&tableAnnotation==null){//如果有view标签
 			viewName=this.getOrmRule().class2TableName(type.getSimpleName());
+		}else if(tableAnnotation!=null){
+			viewName=tableAnnotation.value();
 		}else{
 			viewName=viewAnnotation.value();
 		}
