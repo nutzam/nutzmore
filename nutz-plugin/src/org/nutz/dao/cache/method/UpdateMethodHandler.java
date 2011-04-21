@@ -33,7 +33,8 @@ public class UpdateMethodHandler implements IDaoCacheMethodHandler {
 				this.updateCacheHandle(msg, args);
 			}else if(args[0].getClass()==String.class){
 				//int update(String tableName, Chain chain, Condition condition);
-				
+				//清除该表对应的所有对象
+				String className=msg.getCacheStrategy().getClassNameByTableName((String)args[0]);
 			}
 		}
 		return returnValue;

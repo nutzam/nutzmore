@@ -5,12 +5,18 @@ package org.nutz.dao.cache;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 
 import org.nutz.dao.Condition;
 import org.nutz.dao.Dao;
+import org.nutz.dao.convent.utils.CommonUtils;
 import org.nutz.dao.entity.Entity;
 import org.nutz.dao.entity.EntityField;
+import org.nutz.dao.entity.EntityHolder;
 
 /**
  * 缓存策略类
@@ -85,7 +91,20 @@ public class CacheStrategy{
 	public String getKey(String clazzName){
 		return clazzName+"#";
 	}
-	public String getKeyByTableName(String tableName){
+	public String getClassNameByTableName(String tableName){
+		EntityHolder entities=(EntityHolder) CommonUtils.getProperty(dao, "entities");
+		Map<Class<?>, Entity<?>> mappings=(Map<Class<?>, Entity<?>>) CommonUtils.getProperty(entities, "mappings");
+		Collection<Entity<?>> beanEntities=mappings.values();
+		Entity beanEntity=null;
+		for (Entity<?> entity : beanEntities) {
+			if(entity.getTableName().equals(tableName)){
+				beanEntity=entity;
+				break;
+			}
+		}
+		if(beanEntity!=null){
+			return beanEntity.getType().getName();
+		}
 		return null;
 	}
 	private <T> String buildKeyForPK(T item, Entity<T> entity) {

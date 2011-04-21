@@ -56,7 +56,7 @@ public class CacheNutDaoInvocationHandler implements InvocationHandler {
 		if(entityMaker!=null){
 			CommonUtils.invokeMethod(dao, "setEntityMaker", new Class[]{EntityMaker.class}, new Object[]{new ConventionEntityMaker()});
 		}
-		EntityHolder entities=(EntityHolder) CommonUtils.getProperty(dao, "entities");
+		
 		CacheStrategy cacheUtils=new CacheStrategy();
 		cacheUtils.setDao(dao);
 		ObsArgClass msg=new ObsArgClass(method,args,cacheUtils,cache);
