@@ -28,22 +28,22 @@ public class CacheStrategy{
 	
 	private Dao dao;
 	
-	public <T> Object getKey(T item){
-		Class<T> clazz=(Class<T>) item.getClass();
+	public <T> Object getKey(T obj){
+		Class<T> clazz=(Class<T>) obj.getClass();
 		String clazzName=clazz.getName();
 		Entity<T> entity = this.getDao().getEntity(clazz);
 //		@Id型的
-		Serializable id=entity.getId(item);
+		Serializable id=entity.getId(obj);
 		if((Long)id!=0){
 			return this.getKey(clazzName, (Long)id);
 		}
 //		@name型的
-		id=entity.getName(item);
+		id=entity.getName(obj);
 		if((String)id!=null){
 			return this.getKey(clazzName, (String)id);
 		}
 //		@PK型
-		return buildKeyForPK(item, entity);
+		return buildKeyForPK(obj, entity);
 	}
 	public Object getKey(Class itemClass,Object[] args){
 		String clazzName=itemClass.getName();

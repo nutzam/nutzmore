@@ -3,11 +3,6 @@
  */
 package org.nutz.dao.cache.method;
 
-import java.lang.reflect.Method;
-
-import org.nutz.dao.Dao;
-import org.nutz.dao.cache.Cache;
-import org.nutz.dao.cache.CacheStrategy;
 import org.nutz.dao.cache.ObsArgClass;
 import org.nutz.dao.convent.utils.CommonUtils;
 
@@ -19,39 +14,57 @@ import org.nutz.dao.convent.utils.CommonUtils;
 public class FetchMethodHandler implements IDaoCacheMethodHandler{
 
 	public Object handler(ObsArgClass msg) {
-		ObsArgClass obsArg=(ObsArgClass) msg;
-		//得到调用的参数
-		Object[] args=obsArg.getArgs();
-		//调用的方法
-		Method method=obsArg.getMethod();
-		//第一个参数
-		Object firstArg=obsArg.getArgs()[0];
-		//得到key的工具
-		CacheStrategy cacheUtils=obsArg.getCacheStrategy();
-		//nutzDao
-		Dao dao=cacheUtils.getDao();
-		//cache
-		Cache cache=obsArg.getCache();
-		if(firstArg.getClass()!=String.class){
-			Object key=null;
-			if(firstArg instanceof Class){
-				key=cacheUtils.getKey((Class) firstArg, args);
+		Object[] args=msg.getArgs();
+		if(args.length==1){
+			//<T> T fetch(Class<T> classOfT)
+			if(args[0] instanceof Class){
+				Object key=msg.getCacheStrategy().getKey(((Class)args[0]).getName());
+				return cacheHandle(msg, key);
 			}else{
-				key=cacheUtils.getKey(firstArg);
+				//<T> T fetch(T obj)
+				Object key=msg.getCacheStrategy().getKey(args[0]);
+				return cacheHandle(msg, key);
 			}
-			if(key==null){
-				return CommonUtils.invokeMethod(method, dao, args);
-			}
-			//去缓存中取
-			Object obj=cache.get(key);
-			if(obj!=null){
-				return obj;
-			}
-			obj=CommonUtils.invokeMethod(method, dao, args);
-			cache.put(key, obj);
-			return obj;
 		}
-		return CommonUtils.invokeMethod(method, dao, args);
+		if(args.length==2){
+			if(args[0] instanceof Class){
+				String clazzName=((Class)args[0]).getName();
+//				<T> T fetch(Class<T> classOfT, long id)
+				if(args[1] instanceof Long){
+					Object key=msg.getCacheStrategy().getKey(clazzName, (Long)args[1]);
+					return this.cacheHandle(msg, key);
+				}else if(args[1] instanceof String){
+//				<T> T fetch(Class<T> classOfT, String name)
+					Object key=msg.getCacheStrategy().getKey(clazzName, (String)args[1]);
+					return this.cacheHandle(msg, key);
+				}else{
+					return CommonUtils.invokeMethod(msg.getMethod(), msg.getCacheStrategy().getDao(), msg.getArgs());
+				}
+			}else if(args[0] instanceof String){
+				//Record fetch(String tableName, Condition condition)
+				return CommonUtils.invokeMethod(msg.getMethod(), msg.getCacheStrategy().getDao(), msg.getArgs());
+			}else{
+				//<T> T fetchLinks(T obj, String regex)
+				Object key=msg.getCacheStrategy().getKey(args[0]);
+				return this.cacheHandle(msg, key);
+			}
+		}
+		if(args.length>2){
+			//<T> T fetchx(Class<T> classOfT, Object... pks)
+			Object[] pks=new Object[args.length-1];
+			System.arraycopy(args, 1, pks, 0, pks.length);
+			Object key=msg.getCacheStrategy().getKey((Class)args[0], pks);
+			return this.cacheHandle(msg, key);
+		}
+		return CommonUtils.invokeMethod(msg.getMethod(), msg.getCacheStrategy().getDao(), msg.getArgs());
 	}
 
+	private Object cacheHandle(ObsArgClass msg, Object key) {
+		Object value=msg.getCache().get(key);
+		if(value==null){
+			value=CommonUtils.invokeMethod(msg.getMethod(), msg.getCacheStrategy().getDao(), msg.getArgs());
+			msg.getCache().put(key, value);
+		}
+		return value;
+	}
 }

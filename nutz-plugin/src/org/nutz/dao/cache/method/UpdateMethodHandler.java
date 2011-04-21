@@ -33,7 +33,7 @@ public class UpdateMethodHandler implements IDaoCacheMethodHandler {
 		}
 		if(args.length==3){
 			//int update(Class<?> classOfT, Chain chain, Condition condition);
-			if(args[0].getClass()==Class.class){
+			if(args[0] instanceof Class){
 				this.updateCacheHandle(msg, args);
 			}else if(args[0].getClass()==String.class){
 				//int update(String tableName, Chain chain, Condition condition);

@@ -41,7 +41,20 @@ public class CacheNutDaoInvocationHandler implements InvocationHandler {
 	private static Map<String,IDaoCacheMethodHandler> DAO_METHOD_HANDLERS=new HashMap<String,IDaoCacheMethodHandler>();
 	
 	static{
+		DAO_METHOD_HANDLERS.put("delete", new FetchMethodHandler());
+		DAO_METHOD_HANDLERS.put("deleteWith", new FetchMethodHandler());
+		DAO_METHOD_HANDLERS.put("deleteLinks", new FetchMethodHandler());
+		DAO_METHOD_HANDLERS.put("deletex", new FetchMethodHandler());
+		
 		DAO_METHOD_HANDLERS.put("fetch", new FetchMethodHandler());
+		DAO_METHOD_HANDLERS.put("fetchx", new FetchMethodHandler());
+		DAO_METHOD_HANDLERS.put("fetchLinks", new FetchMethodHandler());
+		
+		DAO_METHOD_HANDLERS.put("insert", new FetchMethodHandler());
+		DAO_METHOD_HANDLERS.put("fastInsert", new FetchMethodHandler());
+		DAO_METHOD_HANDLERS.put("insertWith", new FetchMethodHandler());
+		DAO_METHOD_HANDLERS.put("insertLinks", new FetchMethodHandler());
+		DAO_METHOD_HANDLERS.put("insertRelation", new FetchMethodHandler());
 	}
 	public CacheNutDaoInvocationHandler(Dao dao) {
 		super();

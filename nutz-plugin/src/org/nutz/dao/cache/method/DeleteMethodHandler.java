@@ -7,8 +7,9 @@ import org.nutz.dao.cache.ObsArgClass;
 import org.nutz.dao.convent.utils.CommonUtils;
 
 /**
- * @author Administrator
+ * @author liaohongliu
  *
+ * 创建时间: 2011-4-21
  */
 public class DeleteMethodHandler implements IDaoCacheMethodHandler {
 
