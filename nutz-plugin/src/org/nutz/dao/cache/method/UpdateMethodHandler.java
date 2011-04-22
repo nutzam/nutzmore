@@ -13,6 +13,7 @@ import org.nutz.dao.cache.ObsArgClass;
 import org.nutz.dao.convent.utils.CommonUtils;
 
 /**
+ * update相关方法的缓存处理器
  * @author liaohongliu
  *
  * 创建时间: 2011-4-21

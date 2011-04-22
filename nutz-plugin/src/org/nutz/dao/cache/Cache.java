@@ -4,7 +4,7 @@ package org.nutz.dao.cache;
 import java.util.Map;
 
 /**
- * 缓存接口,key现在的生成策略是类名+id
+ * 缓存接口,key现在的生成策略是类名#id或类名#name或类名#pk1,pk2
  * Implementors define a caching algorithm. All implementors
  * <b>must</b> be threadsafe.
  */

@@ -7,6 +7,7 @@ import org.nutz.dao.cache.ObsArgClass;
 import org.nutz.dao.convent.utils.CommonUtils;
 
 /**
+ * fetch相关方法缓存的处理器
  * @author liaohongliu
  *
  * 创建时间: 2011-4-21
@@ -53,7 +54,7 @@ public class FetchMethodHandler implements IDaoCacheMethodHandler{
 			//<T> T fetchx(Class<T> classOfT, Object... pks)
 			Object[] pks=new Object[args.length-1];
 			System.arraycopy(args, 1, pks, 0, pks.length);
-			Object key=msg.getCacheStrategy().getKey((Class)args[0], pks);
+			Object key=msg.getCacheStrategy().getKey(((Class)args[0]).getName(), pks);
 			return this.cacheHandle(msg, key);
 		}
 		return CommonUtils.invokeMethod(msg.getMethod(), msg.getCacheStrategy().getDao(), msg.getArgs());

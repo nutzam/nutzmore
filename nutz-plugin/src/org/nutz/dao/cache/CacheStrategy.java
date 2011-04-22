@@ -27,7 +27,12 @@ import org.nutz.dao.entity.EntityHolder;
 public class CacheStrategy{
 	
 	private Dao dao;
-	
+	/**
+	 * 根据对象获取缓存中的key
+	 * @param <T> 
+	 * @param obj 对象,必须要设置@Id,@name,@PK中至少一个
+	 * @return 生成的主键,现在采用是字符串的主键
+	 */
 	public <T> Object getKey(T obj){
 		Class<T> clazz=(Class<T>) obj.getClass();
 		String clazzName=clazz.getName();
@@ -72,33 +77,7 @@ public class CacheStrategy{
 		}
 		return keysList.toArray();
 	}
-	public Object getKey(Class itemClass,Object[] args){
-		String clazzName=itemClass.getName();
-		//联合主键
-		if(args.length>2){
-			return this.getKey(clazzName, args);
-		}
-		if(args.length==1){
-			Class firstArgType=args[0].getClass();
-			if(firstArgType==Class.class){//fetch class
-				return this.getKey(firstArgType.getName());
-			}else{//fetch obj
-				return this.getKey(args[0]);
-			}
-		}
-		Object key=args[1];
-		Class secondArgType=key.getClass();
-		if(secondArgType==Long.class){
-			return this.getKey(clazzName, (Long)key);
-		}
-		if(secondArgType==String.class){
-			return this.getKey(clazzName, (String)key);
-		}
-		if(secondArgType==Condition.class){//查询缓存,暂不支持
-			return null;
-		}
-		throw new RuntimeException("不支持的缓存方法!请匹配合适的版本!");
-	}
+	
 	public String getKey(String clazzName,long id){
 		return clazzName+"#"+id;
 	}

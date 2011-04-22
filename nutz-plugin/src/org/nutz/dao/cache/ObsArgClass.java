@@ -11,9 +11,13 @@ import java.lang.reflect.Method;
  * 创建时间: 2011-4-21
  */
 public class ObsArgClass {
+	/**调用的方法*/
 	private Method method;
+	/**调用方法传递的参数*/
 	private Object[] args;
+	/**缓存策略类*/
 	private CacheStrategy cacheStrategy;
+	/**具体的缓存对象*/
 	private Cache cache;
 	
 	public ObsArgClass(Method method, Object[] args,CacheStrategy cacheUtis,Cache cache) {
