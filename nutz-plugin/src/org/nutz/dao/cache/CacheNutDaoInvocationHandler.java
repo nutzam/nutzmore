@@ -12,8 +12,11 @@ import java.util.Map;
 import java.util.Observable;
 
 import org.nutz.dao.Dao;
+import org.nutz.dao.cache.method.DeleteMethodHandler;
 import org.nutz.dao.cache.method.FetchMethodHandler;
 import org.nutz.dao.cache.method.IDaoCacheMethodHandler;
+import org.nutz.dao.cache.method.InsertMethodHandler;
+import org.nutz.dao.cache.method.UpdateMethodHandler;
 import org.nutz.dao.convent.utils.CommonUtils;
 import org.nutz.dao.entity.EntityHolder;
 import org.nutz.dao.entity.EntityMaker;
@@ -41,20 +44,26 @@ public class CacheNutDaoInvocationHandler implements InvocationHandler {
 	private static Map<String,IDaoCacheMethodHandler> DAO_METHOD_HANDLERS=new HashMap<String,IDaoCacheMethodHandler>();
 	
 	static{
-		DAO_METHOD_HANDLERS.put("delete", new FetchMethodHandler());
-		DAO_METHOD_HANDLERS.put("deleteWith", new FetchMethodHandler());
-		DAO_METHOD_HANDLERS.put("deleteLinks", new FetchMethodHandler());
-		DAO_METHOD_HANDLERS.put("deletex", new FetchMethodHandler());
+		DAO_METHOD_HANDLERS.put("delete", new DeleteMethodHandler());
+		DAO_METHOD_HANDLERS.put("deleteWith", new DeleteMethodHandler());
+		DAO_METHOD_HANDLERS.put("deleteLinks", new DeleteMethodHandler());
+		DAO_METHOD_HANDLERS.put("deletex", new DeleteMethodHandler());
 		
 		DAO_METHOD_HANDLERS.put("fetch", new FetchMethodHandler());
 		DAO_METHOD_HANDLERS.put("fetchx", new FetchMethodHandler());
 		DAO_METHOD_HANDLERS.put("fetchLinks", new FetchMethodHandler());
 		
-		DAO_METHOD_HANDLERS.put("insert", new FetchMethodHandler());
-		DAO_METHOD_HANDLERS.put("fastInsert", new FetchMethodHandler());
-		DAO_METHOD_HANDLERS.put("insertWith", new FetchMethodHandler());
-		DAO_METHOD_HANDLERS.put("insertLinks", new FetchMethodHandler());
-		DAO_METHOD_HANDLERS.put("insertRelation", new FetchMethodHandler());
+		DAO_METHOD_HANDLERS.put("insert", new InsertMethodHandler());
+		DAO_METHOD_HANDLERS.put("fastInsert", new InsertMethodHandler());
+		DAO_METHOD_HANDLERS.put("insertWith", new InsertMethodHandler());
+		DAO_METHOD_HANDLERS.put("insertLinks", new InsertMethodHandler());
+		DAO_METHOD_HANDLERS.put("insertRelation", new InsertMethodHandler());
+		
+		DAO_METHOD_HANDLERS.put("update", new UpdateMethodHandler());
+		DAO_METHOD_HANDLERS.put("updateIgnoreNull", new UpdateMethodHandler());
+		DAO_METHOD_HANDLERS.put("updateWith", new UpdateMethodHandler());
+		DAO_METHOD_HANDLERS.put("updateLinks", new UpdateMethodHandler());
+		DAO_METHOD_HANDLERS.put("updateRelation", new UpdateMethodHandler());
 	}
 	public CacheNutDaoInvocationHandler(Dao dao) {
 		super();
@@ -69,10 +78,9 @@ public class CacheNutDaoInvocationHandler implements InvocationHandler {
 		if(entityMaker!=null){
 			CommonUtils.invokeMethod(dao, "setEntityMaker", new Class[]{EntityMaker.class}, new Object[]{new ConventionEntityMaker()});
 		}
-		
-		CacheStrategy cacheUtils=new CacheStrategy();
-		cacheUtils.setDao(dao);
-		ObsArgClass msg=new ObsArgClass(method,args,cacheUtils,cache);
+		CacheStrategy cacheStrategy=new CacheStrategy();
+		cacheStrategy.setDao(dao);
+		ObsArgClass msg=new ObsArgClass(method,args,cacheStrategy,cache);
 		IDaoCacheMethodHandler daoHandler=DAO_METHOD_HANDLERS.get(method.getName());
 		if(daoHandler!=null){
 			return daoHandler.handler(msg);

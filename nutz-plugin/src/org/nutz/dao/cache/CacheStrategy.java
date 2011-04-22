@@ -45,6 +45,33 @@ public class CacheStrategy{
 //		@PK型
 		return buildKeyForPK(obj, entity);
 	}
+	/**
+	 * 这个方法主要是考虑到既有@Id,又有@name注解的类
+	 * @param <T>
+	 * @param obj
+	 * @return
+	 */
+	public <T> Object[] getAllKeys(T obj){
+		Class<T> clazz=(Class<T>) obj.getClass();
+		String clazzName=clazz.getName();
+		Entity<T> entity = this.getDao().getEntity(clazz);
+		List<Object> keysList=new ArrayList<Object>();
+//		@Id型的
+		Serializable id=entity.getId(obj);
+		if((Long)id!=0){
+			keysList.add(this.getKey(clazzName, (Long)id));
+		}
+//		@name型的
+		id=entity.getName(obj);
+		if((String)id!=null){
+			keysList.add(this.getKey(clazzName, (String)id));
+		}
+//		@PK型
+		if(keysList.size()==0){//这里的假设和nutz框架的假设一样,也就是说如果设置了前两个注解是不会再设置这个注解的
+			keysList.add(buildKeyForPK(obj, entity));
+		}
+		return keysList.toArray();
+	}
 	public Object getKey(Class itemClass,Object[] args){
 		String clazzName=itemClass.getName();
 		//联合主键

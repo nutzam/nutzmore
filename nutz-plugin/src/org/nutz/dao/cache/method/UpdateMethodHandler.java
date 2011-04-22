@@ -53,9 +53,11 @@ public class UpdateMethodHandler implements IDaoCacheMethodHandler {
 	}
 
 	private void updateCacheHandle(ObsArgClass msg, Object[] args) {
-		Object key=msg.getCacheStrategy().getKey(args[0]);
-		if(key!=null){
-			msg.getCache().update(key, args[0]);
+		Object[] keys=msg.getCacheStrategy().getAllKeys(args[0]);
+		for (Object key : keys) {
+			if(key!=null){
+				msg.getCache().update(key, args[0]);
+			}
 		}
 	}
 

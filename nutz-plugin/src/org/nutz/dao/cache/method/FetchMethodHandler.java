@@ -63,7 +63,9 @@ public class FetchMethodHandler implements IDaoCacheMethodHandler{
 		Object value=msg.getCache().get(key);
 		if(value==null){
 			value=CommonUtils.invokeMethod(msg.getMethod(), msg.getCacheStrategy().getDao(), msg.getArgs());
-			msg.getCache().put(key, value);
+			if(value!=null){
+				msg.getCache().put(key, value);
+			}
 		}
 		return value;
 	}
