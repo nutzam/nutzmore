@@ -39,20 +39,31 @@ public class UpdateMethodHandler implements IDaoCacheMethodHandler {
 			}else if(args[0].getClass()==String.class){
 				//int update(String tableName, Chain chain, Condition condition);
 				//清除该表对应的所有对象
-				String className=msg.getCacheStrategy().getClassNameByTableName((String)args[0]);
-				Cache cache=msg.getCache();
-				Map<Object, Object> cacheMap=cache.toMap();
-				Set<Object> keySet=cacheMap.keySet();
-				for (Object key : keySet) {//这里暂时假设key是字符串
-					if(key.toString().startsWith(className)){
-						cache.remove(key);
-					}
-				}
+				String tableName=(String)args[0];
+				removeRelationObj(msg, tableName);
 			}
 		}
 		return returnValue;
 	}
-
+	/**
+	 * 移除与指定表相关的缓存对象
+	 * @param msg 封装的消息对象
+	 * @param tableName 关联的表
+	 */
+	public static void removeRelationObj(ObsArgClass msg, String tableName) {
+		String className=msg.getCacheStrategy().getClassNameByTableName(tableName);
+		 removeRelationObjByClassName(msg, className);
+	}
+	public static void removeRelationObjByClassName(ObsArgClass msg, String className) {
+		Cache cache=msg.getCache();
+		Map<Object, Object> cacheMap=cache.toMap();
+		Set<Object> keySet=cacheMap.keySet();
+		for (Object key : keySet) {//这里暂时假设key是字符串
+			if(key.toString().startsWith(className)){
+				cache.remove(key);
+			}
+		}
+	}
 	private void updateCacheHandle(ObsArgClass msg, Object[] args) {
 		Object[] keys=msg.getCacheStrategy().getAllKeys(args[0]);
 		for (Object key : keys) {
