@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Observable;
 
 import org.nutz.dao.Dao;
+import org.nutz.dao.cache.method.ClearMethodHandler;
 import org.nutz.dao.cache.method.DeleteMethodHandler;
 import org.nutz.dao.cache.method.FetchMethodHandler;
 import org.nutz.dao.cache.method.IDaoCacheMethodHandler;
@@ -64,6 +65,9 @@ public class CacheNutDaoInvocationHandler implements InvocationHandler {
 		DAO_METHOD_HANDLERS.put("updateWith", new UpdateMethodHandler());
 		DAO_METHOD_HANDLERS.put("updateLinks", new UpdateMethodHandler());
 		DAO_METHOD_HANDLERS.put("updateRelation", new UpdateMethodHandler());
+		
+		DAO_METHOD_HANDLERS.put("clear", new ClearMethodHandler());
+		DAO_METHOD_HANDLERS.put("clearLinks", new ClearMethodHandler());
 	}
 	public CacheNutDaoInvocationHandler(Dao dao) {
 		super();
