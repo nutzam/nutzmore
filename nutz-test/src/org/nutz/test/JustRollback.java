@@ -6,7 +6,7 @@ package org.nutz.test;
  *
  */
 @SuppressWarnings("serial")
-class JustRollback extends RuntimeException {
+public class JustRollback extends RuntimeException {
 	
 	private static final JustRollback me = new JustRollback();
 	
