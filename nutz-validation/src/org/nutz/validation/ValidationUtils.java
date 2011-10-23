@@ -5,7 +5,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.nutz.el.El;
-import org.nutz.el.ElValue;
 import org.nutz.lang.Lang;
 import org.nutz.lang.Mirror;
 import org.nutz.lang.Strings;
@@ -302,8 +301,8 @@ public abstract class ValidationUtils {
 	public static boolean el(String fieldName, Object obj, String el, String errorMsg, Errors errors) {
 		Context context = Lang.context();
 		context.set("value", obj);
-		ElValue val = El.eval(context, el);
-		if (!val.getBoolean()) {
+		Object val = El.eval(context, el);
+		if (! (val instanceof Boolean)) {
 			errors.add(fieldName, errorMsg);
 			return false;
 		}
