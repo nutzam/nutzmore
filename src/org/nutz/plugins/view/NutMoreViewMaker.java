@@ -26,7 +26,7 @@ public class NutMoreViewMaker implements ViewMaker {
 			}
 		};
 		
-		if (type.startsWith(">") && type.length() > 1) {
+		if (type.startsWith("->") && type.length() > 2) {
 			final String myType = type.substring(1);
 			return new ForwardView(value) {
 				protected String getExt() {
