@@ -18,7 +18,6 @@ public class ViewMakerProxy implements ViewMaker {
 	
 	private Object lock = new Object();
 
-	@Override
 	public View make(Ioc ioc, String type, String value) {
 		if (list == null)
 			synchronized (lock) {
@@ -40,9 +39,10 @@ public class ViewMakerProxy implements ViewMaker {
 		for (ViewMaker viewMaker : list) {
 			view = viewMaker.make(ioc, type, value);
 			if (view != null)
-				break;
+				return view;
 		}
-		return view;
+		return null;
 	}
 
+	
 }
