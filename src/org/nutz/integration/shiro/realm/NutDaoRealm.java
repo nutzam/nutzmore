@@ -8,6 +8,7 @@ import javax.sql.DataSource;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.LockedAccountException;
 import org.apache.shiro.authc.SimpleAccount;
 import org.apache.shiro.authc.UsernamePasswordToken;
@@ -55,15 +56,13 @@ public class NutDaoRealm extends AuthorizingRealm {
 	 * @return Account即登陆后的账号
 	 */
 	protected SimpleAccount fetchAccount(String username, String passwd) {
-		User user = null;
-		if (passwd == null)
-			user = dao().fetch(User.class, Cnd.where("name", "=", username));
-		else
-			user = dao().fetch(User.class, Cnd.where("name", "=", username).and("passwd", "=", passwd));
+		User user = dao().fetch(User.class, Cnd.where("name", "=", username));
 		if (user == null)
 			return null;
 		if (user.isLocked()) 
 			throw new LockedAccountException("Account [" + username + "] is locked.");
+		if (passwd != null && !passwd.equals(passwd))
+			throw new IncorrectCredentialsException();
 		dao().fetchLinks(user, null);
 		SimpleAccount account = new SimpleAccount(username, passwd, name);
 		account.setRoles(user.getRoleStrSet());
