@@ -38,27 +38,32 @@ public class NutDaoRealm extends AuthorizingRealm {
 
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
 		String username = principalCollection.getPrimaryPrincipal().toString();
-		User user = dao().fetch(User.class, Cnd.where("name", "=", username));
-		if (user != null) {
-			if (user.isLocked()) 
-				throw new LockedAccountException("Account [" + username + "] is locked.");
-		}
-		dao().fetchLinks(user, null);
-		SimpleAccount account = new SimpleAccount(username, "*", name);
-		account.setRoles(user.getRoleStrSet());
-		account.setStringPermissions(user.getPermissionStrSet());
-		return account;
+		return fetchAccount(username, null);
 	}
 
 	protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 		UsernamePasswordToken upToken = (UsernamePasswordToken) token;
-		String passwd = new String(upToken.getPassword());
+		String passwd = new String(upToken.getPassword()); //必不为null
 		String username = upToken.getUsername();
-		User user = dao().fetch(User.class, Cnd.where("name", "=", username).and("passwd", "=", passwd));
-		if (user != null) {
-			if (user.isLocked()) 
-				throw new LockedAccountException("Account [" + username + "] is locked.");
-		}
+		return fetchAccount(username, passwd);
+	}
+	
+	/**
+	 * 通过用户名/密码获取对应的Account
+	 * @param username 用户名
+	 * @param passwd 当参数为null时,忽略password检查
+	 * @return Account即登陆后的账号
+	 */
+	protected SimpleAccount fetchAccount(String username, String passwd) {
+		User user = null;
+		if (passwd == null)
+			user = dao().fetch(User.class, Cnd.where("name", "=", username));
+		else
+			user = dao().fetch(User.class, Cnd.where("name", "=", username).and("passwd", "=", passwd));
+		if (user == null)
+			return null;
+		if (user.isLocked()) 
+			throw new LockedAccountException("Account [" + username + "] is locked.");
 		dao().fetchLinks(user, null);
 		SimpleAccount account = new SimpleAccount(username, passwd, name);
 		account.setRoles(user.getRoleStrSet());
