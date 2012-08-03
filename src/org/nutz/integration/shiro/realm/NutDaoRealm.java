@@ -83,8 +83,10 @@ public class NutDaoRealm extends AuthorizingRealm {
 			if (servletContext != null) {
 				//也行我能直接拿到Ioc容器
 				Ioc ioc = Mvcs.getIoc();
-				if (ioc != null)
+				if (ioc != null) {
 					dao = ioc.get(Dao.class, daoBeanName);
+					return dao;
+				}
 				else {
 					//Search in servletContext.attr
 					Enumeration<String> names = servletContext.getAttributeNames();
