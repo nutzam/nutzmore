@@ -61,7 +61,7 @@ public class NutDaoRealm extends AuthorizingRealm {
 			return null;
 		if (user.isLocked()) 
 			throw new LockedAccountException("Account [" + username + "] is locked.");
-		if (passwd != null && !passwd.equals(passwd))
+		if (passwd != null && !passwd.equals(user.getPasswd()))
 			throw new IncorrectCredentialsException();
 		dao().fetchLinks(user, null);
 		SimpleAccount account = new SimpleAccount(username, passwd, name);
