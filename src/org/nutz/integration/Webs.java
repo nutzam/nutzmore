@@ -6,7 +6,6 @@ import java.util.List;
 
 import javax.servlet.ServletContext;
 
-import org.apache.struts2.ServletActionContext;
 import org.nutz.ioc.Ioc;
 import org.nutz.ioc.Ioc2;
 import org.nutz.lang.Lang;
@@ -87,7 +86,7 @@ public class Webs {
     }
     
     public static void makeIoc(Class<? extends IocProvider> clazz, String[] args) {
-        final ServletContext context = ServletActionContext.getServletContext();
+        final ServletContext context = Mvcs.getServletContext();
         NutConfig config = new AbstractNutConfig(context) {
             
             public ServletContext getServletContext() {
