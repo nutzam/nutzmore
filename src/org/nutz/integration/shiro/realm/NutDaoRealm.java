@@ -1,28 +1,24 @@
 package org.nutz.integration.shiro.realm;
 
-import java.util.Enumeration;
-
-import javax.servlet.ServletContext;
 import javax.sql.DataSource;
 
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
-import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.LockedAccountException;
 import org.apache.shiro.authc.SimpleAccount;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.authz.AuthorizationInfo;
+import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.util.ByteSource;
 import org.nutz.dao.Cnd;
 import org.nutz.dao.Dao;
 import org.nutz.dao.impl.NutDao;
+import org.nutz.integration.Webs;
 import org.nutz.integration.shiro.realm.bean.User;
 import org.nutz.ioc.Ioc;
-import org.nutz.log.Log;
-import org.nutz.log.Logs;
-import org.nutz.mvc.Mvcs;
 
 /**
  * 用NutDao来实现Shiro的Realm
@@ -33,41 +29,35 @@ import org.nutz.mvc.Mvcs;
  */
 public class NutDaoRealm extends AuthorizingRealm {
 	
-	private static final Log log = Logs.get();
-	
 	protected Dao dao;
 
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
 		String username = principalCollection.getPrimaryPrincipal().toString();
-		return fetchAccount(username, null);
+		User user = dao().fetch(User.class, Cnd.where("name", "=", username));
+        if (user == null)
+            return null;
+        if (user.isLocked()) 
+            throw new LockedAccountException("Account [" + username + "] is locked.");
+        
+        SimpleAuthorizationInfo auth = new SimpleAuthorizationInfo();
+        auth.setRoles(user.getRoleStrSet());
+        auth.addStringPermissions(user.getPermissionStrSet());
+        
+        return auth;
 	}
 
 	protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 		UsernamePasswordToken upToken = (UsernamePasswordToken) token;
-		String passwd = new String(upToken.getPassword()); //必不为null
-		String username = upToken.getUsername();
-		return fetchAccount(username, passwd);
-	}
-	
-	/**
-	 * 通过用户名/密码获取对应的Account
-	 * @param username 用户名
-	 * @param passwd 当参数为null时,忽略password检查
-	 * @return Account即登陆后的账号
-	 */
-	protected SimpleAccount fetchAccount(String username, String passwd) {
-		User user = dao().fetch(User.class, Cnd.where("name", "=", username));
-		if (user == null)
-			return null;
-		if (user.isLocked()) 
-			throw new LockedAccountException("Account [" + username + "] is locked.");
-		if (passwd != null && !passwd.equals(user.getPasswd()))
-			throw new IncorrectCredentialsException();
-		dao().fetchLinks(user, null);
-		SimpleAccount account = new SimpleAccount(username, passwd, name);
-		account.setRoles(user.getRoleStrSet());
-		account.setStringPermissions(user.getPermissionStrSet());
-		return account;
+		User user = dao().fetch(User.class, Cnd.where("name", "=", upToken.getUsername()));
+        if (user == null)
+            return null;
+        if (user.isLocked()) 
+            throw new LockedAccountException("Account [" + upToken.getUsername() + "] is locked.");
+        dao().fetchLinks(user, null);
+        SimpleAccount account = new SimpleAccount(upToken.getUsername(), user.getPasswd(), name);
+        if (user.getSalt() != null)
+            account.setCredentialsSalt(ByteSource.Util.bytes(user.getSalt()));
+        return account;
 	}
 	
 	public NutDaoRealm() {
@@ -80,39 +70,11 @@ public class NutDaoRealm extends AuthorizingRealm {
 	
 	private String name;
 	
-	@SuppressWarnings("unchecked")
 	public Dao dao() {
 		if (dao == null) {
-			ServletContext servletContext = Mvcs.getServletContext();
-			if (servletContext != null) {
-				//也行我能直接拿到Ioc容器
-				Ioc ioc = Mvcs.getIoc();
-				if (ioc != null) {
-					dao = ioc.get(Dao.class, daoBeanName);
-					return dao;
-				}
-				else {
-					//Search in servletContext.attr
-					Enumeration<String> names = servletContext.getAttributeNames();
-					while (names.hasMoreElements()) {
-						String attrName = (String) names.nextElement();
-						Object obj = servletContext.getAttribute(attrName);
-						if (obj instanceof Ioc) {
-							dao = ((Ioc)obj).get(Dao.class, daoBeanName);
-							return dao;
-						}
-					}
-					
-					//还是没找到? 试试新版Mvcs.ctx
-					ioc = Mvcs.ctx.getDefaultIoc();
-					if (ioc != null) {
-						dao = ioc.get(Dao.class, daoBeanName);
-						return dao;
-					}
-				}
-			}
-			log.warn("No dao found!!");
-			throw new RuntimeException("NutDao not found!!");
+			Ioc ioc = Webs.ioc();
+			dao = ioc.get(Dao.class, daoBeanName);
+			return dao;
 		}
 		return dao;
 	}

@@ -12,16 +12,27 @@ import org.nutz.dao.entity.annotation.Table;
 
 @Table("users")
 public class User {
+    
+    public User() {}
 
-	@Id
+	public User(String name, String passwd, String slat) {
+        this.name = name;
+        this.passwd = passwd;
+        this.salt = slat;
+    }
+
+    @Id
 	private long id;
 	
 	@Name
-	@Column("name")
+	@Column
 	private String name;
 	
-	@Column("passwd")
+	@Column
 	private transient String passwd;
+	
+	@Column
+	private transient String salt;
 	
 	private boolean locked;
 	
@@ -78,6 +89,16 @@ public class User {
 	public void setLocked(boolean locked) {
 		this.locked = locked;
 	}
+	
+	public String getSalt() {
+        return salt;
+    }
+	
+	public void setSalt(String salt) {
+        this.salt = salt;
+    }
+	
+	
 
 	//------------------------------------------
 	public Set<String> getRoleStrSet() {
