@@ -3,6 +3,7 @@ package org.nutz.integration.spring;
 import org.nutz.ioc.Ioc;
 import org.nutz.ioc.IocException;
 import org.nutz.ioc.annotation.InjectName;
+import org.nutz.lang.Lang;
 import org.nutz.lang.Strings;
 import org.nutz.mvc.IocProvider;
 import org.nutz.mvc.NutConfig;
@@ -22,45 +23,46 @@ import org.springframework.web.context.WebApplicationContext;
  */
 public class SpringIocProvider implements IocProvider, Ioc {
 
-	protected ApplicationContext applicationContext;
+    protected ApplicationContext applicationContext;
 
-	public Ioc create(NutConfig config, String[] args) {
-		if (config == null)
-			applicationContext = new ClassPathXmlApplicationContext(args);
-		else
-			applicationContext = (ApplicationContext) config.getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);;
-		return this;
-	}
+    public Ioc create(NutConfig config, String[] args) {
+        if (config == null || Lang.length(args) > 0)
+            applicationContext = new ClassPathXmlApplicationContext(args);
+        else
+            applicationContext = (ApplicationContext) config.getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
+        return this;
+    }
 
-	public void depose() {
-		applicationContext.publishEvent(new ContextClosedEvent(
-				applicationContext));
-	}
+    public void depose() {
+        if (applicationContext != null) {
+            applicationContext.publishEvent(new ContextClosedEvent(applicationContext));
+            applicationContext = null;
+        }
+    }
 
-	@SuppressWarnings("unchecked")
-	public <T> T get(Class<T> type, String name) {
-		return (T) applicationContext.getBean(name, type);
-	}
+    @SuppressWarnings("unchecked")
+    public <T> T get(Class<T> type, String name) {
+        return (T) applicationContext.getBean(name, type);
+    }
 
-	public String[] getNames() {
-		return applicationContext.getBeanDefinitionNames();
-	}
+    public String[] getNames() {
+        return applicationContext.getBeanDefinitionNames();
+    }
 
-	public boolean has(String name) {
-		return applicationContext.containsBean(name);
-	}
+    public boolean has(String name) {
+        return applicationContext.containsBean(name);
+    }
 
-	public void reset() {
-		applicationContext.publishEvent(new ContextRefreshedEvent(
-				applicationContext));
-	}
+    public void reset() {
+        applicationContext.publishEvent(new ContextRefreshedEvent(applicationContext));
+    }
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T> T get(Class<T> classZ) throws IocException {
-		InjectName injectName = classZ.getAnnotation(InjectName.class);
-		if (injectName != null && !Strings.isBlank(injectName.value()))
-			return (T) applicationContext.getBean(injectName.value());
-		return (T) applicationContext.getBean(applicationContext.getBeanNamesForType(classZ)[0]);
-	}
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T get(Class<T> classZ) throws IocException {
+        InjectName injectName = classZ.getAnnotation(InjectName.class);
+        if (injectName != null && !Strings.isBlank(injectName.value()))
+            return (T) applicationContext.getBean(injectName.value());
+        return (T) applicationContext.getBean(applicationContext.getBeanNamesForType(classZ)[0]);
+    }
 }
