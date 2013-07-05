@@ -1,4 +1,5 @@
 package org.nutz.integration.spring;
+
 import java.sql.Connection;
 
 import javax.sql.DataSource;
@@ -9,18 +10,19 @@ import org.springframework.jdbc.datasource.DataSourceUtils;
 
 public class SpringDaoRunner implements DaoRunner {
 
-        public void run(DataSource dataSource, ConnCallback callback) {
-                Connection con = DataSourceUtils.getConnection(dataSource);  
-                try {  
-                        callback.invoke(con);  
-                }
-                catch (Exception e) {  
-                        if (e instanceof RuntimeException)  
-                                throw (RuntimeException) e;  
-                        else  
-                                throw new RuntimeException(e);  
-                } finally {  
-                        DataSourceUtils.releaseConnection(con, dataSource);  
-                }  
-        }
+	public void run(DataSource dataSource, ConnCallback callback) {
+		Connection con = DataSourceUtils.getConnection(dataSource);
+		try {
+			callback.invoke(con);
+		}
+		catch (Exception e) {
+			if (e instanceof RuntimeException)
+				throw (RuntimeException) e;
+			else
+				throw new RuntimeException(e);
+		}
+		finally {
+			DataSourceUtils.releaseConnection(con, dataSource);
+		}
+	}
 }
