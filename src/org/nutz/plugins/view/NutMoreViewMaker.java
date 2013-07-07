@@ -1,6 +1,8 @@
 package org.nutz.plugins.view;
 
 import org.nutz.ioc.Ioc;
+import org.nutz.json.Json;
+import org.nutz.json.JsonFormat;
 import org.nutz.lang.Lang;
 import org.nutz.mvc.View;
 import org.nutz.mvc.ViewMaker;
@@ -25,6 +27,12 @@ public class NutMoreViewMaker implements ViewMaker {
 				return "ftl";
 			}
 		};
+		
+		if ("hibernateJson".equals(type)) {
+			if (value == null)
+				return new HibernateJsonView(JsonFormat.nice());
+			return new HibernateJsonView(Json.fromJson(JsonFormat.class, value));
+		}
 		
 		if (type.startsWith("->") && type.length() > 2) {
 			final String myType = type.substring(1);
