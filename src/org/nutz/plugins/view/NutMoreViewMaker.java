@@ -4,14 +4,16 @@ import org.nutz.ioc.Ioc;
 import org.nutz.json.Json;
 import org.nutz.json.JsonFormat;
 import org.nutz.lang.Lang;
+import org.nutz.mvc.ActionInfo;
+import org.nutz.mvc.NutConfig;
 import org.nutz.mvc.View;
 import org.nutz.mvc.ViewMaker;
+import org.nutz.mvc.ViewMaker2;
 import org.nutz.mvc.view.ForwardView;
 import org.nutz.plugins.view.smarty.SmartyView;
 
-public class NutMoreViewMaker implements ViewMaker {
+public class NutMoreViewMaker implements ViewMaker, ViewMaker2 {
 
-	@Override
 	public View make(Ioc ioc, final String type, String value) {
 		if ("st".equals(type)) {
 			try {
@@ -42,6 +44,12 @@ public class NutMoreViewMaker implements ViewMaker {
 				}
 			};
 		}
+		return null;
+	}
+
+	public View make(NutConfig conf, ActionInfo ai, String type, String value) {
+		if ("map".equals(type))
+			return new MapView(conf, ai, type, value);
 		return null;
 	}
 
