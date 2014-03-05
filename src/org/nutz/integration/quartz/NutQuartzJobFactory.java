@@ -18,8 +18,7 @@ import org.quartz.spi.TriggerFiredBundle;
  * 当ioc不存在或从ioc获取失败的时候,将降级为默认的SimpleJobFactory进行处理
  * <p/>
  * 使用方法: 在quartz的配置文件中加入
- * org.quartz.scheduler.jobFactory.class=org.nutz.integration
- * .quartz.NutQuartzJobFactory
+ * org.quartz.scheduler.jobFactory.class=org.nutz.integration.quartz.NutQuartzJobFactory
  * <p/> 当然,你可以用一行语句解决: return Mvcs.ctx.getDefaultIoc().get(bundle.getJobDetail().getJobClass());
  * @author wendal(wendal1985@gmail.com)
  * 
