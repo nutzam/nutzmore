@@ -16,9 +16,12 @@ public class ExecutionTimeInterceptor implements MethodInterceptor {
 			return;
 		}
 		Stopwatch stopwatch = Stopwatch.begin();
-		chain.doChain();
-		stopwatch.stop();
-		LOG.debugf("ExecutionTime %dms in %s",stopwatch.getDuration(),chain.getCallingMethod());
+		try {
+		    chain.doChain();
+		} finally {
+	        stopwatch.stop();
+	        LOG.debugf("%s [%dms]", chain.getCallingMethod(), stopwatch.getDuration());
+		}
 	}
 
 }
