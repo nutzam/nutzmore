@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://nutzam.com/schema/entities" targetNamespace="http://nutzam.com/schema/entities" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+	<xsd:element name="nutz-mapping">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="entity" maxOccurs="unbounded" minOccurs="0">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="id" maxOccurs="1" minOccurs="0">
+								<xsd:annotation><xsd:documentation>对应注解@Id,兼有@Column的功能</xsd:documentation></xsd:annotation>
+								<xsd:complexType>
+									<xsd:sequence>
+										<xsd:element name="coldefine" maxOccurs="1" minOccurs="0">
+											<xsd:annotation><xsd:documentation>对应注解@ColDefine</xsd:documentation></xsd:annotation>
+											<xsd:complexType>
+												<xsd:attribute name="type" type="xsd:string"></xsd:attribute>
+												<xsd:attribute name="width" type="xsd:integer"></xsd:attribute>
+												<xsd:attribute name="precision" type="xsd:integer"></xsd:attribute>
+												<xsd:attribute name="notNull" type="xsd:boolean"></xsd:attribute>
+												<xsd:attribute name="unsigned" type="xsd:boolean"></xsd:attribute>
+												<xsd:attribute name="auto" type="xsd:boolean"></xsd:attribute>
+												<xsd:attribute name="customType"></xsd:attribute>
+												<xsd:attribute name="insert" type="xsd:boolean"></xsd:attribute>
+												<xsd:attribute name="update" type="xsd:boolean"></xsd:attribute>
+											</xsd:complexType>
+										</xsd:element>
+										<xsd:element name="prev" maxOccurs="unbounded" minOccurs="0">
+											<xsd:annotation><xsd:documentation>对应注解@Prev</xsd:documentation></xsd:annotation>
+											<xsd:complexType>
+												<xsd:sequence>
+													<xsd:element name="sql" minOccurs="0" maxOccurs="unbounded">
+														<xsd:complexType>
+															<xsd:attribute name="db"></xsd:attribute>
+														</xsd:complexType>
+													</xsd:element>
+													<xsd:element name="el" minOccurs="0" maxOccurs="unbounded">
+														<xsd:complexType>
+															<xsd:attribute name="db"></xsd:attribute>
+														</xsd:complexType>
+													</xsd:element>
+												</xsd:sequence>
+											</xsd:complexType>
+										</xsd:element>
+										<xsd:element name="next" maxOccurs="unbounded" minOccurs="0">
+											<xsd:annotation><xsd:documentation>对应注解@Next</xsd:documentation></xsd:annotation>
+											<xsd:complexType>
+												<xsd:sequence>
+													<xsd:element name="sql" minOccurs="0" maxOccurs="unbounded">
+														<xsd:complexType>
+															<xsd:attribute name="db"></xsd:attribute>
+														</xsd:complexType>
+													</xsd:element>
+													<xsd:element name="el" minOccurs="0" maxOccurs="unbounded">
+														<xsd:complexType>
+															<xsd:attribute name="db"></xsd:attribute>
+														</xsd:complexType>
+													</xsd:element>
+												</xsd:sequence>
+											</xsd:complexType>
+										</xsd:element>
+									</xsd:sequence>
+									<xsd:attribute name="column" type="xsd:string"></xsd:attribute>
+									<xsd:attribute name="auto" type="xsd:boolean"></xsd:attribute>
+									<xsd:attribute name="name" type="xsd:string"></xsd:attribute>
+								</xsd:complexType>
+							</xsd:element>
+							<xsd:element name="name" maxOccurs="1" minOccurs="0">
+								<xsd:annotation><xsd:documentation>对应注解@Name,兼有@Column的功能</xsd:documentation></xsd:annotation>
+								<xsd:complexType>
+									<xsd:sequence>
+										<xsd:element name="coldefine" maxOccurs="1" minOccurs="0">
+											<xsd:complexType>
+												<xsd:attribute name="type" type="xsd:string"></xsd:attribute>
+												<xsd:attribute name="width" type="xsd:integer"></xsd:attribute>
+												<xsd:attribute name="precision" type="xsd:integer"></xsd:attribute>
+												<xsd:attribute name="notNull" type="xsd:boolean"></xsd:attribute>
+												<xsd:attribute name="unsigned" type="xsd:boolean"></xsd:attribute>
+												<xsd:attribute name="auto" type="xsd:boolean"></xsd:attribute>
+												<xsd:attribute name="customType"></xsd:attribute>
+												<xsd:attribute name="insert" type="xsd:boolean"></xsd:attribute>
+												<xsd:attribute name="update" type="xsd:boolean"></xsd:attribute>
+											</xsd:complexType>
+										</xsd:element>
+										<xsd:element name="prev" maxOccurs="unbounded" minOccurs="0">
+											<xsd:complexType>
+												<xsd:sequence>
+													<xsd:element name="sql" minOccurs="0" maxOccurs="unbounded">
+														<xsd:complexType>
+															<xsd:attribute name="db"></xsd:attribute>
+														</xsd:complexType>
+													</xsd:element>
+													<xsd:element name="el" minOccurs="0" maxOccurs="unbounded">
+														<xsd:complexType>
+															<xsd:attribute name="db"></xsd:attribute>
+														</xsd:complexType>
+													</xsd:element>
+												</xsd:sequence>
+											</xsd:complexType>
+										</xsd:element>
+										<xsd:element name="next" maxOccurs="unbounded" minOccurs="0">
+											<xsd:complexType>
+												<xsd:sequence>
+													<xsd:element name="sql" minOccurs="0" maxOccurs="unbounded">
+														<xsd:complexType>
+															<xsd:attribute name="db"></xsd:attribute>
+														</xsd:complexType>
+													</xsd:element>
+													<xsd:element name="el" minOccurs="0" maxOccurs="unbounded">
+														<xsd:complexType>
+															<xsd:attribute name="db"></xsd:attribute>
+														</xsd:complexType>
+													</xsd:element>
+												</xsd:sequence>
+											</xsd:complexType>
+										</xsd:element>
+									</xsd:sequence>
+									<xsd:attribute name="column" type="xsd:string"></xsd:attribute>
+									<xsd:attribute name="name" type="xsd:string"></xsd:attribute>
+								</xsd:complexType>
+							</xsd:element>
+							<xsd:element name="field" maxOccurs="unbounded" minOccurs="0">
+								<xsd:complexType>
+									<xsd:sequence>
+										<xsd:element name="coldefine" maxOccurs="1" minOccurs="0">
+											<xsd:complexType>
+												<xsd:attribute name="type" type="xsd:string"></xsd:attribute>
+												<xsd:attribute name="width" type="xsd:integer"></xsd:attribute>
+												<xsd:attribute name="precision" type="xsd:integer"></xsd:attribute>
+												<xsd:attribute name="notNull" type="xsd:boolean"></xsd:attribute>
+												<xsd:attribute name="unsigned" type="xsd:boolean"></xsd:attribute>
+												<xsd:attribute name="auto" type="xsd:boolean"></xsd:attribute>
+												<xsd:attribute name="customType"></xsd:attribute>
+												<xsd:attribute name="insert" type="xsd:boolean"></xsd:attribute>
+												<xsd:attribute name="update" type="xsd:boolean"></xsd:attribute>
+											</xsd:complexType>
+										</xsd:element>
+										<xsd:element name="prev" maxOccurs="unbounded" minOccurs="0">
+											<xsd:complexType>
+												<xsd:sequence>
+													<xsd:element name="sql" minOccurs="0" maxOccurs="unbounded">
+														<xsd:complexType>
+															<xsd:attribute name="db"></xsd:attribute>
+														</xsd:complexType>
+													</xsd:element>
+													<xsd:element name="el" minOccurs="0" maxOccurs="unbounded">
+														<xsd:complexType>
+															<xsd:attribute name="db"></xsd:attribute>
+														</xsd:complexType>
+													</xsd:element>
+												</xsd:sequence>
+											</xsd:complexType>
+										</xsd:element>
+										<xsd:element name="next" maxOccurs="unbounded" minOccurs="0">
+											<xsd:complexType>
+												<xsd:sequence>
+													<xsd:element name="sql" minOccurs="0" maxOccurs="unbounded">
+														<xsd:complexType>
+															<xsd:attribute name="db"></xsd:attribute>
+														</xsd:complexType>
+													</xsd:element>
+													<xsd:element name="el" minOccurs="0" maxOccurs="unbounded">
+														<xsd:complexType>
+															<xsd:attribute name="db"></xsd:attribute>
+														</xsd:complexType>
+													</xsd:element>
+												</xsd:sequence>
+											</xsd:complexType>
+										</xsd:element>
+									</xsd:sequence>
+									<xsd:attribute name="column" type="xsd:string"></xsd:attribute>
+									<xsd:attribute name="name" type="xsd:string" use="required"></xsd:attribute>
+								</xsd:complexType>
+							</xsd:element>
+							<xsd:element name="one" maxOccurs="unbounded" minOccurs="0">
+								<xsd:complexType>
+									<xsd:attribute name="name" type="xsd:string" use="required"></xsd:attribute>
+									<xsd:attribute name="target" type="xsd:string" use="required"></xsd:attribute>
+									<xsd:attribute name="field" type="xsd:string" use="required"></xsd:attribute>
+									<xsd:attribute name="key" type="xsd:string" use="required"></xsd:attribute>
+								</xsd:complexType>
+							</xsd:element>
+							<xsd:element name="many" maxOccurs="unbounded" minOccurs="0">
+								<xsd:complexType>
+									<xsd:attribute name="name" type="xsd:string" use="required"></xsd:attribute>
+									<xsd:attribute name="target" type="xsd:string" use="required"></xsd:attribute>
+									<xsd:attribute name="field" type="xsd:string" use="required"></xsd:attribute>
+									<xsd:attribute name="key" type="xsd:string" use="required"></xsd:attribute>
+								</xsd:complexType>
+							</xsd:element>
+							<xsd:element name="manymany" maxOccurs="unbounded" minOccurs="0">
+								<xsd:complexType>
+									<xsd:attribute name="name" type="xsd:string" use="required"></xsd:attribute>
+									<xsd:attribute name="target" type="xsd:string" use="required"></xsd:attribute>
+									<xsd:attribute name="relation" type="xsd:string" use="required"></xsd:attribute>
+									<xsd:attribute name="from" type="xsd:string" use="required"></xsd:attribute>
+									<xsd:attribute name="to" type="xsd:string" use="required"></xsd:attribute>
+									<xsd:attribute name="key" type="xsd:string"></xsd:attribute>
+								</xsd:complexType>
+							</xsd:element>
+							<xsd:element name="index" maxOccurs="unbounded" minOccurs="0">
+								<xsd:complexType>
+									<xsd:attribute name="name" type="xsd:string" use="required"></xsd:attribute>
+									<xsd:attribute name="fields" type="xsd:string" use="required"></xsd:attribute>
+									<xsd:attribute name="unique" type="xsd:boolean"></xsd:attribute>
+								</xsd:complexType>
+							</xsd:element>
+						</xsd:sequence>
+						<xsd:attribute name="type" type="xsd:string" use="required"></xsd:attribute>
+						<xsd:attribute name="table" type="xsd:string"></xsd:attribute>
+						<xsd:attribute name="view" type="xsd:string"></xsd:attribute>
+						<xsd:attribute name="comment" type="xsd:string"></xsd:attribute>
+						<xsd:attribute name="pks" type="xsd:string"></xsd:attribute>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+			<xsd:attribute name="package" type="xsd:string"></xsd:attribute>
+		</xsd:complexType>
+	</xsd:element>
+
+</xsd:schema>

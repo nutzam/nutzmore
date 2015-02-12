@@ -52,5 +52,6 @@
 		<module>nutz-integration-shiro</module>
 		<module>nutz-plugins-validation</module>
 		<module>nutz-plugins-views</module>
+		<module>nutz-plugins-xmlentitymaker</module>
 	</modules>
 </project>
