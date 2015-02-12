@@ -43,9 +43,9 @@
 	</build>
 	<packaging>pom</packaging>
 	<modules>
-		<module>nutz-spring</module>
-		<module>nutz-jcache</module>
-		<module>nutz-jsr303</module>
+		<module>nutz-integration-spring</module>
+		<module>nutz-integration-jcache</module>
+		<module>nutz-integration-jsr303</module>
 		<module>nutz-integration-quartz</module>
 		<module>nutz-integration-dwr</module>
 		<module>nutz-integration-jsf</module>
