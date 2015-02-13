@@ -9,14 +9,10 @@
 	<artifactId>nutz-plugins-xmlentitymaker</artifactId>
 	<dependencies>
 		<dependency>
-			<groupId>org.nutz</groupId>
-			<artifactId>nutz</artifactId>
-			<version>1.b.52</version>
-		</dependency>
-		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.8.2</version>
+			<scope>test</scope>
 		</dependency>
 
 	</dependencies>
