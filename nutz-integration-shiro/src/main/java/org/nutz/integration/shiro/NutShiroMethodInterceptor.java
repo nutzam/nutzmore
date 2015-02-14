@@ -12,7 +12,7 @@ import org.nutz.ioc.loader.annotation.IocBean;
  *
  */
 @IocBean
-public class ShiroMethodInterceptor extends AnnotationsAuthorizingMethodInterceptor implements MethodInterceptor {
+public class NutShiroMethodInterceptor extends AnnotationsAuthorizingMethodInterceptor implements MethodInterceptor {
 
     public void filter(InterceptorChain chain) throws Throwable {
         assertAuthorized(new NutShiroInterceptor(chain));

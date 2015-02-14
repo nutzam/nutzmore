@@ -12,7 +12,7 @@ import org.nutz.mvc.view.ServerRedirectView;
  * @author wendal
  *
  */
-public class ShiroActionFilter extends ShiroMethodInterceptor implements ActionFilter {
+public class ShiroActionFilter extends NutShiroMethodInterceptor implements ActionFilter {
 
 	public View match(final ActionContext actionContext) {
 		try {
