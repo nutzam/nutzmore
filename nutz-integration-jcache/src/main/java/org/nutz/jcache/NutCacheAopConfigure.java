@@ -16,6 +16,11 @@ import org.nutz.ioc.aop.config.AopConfigration;
 import org.nutz.ioc.aop.config.InterceptorPair;
 import org.nutz.ioc.loader.annotation.IocBean;
 
+/**
+ * 本集成所的aop配置
+ * @author wendal(wendal1985@gmail.com)
+ *
+ */
 @IocBean(name="$aop_cache")
 public class NutCacheAopConfigure implements AopConfigration {
 
