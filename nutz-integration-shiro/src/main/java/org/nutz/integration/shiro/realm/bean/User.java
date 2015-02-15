@@ -10,7 +10,7 @@ import org.nutz.dao.entity.annotation.ManyMany;
 import org.nutz.dao.entity.annotation.Name;
 import org.nutz.dao.entity.annotation.Table;
 
-@Table("users")
+@Table("t_user")
 public class User {
     
     public User() {}

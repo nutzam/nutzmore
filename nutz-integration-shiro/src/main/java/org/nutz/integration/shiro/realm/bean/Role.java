@@ -7,16 +7,16 @@ import org.nutz.dao.entity.annotation.ManyMany;
 import org.nutz.dao.entity.annotation.Name;
 import org.nutz.dao.entity.annotation.Table;
 
-@Table("roles")
+@Table("t_role")
 public class Role {
 	
 	@Id
-	private long id;
+	private String id;
 	
 	@Name
 	private String name;
 
-	@ManyMany(from="role_id", relation="role_permission", target=Permission.class, to="permission_id")
+	@ManyMany(from="role_id", relation="t_role_permission", target=Permission.class, to="permission_id")
 	private List<Permission> permissions;
 
 	public long getId() {
