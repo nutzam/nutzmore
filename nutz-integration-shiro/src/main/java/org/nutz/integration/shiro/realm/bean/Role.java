@@ -11,7 +11,7 @@ import org.nutz.dao.entity.annotation.Table;
 public class Role {
 	
 	@Id
-	private String id;
+	private long id;
 	
 	@Name
 	private String name;
