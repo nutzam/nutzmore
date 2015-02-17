@@ -54,5 +54,6 @@
 		<module>nutz-plugins-views</module>
 		<module>nutz-plugins-xmlentitymaker</module>
 		<module>nutz-plugins-iocloader</module>
+		<module>nutz-integration-jsch</module>
 	</modules>
 </project>
