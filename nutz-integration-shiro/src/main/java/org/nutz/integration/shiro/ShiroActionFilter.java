@@ -26,7 +26,7 @@ public class ShiroActionFilter extends NutShiroMethodInterceptor implements Acti
 	private View view;
 	
 	public ShiroActionFilter() {
-		view = new ServerRedirectView("/login.html");
+		view = new ServerRedirectView(NutShiroInterceptor.DefaultLoginURL);
 	}
 	
 	public ShiroActionFilter(String view) {
