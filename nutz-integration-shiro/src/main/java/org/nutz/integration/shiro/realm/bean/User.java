@@ -1,8 +1,6 @@
 package org.nutz.integration.shiro.realm.bean;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.nutz.dao.entity.annotation.Column;
 import org.nutz.dao.entity.annotation.Id;
@@ -98,26 +96,4 @@ public class User {
         this.salt = salt;
     }
 	
-	
-
-	//------------------------------------------
-	public Set<String> getRoleStrSet() {
-		Set<String> roleStrs = new HashSet<String>();
-		if (roles != null) {
-			for (Role role : roles) {
-				roleStrs.add(role.getName());
-			}
-		}
-		return roleStrs;
-	}
-	
-	public Set<String> getPermissionStrSet() {
-		Set<String> permissionStrs = new HashSet<String>();
-		if (permissions != null) {
-			for (Permission permission : permissions) {
-				permissionStrs.add(permission.getName());
-			}
-		}
-		return permissionStrs;
-	}
 }

@@ -23,11 +23,11 @@ import org.nutz.mvc.Mvcs;
 
 /**
  * 用NutDao来实现Shiro的Realm
- * <p/> 可以通过配置文件注入数据源
- * <p/> 在Web环境中也可以通过自动搜索来获取NutDao
+ * <p/> 在Web环境中通过Ioc来获取NutDao
  * @author wendal
  *
  */
+@Deprecated
 public class NutDaoRealm extends AuthorizingRealm {
 	
 	protected Dao dao;
@@ -47,9 +47,9 @@ public class NutDaoRealm extends AuthorizingRealm {
         SimpleAuthorizationInfo auth = new SimpleAuthorizationInfo();
         user = dao.fetchLinks(user, null);
         if (user.getRoles() != null) {
+            dao.fetchLinks(user.getRoles(), null);
             for (Role role : user.getRoles()) {
                 auth.addRole(role.getName());
-                role = dao.fetchLinks(role, null);
                 if (role.getPermissions() != null) {
                     for (Permission p : role.getPermissions()) {
                         auth.addStringPermission(p.getName());

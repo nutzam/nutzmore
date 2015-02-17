@@ -1,27 +1,29 @@
 package org.nutz.integration.shiro;
 
+import org.nutz.lang.Lang;
 import org.nutz.mvc.ActionContext;
-import org.nutz.mvc.View;
 import org.nutz.mvc.impl.processor.AbstractProcessor;
+import org.nutz.mvc.view.ServerRedirectView;
 
 public class NutShiroProcessor extends AbstractProcessor {
     
-    protected ShiroActionFilter filter;
+    protected NutShiroMethodInterceptor interceptor;
     
     public NutShiroProcessor() {
-        filter = new ShiroActionFilter();
-    }
-    
-    public NutShiroProcessor(String view) {
-        filter = new ShiroActionFilter(view);
+        interceptor = new NutShiroMethodInterceptor();
     }
 
     public void process(ActionContext ac) throws Throwable {
-        View view = filter.match(ac);
-        if (view != null) {
-            view.render(ac.getRequest(), ac.getResponse(), null);
-        } else {
+        try {
+            interceptor.assertAuthorized(new NutShiroInterceptor(ac));
             doNext(ac);
+        } catch (Throwable e) {
+            Throwable e2 = Lang.unwrapThrow(e);
+            if (e2 != null && e2.getClass().getName().startsWith("org.apache.shiro.authz")) {
+                new ServerRedirectView(NutShiroInterceptor.DefaultLoginURL).render(ac.getRequest(), ac.getResponse(), null);
+                return;
+            }
+            throw Lang.wrapThrow(e);
         }
     }
 }

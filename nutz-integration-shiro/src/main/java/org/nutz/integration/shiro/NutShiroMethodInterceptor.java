@@ -1,5 +1,7 @@
 package org.nutz.integration.shiro;
 
+import org.apache.shiro.aop.MethodInvocation;
+import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.aop.AnnotationsAuthorizingMethodInterceptor;
 import org.nutz.aop.InterceptorChain;
 import org.nutz.aop.MethodInterceptor;
@@ -18,4 +20,7 @@ public class NutShiroMethodInterceptor extends AnnotationsAuthorizingMethodInter
         assertAuthorized(new NutShiroInterceptor(chain));
     }
 
+    public void assertAuthorized(MethodInvocation methodInvocation) throws AuthorizationException {
+        super.assertAuthorized(methodInvocation);
+    }
 }
