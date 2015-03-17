@@ -26,6 +26,18 @@ public class NutCacheAopConfigure implements AopConfigration {
 
     public List<InterceptorPair> getInterceptorPairList(Ioc ioc, Class<?> clazz) {
         List<InterceptorPair> list = new ArrayList<InterceptorPair>();
+        boolean flag = true;
+        for (Method method : clazz.getMethods()) {
+            if (method.getAnnotation(CachePut.class) != null
+                    || method.getAnnotation(CacheResult.class) != null
+                    || method.getAnnotation(CacheRemove.class) != null
+                    || method.getAnnotation(CacheRemoveAll.class) != null) {
+                flag = false;
+                break;
+            }
+        }
+        if (flag)
+            return list;
         list.add(new InterceptorPair(ioc.get(NutCachePutInterceptor.class), new JCacheMethodMatcher(CachePut.class)));
         list.add(new InterceptorPair(ioc.get(NutCacheResultInterceptor.class), new JCacheMethodMatcher(CacheResult.class)));
         list.add(new InterceptorPair(ioc.get(NutCacheRemoveEntryInterceptor.class), new JCacheMethodMatcher(CacheRemove.class)));
