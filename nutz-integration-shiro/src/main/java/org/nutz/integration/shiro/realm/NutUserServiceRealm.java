@@ -17,9 +17,12 @@ import org.apache.shiro.cache.CacheManager;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.util.ByteSource;
+import org.nutz.ioc.Ioc;
 import org.nutz.mvc.Mvcs;
 
 public class NutUserServiceRealm extends AuthorizingRealm {
+    
+    protected String ctxName = "nutz";
 
     public NutUserServiceRealm() {
         super();
@@ -84,6 +87,13 @@ public class NutUserServiceRealm extends AuthorizingRealm {
     }
 
     protected NutShiroUserService us() {
-        return Mvcs.ctx().getDefaultIoc().get(NutShiroUserService.class);
+        Ioc ioc = Mvcs.ctx().iocs.get(ctxName);
+        if (ioc == null)
+            Mvcs.ctx().getDefaultIoc();
+        return ioc.get(NutShiroUserService.class);
+    }
+    
+    public void setCtxName(String ctxName) {
+        this.ctxName = ctxName;
     }
 }

@@ -8,7 +8,6 @@ import org.nutz.mvc.ActionContext;
 
 public class NutShiroInterceptor implements MethodInvocation {
     
-    public static final String DefaultLoginURL = "/usr/login";
     
     InterceptorChain chain;
     ActionContext ac;
