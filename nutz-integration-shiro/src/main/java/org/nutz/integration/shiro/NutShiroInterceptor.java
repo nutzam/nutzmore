@@ -6,6 +6,11 @@ import org.apache.shiro.aop.MethodInvocation;
 import org.nutz.aop.InterceptorChain;
 import org.nutz.mvc.ActionContext;
 
+/**
+ * 封装shiro的注解拦截器所需要的逻辑
+ * @author wendal<wendal1985@gmail.com>
+ *
+ */
 public class NutShiroInterceptor implements MethodInvocation {
     
     

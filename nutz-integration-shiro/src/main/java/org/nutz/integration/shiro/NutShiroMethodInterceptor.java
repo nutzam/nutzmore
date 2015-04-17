@@ -10,7 +10,7 @@ import org.nutz.ioc.loader.annotation.IocBean;
 /**
  * 将Shiro注解,映射为NutAop的拦截器
  * 
- * @author wendal
+ * @author wendal<wendal1985@gmail.com>
  *
  */
 @IocBean
@@ -20,6 +20,7 @@ public class NutShiroMethodInterceptor extends AnnotationsAuthorizingMethodInter
         assertAuthorized(new NutShiroInterceptor(chain));
     }
 
+    // 暴露父类的方法
     public void assertAuthorized(MethodInvocation methodInvocation) throws AuthorizationException {
         super.assertAuthorized(methodInvocation);
     }

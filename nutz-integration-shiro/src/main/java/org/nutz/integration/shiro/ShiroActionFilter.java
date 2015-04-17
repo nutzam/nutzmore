@@ -8,10 +8,11 @@ import org.nutz.mvc.view.DefaultViewMaker;
 import org.nutz.mvc.view.ServerRedirectView;
 
 /**
- * 在入口方法中应用Shiro注解来进行安全过滤
+ * 在入口方法中应用Shiro注解来进行安全过滤,建议使用NutShiroProcessor
  * @author wendal
  *
  */
+@Deprecated
 public class ShiroActionFilter extends NutShiroMethodInterceptor implements ActionFilter {
 
 	public View match(final ActionContext actionContext) {
