@@ -3,6 +3,8 @@ package org.nutz.integration.shiro;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -15,7 +17,9 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.apache.shiro.authz.annotation.RequiresUser;
 import org.nutz.json.JsonFormat;
+import org.nutz.lang.Encoding;
 import org.nutz.mvc.view.UTF8JsonView;
+import org.nutz.resource.Scans;
 
 /**
  * Nutz与Shiro集成所需要的一些辅助方法
@@ -25,6 +29,12 @@ import org.nutz.mvc.view.UTF8JsonView;
 public class NutShiro {
 	
     public static String DefaultLoginURL = "/user/login";
+    
+    public static String SessionKey = "me";
+    
+    public static String AjaxEncode = Encoding.UTF8;
+    
+    public static final String DEFAULT_CAPTCHA_PARAM = "captcha";
 	
 	public static boolean isAjax(ServletRequest req) {
 		Enumeration<String> em = ((HttpServletRequest)req).getHeaderNames();
@@ -38,7 +48,8 @@ public class NutShiro {
 	
 	public static void rendAjaxResp(ServletRequest req, ServletResponse resp, Object re) {
 		try {
-			((HttpServletResponse)resp).setCharacterEncoding("UTF-8");
+			if (AjaxEncode != null)
+				((HttpServletResponse)resp).setCharacterEncoding(AjaxEncode);
 			new UTF8JsonView(JsonFormat.compact()).render((HttpServletRequest)req, (HttpServletResponse)resp, re);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -54,5 +65,29 @@ public class NutShiro {
             return true;
         }
         return false;
+    }
+    
+    @SuppressWarnings("unchecked")
+	public static Set<String>[] scanRolePermissionInPackage(String pkg, boolean publicOnly) {
+    	Set<String> roles = new HashSet<String>();
+    	Set<String> permissions = new HashSet<String>();
+    	for (Class<?> klass : Scans.me().scanPackage(pkg)) {
+			Method[] methods = publicOnly ? klass.getMethods() : klass.getDeclaredMethods();
+			for (Method method : methods) {
+				RequiresRoles rr = method.getAnnotation(RequiresRoles.class);
+				if (rr != null && rr.value().length > 0) {
+					for (String role : rr.value()) {
+						roles.add(role);
+					}
+				}
+				RequiresPermissions pr = method.getAnnotation(RequiresPermissions.class);
+				if (pr != null && pr.value().length > 0) {
+					for (String permission : pr.value()) {
+						permissions.add(permission);
+					}
+				}
+			}
+		}
+    	return new Set[]{roles, permissions};
     }
 }

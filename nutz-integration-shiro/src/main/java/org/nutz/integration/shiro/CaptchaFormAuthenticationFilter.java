@@ -23,7 +23,7 @@ import org.nutz.mvc.View;
  */
 public class CaptchaFormAuthenticationFilter extends FormAuthenticationFilter implements ActionFilter {
 	
-	private String captchaParam = "captcha";
+	private String captchaParam = NutShiro.DEFAULT_CAPTCHA_PARAM;
 
 	public String getCaptchaParam() {
 		return captchaParam;
@@ -58,7 +58,7 @@ public class CaptchaFormAuthenticationFilter extends FormAuthenticationFilter im
 	protected boolean onLoginSuccess(AuthenticationToken token,
 			Subject subject, ServletRequest req, ServletResponse resp)
 			throws Exception {
-		subject.getSession().setAttribute("me", subject.getPrincipal());
+		subject.getSession().setAttribute(NutShiro.SessionKey, subject.getPrincipal());
 		if (NutShiro.isAjax(req)) {
 			NutShiro.rendAjaxResp(req, resp, new NutMap().setv("ok", true));
 			return false;

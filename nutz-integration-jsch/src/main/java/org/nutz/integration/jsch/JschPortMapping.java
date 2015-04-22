@@ -26,6 +26,7 @@ public class JschPortMapping {
     protected String password;
     JSch jsch;
     Session session;
+    protected int timeout = 5000;
     
     public JschPortMapping() {
         jsch = new JSch();
@@ -36,7 +37,7 @@ public class JschPortMapping {
         session.setPassword(password);
         session.setConfig("StrictHostKeyChecking", "no");
         System.out.println("Establishing Connection...");
-        session.connect();
+        session.connect(timeout);
         int assinged_port= session.setPortForwardingL(lport, rhost, rport);
         log.info("local assinged_port="+assinged_port);
     }

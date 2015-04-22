@@ -10,6 +10,7 @@ import org.apache.shiro.authc.UsernamePasswordToken;
 public class CaptchaUsernamePasswordToken extends UsernamePasswordToken {
 
 	private static final long serialVersionUID = 4676958151524148623L;
+	
 	private String captcha;
 
 	public String getCaptcha() {
