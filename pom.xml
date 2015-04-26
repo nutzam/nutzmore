@@ -94,5 +94,6 @@
 		<module>nutz-plugins-xmlentitymaker</module>
 		<module>nutz-plugins-iocloader</module>
 		<module>nutz-integration-jsch</module>
+		<module>nutz-plugins-daocache</module>
 	</modules>
 </project>
