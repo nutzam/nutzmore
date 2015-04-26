@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.nutz</groupId>
-		<artifactId>nutz-web</artifactId>
+		<artifactId>nutzmore</artifactId>
 		<version>1.b.52</version>
 	</parent>
 	<artifactId>nutz-plugins-daocache</artifactId>
