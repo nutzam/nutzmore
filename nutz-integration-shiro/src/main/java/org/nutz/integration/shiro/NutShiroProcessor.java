@@ -24,7 +24,6 @@ public class NutShiroProcessor extends AbstractProcessor {
     
     public NutShiroProcessor() {
         interceptor = new NutShiroMethodInterceptor();
-        uri = NutShiro.DefaultLoginURL;
     }
     
     public void init(NutConfig config, ActionInfo ai) throws Throwable {
@@ -43,11 +42,17 @@ public class NutShiroProcessor extends AbstractProcessor {
                 if (NutShiro.isAjax(ac.getRequest())) {
                 	NutShiro.rendAjaxResp(ac.getRequest(), ac.getResponse(), new NutMap().setv("ok", false).setv("msg", e.getMessage()));
                 } else {
-                	new ServerRedirectView(uri).render(ac.getRequest(), ac.getResponse(), null);
+                	new ServerRedirectView(uri()).render(ac.getRequest(), ac.getResponse(), null);
                 }
                 return;
             }
     	}
         doNext(ac);
+    }
+    
+    protected String uri() {
+        if (uri == null)
+            return NutShiro.DefaultLoginURL;
+        return uri;
     }
 }
