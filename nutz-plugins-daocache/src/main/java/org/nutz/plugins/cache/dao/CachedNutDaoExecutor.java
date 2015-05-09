@@ -15,7 +15,7 @@ import org.nutz.lang.Lang;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.plugins.cache.dao.api.DaoCacheProvider;
-import org.nutz.plugins.cache.dao.impl.provider.NopDaoCacheProvider;
+import org.nutz.plugins.cache.dao.impl.provider.MemoryDaoCacheProvider;
 import org.nutz.trans.Trans;
 
 import com.alibaba.druid.sql.ast.SQLStatement;
@@ -25,18 +25,47 @@ import com.alibaba.druid.sql.dialect.oracle.parser.OracleStatementParser;
 import com.alibaba.druid.sql.dialect.postgresql.parser.PGSQLStatementParser;
 import com.alibaba.druid.sql.parser.SQLStatementParser;
 
+/**
+ * 基于sql的缓存DaoExecutor. 使用Druid的sql处理器. 要配置需要缓存的表及数据库类型!!!!
+ * @author wendal(wendal1985@gmail.com)
+ *
+ */
 public class CachedNutDaoExecutor extends NutDaoExecutor {
 
+    /**
+     * 缓存实现提供者,默认是MemoryDaoCacheProvider
+     */
 	protected DaoCacheProvider cacheProvider;
 
+	/**
+	 * 在事务环境下是否启动,默认禁用
+	 */
 	protected boolean enableWhenTrans;
 	
+	/**
+	 * 禁止清除缓存的标志,在Sql.getContext()中配置
+	 */
 	protected String cacheClearMark = "dao-cache-clear";
 	
+	/**
+	 * 需要缓存的数据库表
+	 */
 	protected Set<String> cachedTableNames = new HashSet<String>();
 	
+	/**
+	 * 是否打印详细的log,默认为关
+	 */
+	public static boolean DEBUG = false;
+
+	/**
+	 * <b>数据库类型</b>,当前仅支持 MYSQL, ORACLE, PSQL, 默认MYSQL
+	 */
+    protected DB db = DB.MYSQL;
+
+    private static final Log log = Logs.get();
+	
 	public CachedNutDaoExecutor() {
-		cacheProvider = new NopDaoCacheProvider();
+		cacheProvider = new MemoryDaoCacheProvider();
 	}
 
 	public void exec(Connection conn, DaoStatement st) {
@@ -62,7 +91,8 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
 		NSqlAdapter adapter = new NSqlAdapter();
 		sqlStatement.accept(adapter); // 得到将会操作的表
 		List<String> tableNames = adapter.tableNames;
-		log.debug("sql = " + prepSql + ", tables = " + tableNames);
+		if (DEBUG)
+		    log.debug("sql = " + prepSql + ", tables = " + tableNames);
 		if (sqlStatement instanceof SQLSelectStatement) {
 			// 如果是select且不是batch(参数表只有一行,那么可能是缓存哦)
 			Object[][] params = st.getParamMatrix();
@@ -70,14 +100,15 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
 			    if (tableNames.size() == 1 && cachedTableNames.contains(tableNames.get(0)) && params.length <= 1) {
 			        String tableName = tableNames.get(0);
 			        String key = genKey(prepSql, params);
-			        Object cachedValue = cacheProvider.get(tableName, key);
+			        Object cachedValue = cacheProvider.get(genCacheName(tableName), key);
 			        if (cachedValue != null) {
-			            log.debug("cache found key=" + key);
+			            if (DEBUG)
+			                log.debug("cache found key=" + key);
 			            st.getContext().setResult(cachedValue);
 			        } else {
 			            super.exec(conn, st);
 			            cachedValue = st.getContext().getResult();
-			            cacheProvider.put(tableName, key, cachedValue);
+			            cacheProvider.put(genCacheName(tableName), key, cachedValue);
 			        }
 			        return;
 			    }
@@ -94,7 +125,7 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
 			try {
 				if (!tableNames.isEmpty()) {
 					for (String tableName : tableNames) {
-						cacheProvider.clear(tableName);
+						cacheProvider.clear(genCacheName(tableName));
 					}
 				}
 			} catch (Throwable e) {
@@ -103,6 +134,10 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
 		}
 	}
 
+	/**
+	 * 缓存key的生成机制,默认是 sha1(sql):sha1('_'.join(params))
+	 * <p/>子类可覆盖本方法实现更有效的key生成
+	 */
 	protected String genKey(String prepareSql, Object[][] params) {
 		String args = "_";
 		if (params != null && params.length > 0) {
@@ -110,11 +145,17 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
 		}
 		return Lang.sha1(prepareSql) + ":" + Lang.sha1(args);
 	}
+	
+	/**
+	 * 生成特定Cache名. 子类可覆盖实现所需要的Cache名
+	 */
+	protected String genCacheName(String tableName) {
+	    return tableName;
+	}
 
-	private static final Log log = Logs.get();
-
-	protected DB db = DB.MYSQL;
-
+	/**
+	 * 根据数据库类型解析sql
+	 */
 	protected SQLStatementParser sqlParser(String sql) {
 		switch (db) {
 		case MYSQL:

@@ -52,14 +52,23 @@
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>druid</artifactId>
-			<version>1.0.12</version>
+			<version>1.0.14</version>
 		</dependency>
 		<dependency>
 			<groupId>com.googlecode.xmemcached</groupId>
 			<artifactId>xmemcached</artifactId>
 			<version>2.0.0</version>
 			<optional>true</optional>
+			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>net.sf.ehcache</groupId>
+			<artifactId>ehcache</artifactId>
+			<version>2.10.0</version>
+			<optional>true</optional>
+			<scope>provided</scope>
+		</dependency>
+		
 	</dependencies>
 	
 	<build>

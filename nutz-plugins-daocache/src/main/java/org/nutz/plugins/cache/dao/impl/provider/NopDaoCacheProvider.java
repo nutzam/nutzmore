@@ -4,6 +4,11 @@ import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.plugins.cache.dao.api.DaoCacheProvider;
 
+/**
+ * 无任何缓存操作的实现,但会打印各种log, 供debug用的实现
+ * @author wendal(wendal1985@gmail.com)
+ *
+ */
 public class NopDaoCacheProvider implements DaoCacheProvider {
 	
 	private static final Log log = Logs.get();
@@ -13,6 +18,7 @@ public class NopDaoCacheProvider implements DaoCacheProvider {
 	}
 
 	public void depose() {
+	    log.debug("depose ...");
 	}
 
 	public Object get(String cacheName, String key) {
