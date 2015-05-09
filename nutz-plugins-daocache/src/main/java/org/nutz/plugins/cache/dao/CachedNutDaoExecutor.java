@@ -14,7 +14,8 @@ import org.nutz.json.JsonFormat;
 import org.nutz.lang.Lang;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
-import org.nutz.plugins.cache.dao.impl.NopDaoCacheProvider;
+import org.nutz.plugins.cache.dao.api.DaoCacheProvider;
+import org.nutz.plugins.cache.dao.impl.provider.NopDaoCacheProvider;
 import org.nutz.trans.Trans;
 
 import com.alibaba.druid.sql.ast.SQLStatement;
@@ -107,7 +108,7 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
 		if (params != null && params.length > 0) {
 			args = Json.toJson(params[0], JsonFormat.full().setIndent(0));
 		}
-		return Lang.sha1(prepareSql).substring(0, 8) + ":" + Lang.sha1(args);
+		return Lang.sha1(prepareSql) + ":" + Lang.sha1(args);
 	}
 
 	private static final Log log = Logs.get();

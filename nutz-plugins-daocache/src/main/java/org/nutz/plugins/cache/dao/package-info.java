@@ -1,5 +1,5 @@
 /**
- * 尝试实现Dao的缓存层
+ * 实现Nutz Dao的缓存层
  * @author wendal(wendal1985@gmail.com)
  *
  */
