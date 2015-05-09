@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.nutz.dao.DB;
 import org.nutz.dao.DaoException;
@@ -53,6 +54,11 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
 	protected Set<String> cachedTableNames = new HashSet<String>();
 	
 	/**
+	 * 需要缓存的数据库表名称的正则表达式
+	 */
+	protected Pattern cachedTableNamePatten;
+	
+	/**
 	 * 是否打印详细的log,默认为关
 	 */
 	public static boolean DEBUG = false;
@@ -97,7 +103,7 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
 			// 如果是select且不是batch(参数表只有一行,那么可能是缓存哦)
 			Object[][] params = st.getParamMatrix();
 			if (Trans.isTransactionNone() || enableWhenTrans) {
-			    if (tableNames.size() == 1 && cachedTableNames.contains(tableNames.get(0)) && params.length <= 1) {
+			    if (tableNames.size() == 1 && isCache4Table(tableNames.get(0)) && params.length <= 1) {
 			        String tableName = tableNames.get(0);
 			        String key = genKey(prepSql, params);
 			        Object cachedValue = cacheProvider.get(genCacheName(tableName), key);
@@ -183,5 +189,17 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
 	
 	public void addCachedTableName(String name) {
 		this.cachedTableNames.add(name);
+	}
+	
+	public void setCachedTableNamePatten(Pattern cachedTableNamePatten) {
+        this.cachedTableNamePatten = cachedTableNamePatten;
+    }
+	
+	/**
+	 * 是否对表进行缓存. 子类可以扩展该方法实现更复杂的配置
+	 */
+	protected boolean isCache4Table(String tableName) {
+	    return this.cachedTableNames.contains(tableName) 
+	            || (cachedTableNamePatten != null && cachedTableNamePatten.matcher(tableName).find());
 	}
 }
