@@ -195,6 +195,13 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
         this.cachedTableNamePatten = cachedTableNamePatten;
     }
 	
+	public void setCachedTableNamePatten(String cachedTableNamePatten) {
+	    if (cachedTableNamePatten == null)
+	        this.cachedTableNamePatten = null;
+	    else
+	        this.cachedTableNamePatten = Pattern.compile(cachedTableNamePatten);
+    }
+	
 	/**
 	 * 是否对表进行缓存. 子类可以扩展该方法实现更复杂的配置
 	 */
