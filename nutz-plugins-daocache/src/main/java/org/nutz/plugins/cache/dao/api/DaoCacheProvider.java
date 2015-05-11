@@ -7,8 +7,8 @@ package org.nutz.plugins.cache.dao.api;
  */
 public interface DaoCacheProvider {
 
-    //void init() throws Throwable;
-    //void depose() throws Throwable;
+    void init() throws Throwable;
+    void depose() throws Throwable;
     
     Object get(String cacheName, String key);
     boolean put(String cacheName, String key, Object obj);

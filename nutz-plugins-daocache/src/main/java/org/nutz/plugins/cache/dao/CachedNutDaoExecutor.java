@@ -16,7 +16,6 @@ import org.nutz.lang.Lang;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.plugins.cache.dao.api.DaoCacheProvider;
-import org.nutz.plugins.cache.dao.impl.provider.MemoryDaoCacheProvider;
 import org.nutz.trans.Trans;
 
 import com.alibaba.druid.sql.ast.SQLStatement;
@@ -69,10 +68,6 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
     protected DB db = DB.MYSQL;
 
     private static final Log log = Logs.get();
-	
-	public CachedNutDaoExecutor() {
-		cacheProvider = new MemoryDaoCacheProvider();
-	}
 
 	public void exec(Connection conn, DaoStatement st) {
 		String prepSql = st.toPreparedStatement();
@@ -83,7 +78,7 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
 		SQLStatementParser parser = sqlParser(prepSql);
 		List<SQLStatement> statementList = parser.parseStatementList();
 		if (statementList.size() != 1) {
-			log.warn("more than one sql in one DaoStatement!! skip cache detect!!");
+			log.warn("more than one sql in one DaoStatement!! skip cache detect!! SQL=" + prepSql);
 			super.exec(conn, st);
 			return;
 		}
@@ -106,7 +101,7 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
 			    if (tableNames.size() == 1 && isCache4Table(tableNames.get(0)) && params.length <= 1) {
 			        String tableName = tableNames.get(0);
 			        String key = genKey(prepSql, params);
-			        Object cachedValue = cacheProvider.get(genCacheName(tableName), key);
+			        Object cachedValue = getCacheProvider().get(genCacheName(tableName), key);
 			        if (cachedValue != null) {
 			            if (DEBUG)
 			                log.debug("cache found key=" + key);
@@ -114,7 +109,7 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
 			        } else {
 			            super.exec(conn, st);
 			            cachedValue = st.getContext().getResult();
-			            cacheProvider.put(genCacheName(tableName), key, cachedValue);
+			            getCacheProvider().put(genCacheName(tableName), key, cachedValue);
 			        }
 			        return;
 			    }
@@ -131,7 +126,7 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
 			try {
 				if (!tableNames.isEmpty()) {
 					for (String tableName : tableNames) {
-						cacheProvider.clear(genCacheName(tableName));
+					    getCacheProvider().clear(genCacheName(tableName));
 					}
 				}
 			} catch (Throwable e) {
@@ -209,4 +204,10 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
 	    return this.cachedTableNames.contains(tableName) 
 	            || (cachedTableNamePatten != null && cachedTableNamePatten.matcher(tableName).find());
 	}
+	
+	public DaoCacheProvider getCacheProvider() {
+	    if (cacheProvider == null)
+	        throw new IllegalArgumentException("Need CacheProvider!!");
+        return cacheProvider;
+    }
 }
