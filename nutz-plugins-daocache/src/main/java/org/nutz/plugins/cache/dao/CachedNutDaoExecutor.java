@@ -76,7 +76,15 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
 			return;
 		}
 		SQLStatementParser parser = sqlParser(prepSql);
-		List<SQLStatement> statementList = parser.parseStatementList();
+		List<SQLStatement> statementList = null;
+		try {
+            statementList = parser.parseStatementList();
+        }
+        catch (Exception e) {
+            log.debug("parser SQL sql, skip cache detect!! SQL=" + prepSql);
+            super.exec(conn, st);
+            return;
+        }
 		if (statementList.size() != 1) {
 			log.warn("more than one sql in one DaoStatement!! skip cache detect!! SQL=" + prepSql);
 			super.exec(conn, st);
@@ -101,17 +109,24 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
 			    if (tableNames.size() == 1 && isCache4Table(tableNames.get(0)) && params.length <= 1) {
 			        String tableName = tableNames.get(0);
 			        String key = genKey(prepSql, params);
+			        if (DEBUG)
+			            log.debugf("KEY=%s SQL=%s", key, prepSql);
 			        Object cachedValue = getCacheProvider().get(genCacheName(tableName), key);
 			        if (cachedValue != null) {
 			            if (DEBUG)
 			                log.debug("cache found key=" + key);
 			            st.getContext().setResult(cachedValue);
 			        } else {
+			            if (DEBUG)
+			                log.debug("cache miss = " + prepSql);
 			            super.exec(conn, st);
 			            cachedValue = st.getContext().getResult();
 			            getCacheProvider().put(genCacheName(tableName), key, cachedValue);
 			        }
 			        return;
+			    } else {
+			        if (DEBUG)
+			            log.debug("not good for cache >> " + prepSql);
 			    }
 			}
 			tableNames.clear(); // Select的表可别清除了
@@ -126,6 +141,8 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
 			try {
 				if (!tableNames.isEmpty()) {
 					for (String tableName : tableNames) {
+					    if (DEBUG)
+					        log.debug("Clear Cache=" + tableName);
 					    getCacheProvider().clear(genCacheName(tableName));
 					}
 				}
