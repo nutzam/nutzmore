@@ -132,7 +132,7 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
 			tableNames.clear(); // Select的表可别清除了
 		} else {
 		    Object mark = st.getContext().attr(cacheClearMark);
-		    if (mark == null || (Boolean)mark)
+		    if (mark != null && (Boolean)mark)
 		        tableNames.clear();
 		}
 		try {
