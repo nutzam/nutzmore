@@ -15,7 +15,7 @@
 	          filters : "mergeStat",
 	          connectionProperties : "druid.stat.slowSqlMillis=1000"
 	        }
-		}
+		},
 		dao : {
 			type : "org.nutz.dao.impl.NutDaoExt",
 			args : [{refer:"dataSource"}],
