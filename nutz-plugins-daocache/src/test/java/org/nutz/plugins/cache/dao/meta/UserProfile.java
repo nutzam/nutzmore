@@ -3,6 +3,7 @@ package org.nutz.plugins.cache.dao.meta;
 import java.io.Serializable;
 
 import org.nutz.dao.entity.annotation.Column;
+import org.nutz.dao.entity.annotation.Id;
 import org.nutz.dao.entity.annotation.Table;
 
 @Table("tb_user_profile")
@@ -13,6 +14,7 @@ public class UserProfile implements Serializable {
      */
     private static final long serialVersionUID = 1L;
 
+    @Id(auto=false)
     @Column("u_id")
     private long userId;
 

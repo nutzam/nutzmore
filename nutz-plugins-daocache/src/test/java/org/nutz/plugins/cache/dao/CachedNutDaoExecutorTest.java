@@ -56,7 +56,7 @@ public class CachedNutDaoExecutorTest {
         dao.query(User.class, null);
         log.debug("query from cache=============");
         List<User> users = dao.query(User.class, null);
-        log.debug("fetch UserProfile from DataBase");
+        log.debug("fetch UserProfile from Database");
         dao.fetchLinks(users, null); // 这里会查数据库
         
         // 现在全部数据都在缓存里面了,所以再查也是在缓存
@@ -64,6 +64,38 @@ public class CachedNutDaoExecutorTest {
         // 再查一次
         users = dao.query(User.class, null);
         dao.fetchLinks(users, null); // 这里也不查数据库了
+        
+        UserProfile profile = dao.fetch(UserProfile.class);
+        profile.setLocation(""+System.currentTimeMillis());
+        dao.update(profile);
+        
+        log.debug("from database");
+        dao.fetch(UserProfile.class);
+        
+        log.debug("from cache");
+        dao.fetch(UserProfile.class);
     }
 
+    @Test
+    public void test_simple2() {
+        assertNotNull(dao.fetch(User.class));
+        System.out.println("=================================================");
+        System.out.println("=================================================");
+        System.out.println("=================================================");
+        System.out.println("=================================================");
+        dao.clear(User.class);
+        assertNull(dao.fetch(User.class));
+        
+        User admin = new User();
+        admin.setName("wendal");
+        admin.setEmail("vt400@qq.com");
+        dao.insert(admin);
+        
+        assertNotNull(dao.fetch(User.class));
+        
+        System.out.println("=================================================");
+        System.out.println("=================================================");
+        System.out.println("=================================================");
+        System.out.println("=================================================");
+    }
 }
