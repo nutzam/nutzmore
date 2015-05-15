@@ -125,7 +125,8 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
 			                log.debug("cache miss = " + prepSql);
 			            super.exec(conn, st);
 			            cachedValue = st.getContext().getResult();
-			            getCacheProvider().put(genCacheName(tableName), key, cachedValue);
+			            if (cachedValue != null || cache4Null)
+			                getCacheProvider().put(genCacheName(tableName), key, cachedValue);
 			        }
 			        return;
 			    } else {
