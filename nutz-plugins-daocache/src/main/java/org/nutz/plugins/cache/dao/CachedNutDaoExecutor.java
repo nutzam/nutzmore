@@ -61,6 +61,8 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
 	 * 是否打印详细的log,默认为关
 	 */
 	public static boolean DEBUG = false;
+	
+	protected boolean cache4Null = true;
 
 	/**
 	 * <b>数据库类型</b>,当前仅支持 MYSQL, ORACLE, PSQL, 默认MYSQL
@@ -112,10 +114,12 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
 			        if (DEBUG)
 			            log.debugf("KEY=%s SQL=%s", key, prepSql);
 			        Object cachedValue = getCacheProvider().get(genCacheName(tableName), key);
-			        if (cachedValue != null) {
+			        if (cachedValue != null && !(CacheResult.NOT_FOUNT.equals(cachedValue))) {
+			            if (CacheResult.NULL.equals(cachedValue))
+			                cachedValue = null;
 			            if (DEBUG)
-			                log.debug("cache found key=" + key);
-			            st.getContext().setResult(cachedValue);
+                            log.debug("cache found key=" + key);
+                        st.getContext().setResult(cachedValue);
 			        } else {
 			            if (DEBUG)
 			                log.debug("cache miss = " + prepSql);
@@ -226,5 +230,9 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
 	    if (cacheProvider == null)
 	        throw new IllegalArgumentException("Need CacheProvider!!");
         return cacheProvider;
+    }
+	
+	public void setCache4Null(boolean cache4Null) {
+        this.cache4Null = cache4Null;
     }
 }

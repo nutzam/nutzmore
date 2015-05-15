@@ -7,6 +7,7 @@ import java.io.ObjectOutputStream;
 
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
+import org.nutz.plugins.cache.dao.CacheResult;
 
 /**
  * 使用java序列化
@@ -32,8 +33,10 @@ public class JavaCacheSerializer extends AbstractCacheSerializer {
     }
 
     public Object back(Object obj) {
-        if (isNULL_OBJ(obj))
+        if (obj == null)
             return null;
+        if (isNULL_OBJ(obj))
+            return CacheResult.NULL;
         try {
             return new ObjectInputStream(new ByteArrayInputStream((byte[])obj)).readObject();
         } catch (Exception e) {

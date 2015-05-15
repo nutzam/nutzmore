@@ -42,13 +42,15 @@ Nutz的Dao层插件
 			type : "org.nutz.plugins.cache.dao.CachedNutDaoExecutor",
 			fields : {
 				cacheProvider : {refer:"cacheProvider"},
-				cachedTableNames : ["tb_user", "tb_user_profile"]
+				cachedTableNames : ["tb_user", "tb_user_profile"], // 需要缓存的表
+				enableWhenTrans : false, // 事务作用域内是否启用,默认false
+				cache4Null : true // 是否缓存空值,默认true
 			}
 		},
 		cacheProvider : {
 			type : "org.nutz.plugins.cache.dao.impl.provider.MemoryDaoCacheProvider",
 			fields : {
-				cacheSize : 10000000
+				cacheSize : 10000
 			},
 			events : {
 				create : "init"

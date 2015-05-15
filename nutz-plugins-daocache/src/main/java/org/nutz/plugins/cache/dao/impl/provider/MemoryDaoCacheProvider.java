@@ -4,6 +4,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
+import org.nutz.plugins.cache.dao.CacheResult;
 import org.nutz.plugins.cache.dao.CachedNutDaoExecutor;
 import org.nutz.repo.cache.simple.LRUCache;
 
@@ -26,7 +27,11 @@ public class MemoryDaoCacheProvider extends AbstractDaoCacheProvider {
 	protected int cacheSize = 1000;
 
 	public Object get(String cacheName, String key) {
-		return getSerializer().back(_getCache(cacheName).get(key));
+	    LRUCache<String,Object> cache = _getCache(cacheName, false);
+        if (cache != null) {
+            return getSerializer().back(cache.get(key));
+        }
+        return CacheResult.NOT_FOUNT;
 	}
 
 	public boolean put(String cacheName, String key, Object obj) {
@@ -38,17 +43,21 @@ public class MemoryDaoCacheProvider extends AbstractDaoCacheProvider {
 		}
 		if (CachedNutDaoExecutor.DEBUG)
             log.debugf("CacheName=%s, KEY=%s", cacheName, key);
-		_getCache(cacheName).put(key, data);
+		_getCache(cacheName, true).put(key, data);
 		return false;
 	}
 
 	public void clear(String cacheName) {
-		_getCache(cacheName).clear();
+	    LRUCache<String,Object> cache = _getCache(cacheName, false);
+	    if (cache != null)
+	        cache.clear();
 	}
 
-	public LRUCache<String,Object> _getCache(String cacheName) {
+	public LRUCache<String,Object> _getCache(String cacheName, boolean create) {
 	    LRUCache<String, Object> cache = caches.get(cacheName);
 		if (cache == null) {
+		    if (!create)
+		        return null;
 			synchronized (lock) {
 				cache = caches.get(cacheName);
 				if (cache == null) {
@@ -58,7 +67,7 @@ public class MemoryDaoCacheProvider extends AbstractDaoCacheProvider {
 				}
 			}
 		}
-		log.debugf("Cache(%s) size=%s", cacheName, cache.getAll().size());
+		//log.debugf("Cache(%s) size=%s", cacheName, cache.getAll().size());
 		return cache;
 	}
 }
