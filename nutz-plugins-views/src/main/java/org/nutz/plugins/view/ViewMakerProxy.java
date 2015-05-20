@@ -19,7 +19,7 @@ public class ViewMakerProxy implements ViewMaker {
 		if (list == null) {
 		    list = new ArrayList<ViewMaker>();
 		    for (String name : ioc.getNames()) {
-		        if (name.contains("viewMaker"))
+		        if (name.toLowerCase().contains("viewmaker"))
 		            list.add((ViewMaker)ioc.get(ViewMaker.class, name));
 		    }
 		}
