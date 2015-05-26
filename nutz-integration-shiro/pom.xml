@@ -101,4 +101,5 @@
 			</plugin>
 		</plugins>
 	</build>
+	<version>1.b.52.r2</version>
 </project>

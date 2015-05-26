@@ -7,7 +7,7 @@
 		<version>1.b.52</version>
 	</parent>
 	<artifactId>nutz-plugins-daocache</artifactId>
-	<version>1.b.52.preview3</version>
+	<version>1.b.52.r1</version>
 	<description>Nutz Dao Cache</description>
 
 	<url>http://nutzam.com</url>
