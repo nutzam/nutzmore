@@ -2,7 +2,6 @@ package org.nutz.integration.shiro;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -37,12 +36,10 @@ public class NutShiro {
     public static final String DEFAULT_CAPTCHA_PARAM = "captcha";
 	
 	public static boolean isAjax(ServletRequest req) {
-		Enumeration<String> em = ((HttpServletRequest)req).getHeaderNames();
-		while (em.hasMoreElements()) {
-			String name = em.nextElement();
-			if (name.equalsIgnoreCase("X-Requested-With"))
-				return true;
-		}
+	    String value = ((HttpServletRequest)req).getHeader("X-Requested-With");
+        if (value != null && "XMLHttpRequest".equalsIgnoreCase(value.trim())) {
+            return true;
+        }
 		return false;
 	}
 	
