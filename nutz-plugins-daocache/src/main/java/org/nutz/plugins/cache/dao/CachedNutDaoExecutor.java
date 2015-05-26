@@ -23,6 +23,7 @@ import com.alibaba.druid.sql.ast.statement.SQLSelectStatement;
 import com.alibaba.druid.sql.dialect.mysql.parser.MySqlStatementParser;
 import com.alibaba.druid.sql.dialect.oracle.parser.OracleStatementParser;
 import com.alibaba.druid.sql.dialect.postgresql.parser.PGSQLStatementParser;
+import com.alibaba.druid.sql.dialect.sqlserver.parser.SQLServerStatementParser;
 import com.alibaba.druid.sql.parser.SQLStatementParser;
 
 /**
@@ -187,6 +188,8 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
 			return new OracleStatementParser(sql);
 		case PSQL:
 			return new PGSQLStatementParser(sql);
+		case SQLSERVER:
+		    return new SQLServerStatementParser(sql);
 		default:
 			throw new DaoException("daocache not support at this database");
 		}
