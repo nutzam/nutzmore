@@ -26,8 +26,9 @@ import org.nutz.resource.Scans;
  *
  */
 public class NutShiro {
-	
+
     public static String DefaultLoginURL = "/user/login";
+    public static String DefaultNoAuthURL; // 默认与DefaultLoginURL一致
     
     public static String SessionKey = "me";
     

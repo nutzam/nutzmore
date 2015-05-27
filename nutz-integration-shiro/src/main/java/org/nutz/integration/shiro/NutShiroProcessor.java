@@ -1,5 +1,7 @@
 package org.nutz.integration.shiro;
 
+import org.apache.shiro.authz.UnauthenticatedException;
+import org.apache.shiro.authz.UnauthorizedException;
 import org.nutz.lang.util.NutMap;
 import org.nutz.mvc.ActionContext;
 import org.nutz.mvc.ActionInfo;
@@ -16,7 +18,9 @@ public class NutShiroProcessor extends AbstractProcessor {
     
     protected NutShiroMethodInterceptor interceptor;
     
-    protected String uri;
+    protected String loginUri;
+    
+    protected String noAuthUri;
     
     protected boolean match;
     
@@ -38,21 +42,61 @@ public class NutShiroProcessor extends AbstractProcessor {
     	if (match) {
     		try {
             	interceptor.assertAuthorized(new NutShiroInterceptor(ac));
-            } catch (Throwable e) {
-                if (NutShiro.isAjax(ac.getRequest())) {
-                	NutShiro.rendAjaxResp(ac.getRequest(), ac.getResponse(), new NutMap().setv("ok", false).setv("msg", e.getMessage()));
-                } else {
-                	new ServerRedirectView(uri()).render(ac.getRequest(), ac.getResponse(), null);
-                }
+            } catch (Exception e) {
+                whenException(ac, e);
                 return;
             }
     	}
         doNext(ac);
     }
     
-    protected String uri() {
-        if (uri == null)
+    protected void whenException(ActionContext ac, Exception e) throws Exception {
+        if (e instanceof UnauthenticatedException) {
+            whenUnauthenticated(ac, (UnauthenticatedException)e);
+        } else if (e instanceof UnauthorizedException) {
+            whenUnauthorized(ac, (UnauthorizedException)e);
+        } else {
+            whenOtherException(ac, e);
+        }
+    }
+    
+    protected void whenUnauthenticated(ActionContext ac, UnauthenticatedException e) throws Exception {
+        if (NutShiro.isAjax(ac.getRequest())) {
+            NutShiro.rendAjaxResp(ac.getRequest(), ac.getResponse(), ajaxFail("user.require.login", "user.require.login"));
+        } else {
+            new ServerRedirectView(loginUri()).render(ac.getRequest(), ac.getResponse(), null);
+        }
+    }
+    
+    protected NutMap ajaxFail(String msg, String type) {
+        return new NutMap().setv("ok", false).setv("msg", msg).setv("type", type);
+    }
+    
+    protected void whenUnauthorized(ActionContext ac, UnauthorizedException e) throws Exception {
+        if (NutShiro.isAjax(ac.getRequest())) {
+            NutShiro.rendAjaxResp(ac.getRequest(), ac.getResponse(), ajaxFail("user.require.auth", "user.require.auth"));
+        } else {
+            new ServerRedirectView(noAuthUri()).render(ac.getRequest(), ac.getResponse(), null);
+        }
+    }
+    
+    protected void whenOtherException(ActionContext ac, Exception e) throws Exception {
+        if (NutShiro.isAjax(ac.getRequest())) {
+            NutShiro.rendAjaxResp(ac.getRequest(), ac.getResponse(), ajaxFail("user.require.login", "user.require.login"));
+        } else {
+            new ServerRedirectView(loginUri()).render(ac.getRequest(), ac.getResponse(), null);
+        }
+    }
+    
+    protected String loginUri() {
+        if (loginUri == null)
             return NutShiro.DefaultLoginURL;
-        return uri;
+        return loginUri;
+    }
+    
+    protected String noAuthUri() {
+        if (noAuthUri == null)
+            return NutShiro.DefaultNoAuthURL == null ? NutShiro.DefaultLoginURL : NutShiro.DefaultNoAuthURL;
+        return noAuthUri;
     }
 }
