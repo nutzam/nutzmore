@@ -64,7 +64,15 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
 	 */
 	public static boolean DEBUG = false;
 	
+	/**
+	 * 是否缓存空值
+	 */
 	protected boolean cache4Null = true;
+	
+	/**
+	 * 是否启用,全局开关,默认为true
+	 */
+	protected boolean enable = true;
 
 	/**
 	 * <b>数据库类型</b>,当前仅支持 MYSQL, ORACLE, PSQL, 默认MYSQL
@@ -74,6 +82,10 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
     private static final Log log = Logs.get();
 
 	public void exec(Connection conn, DaoStatement st) {
+	    if (!enable) {
+	        super.exec(conn, st);
+	        return;
+	    }
 		String prepSql = st.toPreparedStatement();
 		if (prepSql == null) {
 			super.exec(conn, st);
@@ -241,5 +253,12 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
 	
 	public void setCache4Null(boolean cache4Null) {
         this.cache4Null = cache4Null;
+    }
+	
+	public void setEnable(boolean enable) {
+        this.enable = enable;
+        if (!this.enable) {
+            log.info("CachedNutDaoExecutor will disable.");
+        }
     }
 }
