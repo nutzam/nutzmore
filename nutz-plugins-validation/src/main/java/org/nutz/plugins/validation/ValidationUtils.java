@@ -302,11 +302,12 @@ public abstract class ValidationUtils {
 		Context context = Lang.context();
 		context.set("value", obj);
 		Object val = El.eval(context, el);
-		if (! (val instanceof Boolean)) {
-			errors.add(fieldName, errorMsg);
-			return false;
-		}
-		return true;
+		if (val == null)
+		    return true;
+		if (val instanceof Boolean)
+		    return (Boolean)val;
+		errors.add(fieldName, errorMsg);
+        return false;
 	}
 
 	/**
@@ -328,8 +329,8 @@ public abstract class ValidationUtils {
 			if (md.getName().equals(customFunction)) {
 				find = true;
 				try {
-					boolean ret = (Boolean) md.invoke(obj);
-					if (!ret) {
+					Boolean ret = (Boolean) md.invoke(obj);
+					if (ret != null && !ret) {
 						errors.add(fieldName, errorMsg);
 						return false;
 					}
