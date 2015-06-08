@@ -52,6 +52,60 @@ Nutz集成Quartz的插件
 
 详细用法请参考nutzbook中的相关描述
 
+示例conf bean定义
+-----------------------
+
+可以单独一个js或者放在dao.js
+
+
+单独一个conf.js文件
+
+```
+var ioc = {
+        conf : {
+            type : "org.nutz.ioc.impl.PropertiesProxy",
+            fields : {
+                paths : ["custom/"]
+            }
+        }
+};
+```
+
+放置到dao.js中, 因为一般来说都有dao.js,而且dao这个bean通常也需要conf配置信息
+
+示例来至nutzbook
+
+```
+var ioc = {
+		conf : {
+			type : "org.nutz.ioc.impl.PropertiesProxy",
+			fields : {
+				paths : ["custom/"]
+			}
+		},
+	    dataSource : {
+	        type : "com.alibaba.druid.pool.DruidDataSource",
+	        events : {
+	        	create : "init",
+	            depose : 'close'
+	        },
+	        fields : {
+	            url : {java:"$conf.get('db.url')"},
+	            username : {java:"$conf.get('db.username')"},
+	            password : {java:"$conf.get('db.password')"},
+	            testWhileIdle : true,
+	            validationQuery : {java:"$conf.get('db.validationQuery')"},
+	            maxActive : {java:"$conf.get('db.maxActive')"},
+	            filters : "mergeStat",
+	            connectionProperties : "druid.stat.slowSqlMillis=2000"
+	        }
+	    },
+		dao : {
+			type : "org.nutz.dao.impl.NutDao",
+			args : [{refer:"dataSource"}]
+		}
+};
+```
 
 	
 	
