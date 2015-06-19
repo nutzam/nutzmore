@@ -7,7 +7,7 @@
 		<version>1.b.52</version>
 	</parent>
 	<artifactId>nutz-integration-shiro</artifactId>
-	<name>nutz-integration-shiro</name>	
+	<name>nutz-integration-shiro</name>
 	<description>Nutz and Shiro</description>
 
 	<url>http://nutzam.com</url>
@@ -50,11 +50,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<dependencies>
-		<dependency>
-			<groupId>org.apache.shiro</groupId>
-			<artifactId>shiro-web</artifactId>
-			<version>1.2.3</version>
-		</dependency>
 
 		<dependency>
 			<groupId>javax.servlet</groupId>
@@ -72,6 +67,11 @@
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.6.4</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.shiro</groupId>
+			<artifactId>shiro-all</artifactId>
+			<version>1.2.3</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
@@ -80,8 +80,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.1</version>
 				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>1.7</source>
+					<target>1.7</target>
 				</configuration>
 			</plugin>
 			<plugin>
