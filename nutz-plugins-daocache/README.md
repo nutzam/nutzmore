@@ -32,7 +32,8 @@ Nutz的Dao层插件
 	        }
 		},
 		dao : {
-			type : "org.nutz.dao.impl.NutDaoExt",
+		        // NutDaoExt是为了兼容1.b.52及以下版本, 53版或以上请直接用NutDao 
+			type : "org.nutz.dao.impl.NutDaoExt", 
 			args : [{refer:"dataSource"}],
 			fields : {
 				executor : {refer:"cacheExecutor"}
