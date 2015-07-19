@@ -6,6 +6,7 @@ import org.nutz.lang.util.NutMap;
 import org.nutz.mvc.ActionContext;
 import org.nutz.mvc.ActionInfo;
 import org.nutz.mvc.NutConfig;
+import org.nutz.mvc.View;
 import org.nutz.mvc.impl.processor.AbstractProcessor;
 import org.nutz.mvc.view.ServerRedirectView;
 
@@ -50,7 +51,12 @@ public class NutShiroProcessor extends AbstractProcessor {
         doNext(ac);
     }
     
-    protected void whenException(ActionContext ac, Exception e) throws Exception {
+    protected void whenException(ActionContext ac, Exception e) throws Throwable {
+        Object val = ac.getRequest().getAttribute("shiro_auth_error");
+        if (val != null && val instanceof View) {
+            ((View)val).render(ac.getRequest(), ac.getResponse(), null);
+            return;
+        }
         if (e instanceof UnauthenticatedException) {
             whenUnauthenticated(ac, (UnauthenticatedException)e);
         } else if (e instanceof UnauthorizedException) {
