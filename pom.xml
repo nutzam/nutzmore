@@ -95,5 +95,6 @@
 		<module>nutz-plugins-iocloader</module>
 		<module>nutz-integration-jsch</module>
 		<module>nutz-plugins-daocache</module>
+		<module>nutz-plugins-protobuf</module>
 	</modules>
 </project>
