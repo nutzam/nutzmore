@@ -7,7 +7,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.nutz.ioc.loader.annotation.IocBean;
 import org.nutz.json.JsonFormat;
-import org.nutz.lang.Streams;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.mvc.Mvcs;
@@ -34,7 +33,7 @@ public class ProtoView implements View {
 				log.debug(X_PROTOBUF_SCHEMA_HEADER + ":" + message.getDescriptorForType().getFile().getName());
 				log.debug(X_PROTOBUF_MESSAGE_HEADER + ":" + message.getDescriptorForType().getFullName());
 			}
-			Streams.writeAndClose(out, message.toByteArray());
+			message.writeTo(out);
 		} else {
 			Mvcs.write(resp, obj, JsonFormat.compact());
 		}
