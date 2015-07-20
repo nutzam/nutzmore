@@ -1,13 +1,10 @@
 package org.nutz.plugins.protobuf.mvc.view;
 
-import java.io.OutputStream;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.nutz.ioc.loader.annotation.IocBean;
-import org.nutz.lang.Streams;
 import org.nutz.mvc.View;
 
 import com.baidu.bjf.remoting.protobuf.Codec;

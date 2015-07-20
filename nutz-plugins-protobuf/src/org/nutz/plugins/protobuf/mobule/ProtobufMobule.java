@@ -30,6 +30,7 @@ public class ProtobufMobule {
 	@Ok("ioc:jproto")
 	@AdaptBy(type = JProtobufAdaptor.class, args = { "ioc:jprotobufAdaptor" })
 	public Object jproto(UserJProtoBufProtoClass message, @Attr("messageType") short messageType) {
+		System.out.println(Json.toJson(message));
 		return message;
 	}
 

@@ -31,7 +31,7 @@ public class PostTest {
 		udbp.name = "lisi";
 		Codec<UserJProtoBufProtoClass> codec = ProtobufProxy.create(UserJProtoBufProtoClass.class);
 		byte[] bytes = codec.encode(udbp);
-		String url = "http://127.0.0.1:8080/nutz_protobuf/jproto";
+		String url = "http://127.0.0.1:8080/jproto";
 		Request req = Request.create(url, METHOD.POST);
 		req.getHeader().set("Content-Type", "application/x-protobuf");
 		req.setData(bytes);
@@ -43,7 +43,7 @@ public class PostTest {
 	public static void testProtobuf() throws IOException {
 		UserProto.User user = UserProto.User.newBuilder().setId(1).setName("zhangsan").build();
 		byte[] bytes = user.toByteArray();
-		String url = "http://127.0.0.1:8080/nutz_protobuf/proto";
+		String url = "http://127.0.0.1:8080/proto";
 		Request req = Request.create(url, METHOD.POST);
 		req.getHeader().set("Content-Type", "application/x-protobuf");
 		req.setData(bytes);
@@ -64,7 +64,7 @@ public class PostTest {
 		udbp.id = System.currentTimeMillis();
 		udbp.name = "lisi";
 		byte[] bytes = codec.encode(udbp);
-		String url = "http://127.0.0.1:8080/nutz_protobuf/jproto";
+		String url = "http://127.0.0.1:8080/jproto";
 		Request req = Request.create(url, METHOD.POST);
 		req.getHeader().set("Content-Type", "application/x-protobuf");
 		// int len = bytes.length;

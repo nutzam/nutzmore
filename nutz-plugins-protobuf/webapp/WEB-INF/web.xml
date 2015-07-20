@@ -9,7 +9,7 @@
 		<filter-class>org.nutz.mvc.NutFilter</filter-class>
 		<init-param>
 			<param-name>modules</param-name>
-			<param-value>org.nutz.protobuf.MainModule</param-value>
+			<param-value>org.nutz.plugins.protobuf.MainModule</param-value>
 		</init-param>
 	</filter>
 	<filter-mapping>
