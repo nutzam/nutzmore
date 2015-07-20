@@ -1,8 +1,5 @@
 package org.nutz.plugins.protobuf.mvc.adaptor;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 
@@ -11,7 +8,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.nutz.lang.Lang;
-import org.nutz.lang.Streams;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.mvc.adaptor.PairAdaptor;
@@ -21,6 +17,7 @@ import org.nutz.mvc.annotation.Param;
 import com.baidu.bjf.remoting.protobuf.Codec;
 import com.baidu.bjf.remoting.protobuf.ProtobufProxy;
 import com.baidu.bjf.remoting.protobuf.annotation.Protobuf;
+import com.google.protobuf.CodedInputStream;
 
 public class JProtobufAdaptor extends PairAdaptor {
 
@@ -63,14 +60,7 @@ public class JProtobufAdaptor extends PairAdaptor {
 				throw Lang.makeThrow(IllegalArgumentException.class, "Not Support Adaptor,You Must Have A Message Type Class ");
 			}
 			Codec<?> codec = ProtobufProxy.create(clazz);
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			InputStream ins = request.getInputStream();
-			byte[] buf = new byte[8192];
-			int len = 0;
-			while (-1 != (len = ins.read(buf))) {
-				   baos.write(buf, 0, len);
-			}
-			return codec.decode(baos.toByteArray());
+			return codec.readFrom(CodedInputStream.newInstance(request.getInputStream()));
 		} catch (Exception e) {
 			throw Lang.wrapThrow(e);
 		}

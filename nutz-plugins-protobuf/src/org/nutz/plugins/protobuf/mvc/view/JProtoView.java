@@ -12,6 +12,7 @@ import org.nutz.mvc.View;
 
 import com.baidu.bjf.remoting.protobuf.Codec;
 import com.baidu.bjf.remoting.protobuf.ProtobufProxy;
+import com.google.protobuf.CodedOutputStream;
 
 @IocBean(name = "jproto")
 public class JProtoView implements View {
@@ -32,8 +33,7 @@ public class JProtoView implements View {
 		String x_protobuf_schema_header = StringUtils.substringAfterLast(x_protobuf_message_header, ".");
 		resp.addHeader(X_PROTOBUF_SCHEMA_HEADER, StringUtils.lowerCase(x_protobuf_schema_header) + CODE_SUFFIX);
 		resp.addHeader(X_PROTOBUF_MESSAGE_HEADER, x_protobuf_message_header);
-		OutputStream out = resp.getOutputStream();
-		Streams.writeAndClose(out, codec.encode(obj));
+		codec.writeTo(obj, CodedOutputStream.newInstance(resp.getOutputStream()));
 	}
 
 }
