@@ -28,7 +28,37 @@
 @Views({ ProtoViewMaker.class })
 
 ```
+#####user.proto####
 
+```
+package org.nutz.plugins.protobuf.pojo;
+
+option java_package = "org.nutz.plugins.protobuf.pojo";
+option java_outer_classname = "UserProto";
+
+ message User {
+   optional int64 id = 1;
+   optional string name = 2;
+   message PhoneNumber {
+       required string number = 1;
+     }
+     repeated PhoneNumber phone = 4;
+ }
+
+```
+######添加ioc定义######
+
+```
+var ioc = {
+	protobufAdaptor : {
+		type : "org.nutz.plugins.protobuf.mvc.adaptor.ProtobufAdaptor"
+	},
+	jprotobufAdaptor : {
+		type : "org.nutz.plugins.protobuf.mvc.adaptor.JProtobufAdaptor"
+	}
+};
+
+```
 #####测试方法#######
 
 ```
