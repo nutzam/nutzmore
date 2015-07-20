@@ -1,4 +1,4 @@
-package org.nutz.protobuf.mvc.view;
+package org.nutz.plugins.protobuf.mvc.view;
 
 import org.nutz.ioc.Ioc;
 import org.nutz.mvc.View;

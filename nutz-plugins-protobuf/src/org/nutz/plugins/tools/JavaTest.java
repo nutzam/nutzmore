@@ -1,4 +1,4 @@
-package org.nutz.tools;
+package org.nutz.plugins.tools;
 
 import java.io.File;
 import java.io.IOException;
@@ -6,7 +6,7 @@ import java.io.InputStream;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.nutz.lang.Streams;
-import org.nutz.protobuf.pojo.UserJProtoBufProtoClass;
+import org.nutz.plugins.protobuf.pojo.UserJProtoBufProtoClass;
 
 import com.baidu.bjf.remoting.protobuf.Codec;
 import com.baidu.bjf.remoting.protobuf.ProtobufIDLProxy;

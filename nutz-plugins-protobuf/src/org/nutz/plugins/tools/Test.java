@@ -1,4 +1,4 @@
-package org.nutz.tools;
+package org.nutz.plugins.tools;
 
 import java.io.FileInputStream;
 import java.util.List;

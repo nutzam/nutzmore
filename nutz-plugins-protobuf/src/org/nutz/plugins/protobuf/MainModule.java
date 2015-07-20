@@ -1,4 +1,4 @@
-package org.nutz.protobuf;
+package org.nutz.plugins.protobuf;
 
 import org.nutz.mvc.annotation.Fail;
 import org.nutz.mvc.annotation.IocBy;
@@ -6,9 +6,9 @@ import org.nutz.mvc.annotation.Modules;
 import org.nutz.mvc.annotation.Ok;
 import org.nutz.mvc.annotation.Views;
 import org.nutz.mvc.ioc.provider.ComboIocProvider;
-import org.nutz.protobuf.mvc.view.ProtoViewMaker;
+import org.nutz.plugins.protobuf.mvc.view.ProtoViewMaker;
 
-@IocBy(type = ComboIocProvider.class, args = { "*js", "ioc/", "*anno", "org.nutz.protobuf" })
+@IocBy(type = ComboIocProvider.class, args = { "*js", "ioc/", "*anno", "org.nutz.plugins.protobuf" })
 @Modules(scanPackage = true)
 @Ok("json:full")
 @Fail("jsp:jsp.500")

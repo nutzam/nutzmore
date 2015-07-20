@@ -1,6 +1,6 @@
-package com.rekoe.protobuf.pojo;
+package org.nutz.plugins.protobuf.pojo;
 
-option java_package = "com.rekoe.protobuf.pojo";
+option java_package = "org.nutz.plugins.protobuf.pojo";
 option java_outer_classname = "UserProto";
 
  message User {

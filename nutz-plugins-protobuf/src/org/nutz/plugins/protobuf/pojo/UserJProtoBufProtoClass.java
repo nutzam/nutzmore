@@ -1,4 +1,4 @@
-package org.nutz.protobuf.pojo;
+package org.nutz.plugins.protobuf.pojo;
 
 import com.baidu.bjf.remoting.protobuf.FieldType;
 import com.baidu.bjf.remoting.protobuf.annotation.Protobuf;
