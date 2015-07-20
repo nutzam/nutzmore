@@ -1,5 +1,7 @@
 package org.nutz.plugins.protobuf.mvc.adaptor;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
@@ -39,7 +41,7 @@ public class JProtobufAdaptor extends PairAdaptor {
 			if (!Lang.isEmpty(protobuf)) {
 				if (Lang.isEmpty(this.clazz)) {
 					this.clazz = clazz;
-					return new JProtobufPairInjector(type);
+					return new JProtobufPairInjector();
 				} else {
 					throw Lang.makeThrow(IllegalArgumentException.class, "Only Support One Message Type Class");
 				}
@@ -54,17 +56,21 @@ public class JProtobufAdaptor extends PairAdaptor {
 			if (contentType == null) {
 				throw Lang.makeThrow(IllegalArgumentException.class, "Content-Type is NULL!!");
 			}
-			if (contentType.contains("application/x-protobuf")) {
-				if (Lang.isEmpty(this.clazz)) {
-					throw Lang.makeThrow(IllegalArgumentException.class, "Not Support Adaptor,You Must Have A Message Type Class ");
-				}
-				Codec<?> codec = ProtobufProxy.create(clazz);
-				InputStream is = request.getInputStream();
-				log.debug(is.available());
-				byte[] bytes = Streams.readBytes(is);
-				return codec.decode(bytes);
+			if (!contentType.contains("application/x-protobuf")) {
+	            throw Lang.makeThrow(IllegalArgumentException.class, "UnSupport Content-Type : " + contentType);
 			}
-			throw Lang.makeThrow(IllegalArgumentException.class, "UnSupport Content-Type : " + contentType);
+			if (this.clazz == null) {
+				throw Lang.makeThrow(IllegalArgumentException.class, "Not Support Adaptor,You Must Have A Message Type Class ");
+			}
+			Codec<?> codec = ProtobufProxy.create(clazz);
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			InputStream ins = request.getInputStream();
+			byte[] buf = new byte[8192];
+			int len = 0;
+			while (-1 != (len = ins.read(buf))) {
+				   baos.write(buf, 0, len);
+			}
+			return codec.decode(baos.toByteArray());
 		} catch (Exception e) {
 			throw Lang.wrapThrow(e);
 		}
