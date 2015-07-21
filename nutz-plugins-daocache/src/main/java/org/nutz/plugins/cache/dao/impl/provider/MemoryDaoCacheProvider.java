@@ -44,7 +44,7 @@ public class MemoryDaoCacheProvider extends AbstractDaoCacheProvider {
 		if (CachedNutDaoExecutor.DEBUG)
             log.debugf("CacheName=%s, KEY=%s", cacheName, key);
 		_getCache(cacheName, true).put(key, data);
-		return false;
+		return true;
 	}
 
 	public void clear(String cacheName) {
