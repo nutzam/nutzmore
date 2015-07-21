@@ -10,8 +10,10 @@ public class ValidationResult {
 
 	protected List<Set<ConstraintViolation<Object>>> errors = new ArrayList<Set<ConstraintViolation<Object>>>();
 	
+	boolean flag;
+	
 	public boolean hasError() {
-		return errors.size() != 0;
+	    return flag;
 	}
 	
 	public List<Set<ConstraintViolation<Object>>> getErrors() {
@@ -20,5 +22,7 @@ public class ValidationResult {
 	
 	public void add(Set<ConstraintViolation<Object>> violations) {
 		errors.add(violations);
+		if (violations != null)
+		    flag = true;
 	}
 }

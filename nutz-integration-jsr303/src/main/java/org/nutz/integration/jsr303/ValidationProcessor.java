@@ -1,11 +1,7 @@
 package org.nutz.integration.jsr303;
 
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.lang.annotation.Annotation;
 
-import javax.validation.ConstraintViolation;
 import javax.validation.Valid;
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -23,11 +19,13 @@ import org.nutz.mvc.impl.processor.AbstractProcessor;
  */
 public class ValidationProcessor extends AbstractProcessor {
 
-	protected ValidatorFactory factory;
+	protected static ValidatorFactory factory;
 
 	protected Validator validator;
 
-	protected Map<Method, Integer> map = new ConcurrentHashMap<Method, Integer>();
+	protected Valid[] valids;
+	
+	protected int reIndex = -1;
 
 	public ValidationProcessor() {
 		init();
@@ -37,36 +35,47 @@ public class ValidationProcessor extends AbstractProcessor {
 	 * 建议子类覆盖这个方法以最大化定制validator
 	 */
 	public void init() {
-		factory = Validation.buildDefaultValidatorFactory();
+	    if (factory == null) {
+	        factory = Validation.buildDefaultValidatorFactory();
+	    }
 		validator = factory.getValidator();
 	}
 
 	public void init(NutConfig config, ActionInfo ai) throws Throwable {
-		Class<?>[] array = ai.getMethod().getParameterTypes();
-		for (int i = 0; i < array.length; i++) {
-			if (array[i] == ValidationResult.class) {
-				map.put(ai.getMethod(), i);
-				break;
-			}
-		}
+	    Annotation[][] annss = ai.getMethod().getParameterAnnotations();
+		if (annss.length == 0)
+		    return;
+		Valid[] valids = new Valid[annss.length];
+		for (int i = 0; i < annss.length; i++) {
+		    Annotation[] anns = annss[i];
+		    for (Annotation ann : anns) {
+                if (ann.equals(Valid.class)) {
+                    valids[i] = (Valid) ann;
+                    break;
+                }
+            }
+        }
+		Class<?>[] ks = ai.getMethod().getParameterTypes();
+		for (int i = 0; i < ks.length; i++) {
+            if (ks[i].isAssignableFrom(ValidationResult.class)) {
+                reIndex = i;
+                this.valids = valids;
+            }
+        }
 	}
 
 	public void process(ActionContext ac) throws Throwable {
 		Object[] args = ac.getMethodArgs();
-		if (args != null && args.length > 1) {
-			Integer index = map.get(ac.getMethod());
-			if (index != null) {
-				if (args[index] == null)
-					args[index] = new ValidationResult();
-				for (Object obj : args) {
-					if (obj == null)
-						continue;
-					if (obj.getClass().getAnnotation(Valid.class) == null)
-						continue;
-					Set<ConstraintViolation<Object>> violations = validator.validate(obj);
-					((ValidationResult) args[index]).add(violations);
-				}
-			}
+		if (reIndex > -1) {
+            ValidationResult vr = new ValidationResult();
+		    for (int i = 0; i < args.length; i++) {
+                if (args[i] != null && valids[i] != null) {
+                    vr.add(validator.validate(args[i]));
+                } else {
+                    vr.add(null);
+                }
+            }
+		    args[reIndex] = vr;
 		}
 		doNext(ac);
 	}
