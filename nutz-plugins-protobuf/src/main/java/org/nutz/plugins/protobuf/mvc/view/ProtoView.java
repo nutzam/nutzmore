@@ -1,6 +1,8 @@
 package org.nutz.plugins.protobuf.mvc.view;
 
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -13,6 +15,9 @@ import org.nutz.mvc.Mvcs;
 import org.nutz.mvc.View;
 
 import com.google.protobuf.Message;
+import com.google.protobuf.TextFormat;
+import com.googlecode.protobuf.format.HtmlFormat;
+import com.googlecode.protobuf.format.XmlFormat;
 
 @IocBean(name = "proto")
 public class ProtoView implements View {
@@ -24,7 +29,9 @@ public class ProtoView implements View {
 
 	@Override
 	public void render(HttpServletRequest req, HttpServletResponse resp, Object obj) throws Throwable {
+		String contentType = req.getContentType();
 		if (obj instanceof Message) {
+			Charset charset = Charset.forName(req.getCharacterEncoding());
 			Message message = (Message) obj;
 			OutputStream out = resp.getOutputStream();
 			resp.addHeader(X_PROTOBUF_SCHEMA_HEADER, message.getDescriptorForType().getFile().getName());
@@ -33,7 +40,25 @@ public class ProtoView implements View {
 				log.debug(X_PROTOBUF_SCHEMA_HEADER + ":" + message.getDescriptorForType().getFile().getName());
 				log.debug(X_PROTOBUF_MESSAGE_HEADER + ":" + message.getDescriptorForType().getFullName());
 			}
-			message.writeTo(out);
+			if (contentType.contains("text/html")) {
+				final OutputStreamWriter outputStreamWriter = new OutputStreamWriter(out, charset);
+				HtmlFormat.print(message, outputStreamWriter);
+				outputStreamWriter.flush();
+			} else if (contentType.contains("application/json")) {
+				final OutputStreamWriter outputStreamWriter = new OutputStreamWriter(out, charset);
+				com.googlecode.protobuf.format.JsonFormat.print(message, outputStreamWriter);
+				outputStreamWriter.flush();
+			} else if (contentType.contains("text/plain")) {
+				final OutputStreamWriter outputStreamWriter = new OutputStreamWriter(out, charset);
+				TextFormat.print(message, outputStreamWriter);
+				outputStreamWriter.flush();
+			} else if (contentType.contains("application/xml")) {
+				final OutputStreamWriter outputStreamWriter = new OutputStreamWriter(out, charset);
+				XmlFormat.print(message, outputStreamWriter);
+				outputStreamWriter.flush();
+			} else if (contentType.contains("x-protobuf")) {
+				message.writeTo(out);
+			}
 		} else {
 			Mvcs.write(resp, obj, JsonFormat.compact());
 		}

@@ -1,5 +1,7 @@
 package org.nutz.plugins.protobuf.mvc.view;
 
+import java.io.OutputStream;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -38,7 +40,10 @@ public class JProtoView implements View {
 			log.debug(X_PROTOBUF_SCHEMA_HEADER + ":" + x_protobuf_schema_header.toLowerCase() + CODE_SUFFIX);
 			log.debug(X_PROTOBUF_MESSAGE_HEADER + ":" + x_protobuf_message_header);
 		}
-		codec.writeTo(obj, CodedOutputStream.newInstance(resp.getOutputStream()));
+		OutputStream out = resp.getOutputStream();
+		CodedOutputStream newInstance = CodedOutputStream.newInstance(out);
+		codec.writeTo(obj, newInstance);
+		newInstance.flush();
 	}
 
 }
