@@ -1,7 +1,9 @@
 package org.nutz.plugins.protobuf.mvc.adaptor;
 
+import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.nio.charset.Charset;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletContext;
@@ -17,6 +19,9 @@ import org.nutz.mvc.annotation.Param;
 
 import com.google.protobuf.ExtensionRegistry;
 import com.google.protobuf.Message;
+import com.google.protobuf.TextFormat;
+import com.googlecode.protobuf.format.JsonFormat;
+import com.googlecode.protobuf.format.XmlFormat;
 
 public class ProtobufAdaptor extends PairAdaptor {
 
@@ -56,15 +61,22 @@ public class ProtobufAdaptor extends PairAdaptor {
 			if (contentType == null) {
 				throw Lang.makeThrow(IllegalArgumentException.class, "Content-Type is NULL!!");
 			}
-			if (contentType.contains("application/x-protobuf")) {
-				if (Lang.isEmpty(clazz)) {
-					throw Lang.makeThrow(IllegalArgumentException.class, "Not Support Adaptor,You Must Have A Message Type Class ");
-				}
-				Message.Builder builder = getMessageBuilder(clazz);
-				builder.mergeFrom(request.getInputStream(), this.registry);
-				return builder.build();
+			Charset charset = Charset.forName(request.getCharacterEncoding());
+			if (Lang.isEmpty(clazz)) {
+				throw Lang.makeThrow(IllegalArgumentException.class, "Not Support Adaptor,You Must Have A Message Type Class ");
 			}
-			throw Lang.makeThrow(IllegalArgumentException.class, "UnSupport Content-Type : " + contentType);
+			Message.Builder builder = getMessageBuilder(clazz);
+			InputStreamReader reader = new InputStreamReader(request.getInputStream(), charset);
+			if (contentType.contains("application/json")) {
+				JsonFormat.merge(reader, this.registry, builder);
+			} else if (contentType.contains("text/plain")) {
+				TextFormat.merge(reader, this.registry, builder);
+			} else if (contentType.contains("application/xml")) {
+				XmlFormat.merge(reader, this.registry, builder);
+			} else {
+				builder.mergeFrom(request.getInputStream(), this.registry);
+			}
+			return builder.build();
 		} catch (Exception e) {
 			throw Lang.wrapThrow(e);
 		}
