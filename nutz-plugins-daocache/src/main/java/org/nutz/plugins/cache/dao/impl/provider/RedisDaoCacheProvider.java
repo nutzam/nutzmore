@@ -6,12 +6,13 @@ import org.nutz.plugins.cache.dao.CacheResult;
 import org.nutz.plugins.cache.dao.CachedNutDaoExecutor;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 public class RedisDaoCacheProvider extends AbstractDaoCacheProvider {
 
     private static final Log log = Logs.get();
     
-    protected Jedis jedis;
+    protected JedisPool jedisPool;
     
     protected String evalkey;
     
@@ -22,7 +23,10 @@ public class RedisDaoCacheProvider extends AbstractDaoCacheProvider {
     protected int expire;
 
     public Object get(String cacheName, String key) {
-        byte[] obj = jedis.get((cacheName + ":" + key).getBytes());
+        byte[] obj = null;
+        try (Jedis jedis = jedisPool.getResource()) {
+            obj = jedis.get((cacheName + ":" + key).getBytes());
+        } finally{}
         if (obj != null) {
             return getSerializer().back(obj);
         }
@@ -39,19 +43,20 @@ public class RedisDaoCacheProvider extends AbstractDaoCacheProvider {
         if (CachedNutDaoExecutor.DEBUG)
             log.debugf("CacheName=%s, KEY=%s", cacheName, key);
         byte[] _key = (cacheName + ":" + key).getBytes();
-        if (expire > 0)
+        try (Jedis jedis = jedisPool.getResource()) {
             jedis.setex(_key, expire, _key);
-        else
-            jedis.set(_key, (byte[])data);
+        } finally{}
         return true;
     }
 
     public void clear(String cacheName) {
-        jedis.evalsha(_evalkey, 1, cacheName.getBytes());
+        try (Jedis jedis = jedisPool.getResource()) {
+            jedis.evalsha(_evalkey, 1, cacheName.getBytes());
+        } finally{}
     }
 
-    public void setJedis(Jedis jedis) {
-        this.jedis = jedis;
+    public void setJedisPool(JedisPool jedisPool) {
+        this.jedisPool = jedisPool;
     }
     
     public void init() throws Throwable {
@@ -61,8 +66,12 @@ public class RedisDaoCacheProvider extends AbstractDaoCacheProvider {
             log.debug("use default clear script => " + script);
         }
         if (evalkey == null) {
-            setEvalkey(jedis.scriptLoad(script));
+            try (Jedis jedis = jedisPool.getResource()) {
+                setEvalkey(jedis.scriptLoad(script));
+            } finally{}
         }
+        if (expire < 1) 
+            expire = 3600;
     }
     
     public void setEvalkey(String evalkey) {
