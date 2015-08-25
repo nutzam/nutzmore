@@ -23,28 +23,16 @@
 	</licenses>
 	<developers>
 		<developer>
-			<id>zozoh</id>
-			<name>zozoh</name>
-			<email>zozohtnt@gmail.com</email>
-			<url>http://weibo.com/zozoh</url>
+			<id>rekoe</id>
+			<name>rekoe</name>
+			<email>koukou890@qq.com</email>
+			<url>https://www.rekoe.com</url>
 		</developer>
 		<developer>
 			<id>wendal</id>
 			<name>Wendal Chen</name>
 			<email>wendal1985@gmail.com</email>
 			<url>http://wendal.net/</url>
-		</developer>
-		<developer>
-			<id>juqkai</id>
-			<name>Juqkai</name>
-			<email>Bird.Wyatt@gmail.com</email>
-			<url>https://github.com/juqkai</url>
-		</developer>
-		<developer>
-			<id>rekoe</id>
-			<name>rekoe</name>
-			<email>koukou890@qq.com</email>
-			<url>https://www.rekoe.com</url>
 		</developer>
 	</developers>
 	<scm>

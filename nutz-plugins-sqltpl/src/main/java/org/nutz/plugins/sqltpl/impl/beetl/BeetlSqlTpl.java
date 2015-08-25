@@ -30,11 +30,10 @@ public class BeetlSqlTpl {
     public static Sql c(Sql sql) {
         String source = sql.getSourceSql();
         Template t = gt.getTemplate(source);
-        t.binding("vars", VarSetMap.asMap(sql.vars()));
         Map<String, Object> params = VarSetMap.asMap(sql.params());
         t.binding(params);
         t.binding("params", params);
-        System.out.println(t.getCtx().globalVar);
+        t.binding("vars", VarSetMap.asMap(sql.vars()));
         String n = t.render();
         sql.setSourceSql(n);
         return sql;
