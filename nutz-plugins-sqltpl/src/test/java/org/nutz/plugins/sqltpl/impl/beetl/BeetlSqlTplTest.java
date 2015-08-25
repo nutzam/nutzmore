@@ -51,7 +51,7 @@ public class BeetlSqlTplTest {
         sql.params().set("name", "wendal");
         sql.params().set("passwd", "123456");
         sql = BeetlSqlTpl.c(sql);
-        String dst = sql.toPreparedStatement().replace('\t', ' ').replace('\r', ' ').replace('\n', ' ').replaceAll(" ", "").trim();
+        String dst = sql.toPreparedStatement().replaceAll("[ \\t\\n\\r]", "");
         assertEquals("select * from t_user where name = ? and passwd = ?".replaceAll(" ", ""), dst);
         
         // 带token参数

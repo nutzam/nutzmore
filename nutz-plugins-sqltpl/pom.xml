@@ -23,5 +23,10 @@
   		<version>4.8.2</version>
   		<scope>test</scope>
   	</dependency>
+  	<dependency>
+  		<groupId>org.apache.velocity</groupId>
+  		<artifactId>velocity</artifactId>
+  		<version>1.6.4</version>
+  	</dependency>
   </dependencies>
 </project>
