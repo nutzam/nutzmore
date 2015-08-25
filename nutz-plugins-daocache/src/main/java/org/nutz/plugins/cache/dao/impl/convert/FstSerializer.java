@@ -1,9 +1,11 @@
 package org.nutz.plugins.cache.dao.impl.convert;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.nustaq.serialization.FSTConfiguration;
+import org.nutz.plugins.cache.dao.CacheResult;
 import org.nutz.resource.Scans;
 
 public class FstSerializer extends AbstractCacheSerializer {
@@ -26,14 +28,17 @@ public class FstSerializer extends AbstractCacheSerializer {
 
     public Object back(Object obj) {
         if (isNULL_OBJ(obj))
-            return null;
+            return CacheResult.NULL;
         return fstConf.asObject((byte[])obj);
     }
 
     public void setBeanPackages(String ... packages) {
         List<Class<?>> list = new ArrayList<>();
         for (String pkg : packages) {
-            list.addAll(Scans.me().scanPackage(pkg));
+            for (Class<?> klass : Scans.me().scanPackage(pkg)) {
+                if (Serializable.class.isAssignableFrom(klass))
+                    list.add(klass);
+            }
         }
         if (list.isEmpty())
             return;

@@ -44,7 +44,7 @@ public class RedisDaoCacheProvider extends AbstractDaoCacheProvider {
             log.debugf("CacheName=%s, KEY=%s", cacheName, key);
         byte[] _key = (cacheName + ":" + key).getBytes();
         try (Jedis jedis = jedisPool.getResource()) {
-            jedis.setex(_key, expire, _key);
+            jedis.setex(_key, expire, (byte[])data);
         } finally{}
         return true;
     }
@@ -62,7 +62,7 @@ public class RedisDaoCacheProvider extends AbstractDaoCacheProvider {
     public void init() throws Throwable {
         super.init();
         if (script == null && evalkey == null) {
-            script = "redis.call('del', unpack(redis.call('keys', KEYS[1] .. ':*')))";
+            script = "local keys = redis.call('keys', KEYS[1] .. ':*');if #keys >0 then redis.call('del', unpack(keys)) end";
             log.debug("use default clear script => " + script);
         }
         if (evalkey == null) {
