@@ -96,5 +96,7 @@
 		<module>nutz-integration-jsch</module>
 		<module>nutz-plugins-daocache</module>
 		<module>nutz-plugins-protobuf</module>
+		
+		<module>nutz-plugins-sqltpl</module>
 	</modules>
 </project>
