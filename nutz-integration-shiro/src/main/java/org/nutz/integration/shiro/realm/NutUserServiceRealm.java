@@ -89,7 +89,7 @@ public class NutUserServiceRealm extends AuthorizingRealm {
     protected NutShiroUserService us() {
         Ioc ioc = Mvcs.ctx().iocs.get(ctxName);
         if (ioc == null)
-            Mvcs.ctx().getDefaultIoc();
+            ioc = Mvcs.ctx().getDefaultIoc();
         return ioc.get(NutShiroUserService.class);
     }
     
