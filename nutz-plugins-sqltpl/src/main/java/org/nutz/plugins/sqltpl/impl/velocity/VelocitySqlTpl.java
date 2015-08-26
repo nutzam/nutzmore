@@ -1,7 +1,6 @@
 package org.nutz.plugins.sqltpl.impl.velocity;
 
 import java.io.StringWriter;
-import java.util.Map;
 
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
@@ -29,10 +28,7 @@ public class VelocitySqlTpl {
      * @return 原对象,用于链式调用
      */
     public static Sql c(Sql sql) {
-        Map<String, Object> params = VarSetMap.asMap(sql.params());
-        VelocityContext context = new VelocityContext(params);
-        context.put("params", params);
-        context.put("vars", VarSetMap.asMap(sql.vars()));
+        VelocityContext context = new VelocityContext(VarSetMap.asCtx(sql));
         StringWriter sw = new StringWriter();
         try {
             if (engine == null) {
