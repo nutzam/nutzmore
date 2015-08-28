@@ -1,6 +1,7 @@
 package org.nutz.integration.quartz;
 
 import org.nutz.ioc.impl.PropertiesProxy;
+import org.nutz.lang.Lang;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.quartz.CronScheduleBuilder;
@@ -30,9 +31,9 @@ public class NutQuartzCronJobFactory {
 			log.debugf("job define name=%s cron=%s", name, cron);
 			Class<?> klass = null;
 			if (name.contains(".")) {
-				klass = Class.forName(name);
+				klass = Lang.loadClass(name);
 			} else {
-				klass = Class.forName(getClass().getPackage().getName() + ".job." + name);
+				klass = Lang.loadClass(getClass().getPackage().getName() + ".job." + name);
 			}
 			JobDetail job = JobBuilder.newJob((Class<? extends Job>) klass).build();
 			CronTrigger trigger = TriggerBuilder.newTrigger().withIdentity(name)

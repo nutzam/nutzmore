@@ -515,7 +515,7 @@ public class XmlEntityMaker implements EntityMaker {
     
     protected Class<?> loadClass(String topPackageName, String type) throws ClassNotFoundException {
     	if (Strings.isBlank(topPackageName))
-    		return Class.forName(type);
-    	return Class.forName(topPackageName + "." + type);
+    		return Lang.loadClass(type);
+    	return Lang.loadClass(topPackageName + "." + type);
 	}
 }
