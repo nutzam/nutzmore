@@ -1,9 +1,21 @@
 package org.nutz.auth.secken;
 
+import java.util.Map;
+
 import org.nutz.lang.util.NutMap;
 
 @SuppressWarnings("serial")
 public class SeckenResp extends NutMap {
+    
+    public SeckenResp() {}
+    
+    public SeckenResp(Map<String, Object> map) {
+        super(map);
+    }
+    
+    public SeckenResp(String json) {
+        super(json);
+    }
 
     public int status() {
         return getInt("status", -1);
