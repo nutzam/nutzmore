@@ -24,9 +24,9 @@ public class SeckenTest {
         System.out.println(sr);
         assertTrue(sr.ok());
         
-//        sr = secken.getAuth(1, "https://nutz.cn/cgi-bin/blackhole");
-//        System.out.println(sr);
-//        assertTrue(sr.ok());
+        sr = secken.getAuth(1, "https://nutz.cn/cgi-bin/blackhole");
+        System.out.println(sr);
+        assertTrue(sr.ok());
     }
 
     @Test
