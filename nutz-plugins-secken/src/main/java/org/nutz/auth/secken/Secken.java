@@ -195,7 +195,7 @@ public class Secken {
         params.put("signature", signature);
     }
     
-    protected void checkSign(SeckenResp sr) {
+    public void checkSign(SeckenResp sr) {
         List<String> keys = new ArrayList<String>(sr.keySet());
         keys.remove("signature");
         Collections.sort(keys);
