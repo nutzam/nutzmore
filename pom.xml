@@ -100,5 +100,6 @@
 		<module>nutz-plugins-sqltpl</module>
     
     <module>nutz-plugins-secken</module>
+    <module>nutz-integration-struts2</module>
 	</modules>
 </project>
