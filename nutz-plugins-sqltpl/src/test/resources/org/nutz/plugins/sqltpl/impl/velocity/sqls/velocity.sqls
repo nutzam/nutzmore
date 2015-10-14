@@ -3,7 +3,7 @@
 select * from t_user 
 #if ( $params.size() > 0)
 where
-	#if ( $!name != "" && $!passwd != "")
+	#if ( $name && $passwd )
 		name = @name
 		and passwd = @passwd
 	#else

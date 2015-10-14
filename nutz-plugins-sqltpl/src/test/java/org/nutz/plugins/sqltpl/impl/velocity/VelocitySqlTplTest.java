@@ -33,7 +33,7 @@ public class VelocitySqlTplTest {
         sql = VelocitySqlTpl.c(sql);
         
         dst = sql.toPreparedStatement().replaceAll("[ \\t\\n\\r]", "");
-        assertEquals("select * from user where name = ? and passwd = ?".replaceAll(" ", ""), dst);
+        assertEquals("select * from t_user where name = ? and passwd = ?".replaceAll(" ", ""), dst);
         
         // 带token参数
         
@@ -42,7 +42,7 @@ public class VelocitySqlTplTest {
         sql = VelocitySqlTpl.c(sql);
         
         dst = sql.toPreparedStatement().replaceAll("[ \\t\\n\\r]", "");
-        assertEquals("select * from user where token = ?".replaceAll(" ", ""), dst);
+        assertEquals("select * from t_user where token = ?".replaceAll(" ", ""), dst);
     }
 
 }
