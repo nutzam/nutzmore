@@ -16,7 +16,7 @@ client_secret           d8346ea2-6017-43ed-ad68-19c0f971738b    应用secret
 ```
 ### 2. 请求授权码
 
-http://localhost:8080/authorize?client_id=c1ebe466-1cdc-4bd3-ab69-77c3561b9dee&response_type=code&redirect_uri=http://aimeizi.net
+http://localhost:8080/authorize?client_id=c1ebe466-1cdc-4bd3-ab69-77c3561b9dee&response_type=code&redirect_uri=http://nutz.cn
 
 参数说明
 ```
