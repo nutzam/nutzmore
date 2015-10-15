@@ -35,7 +35,7 @@ public class NutQuartzCronJobFactory {
 			} else {
 				klass = Lang.loadClass(getClass().getPackage().getName() + ".job." + name);
 			}
-			JobDetail job = JobBuilder.newJob((Class<? extends Job>) klass).build();
+			JobDetail job = JobBuilder.newJob((Class<? extends Job>) klass).withIdentity(name).build();
 			CronTrigger trigger = TriggerBuilder.newTrigger().withIdentity(name)
 				    .withSchedule(CronScheduleBuilder.cronSchedule(cron))
 				    .build();

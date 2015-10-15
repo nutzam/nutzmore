@@ -14,18 +14,12 @@ public class RedisDaoCacheProvider extends AbstractDaoCacheProvider {
     
     protected JedisPool jedisPool;
     
-    protected String evalkey;
-    
-    protected byte[] _evalkey;
-    
     protected String script;
-    
-    protected int expire;
 
     public Object get(String cacheName, String key) {
         byte[] obj = null;
         try (Jedis jedis = jedisPool.getResource()) {
-            obj = jedis.get((cacheName + ":" + key).getBytes());
+            obj = jedis.hget(cacheName.getBytes(), key.getBytes());
         } finally{}
         if (obj != null) {
             return getSerializer().back(obj);
@@ -42,16 +36,15 @@ public class RedisDaoCacheProvider extends AbstractDaoCacheProvider {
         }
         if (CachedNutDaoExecutor.DEBUG)
             log.debugf("CacheName=%s, KEY=%s", cacheName, key);
-        byte[] _key = (cacheName + ":" + key).getBytes();
         try (Jedis jedis = jedisPool.getResource()) {
-            jedis.setex(_key, expire, (byte[])data);
+            jedis.hset(cacheName.getBytes(), key.getBytes(), (byte[])data);
         } finally{}
         return true;
     }
 
     public void clear(String cacheName) {
         try (Jedis jedis = jedisPool.getResource()) {
-            jedis.evalsha(_evalkey, 1, cacheName.getBytes());
+            jedis.del(cacheName.getBytes());
         } finally{}
     }
 
@@ -61,21 +54,5 @@ public class RedisDaoCacheProvider extends AbstractDaoCacheProvider {
     
     public void init() throws Throwable {
         super.init();
-        if (script == null && evalkey == null) {
-            script = "local keys = redis.call('keys', KEYS[1] .. ':*');if #keys >0 then redis.call('del', unpack(keys)) end";
-            log.debug("use default clear script => " + script);
-        }
-        if (evalkey == null) {
-            try (Jedis jedis = jedisPool.getResource()) {
-                setEvalkey(jedis.scriptLoad(script));
-            } finally{}
-        }
-        if (expire < 1) 
-            expire = 3600;
-    }
-    
-    public void setEvalkey(String evalkey) {
-        this.evalkey = evalkey;
-        this._evalkey = evalkey.getBytes();
     }
 }

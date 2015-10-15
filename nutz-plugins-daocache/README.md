@@ -58,3 +58,91 @@ Nutz的Dao层插件
 			}
 		}
 	};
+	
+Ehcache示例配置
+-------------------
+
+推荐分2个文件配置, 第一个是ehcache.js, 请务必留意里面的说明
+
+与Shiro一起使用不是必须条件, daocache与shiro的联系只是共享一个CacheManager实例,这是可选的
+
+为shiro和daocache分配不同的CacheManager实例是完全可以
+
+```
+var ioc = {
+		cacheManager : {
+			type : "net.sf.ehcache.CacheManager",
+			factory : "net.sf.ehcache.CacheManager#getCacheManager",
+			args : ["nutzbook"] // 对应shiro.ini中指定的ehcache.xml中定义的name
+		}
+		/*      
+		// 如果不需要shiro初始化的Ehcache, 使用下面的方式配置
+		cacheManager : {
+			type : "net.sf.ehcache.CacheManager",
+			factory : "net.sf.ehcache.CacheManager#create" // 这是工厂方法的强大之处
+		}
+		 */
+};
+```
+
+第二个是dao.js, 区别只是cacheProvider指向的类不一样
+
+```
+var ioc = {
+		conf : {
+			type : "org.nutz.ioc.impl.PropertiesProxy",
+			fields : {
+				paths : ["custom/"]
+			}
+		},
+	    dataSource : {
+	        type : "com.alibaba.druid.pool.DruidDataSource",
+	        events : {
+	        	create : "init",
+	            depose : 'close'
+	        },
+	        fields : {
+	            url : {java:"$conf.get('db.url')"},
+	            username : {java:"$conf.get('db.username')"},
+	            password : {java:"$conf.get('db.password')"},
+	            testWhileIdle : true,
+	            validationQuery : {java:"$conf.get('db.validationQuery')"},
+	            maxActive : {java:"$conf.get('db.maxActive')"},
+	            filters : "mergeStat",
+	            connectionProperties : "druid.stat.slowSqlMillis=2000",
+	        }
+	    },
+		dao : {
+			type : "org.nutz.dao.impl.NutDaoExt",
+			args : [{refer:"dataSource"}],
+			fields : {
+				executor : {refer:"cacheExecutor"}
+			}
+		},
+		cacheExecutor : {
+			type : "org.nutz.plugins.cache.dao.CachedNutDaoExecutor",
+			fields : {
+				cacheProvider : {refer:"cacheProvider"},
+				cachedTableNames : [
+				                    "t_user_profile",
+				                    "t_user", "t_role", "t_permission", "t_role_permission",
+				                    "t_topic", "t_topic_reply",
+				                    "t_oauth_user"
+				                    ]
+			}
+		},
+		// 基于Ehcache的DaoCacheProvider
+		cacheProvider : {
+			type : "org.nutz.plugins.cache.dao.impl.provider.EhcacheDaoCacheProvider",
+			fields : {
+				cacheManager : {refer:"cacheManager"} // 引用ehcache.js中定义的CacheManager
+			},
+			events : {
+				create : "init"
+			}
+		}
+};
+```
+
+有用户反映ehcache在shiro.ini的配置顺序会导致获取到CacheManager为null,请确保
+ehcache的声明在其他所有realm声明之前
