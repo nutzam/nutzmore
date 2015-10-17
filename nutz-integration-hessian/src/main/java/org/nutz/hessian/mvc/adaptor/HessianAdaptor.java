@@ -15,6 +15,7 @@ import org.nutz.mvc.annotation.AdaptBy;
 import org.nutz.mvc.annotation.At;
 import org.nutz.mvc.annotation.Ok;
 
+import com.caucho.hessian.client.HessianProxyFactory;
 import com.caucho.hessian.io.SerializerFactory;
 import com.caucho.hessian.server.HessianSkeleton;
 import com.caucho.services.server.ServiceContext;
@@ -33,7 +34,8 @@ import com.shanggame.service.SayHelloWorld;
 
 	}
  * 
- * client<br /> 
+ * client<br />
+ * private HessianProxyFactory factory = new HessianProxyFactory(); 
  * public static void main(String[] args) {
 		HessianClient c = new HessianClient();
 		try {
