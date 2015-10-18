@@ -49,6 +49,10 @@ Nutz集成Quartz的插件
 
 	cron.net.wendal.nutzbook.quartz.job.CleanNonActiveUserJob=0 0/2 * * * ?
 	
+扫描注解的方式(Scheduled注解)
+
+	cron.pkgs=net.wendal.nutzbook.quartz.job
+	
 
 详细用法请参考nutzbook中的相关描述
 
