@@ -21,39 +21,41 @@ import org.quartz.SimpleTrigger;
 import org.quartz.TriggerBuilder;
 
 public class NutQuartzCronJobFactory {
-	
-	private static final Log log = Logs.get();
+    
+    private static final Log log = Logs.get();
 
-	protected PropertiesProxy conf;
-	
-	protected Scheduler scheduler;
-	
-	public void init() throws Exception {
-		String prefix = "cron.";
-		for (String key : conf.getKeys()) {
-			if (key.length() < prefix.length()+1 || !key.startsWith(prefix))
-				continue;
-			String name = key.substring(prefix.length());
-			if ("pkgs".equals(name)) {
-			    for (String pkg : Strings.splitIgnoreBlank(name, ",")) {
+    protected PropertiesProxy conf;
+    
+    protected Scheduler scheduler;
+    
+    public void init() throws Exception {
+        String prefix = "cron.";
+        for (String key : conf.getKeys()) {
+            if (key.length() < prefix.length()+1 || !key.startsWith(prefix))
+                continue;
+            String name = key.substring(prefix.length());
+            if ("pkgs".equals(name)) {
+                log.debug("found cron job packages = " + conf.get(key));
+                for (String pkg : Strings.splitIgnoreBlank(conf.get(key), ",")) {
                     addPackage(pkg);
                 }
-			}
-			String cron = conf.get(key);
-			log.debugf("job define name=%s cron=%s", name, cron);
-			Class<?> klass = null;
-			if (name.contains(".")) {
-				klass = Lang.loadClass(name);
-			} else {
-				klass = Lang.loadClass(getClass().getPackage().getName() + ".job." + name);
-			}
-			cron(cron, klass);
-		}
-	}
+                continue;
+            }
+            String cron = conf.get(key);
+            log.debugf("job define name=%s cron=%s", name, cron);
+            Class<?> klass = null;
+            if (name.contains(".")) {
+                klass = Lang.loadClass(name);
+            } else {
+                klass = Lang.loadClass(getClass().getPackage().getName() + ".job." + name);
+            }
+            cron(cron, klass);
+        }
+    }
 
-	public void addPackage(String pkg) {
-	    for (Class<?> klass : Scans.me().scanPackage(pkg)) {
-	        Scheduled scheduled = klass.getAnnotation(Scheduled.class);
+    public void addPackage(String pkg) {
+        for (Class<?> klass : Scans.me().scanPackage(pkg)) {
+            Scheduled scheduled = klass.getAnnotation(Scheduled.class);
             if (scheduled != null) {
                 try {
                     add(klass, scheduled);
@@ -63,46 +65,48 @@ public class NutQuartzCronJobFactory {
                 }
             }
         }
-	}
-	
-	@SuppressWarnings("unchecked")
+    }
+    
+    @SuppressWarnings("unchecked")
     public void add(Class<?> klass, Scheduled scheduled) throws SchedulerException {
-	    if (!Strings.isBlank(scheduled.cron())) {
-	        try {
+        String name = klass.getName();
+        if (!Strings.isBlank(scheduled.cron())) {
+            try {
+                log.debugf("job define name=%s cron=%s", name, scheduled.cron());
                 cron(scheduled.cron(), klass);
                 return;
             }
             catch (SchedulerException e) {
                 throw new RuntimeException(e);
             }
-	    }
-	    if (scheduled.fixedRate() > 0){
-
-	        String name = klass.getName();
-	        SimpleScheduleBuilder schedule = SimpleScheduleBuilder.simpleSchedule();
-	        if (scheduled.fixedRate() > 0)
-	            schedule.withIntervalInSeconds(scheduled.fixedRate());
-	        if (scheduled.count() > 0) {
-	            schedule.withRepeatCount(scheduled.count());
-	        } else {
-	            schedule.repeatForever();
-	        }
-	        TriggerBuilder<SimpleTrigger> trigger = TriggerBuilder.newTrigger().withIdentity(name).withSchedule(schedule);
+        }
+        if (scheduled.fixedRate() > 0){
+            log.debugf("job define name=%s fixedRate=%s count=%s initialDelay=%s", 
+                    name, scheduled.fixedRate(), scheduled.count(), scheduled.initialDelay());
+            SimpleScheduleBuilder schedule = SimpleScheduleBuilder.simpleSchedule();
+            if (scheduled.fixedRate() > 0)
+                schedule.withIntervalInSeconds(scheduled.fixedRate());
+            if (scheduled.count() > 0) {
+                schedule.withRepeatCount(scheduled.count());
+            } else {
+                schedule.repeatForever();
+            }
+            TriggerBuilder<SimpleTrigger> trigger = TriggerBuilder.newTrigger().withIdentity(name).withSchedule(schedule);
             if (scheduled.initialDelay() > 0) 
                 trigger.startAt(new Date(System.currentTimeMillis() + scheduled.initialDelay()*1000));
-	        
-	        JobDetail job = JobBuilder.newJob((Class<? extends Job>) klass).withIdentity(name).build();
-	        scheduler.scheduleJob(job, trigger.build());
-	    }
-	}
-	
-	@SuppressWarnings("unchecked")
+            
+            JobDetail job = JobBuilder.newJob((Class<? extends Job>) klass).withIdentity(name).build();
+            scheduler.scheduleJob(job, trigger.build());
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
     public void cron(String cron, Class<?> klass) throws SchedulerException {
-	    String name = klass.getName();
-	    JobDetail job = JobBuilder.newJob((Class<? extends Job>) klass).withIdentity(name).build();
+        String name = klass.getName();
+        JobDetail job = JobBuilder.newJob((Class<? extends Job>) klass).withIdentity(name).build();
         CronTrigger trigger = TriggerBuilder.newTrigger().withIdentity(name)
                 .withSchedule(CronScheduleBuilder.cronSchedule(cron))
                 .build();
         scheduler.scheduleJob(job, trigger);
-	}
+    }
 }
