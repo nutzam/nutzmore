@@ -101,5 +101,6 @@
     
     <module>nutz-plugins-secken</module>
     <module>nutz-integration-struts2</module>
+    <module>nutz-integration-zbus</module>
 	</modules>
 </project>
