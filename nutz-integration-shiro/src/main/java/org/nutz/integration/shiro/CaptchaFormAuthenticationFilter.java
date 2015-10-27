@@ -8,8 +8,10 @@ import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.StringUtils;
 import org.apache.shiro.web.filter.authc.FormAuthenticationFilter;
 import org.apache.shiro.web.util.WebUtils;
+import org.nutz.json.Json;
 import org.nutz.lang.Strings;
 import org.nutz.lang.util.NutMap;
 import org.nutz.mvc.ActionContext;
@@ -21,15 +23,49 @@ import org.nutz.mvc.View;
  * @author wendal<wendal1985@gmail.com>
  */
 public class CaptchaFormAuthenticationFilter extends FormAuthenticationFilter implements ActionFilter {
+    
+    protected String JsonParams_KEY = "CaptchaFormAuthenticationFilter_JsonParams";
 
     private String captchaParam = NutShiro.DEFAULT_CAPTCHA_PARAM;
 
     public String getCaptchaParam() {
         return captchaParam;
     }
+    
+    public String getCleanParams(ServletRequest request, String name) {
+        HttpServletRequest req = (HttpServletRequest)request;
+        NutMap jsonParams = (NutMap) req.getAttribute(JsonParams_KEY);
+        if (jsonParams != null && jsonParams.containsKey(name)) {
+            return StringUtils.clean(jsonParams.getString(name));
+        }
+        return WebUtils.getCleanParam(request, name);
+    }
 
     protected String getCaptcha(ServletRequest request) {
-        return WebUtils.getCleanParam(request, getCaptchaParam());
+        return getCleanParams(request, getCaptchaParam());
+    }
+    
+    @Override
+    protected String getUsername(ServletRequest request) {
+        return getCleanParams(request, getUsernameParam());
+    }
+    
+    @Override
+    protected String getPassword(ServletRequest request) {
+        return getCleanParams(request, getPasswordParam());
+    }
+    
+    @Override
+    protected boolean isRememberMe(ServletRequest request) {
+        String value = getCleanParams(request, getRememberMeParam());
+        return value != null &&
+                (value.equalsIgnoreCase("true") ||
+                        value.equalsIgnoreCase("t") ||
+                        value.equalsIgnoreCase("1") ||
+                        value.equalsIgnoreCase("enabled") ||
+                        value.equalsIgnoreCase("y") ||
+                        value.equalsIgnoreCase("yes") ||
+                        value.equalsIgnoreCase("on"));
     }
 
     protected boolean executeLogin(ServletRequest request, ServletResponse response) throws Exception {
@@ -41,6 +77,11 @@ public class CaptchaFormAuthenticationFilter extends FormAuthenticationFilter im
         Session session = subject.getSession(false);
         if (session == null) {
             return onCaptchaError(request, response);
+        }
+        HttpServletRequest req = (HttpServletRequest)request;
+        if (req.getHeader("Content-Type") != null &&req.getHeader("Content-Type").contains("json")) {
+            NutMap jsonParams = Json.fromJson(NutMap.class, req.getReader());
+            req.setAttribute(JsonParams_KEY, jsonParams);
         }
         Object _expected = session.getAttribute(captchaParam);
         if (_expected == null)

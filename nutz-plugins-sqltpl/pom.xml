@@ -4,10 +4,10 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.b.52</version>
+		<version>1.b.53</version>
 	</parent>
 	<artifactId>nutz-plugins-sqltpl</artifactId>
-	<version>1.b.53</version>
+	<version>1.b.53.r2</version>
 	<description>
   	SqlTemplate for Nutz
   </description>
