@@ -110,7 +110,7 @@ public class CaptchaFormAuthenticationFilter extends FormAuthenticationFilter im
             NutShiro.rendAjaxResp(req, resp, re);
             return false;
         } else {
-            return super.onLoginFailure(null, null, req, resp);
+            return super.onLoginFailure(null, new AuthenticationException("验证码错误"), req, resp);
         }
     }
 
