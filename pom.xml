@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.nutz</groupId>
 	<artifactId>nutzmore</artifactId>
-	<version>1.b.52</version>
+	<version>1.b.53</version>
 	<name>nutzmore</name>
 	<description>Nutz, which is a collections of lightweight frameworks, each of them can be used independently</description>
 
@@ -101,5 +101,6 @@
 		<module>nutz-integration-struts2</module>
 		<module>nutz-integration-zbus</module>
 		<module>nutz-integration-hessian</module>
+		<module>nutzmore-aggregate</module>
 	</modules>
 </project>

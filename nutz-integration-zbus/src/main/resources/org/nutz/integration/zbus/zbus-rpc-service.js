@@ -1,11 +1,7 @@
 var ioc = {
 		// 服务端配置------------------------
 		rpcProcessor:{
-			type: "org.zbus.rpc.RpcProcessor",
-			args : [
-			        // 需要导出的对象列表, 通过调用ZBusServiceFactory更方便
-			        {refer:"emailService"}
-			        ]
+			type: "org.zbus.rpc.RpcProcessor"
 		},
 		serviceConfig : {
 			type : "org.zbus.rpc.mq.ServiceConfig",
