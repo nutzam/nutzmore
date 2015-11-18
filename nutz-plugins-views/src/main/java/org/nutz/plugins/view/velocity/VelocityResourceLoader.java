@@ -1,52 +1,65 @@
 package org.nutz.plugins.view.velocity;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.velocity.exception.ResourceNotFoundException;
-import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
-import org.apache.velocity.util.ClassUtils;
-import org.apache.velocity.util.ExceptionUtils;
-
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import javax.servlet.ServletContext;
+
+import org.apache.commons.collections.ExtendedProperties;
+import org.apache.velocity.exception.ResourceNotFoundException;
+import org.apache.velocity.runtime.resource.Resource;
+import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
+import org.nutz.mvc.Mvcs;
 
 /**
- * Created by Wizzer on 14-9-23.
+ * @author wendal
  */
 public class VelocityResourceLoader extends ClasspathResourceLoader {
 
-    private static final String TEMPLATE_PATH = "/WEB-INF/template/";
+    protected String path;
+    
+    protected ServletContext sc;
 
-    /**
-     * Get an InputStream so that the Runtime can build a template with it.
-     *
-     * @param name name of template to get
-     * @return InputStream containing the template
-     * @throws org.apache.velocity.exception.ResourceNotFoundException if template not found in classpath.
-     */
-    public InputStream getResourceStream(String name) throws ResourceNotFoundException {
-        InputStream result = null;
-
-        if (StringUtils.isEmpty(name)) {
-            throw new ResourceNotFoundException("No template name provided");
-        }
-
-        /**
-         * look for resource in thread classloader first (e.g. WEB-INF\lib in a servlet container) then fall
-         * back to the system classloader.
-         */
-
+    public void init(ExtendedProperties configuration) {
+        path = configuration.getString("path", "/WEB-INF/template/");
+        if (!path.endsWith("/"))
+            path += "/";
+    }
+    
+    protected URL rs(String source) {
         try {
-            result = ClassUtils.getResourceAsStream(getClass(), TEMPLATE_PATH + name);
-        } catch (Exception fnfe) {
-            throw (ResourceNotFoundException) ExceptionUtils.createWithCause(ResourceNotFoundException.class,
-                    "problem with template: " + name, fnfe);
+            URL url = sc().getResource(path + source);
+            if (url == null)
+                throw new ResourceNotFoundException(source) ;
+            return url;
         }
-
-        if (result == null) {
-            String msg = "ClasspathResourceLoader Error: cannot find resource " + name;
-
-            throw new ResourceNotFoundException(msg);
+        catch (MalformedURLException e) {
+            throw new ResourceNotFoundException(source, e);
         }
+    }
 
-        return result;
+    public InputStream getResourceStream(String source) throws ResourceNotFoundException {
+        try {
+            return rs(source).openStream();
+        }
+        catch (IOException e) {
+            throw new ResourceNotFoundException(source, e);
+        }
+    }
+
+    public boolean isSourceModified(Resource resource) {
+        return false;
+    }
+
+    public long getLastModified(Resource resource) {
+        return 0;
+    }
+    
+    public ServletContext sc() {
+        if (sc == null)
+            sc = Mvcs.getServletContext();
+        return sc;
     }
 }

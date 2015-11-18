@@ -15,17 +15,18 @@ import org.apache.velocity.io.VelocityWriter;
 import org.apache.velocity.util.SimplePool;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
-import org.nutz.mvc.view.ForwardView;
+import org.nutz.mvc.view.AbstractPathView;
 
 /**
  * Created by Wizzer on 14-9-23.
  * Modify by wendal on 15-5-20
  */
-public class VelocityLayoutView extends ForwardView {
+public class VelocityLayoutView extends AbstractPathView {
 
     private static final Log log = Logs.get();
     
     protected static final int WRITER_BUFFER_SIZE = 8 * 1024;
+    
     protected SimplePool writerPool = new SimplePool(40);
 
 
@@ -44,6 +45,12 @@ public class VelocityLayoutView extends ForwardView {
             for (Entry<String, Object> en : ctx.getInnerMap().entrySet()) {
                 context.put(en.getKey(), en.getValue());
             }
+            path = path.replace('.', '/');
+            if (path.endsWith("/vm")) {
+                path = path.substring(0, path.length() - 3) + ".vm";
+            } else {
+                path += ".vm";
+            }
             log.debug("Path::"+ path);
             Template template = Velocity.getTemplate(path);
             template.merge(context, sw);
@@ -54,10 +61,6 @@ public class VelocityLayoutView extends ForwardView {
         }
     }
     
-    protected String getExt() {
-        return ".vm";
-    }
-
     private void internalRenderTemplate(Template template, Context context, Writer writer) throws Exception {
         VelocityWriter velocityWriter = null;
         try {
