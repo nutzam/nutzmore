@@ -4,10 +4,9 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.b.52</version>
+		<version>1.b.53</version>
 	</parent>
 	<artifactId>nutz-plugins-views</artifactId>
-		<version>1.b.52.preview</version>
 	<description>Nutz More Views</description>
 
 	<url>http://nutzam.com</url>
