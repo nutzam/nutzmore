@@ -47,6 +47,11 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
      * 禁止清除缓存的标志,在Sql.getContext()中配置
      */
     protected String cacheClearMark = "dao-cache-clear";
+    
+    /**
+     * 跳过缓存的标记
+     */
+    public static final String CacheSkipMark = "dao-cache-skip";
 
     /**
      * 需要缓存的数据库表
@@ -81,7 +86,7 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
     private static final Log log = Logs.get();
 
     public void exec(Connection conn, DaoStatement st) {
-        if (!enable) {
+        if (!enable || ("true".equals(st.getContext().attr(CacheSkipMark)))) {
             super.exec(conn, st);
             return;
         }
