@@ -72,29 +72,14 @@ public class FreemarkerView extends AbstractPathView {
 			root.put(strKey, request.getAttribute(strKey));
 		}
 		jspTaglibs(sc, request, response, root, cfg.getObjectWrapper());
-		
-		configureRoot(root);
-		
-		// cfg.setServletContextForTemplateLoading(request.getSession().getServletContext(),
-		// "/");
-		// 模版路径
 		try {
 			Template template = cfg.getTemplate(path);
-			configureSharedVariable(cfg);
 			response.setContentType("text/html; charset=" + template.getEncoding());
 			template.process(root, response.getWriter());
 		} catch (Exception e) {
 			throw Lang.wrapThrow(e);
 		}
 	}
-	
-	protected void configureRoot(Map<String, Object> root) {
-	    
-	}
-	
-	protected void configureSharedVariable(Configuration cfg) {
-        
-    }
 
 	/**
 	 * 子类可以覆盖这个方法，给出自己特殊的后缀
