@@ -13,7 +13,74 @@ import org.nutz.mvc.view.ServerRedirectView;
 /**
  * 处理Shiro注解及异常, 如果使用ioc方式放入动作链,必须使用非单例模式.
  * @author wendal<wendal1985@gmail.com>
- *
+ * @author rekoe<koukou890@gmail.com>
+ * 
+ * 如果是ajax请求的可以通过header 增加的状态属性做友好提示
+ * 
+ * $(document).ajaxComplete(function(event, request, settings) {
+		var loginStatus = request.getResponseHeader("loginStatus");
+		if (loginStatus == "accessDenied") {
+			$.message("warn", "登录超时，请重新登录");
+			setTimeout(function() {
+				location.reload(true);
+			}, 2000);
+		} else if (loginStatus == "unauthorized") {
+			$.message("warn", "对不起，您无此操作权限！");
+		}else{
+			$.message("warn", "系统错误");
+		}
+	});
+	
+	完整插件代码
+	插件开始//*********************************
+	(function($) {
+		var zIndex = 100;
+		var $message=null;
+		var messageTimer=null;
+		$.message = function() {
+			var message = {};
+			if ($.isPlainObject(arguments[0])) {
+				message = arguments[0];
+			} else if (typeof arguments[0] === "string" && typeof arguments[1] === "string") {
+				message.type = arguments[0];
+				message.content = arguments[1];
+			} else {
+				return false;
+			}
+			if (message.type == null || message.content == null) {
+				return false;
+			}
+			if ($message == null) {
+				$message = $('<div class="xxMessage"><div class="messageContent message' + message.type + 'Icon"><\/div><\/div>');
+				if (!window.XMLHttpRequest) {
+					$message.append('<iframe class="messageIframe"><\/iframe>');
+				}
+				$message.appendTo("body");
+			}
+			
+			$message.children("div").removeClass("messagewarnIcon messageerrorIcon messagesuccessIcon").addClass("message" + message.type + "Icon").html(message.content);
+			$message.css({"margin-left": - parseInt($message.outerWidth() / 2), "z-index": zIndex ++}).show();
+			clearTimeout(messageTimer);
+			messageTimer = setTimeout(function() {
+				$message.hide();
+			}, 3000);
+			return $message;
+		};
+	
+		$(document).ajaxComplete(function(event, request, settings) {
+			var loginStatus = request.getResponseHeader("loginStatus");
+			if (loginStatus == "accessDenied") {
+				$.message("warn", "登录超时，请重新登录");
+				setTimeout(function() {
+					location.reload(true);
+				}, 2000);
+			} else if (loginStatus == "unauthorized") {
+				$.message("warn", "对不起，您无此操作权限！");
+			}else {
+				$.message("warn", "系统错误");
+			}
+		});
+	})(jQuery);
  */
 public class NutShiroProcessor extends AbstractProcessor {
     
@@ -68,6 +135,7 @@ public class NutShiroProcessor extends AbstractProcessor {
     
     protected void whenUnauthenticated(ActionContext ac, UnauthenticatedException e) throws Exception {
         if (NutShiro.isAjax(ac.getRequest())) {
+        	ac.getResponse().addHeader("loginStatus", "accessDenied");
             NutShiro.rendAjaxResp(ac.getRequest(), ac.getResponse(), ajaxFail("user.require.login", "user.require.login"));
         } else {
             new ServerRedirectView(loginUri()).render(ac.getRequest(), ac.getResponse(), null);
@@ -80,6 +148,7 @@ public class NutShiroProcessor extends AbstractProcessor {
     
     protected void whenUnauthorized(ActionContext ac, UnauthorizedException e) throws Exception {
         if (NutShiro.isAjax(ac.getRequest())) {
+        	ac.getResponse().addHeader("loginStatus", "unauthorized");
             NutShiro.rendAjaxResp(ac.getRequest(), ac.getResponse(), ajaxFail("user.require.auth", "user.require.auth"));
         } else {
             new ServerRedirectView(noAuthUri()).render(ac.getRequest(), ac.getResponse(), null);
@@ -88,6 +157,7 @@ public class NutShiroProcessor extends AbstractProcessor {
     
     protected void whenOtherException(ActionContext ac, Exception e) throws Exception {
         if (NutShiro.isAjax(ac.getRequest())) {
+        	ac.getResponse().addHeader("loginStatus", "accessDenied");
             NutShiro.rendAjaxResp(ac.getRequest(), ac.getResponse(), ajaxFail("user.require.login", "user.require.login"));
         } else {
             new ServerRedirectView(loginUri()).render(ac.getRequest(), ac.getResponse(), null);
