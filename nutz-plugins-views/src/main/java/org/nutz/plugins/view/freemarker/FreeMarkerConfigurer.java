@@ -23,6 +23,9 @@ import freemarker.template.TemplateException;
 public class FreeMarkerConfigurer {
 
 	private final static Log log = Logs.get();
+
+	private final static String NEW_LINE = "\r\n";
+
 	private Configuration configuration;
 	private String prefix;
 	private String suffix;
@@ -50,16 +53,16 @@ public class FreeMarkerConfigurer {
 		this.freemarkerDirectiveFactory = freemarkerDirectiveFactory;
 		if (this.prefix == null)
 			this.prefix = sc.getRealPath("/") + prefix;
-		pro.append("tag_syntax=auto_detect");
-		pro.append("template_update_delay=-1");
-		pro.append("defaultEncoding=UTF-8");
-		pro.append("url_escaping_charset=UTF-8");
-		pro.append("locale=zh_CN");
-		pro.append("boolean_format=true,false");
-		pro.append("datetime_format=yyyy-MM-dd HH:mm:ss");
-		pro.append("date_format=yyyy-MM-dd");
-		pro.append("time_format=HH:mm:ss");
-		pro.append("number_format=0.######");
+		pro.append("tag_syntax=auto_detect").append(NEW_LINE);
+		pro.append("template_update_delay=-1").append(NEW_LINE);
+		pro.append("defaultEncoding=UTF-8").append(NEW_LINE);
+		pro.append("url_escaping_charset=UTF-8").append(NEW_LINE);
+		pro.append("locale=zh_CN").append(NEW_LINE);
+		pro.append("boolean_format=true,false").append(NEW_LINE);
+		pro.append("datetime_format=yyyy-MM-dd HH:mm:ss").append(NEW_LINE);
+		pro.append("date_format=yyyy-MM-dd").append(NEW_LINE);
+		pro.append("time_format=HH:mm:ss").append(NEW_LINE);
+		pro.append("number_format=0.######").append(NEW_LINE);
 		pro.append("whitespace_stripping=true");
 	}
 
