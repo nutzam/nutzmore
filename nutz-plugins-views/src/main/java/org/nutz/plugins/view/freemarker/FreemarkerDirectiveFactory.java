@@ -36,4 +36,14 @@ public class FreemarkerDirectiveFactory {
 			list.add(freemarkerDirective);
 		}
 	}
+
+	public FreemarkerDirectiveFactory create(FreemarkerDirective... objs) {
+		if (Lang.isEmptyArray(objs)) {
+			return this;
+		}
+		for (FreemarkerDirective freemarkerDirective : objs) {
+			list.add(freemarkerDirective);
+		}
+		return this;
+	}
 }

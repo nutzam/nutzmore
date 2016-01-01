@@ -1,4 +1,13 @@
 var ioc = {
+	currentTime : {
+		type : "org.nutz.plugins.view.freemarker.directive.CurrentTimeDirective"
+	},
+	currentTimeDirective : {
+		type : "org.nutz.plugins.view.freemarker.FreemarkerDirective",
+		args : [ "currentTime", {
+			refer : "currentTime"
+		} ]
+	},
 	configuration : {
 		type : "freemarker.template.Configuration"
 	},
@@ -12,7 +21,14 @@ var ioc = {
 		}, {
 			app : '$servlet'
 		}, "WEB-INF", ".ftl", {
-			refer : "freemarkerDirectiveFactory"
+			refer : "freemarkerDirective"
+		} ]
+	},
+	freemarkerDirective : {
+		type : "org.nutz.plugins.view.freemarker.FreemarkerDirectiveFactory",
+		factory : "$freemarkerDirectiveFactory#create",
+		args : [ {
+			refer : "currentTimeDirective"
 		} ]
 	},
 	freemarkerDirectiveFactory : {
