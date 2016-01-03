@@ -18,7 +18,9 @@ import org.nutz.log.Logs;
 import org.nutz.mvc.Mvcs;
 
 import freemarker.template.Configuration;
+import freemarker.template.SimpleHash;
 import freemarker.template.TemplateException;
+import freemarker.template.TemplateModelException;
 
 public class FreeMarkerConfigurer {
 
@@ -124,5 +126,28 @@ public class FreeMarkerConfigurer {
 			Object obj = entry.getValue();
 			tags.put(key, obj);
 		}
+	}
+	/**
+	 * 加载用户自定义标签
+	 * @param map
+	 * @return
+	 * 
+	 * mapTags : {
+		factory : "$freeMarkerConfigurer#addTags",
+		args : [ {
+			'abc' : 1,
+			'def' : 2
+		} ]
+	}
+	 */
+	public FreeMarkerConfigurer addTags(Map<String, Object> map) {
+		if (map != null) {
+			try {
+				configuration.setAllSharedVariables(new SimpleHash(map));
+			} catch (TemplateModelException e) {
+				log.error(e);
+			}
+		}
+		return this;
 	}
 }
