@@ -11,6 +11,8 @@ public class FreemarkerDirectiveFactory {
 
 	private String freemarker;
 
+	private String suffix;
+
 	private FreemarkerDirective[] objs;
 
 	public FreemarkerDirectiveFactory() {
@@ -26,6 +28,10 @@ public class FreemarkerDirectiveFactory {
 
 	public String getFreemarker() {
 		return freemarker;
+	}
+
+	public String getSuffix() {
+		return suffix;
 	}
 
 	public void init() {

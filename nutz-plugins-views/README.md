@@ -12,13 +12,25 @@ freemarker默认请在MainModule中增加 "*org.nutz.plugins.view.freemarker.Fre
 
 ```
 mapTags : {
-		factory : "$freeMarkerConfigurer#addTags",
-		args : [ {
-			'abc' : 1,
-			'def' : 2
-		} ]
-	}
+	factory : "$freeMarkerConfigurer#addTags",
+	args : [ {
+		'abc' : 1,
+		'currentTime' : {
+			refer : 'currentTime'
+		},
+		ioc' : {
+			refer : '$ioc'
+		},
+		'conf' : {
+			java : '$conf.toMap()'
+		},
+		'cdnbase' : {
+			java : "$conf.get('cdnbase')"
+		}
+	} ]
+}
 	
 ```
 
-这样可以在模板中直接调用标签 ${abc}
+这样可以在模板中直接调用标签 
+<@currentTime /> ${rekoe} ${conf['emai.to']} ${abc}

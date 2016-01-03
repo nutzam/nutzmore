@@ -13,6 +13,7 @@ import javax.servlet.ServletContext;
 import org.nutz.lang.Files;
 import org.nutz.lang.Lang;
 import org.nutz.lang.Streams;
+import org.nutz.lang.Strings;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.mvc.Mvcs;
@@ -97,7 +98,7 @@ public class FreeMarkerConfigurer {
 	}
 
 	public String getSuffix() {
-		return suffix;
+		return Strings.isBlank(freemarkerDirectiveFactory.getSuffix()) ? this.suffix : freemarkerDirectiveFactory.getSuffix();
 	}
 
 	public String getPrefix() {
@@ -127,18 +128,15 @@ public class FreeMarkerConfigurer {
 			tags.put(key, obj);
 		}
 	}
+
 	/**
 	 * 加载用户自定义标签
+	 * 
 	 * @param map
 	 * @return
 	 * 
-	 * mapTags : {
-		factory : "$freeMarkerConfigurer#addTags",
-		args : [ {
-			'abc' : 1,
-			'def' : 2
-		} ]
-	}
+	 *         mapTags : { factory : "$freeMarkerConfigurer#addTags", args : [ {
+	 *         'abc' : 1, 'def' : 2 } ] }
 	 */
 	public FreeMarkerConfigurer addTags(Map<String, Object> map) {
 		if (map != null) {
