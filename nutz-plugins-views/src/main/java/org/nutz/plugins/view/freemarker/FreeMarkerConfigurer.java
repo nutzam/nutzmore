@@ -129,6 +129,16 @@ public class FreeMarkerConfigurer {
 		}
 	}
 
+	public FreeMarkerConfigurer setSuffix(String suffix) {
+		this.suffix = suffix;
+		return this;
+	}
+
+	public FreeMarkerConfigurer setPrefix(String prefix) {
+		this.prefix = prefix;
+		return this;
+	}
+
 	/**
 	 * 加载用户自定义标签
 	 * 
