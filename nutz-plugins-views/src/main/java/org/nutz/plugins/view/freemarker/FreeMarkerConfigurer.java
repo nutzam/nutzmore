@@ -2,6 +2,7 @@ package org.nutz.plugins.view.freemarker;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -106,17 +107,16 @@ public class FreeMarkerConfigurer {
 	}
 
 	protected void initFreeMarkerConfigurer() throws IOException, TemplateException {
-		Properties p = new Properties();
-		String path = freemarkerDirectiveFactory.getFreemarker();
-		File file = Files.findFile(path);
-		if (Lang.isEmpty(file)) {
-			p.load(Streams.wrap(pro.toString().getBytes()));
-		} else {
-			p.load(Streams.fileIn(file));
-		}
-		configuration.setSettings(p);
-		File f = Files.findFile(prefix);
-		configuration.setDirectoryForTemplateLoading(f);
+	    Properties p = new Properties();
+        String path = freemarkerDirectiveFactory.getFreemarker();
+        InputStream ins = getClass().getClassLoader().getResourceAsStream(path);
+        if (Lang.isEmpty(ins)) {
+            p.load(Streams.wrap(pro.toString().getBytes()));
+        } else {
+            p.load(ins);
+        }
+        configuration.setSettings(p);
+        configuration.setServletContextForTemplateLoading(Mvcs.getServletContext(), prefix);
 	}
 
 	public void setTags(Map<String, Object> map) {
