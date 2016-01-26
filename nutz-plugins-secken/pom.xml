@@ -56,5 +56,4 @@
 			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
 		</repository>
 	</distributionManagement>
-	<version>1.b.53</version>
 </project>
