@@ -2,7 +2,6 @@ package org.nutz.plugins.view.freemarker;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -37,10 +36,6 @@ public class FreeMarkerConfigurer {
 	private Map<String, Object> tags = new HashMap<String, Object>();
 	private final StringBuilder pro = new StringBuilder();
 
-	/**
-	 * 默认配置 前缀 /WEB-INF 也就是模板基路径 后缀 .ftl
-	 * 
-	 */
 	public FreeMarkerConfigurer() {
 		Configuration configuration = new Configuration();
 		this.initp(configuration, Mvcs.getServletContext(), "WEB-INF", ".ftl", null);
@@ -107,16 +102,17 @@ public class FreeMarkerConfigurer {
 	}
 
 	protected void initFreeMarkerConfigurer() throws IOException, TemplateException {
-	    Properties p = new Properties();
-        String path = freemarkerDirectiveFactory.getFreemarker();
-        InputStream ins = getClass().getClassLoader().getResourceAsStream(path);
-        if (Lang.isEmpty(ins)) {
-            p.load(Streams.wrap(pro.toString().getBytes()));
-        } else {
-            p.load(ins);
-        }
-        configuration.setSettings(p);
-        configuration.setServletContextForTemplateLoading(Mvcs.getServletContext(), prefix);
+		Properties p = new Properties();
+		String path = freemarkerDirectiveFactory.getFreemarker();
+		File file = Files.findFile(path);
+		if (Lang.isEmpty(file)) {
+			p.load(Streams.wrap(pro.toString().getBytes()));
+		} else {
+			p.load(Streams.fileIn(file));
+		}
+		configuration.setSettings(p);
+		File f = Files.findFile(prefix);
+		configuration.setDirectoryForTemplateLoading(f);
 	}
 
 	public void setTags(Map<String, Object> map) {
@@ -140,7 +136,6 @@ public class FreeMarkerConfigurer {
 	}
 
 	/**
-	 * 加载用户自定义标签
 	 * 
 	 * @param map
 	 * @return
