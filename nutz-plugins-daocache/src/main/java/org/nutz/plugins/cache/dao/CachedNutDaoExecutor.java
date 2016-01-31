@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 
 import org.nutz.dao.DB;
 import org.nutz.dao.DaoException;
+import org.nutz.dao.DatabaseMeta;
 import org.nutz.dao.impl.sql.run.NutDaoExecutor;
 import org.nutz.dao.pager.Pager;
 import org.nutz.dao.sql.DaoStatement;
@@ -283,5 +284,9 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
         if (!this.enable) {
             log.info("CachedNutDaoExecutor will disable.");
         }
+    }
+    
+    public void setMeta(DatabaseMeta meta) {
+        this.db = meta.getType();
     }
 }
