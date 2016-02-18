@@ -12,7 +12,7 @@ public class OAuthServiceImpl implements OAuthService {
 	private LRUCache<String, String> cache = new LRUCache<String, String>(1024);
 
 	@Inject
-	private OAuthClientService clientService;
+	private OAuthClientService oAuthClientService;
 
 	@Override
 	public void addAuthCode(String authCode, String username) {
@@ -46,12 +46,12 @@ public class OAuthServiceImpl implements OAuthService {
 
 	@Override
 	public boolean checkClientId(String clientId) {
-		return clientService.findByClientId(clientId) != null;
+		return oAuthClientService.findByClientId(clientId) != null;
 	}
 
 	@Override
 	public boolean checkClientSecret(String clientSecret) {
-		return clientService.findByClientSecret(clientSecret) != null;
+		return oAuthClientService.findByClientSecret(clientSecret) != null;
 	}
 
 	@Override
