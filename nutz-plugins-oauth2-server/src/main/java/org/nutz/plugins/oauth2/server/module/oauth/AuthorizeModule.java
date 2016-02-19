@@ -36,9 +36,9 @@ public class AuthorizeModule {
     @Inject
     private OAuthService oAuthService;
     @Inject
-    private OAuthClientService clientService;
+    private OAuthClientService oAuthClientService;
     @Inject
-    private OAuthUserService userService;
+    private OAuthUserService oAuthUserService;
 
     @At("/authorize")
     @Ok("json")
@@ -62,7 +62,7 @@ public class AuthorizeModule {
 
             // 如果用户没有登录，跳转到登陆页面
             if (!login(request)) {// 登录失败时跳转到登陆页面
-                return new ViewWrapper(new JspView("jsp.oauth2login"), clientService.findByClientId(oauthRequest.getClientId()));
+                return new ViewWrapper(new JspView("jsp.oauth2login"), oAuthClientService.findByClientId(oauthRequest.getClientId()));
             }
 
             String username = request.getParameter("username"); // 获取用户名
@@ -129,9 +129,9 @@ public class AuthorizeModule {
         }
         try {
             // 写登录逻辑
-            OAuthUser user = userService.findByUsername(username);
+            OAuthUser user = oAuthUserService.findByUsername(username);
             if (user != null) {
-                if (!userService.checkUser(username, password, user.getSalt(), user.getPassword())) {
+                if (!oAuthUserService.checkUser(username, password, user.getSalt(), user.getPassword())) {
                     request.setAttribute("error", "登录失败:密码不正确");
                     return false;
                 } else {
