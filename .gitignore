@@ -1,4 +1,13 @@
-/target/
-.classpath
-.settings
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+#workspace Files
 .project
+target/
+.settings/
+.classpath/
+.project/

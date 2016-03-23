@@ -11,38 +11,32 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang3.ClassUtils;
 import org.nutz.lang.Lang;
 import org.nutz.mvc.adaptor.PairAdaptor;
 
 import com.caucho.hessian.io.SerializerFactory;
 import com.caucho.hessian.server.HessianSkeleton;
 import com.caucho.services.server.ServiceContext;
-import com.myapp.db.service.impl.HelloServiceImpl;
 
 /**
- * @author koukou890@qq.com
+ * @author koukou890@qq.comØß
  * 
- * demo:
- * server<br /> 
- * @AdaptBy(type = HessianAdaptor.class, args = { "com.shanggame.module.SayHelloWorld", "com.shanggame.module.SayHelloWorldImpl" })
-	@At
-	@Ok("void")
-	public void t() {
-
-	}
+ *         demo: server<br />
+ * @AdaptBy(type = HessianAdaptor.class, args = {
+ *               "com.shanggame.module.SayHelloWorld",
+ *               "com.shanggame.module.SayHelloWorldImpl" })
+ * @At
+ * @Ok("void") public void t() {
  * 
- * client<br />
- * private HessianProxyFactory factory = new HessianProxyFactory(); 
- * public static void main(String[] args) {
-		HessianClient c = new HessianClient();
-		try {
-			Object obj = c.factory.create(SayHelloWorld.class, "http://localhost:8080/t");
-			System.out.println(((SayHelloWorld)obj).hi("abc"));
-		} catch (MalformedURLException e) {
-			log.error(e);
-		}
-	}
+ *             }
+ * 
+ *             client<br />
+ *             private HessianProxyFactory factory = new HessianProxyFactory();
+ *             public static void main(String[] args) { HessianClient c = new
+ *             HessianClient(); try { Object obj =
+ *             c.factory.create(SayHelloWorld.class, "http://localhost:8080/t");
+ *             System.out.println(((SayHelloWorld)obj).hi("abc")); } catch
+ *             (MalformedURLException e) { log.error(e); } }
  *
  */
 public class HessianAdaptor extends PairAdaptor {

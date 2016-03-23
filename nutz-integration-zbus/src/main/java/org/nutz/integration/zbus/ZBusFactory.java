@@ -31,7 +31,7 @@ import org.zbus.net.http.Message.MessageHandler;
 import org.zbus.rpc.RpcProcessor;
 
 public class ZBusFactory {
-	
+
 	private static final Log log = Logs.get();
 
 	protected Set<Consumer> consumers = new HashSet<Consumer>();
@@ -96,9 +96,10 @@ public class ZBusFactory {
 				MqConfig mqConfig = fromAnnotation(broker, z);
 				final Object obj = ioc.get(klass);
 				MessageHandler handler = null;
-				switch (method.getParameterCount()) {
+				switch (method.getParameterTypes().length) {
 				case 0:
 					handler = new MessageHandler() {
+						@Override
 						public void handle(Message msg, Session sess) throws IOException {
 							try {
 								method.invoke(obj);
@@ -110,6 +111,7 @@ public class ZBusFactory {
 					break;
 				case 1:
 					handler = new MessageHandler() {
+						@Override
 						public void handle(Message msg, Session sess) throws IOException {
 							try {
 								method.invoke(obj, msg);
@@ -121,6 +123,7 @@ public class ZBusFactory {
 					break;
 				case 2:
 					handler = new MessageHandler() {
+						@Override
 						public void handle(Message msg, Session sess) throws IOException {
 							try {
 								method.invoke(obj, msg, sess);
@@ -153,7 +156,7 @@ public class ZBusFactory {
 		try {
 			c.onMessage(handler);
 			if (mqConfig.getMode() == MqMode.MQ.intValue())
-			    c.createMQ();
+				c.createMQ();
 		} catch (Exception e) {
 			Streams.safeClose(c);
 			throw new RuntimeException("create Consumer fail obj=" + handler.getClass().getName(), e);
@@ -161,7 +164,7 @@ public class ZBusFactory {
 		c.start();
 		consumers.add(c);
 	}
-	
+
 	public static void buildServices(RpcProcessor rpcProcessor, Ioc ioc, String... pkgs) {
 		for (String pkg : pkgs) {
 			for (Class<?> klass : Scans.me().scanPackage(pkg)) {
@@ -172,7 +175,7 @@ public class ZBusFactory {
 			}
 		}
 	}
-	
+
 	public static void addInovker(Class<?> klass, Map<String, Map<String, Object>> map) {
 		ZBusInvoker export = klass.getAnnotation(ZBusInvoker.class);
 		if (export != null) {
@@ -185,12 +188,12 @@ public class ZBusFactory {
 			map.put(name, _map);
 		}
 	}
-	
+
 	public void mq(String mq, Object message) {
 		ZBusProducer p = getProducer(mq);
 		p.async(message);
 	}
-	
+
 	public void publish(String topic, Object message) {
 		ZBusProducer p = getProducer(topic);
 		p.async(message);

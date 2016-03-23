@@ -48,7 +48,7 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz</artifactId>
-			<version>1.r.55-SNAPSHOT</version>
+			<version>1.r.55</version>
 		</dependency>
 	</dependencies>
 
