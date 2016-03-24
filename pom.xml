@@ -101,7 +101,6 @@
 		<module>nutz-integration-struts2</module>
 		<module>nutz-integration-zbus</module>
 		<module>nutz-integration-hessian</module>
-		<module>nutzmore-aggregate</module>
 	</modules>
 	<properties>
 		<nutz.version>1.r.55-SNAPSHOT</nutz.version>
