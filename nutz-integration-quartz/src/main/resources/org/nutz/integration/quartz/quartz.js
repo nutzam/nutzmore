@@ -28,7 +28,7 @@ var ioc = {
             "refer" :"scheduler"
          },
          "conf" :{
-            "refer" :"conf"
+            "refer" :"@confName"
          }
       }
    }
