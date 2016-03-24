@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.nutz</groupId>
     <artifactId>nutzmore</artifactId>
-    <version>1.b.52</version>
+    <version>1.r.55-SNAPSHOT</version>
   </parent>
   <artifactId>nutz-integration-struts2</artifactId>
   <dependencies>
@@ -18,11 +18,6 @@
   				<groupId>org.springframework</groupId>
   			</exclusion>
   		</exclusions>
-  	</dependency>
-  	<dependency>
-  		<groupId>org.nutz</groupId>
-  		<artifactId>nutz</artifactId>
-  		<version>1.b.53</version>
   	</dependency>
   </dependencies>
 </project>

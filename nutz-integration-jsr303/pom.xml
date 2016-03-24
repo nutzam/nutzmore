@@ -4,10 +4,9 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.b.52</version>
+		<version>1.r.55-SNAPSHOT</version>
 	</parent>
-	<artifactId>nutz-integration-jsr303</artifactId>
-	<version>1.b.52.preview</version>	
+	<artifactId>nutz-integration-jsr303</artifactId>	
 	<description>Nutz and JSR 303</description>
 
 	<url>http://nutzam.com</url>
