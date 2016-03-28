@@ -1,6 +1,6 @@
 sudo: false
 language: java
-script: mvn -Dmaven.test.skip=true package
+script: mvn -Dmaven.test.skip=true clean source:jar deploy --settings mvn_settings.xml
 jdk:
   - openjdk7
 # whitelist
@@ -19,8 +19,4 @@ env:
    - SONATYPE_USERNAME=wendal
    - secure : "BaXmGpodQiuU23YgtUThWCHf7Vig2Gv3UfpBjo3FATgn1LRF3i2IOgY5sCSi+XJYqx+05fVNdwVYccxS/9UfhPNSqQuslIwgmg0y9f26DYaX2gaW+jk8padhZRkeBrY3fO+g9nQuu+Epgqi0ITru6+IjH932O0m1JR7iJu2RNhs="
 after_success:
-  - cd nutz-plugins-daocache && mvn -Dmaven.test.skip=true clean source:jar deploy --settings ../mvn_settings.xml
-  - cd ../nutz-integration-shiro && mvn -Dmaven.test.skip=true clean source:jar deploy --settings ../mvn_settings.xml
-  - cd ../nutz-integration-quartz && mvn -Dmaven.test.skip=true clean source:jar deploy --settings ../mvn_settings.xml
-  - cd ../nutz-plugins-sqltpl && mvn -Dmaven.test.skip=true clean source:jar deploy --settings ../mvn_settings.xml
-  - cd ../nutz-integration-zbus && mvn -Dmaven.test.skip=true clean source:jar deploy --settings ../mvn_settings.xml
+  - date
