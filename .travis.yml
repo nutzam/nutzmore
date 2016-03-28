@@ -2,7 +2,7 @@ sudo: false
 language: java
 script: mvn -Dmaven.test.skip=true package
 jdk:
-  - openjdk6
+  - openjdk7
 # whitelist
 branches:
   only:
