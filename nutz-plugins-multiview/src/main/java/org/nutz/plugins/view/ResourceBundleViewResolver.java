@@ -20,6 +20,7 @@ import org.nutz.mvc.view.AbstractPathView;
 
 /**
  * 接口 ViewMaker2的实现，用于从 IOC 容器配置文件中查找视图。
+ * 
  * @author denghuafeng(it@denghuafeng.com)
  *
  */
@@ -35,11 +36,12 @@ public class ResourceBundleViewResolver implements ViewMaker2 {
 	private static final String PATH = "path";
 	private static final String BASE_PATH = "basePath";
 	private static final String SERVLET_EXTENSION = "servletExtension";
-	private static final String SERVLET_EXTENSION_KEY="servlet.extension";
+	private static final String SERVLET_EXTENSION_KEY = "servlet.extension";
 	private static final String TPL_DIR = "tplDir";
-	private static final String RESOURCE_DIR="resource.dir";
+	private static final String RESOURCE_DIR = "resource.dir";
 	private static final String RES_PATH = "resPath";
 	private static final String TPL_RES_PATH = "tplResPath";
+	private static final String WEB_INF = "WEB-INF/";
 	private LinkedHashMap<String, AbstractTemplateViewResolver> resolvers = new LinkedHashMap<String, AbstractTemplateViewResolver>();
 	private MultiViewResover multiViewResover;
 	private PropertiesProxy config;
@@ -66,10 +68,13 @@ public class ResourceBundleViewResolver implements ViewMaker2 {
 		}
 
 		final AbstractTemplateViewResolver vr = resolvers.get(type);
-		
 		if (vr == null)
 			return null;
-		
+		if (Strings.isBlank(vr.getPrefix()) || Strings.isBlank(vr.getSuffix())) {
+			throw new NullPointerException(vr.getClass().getSimpleName()
+					+ " prefix or suffix is null");
+		}
+
 		if (!vr.isInited) {
 			synchronized (vr) {
 				if (!vr.isInited) {
@@ -78,7 +83,7 @@ public class ResourceBundleViewResolver implements ViewMaker2 {
 				}
 			}
 		}
-		
+
 		return new AbstractPathView(value) {
 			public void render(HttpServletRequest req,
 					HttpServletResponse resp, Object obj) throws Throwable {
@@ -88,10 +93,13 @@ public class ResourceBundleViewResolver implements ViewMaker2 {
 				sv.put(RESPONSE, resp);
 				sv.put(SESSION, Mvcs.getHttpSession());
 				sv.put(APPLICATION, Mvcs.getServletContext());
-				sv.put(VIEW_NAME, vr.getName());
-				if (vr.getContentType() != null) {
-					resp.setContentType(vr.getContentType());
+				sv.put(VIEW_NAME, vr.getClass().getSimpleName());
+
+				if (Strings.isBlank(resp.getContentType())
+						&& !Strings.isBlank(vr.getContentType())) {//resp的contentType优先级高
+					resp.setContentType(vr.getContentType());//配置文件设置的contentType
 				}
+
 				String evalPath = evalPath(req, obj);
 				String tplDir = vr.getPrefix();// 模板路径
 				String ext = vr.getSuffix();// 模板文件扩展名
@@ -106,8 +114,7 @@ public class ResourceBundleViewResolver implements ViewMaker2 {
 
 				if (Strings.isBlank(evalPath)) {
 					evalPath = Mvcs.getRequestPath(req);
-					evalPath = tplDir
-							+ (evalPath.startsWith("/") ? "" : "/")
+					evalPath = tplDir + (evalPath.startsWith("/") ? "" : "/")
 							+ Files.renameSuffix(evalPath, ext);
 				}
 				// 绝对路径 : 以 '/' 开头的路径不增加视图配置的模板路径
@@ -117,8 +124,7 @@ public class ResourceBundleViewResolver implements ViewMaker2 {
 				}
 				// 包名形式的路径
 				else {
-					evalPath = tplDir + "/" + evalPath.replace('.', '/')
-							+ ext;
+					evalPath = tplDir + "/" + evalPath.replace('.', '/') + ext;
 				}
 
 				String resDir = config.get(RESOURCE_DIR);
@@ -128,15 +134,15 @@ public class ResourceBundleViewResolver implements ViewMaker2 {
 				String path = req.getContextPath();
 				int serverPort = req.getServerPort();
 				String basePath = req.getScheme() + "://" + req.getServerName()
-						+ (serverPort != 80 ? ":" + serverPort : "")
-						+ path + "/";
+						+ (serverPort != 80 ? ":" + serverPort : "") + path
+						+ "/";
 				sv.put(PATH, path);
 				sv.put(BASE_PATH, basePath);
 				sv.put(SERVLET_EXTENSION, config.get(SERVLET_EXTENSION_KEY));
 				sv.put(TPL_DIR, tplDir);
-				sv.put(RES_PATH, path + "/" + resDir);//资源路径
-				sv.put(TPL_RES_PATH, path + "/" + resDir
-						+ tplDir + "/");//模板对应的资源路径
+				sv.put(RES_PATH, path + "/" + resDir);// 资源路径
+				sv.put(TPL_RES_PATH,
+						path + "/" + resDir + tplDir.replace(WEB_INF, "") + "/");// 模板对应的资源路径
 				vr.render(req, resp, evalPath, sv);
 			}
 		};

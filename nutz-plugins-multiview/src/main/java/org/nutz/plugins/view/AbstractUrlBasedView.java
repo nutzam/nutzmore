@@ -13,6 +13,8 @@ public abstract class AbstractUrlBasedView implements ViewResolver{
 	private String suffix = "";
 
 	private String contentType;
+	
+	private String configPath;
 
 	public String getName() {
 		return name;
@@ -45,10 +47,19 @@ public abstract class AbstractUrlBasedView implements ViewResolver{
 	public void setContentType(String contentType) {
 		this.contentType = contentType;
 	}
+	
+	public String getConfigPath() {
+		return configPath;
+	}
+
+	public void setConfigPath(String configPath) {
+		this.configPath = configPath;
+	}
 
 	@Override
 	public String toString() {
 		return "AbstractUrlBasedView [name=" + name + ", prefix=" + prefix
-				+ ", suffix=" + suffix + ", contentType=" + contentType + "]";
+				+ ", suffix=" + suffix + ", contentType=" + contentType
+				+ ", configPath=" + configPath + "]";
 	}
 }

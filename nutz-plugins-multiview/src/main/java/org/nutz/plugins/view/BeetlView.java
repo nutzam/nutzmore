@@ -1,5 +1,6 @@
 package org.nutz.plugins.view;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
@@ -11,6 +12,7 @@ import org.beetl.core.Configuration;
 import org.beetl.core.GroupTemplate;
 import org.beetl.core.resource.WebAppResourceLoader;
 import org.beetl.ext.web.WebRender;
+import org.nutz.lang.Strings;
 
 /**
  * Beetl视图。
@@ -25,6 +27,10 @@ public class BeetlView extends AbstractTemplateViewResolver {
 		Configuration cfg = null;
 		try {
 			cfg = Configuration.defaultConfiguration();
+			//针对beetl放在公共的lib目录获取不到beetl.properties的补救方案
+			if(!Strings.isBlank(getConfigPath())){
+				cfg.add(new File(appRoot+"/"+getConfigPath()+"/beetl.properties"));
+			}
 		} catch (IOException e) {
 			throw new RuntimeException("加载GroupTemplate失败", e);
 		}
