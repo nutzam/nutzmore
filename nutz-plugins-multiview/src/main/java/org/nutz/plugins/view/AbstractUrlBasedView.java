@@ -6,7 +6,6 @@ package org.nutz.plugins.view;
  *
  */
 public abstract class AbstractUrlBasedView implements ViewResolver{
-	private String name;
 	
 	private String prefix = "";
 
@@ -15,14 +14,6 @@ public abstract class AbstractUrlBasedView implements ViewResolver{
 	private String contentType;
 	
 	private String configPath;
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
 
 	public String getPrefix() {
 		return prefix;
@@ -58,8 +49,8 @@ public abstract class AbstractUrlBasedView implements ViewResolver{
 
 	@Override
 	public String toString() {
-		return "AbstractUrlBasedView [name=" + name + ", prefix=" + prefix
-				+ ", suffix=" + suffix + ", contentType=" + contentType
-				+ ", configPath=" + configPath + "]";
+		return "AbstractUrlBasedView [prefix=" + prefix + ", suffix=" + suffix
+				+ ", contentType=" + contentType + ", configPath=" + configPath
+				+ "]";
 	}
 }

@@ -2,7 +2,6 @@ var ioc = {
 	jsp : {
 		type : "org.nutz.plugins.view.JspView",
 		fields : {
-			name : "JSP",
 			prefix : "/WEB-INF/templates/jsp",
 			suffix : ".jsp"
 		}
@@ -10,7 +9,8 @@ var ioc = {
 	btl : {
 		type : "org.nutz.plugins.view.BeetlView",
 		fields : {
-			name : "Beetl",
+			contentType:"text/html; charset=UTF-8",
+			configPath:"WEB-INF/classes",
 			prefix : "/templates/btl",
 			suffix : ".html"
 		}
@@ -18,7 +18,6 @@ var ioc = {
 	jetx : {
 		type : "org.nutz.plugins.view.JetTemplateView",
 		fields : {
-			name : "JetTemplate",
 			prefix : "/WEB-INF/templates/jetx",
 			suffix : ".html"
 		}
@@ -26,7 +25,6 @@ var ioc = {
 	ftl : {
 		type : "org.nutz.plugins.view.FreemarkerView",
 		fields : {
-			name : "Freemarker",
 			prefix : "/WEB-INF/templates/ftl",
 			suffix : ".html"
 		}

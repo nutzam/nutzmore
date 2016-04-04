@@ -18,61 +18,59 @@
 3.配置json文件，创建view.js文件，内容如下：
 
 ```javascript
-var ioc = {
-	jsp : {
-		type : "org.nutz.plugins.view.JspView",
-		fields : {
-			name : "JSP",
-			prefix : "/WEB-INF/templates/jsp",
-			suffix : ".jsp"
-		}
-	},
-	btl : {
-		type : "org.nutz.plugins.view.BeetlView",
-		fields : {
-			name : "Beetl",
-			prefix : "/templates/btl",
-			suffix : ".html"
-		}
-	},
-	jetx : {
-		type : "org.nutz.plugins.view.JetTemplateView",
-		fields : {
-			name : "JetTemplate",
-			prefix : "/WEB-INF/templates/jetx",
-			suffix : ".html"
-		}
-	},
-	ftl : {
-		type : "org.nutz.plugins.view.FreemarkerView",
-		fields : {
-			name : "Freemarker",
-			prefix : "/WEB-INF/templates/ftl",
-			suffix : ".html"
-		}
-	},
-	multiViewResover : {
-		type : "org.nutz.plugins.view.MultiViewResover",
-		fields : {
-			resolvers : {
-				"jsp" : {
-					refer : "jsp"
-				},
-				"btl" : {
-					refer : "btl"
-				},
-				"jetx" : {
-					refer : "jetx"
-				},
-				"ftl" : {
-					refer : "ftl"
-				}
-			}
-		}
-	}
-};
+ var ioc = {
+    jsp : {
+        type : "org.nutz.plugins.view.JspView",
+        fields : {
+            prefix : "/WEB-INF/templates/jsp",
+            suffix : ".jsp"
+        }
+    },
+    btl : {
+        type : "org.nutz.plugins.view.BeetlView",
+        fields : {
+            contentType:"text/html; charset=UTF-8",
+            configPath:"WEB-INF/classes",
+            prefix : "/templates/btl",
+            suffix : ".html"
+        }
+    },
+    jetx : {
+        type : "org.nutz.plugins.view.JetTemplateView",
+        fields : {
+            prefix : "/WEB-INF/templates/jetx",
+            suffix : ".html"
+        }
+    },
+    ftl : {
+        type : "org.nutz.plugins.view.FreemarkerView",
+        fields : {
+            prefix : "/WEB-INF/templates/ftl",
+            suffix : ".html"
+        }
+    },
+    multiViewResover : {
+        type : "org.nutz.plugins.view.MultiViewResover",
+        fields : {
+            resolvers : {
+                "jsp" : {
+                    refer : "jsp"
+                },
+                "btl" : {
+                    refer : "btl"
+                },
+                "jetx" : {
+                    refer : "jetx"
+                },
+                "ftl" : {
+                    refer : "ftl"
+                }
+            }
+        }
+    }
+}; 
 ```
-当然要创建对应配置的目录
+当然要创建对应配置的目录，上面beetl的configPath是指这个视图的配置文件目录，相对于项目根目录来说的，可配置或不配置，分情况而定。 
 
 4.在module的方法里返回相应的视图，当然要创建相应的视图文件，如下：
 
@@ -132,7 +130,9 @@ public class JspModule {
 
 访问相应的链接，就会找到相应的视图，
 
-注意的地方：1.如果beetl.properties里设置了RESOURCE.root=WEB-INF ，则view.js配置的beetl视图的路径则在WEB-INF下面。例如
+注意的地方：
+
+1.如果beetl.properties里设置了RESOURCE.root=WEB-INF ，则view.js配置的beetl视图的路径则在WEB-INF下面。例如
 
 ```Java
  #默认配置
@@ -190,6 +190,7 @@ view.js配置文件中，multiViewResover是约定的名称。
 <br/>例如以下是在此插件下beetl模板视图的实现：
 
 ```Java
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
@@ -201,34 +202,39 @@ import org.beetl.core.Configuration;
 import org.beetl.core.GroupTemplate;
 import org.beetl.core.resource.WebAppResourceLoader;
 import org.beetl.ext.web.WebRender;
+import org.nutz.lang.Strings;
 
 public class BeetlView extends AbstractTemplateViewResolver {
-	public GroupTemplate groupTemplate;
+    public GroupTemplate groupTemplate;
 
-	@Override
-	protected void init(String appRoot,ServletContext sc) {
-		Configuration cfg = null;
-		try {
-			cfg = Configuration.defaultConfiguration();
-		} catch (IOException e) {
-			throw new RuntimeException("加载GroupTemplate失败", e);
-		}
-		WebAppResourceLoader resourceLoader = new WebAppResourceLoader();
-		resourceLoader.setRoot(appRoot);
-		groupTemplate = new GroupTemplate(resourceLoader, cfg);
-	}
+    @Override
+    protected void init(String appRoot,ServletContext sc) {
+        Configuration cfg = null;
+        try {
+            cfg = Configuration.defaultConfiguration();
+            //针对beetl放在公共的lib目录获取不到beetl.properties的补救方案
+            if(!Strings.isBlank(getConfigPath())){
+                cfg.add(new File(appRoot+"/"+getConfigPath()+"/beetl.properties"));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("加载GroupTemplate失败", e);
+        }
+        WebAppResourceLoader resourceLoader = new WebAppResourceLoader();
+        resourceLoader.setRoot(appRoot);
+        groupTemplate = new GroupTemplate(resourceLoader, cfg);
+    }
 
-	@Override
-	public void render(HttpServletRequest req, HttpServletResponse resp,
-			String evalPath, Map<String, Object> sharedVars) throws Throwable {
-		groupTemplate.setSharedVars(sharedVars);
-		WebRender render = new WebRender(groupTemplate);
-		render.render(evalPath, req, resp);
-	}
+    @Override
+    public void render(HttpServletRequest req, HttpServletResponse resp,
+            String evalPath, Map<String, Object> sharedVars) throws Throwable {
+        groupTemplate.setSharedVars(sharedVars);
+        WebRender render = new WebRender(groupTemplate);
+        render.render(evalPath, req, resp);
+    }
 
-} 
+}
 ```
-
+<br/>注意上面的getConfigPath()方法的代码，是为了实现beetl放在公共的lib目录获取不到beetl配置文件的问题而补救的一个解决方案，configPath是父类AbstractTemplateViewResolver 的属性,可在ioc配置文件中配置。 
 <br/>init方法只执行一次，一般用于加载视图的配置相关的代码，且某些对象只需实例化一次，后面就不用实例化。
 <br/>render方法的sharedVars是全局的变量，有这些：
 <br/>
@@ -244,27 +250,28 @@ path 项目根路径，
 
 模板对应的资源路径tplResPath，
 
+还有个viewName变量，用于显示使用的模板视图的名称。
+
 这几个变量对于做博客论坛等经常更换模板的程序很有用。 
 
 ResourceBundleViewResolver源码片段
 
 ```Java
- String resDir = config.get(RESOURCE_DIR);
+String resDir = config.get(RESOURCE_DIR);
 if (Strings.isBlank(resDir)) {
-	resDir = "";
-}
+   resDir = "";
+ }
 String path = req.getContextPath();
 int serverPort = req.getServerPort();
 String basePath = req.getScheme() + "://" + req.getServerName()
-						+ (serverPort != 80 ? ":" + serverPort : "")
-						+ path + "/";
+     + (serverPort != 80 ? ":" + serverPort : "") + path
+    + "/";
 sv.put(PATH, path);
 sv.put(BASE_PATH, basePath);
 sv.put(SERVLET_EXTENSION, config.get(SERVLET_EXTENSION_KEY));
 sv.put(TPL_DIR, tplDir);
-sv.put(RES_PATH, path + "/" + resDir);//资源路径
-sv.put(TPL_RES_PATH, path + "/" + resDir
-						+ tplDir + "/");//模板对应的资源路径
+sv.put(RES_PATH, path + "/" + resDir);// 资源路径
+sv.put(TPL_RES_PATH,path + "/" + resDir + tplDir.replace(WEB_INF, "") + "/");// 模板对应的资源路径
 vr.render(req, resp, evalPath, sv);
 
 ```
