@@ -91,6 +91,7 @@
 		<module>nutz-integration-shiro</module>
 		<module>nutz-plugins-validation</module>
 		<module>nutz-plugins-views</module>
+		<module>nutz-plugins-multiview</module>
 		<module>nutz-plugins-xmlentitymaker</module>
 		<module>nutz-plugins-iocloader</module>
 		<module>nutz-integration-jsch</module>
