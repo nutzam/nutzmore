@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.nutz</groupId>
     <artifactId>nutzmore</artifactId>
-    <version>1.r.55-SNAPSHOT</version>
+    <version>1.r.56-SNAPSHOT</version>
   </parent>
   <artifactId>nutz-plugins-jsonrpc</artifactId>
   
