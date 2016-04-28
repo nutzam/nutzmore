@@ -4,7 +4,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.nutz.lang.Strings;
-import org.nutz.mvc.Mvcs;
 import org.nutz.mvc.View;
 
 /**
@@ -45,7 +44,6 @@ public class ExtFailView implements View {
 	@Override
 	public void render(HttpServletRequest request, HttpServletResponse response, Object obj) throws Throwable {
 
-		Mvcs.getAtMap().getMethodMapping()
 		// 看看是不是ajax请求
 		String requestType = request.getHeader("X-Requested-With");
 		if (Strings.isBlank(requestType)) {
