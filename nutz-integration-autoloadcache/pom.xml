@@ -20,7 +20,7 @@
 		<dependency>
 			<groupId>com.github.qiujiayu</groupId>
 			<artifactId>autoload-cache</artifactId>
-			<version>4.0</version>
+			<version>4.1</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.springframework</groupId>
