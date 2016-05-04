@@ -6,6 +6,7 @@
 		<artifactId>nutzmore</artifactId>
 		<version>1.r.56-SNAPSHOT</version>
 	</parent>
+	<version>1.r.56</version>
 	<artifactId>nutz-integration-autoloadcache</artifactId>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
