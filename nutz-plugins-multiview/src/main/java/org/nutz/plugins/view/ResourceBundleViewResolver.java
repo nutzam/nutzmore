@@ -140,9 +140,12 @@ public class ResourceBundleViewResolver implements ViewMaker2 {
 				sv.put(BASE_PATH, basePath);
 				sv.put(SERVLET_EXTENSION, config.get(SERVLET_EXTENSION_KEY));
 				sv.put(TPL_DIR, tplDir);
-				sv.put(RES_PATH, path + "/" + resDir);// 资源路径
+				if (!resDir.startsWith("http")) {// 如果是http开头，说明是CDN静态地址
+					resDir = path + "/" + resDir;
+				}
+				sv.put(RES_PATH, resDir);// 资源路径
 				sv.put(TPL_RES_PATH,
-						path + "/" + resDir + tplDir.replace(WEB_INF, "") + "/");// 模板对应的资源路径
+						resDir + tplDir.replace(WEB_INF, "") + "/");// 模板对应的资源路径
 				vr.render(req, resp, evalPath, sv);
 			}
 		};
