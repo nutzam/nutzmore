@@ -37,6 +37,7 @@ public class BeetlView extends AbstractTemplateViewResolver {
 		WebAppResourceLoader resourceLoader = new WebAppResourceLoader();
 		resourceLoader.setRoot(appRoot);
 		groupTemplate = new GroupTemplate(resourceLoader, cfg);
+		groupTemplate.setClassLoader(sc.getClassLoader());
 	}
 
 	@Override
