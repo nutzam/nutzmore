@@ -1,6 +1,6 @@
 # nutz-plugins-multiview 多视图插件
 
-###### 适应nutz 1.r.55以上，以下版本z暂时未测试
+###### 适应nutz 1.r.55以上，以下版本暂时未测试
 
 针对https://github.com/nutzam/nutz/issues/603#issuecomment-35709620上提出的问题，开发了此插件、
 <br/>目的是用于开发博客社交类等程序，这些可能会经常要更换模板，路径写死在代码不合适。
@@ -222,6 +222,7 @@ public class BeetlView extends AbstractTemplateViewResolver {
         WebAppResourceLoader resourceLoader = new WebAppResourceLoader();
         resourceLoader.setRoot(appRoot);
         groupTemplate = new GroupTemplate(resourceLoader, cfg);
+        groupTemplate.setClassLoader(sc.getClassLoader());//beetl放在公共lib包，classpath路径会出错，需告知beetl的classLoader
     }
 
     @Override
@@ -270,8 +271,11 @@ sv.put(PATH, path);
 sv.put(BASE_PATH, basePath);
 sv.put(SERVLET_EXTENSION, config.get(SERVLET_EXTENSION_KEY));
 sv.put(TPL_DIR, tplDir);
-sv.put(RES_PATH, path + "/" + resDir);// 资源路径
-sv.put(TPL_RES_PATH,path + "/" + resDir + tplDir.replace(WEB_INF, "") + "/");// 模板对应的资源路径
+if (!resDir.startsWith("http")) {// 如果是http开头，说明是CDN静态地址
+   resDir = path + "/" + resDir;
+}
+sv.put(RES_PATH, resDir);// 资源路径
+sv.put(TPL_RES_PATH,resDir + tplDir.replace(WEB_INF, "") + "/");// 模板对应的资源路径
 vr.render(req, resp, evalPath, sv);
 
 ```
@@ -297,4 +301,14 @@ resource.dir=resources
 ```
 
 servlet.extension 是请求连接的后缀 对应页面变量servletExtension
-resource.dir  资源根路径 对应页面变量resPath
+
+resource.dir  资源根路径 对应页面变量resPath,此路径可以设置为静态资源链接地址，例如：http://static.denghuafeng.com
+
+
+# 功能改进计划：
+
+###### 1.支持全局变量的添加，例如，把一些字典的类加载到全局里，供页面调用。
+
+###### 2.考虑把config加到全局里，例如，在配置文件中配置了CDN地址，想在页面中能调用。
+
+###### 3.支持Ajax视图，此需要特殊处理。例如，前段Ajax请求，需要处理获取的数据、本次请求状态、提示信息等。 
