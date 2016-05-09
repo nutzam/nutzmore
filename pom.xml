@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.nutz</groupId>
 	<artifactId>nutzmore</artifactId>
-	<version>1.r.56-SNAPSHOT</version>
+	<version>1.r.56</version>
 	<name>nutzmore</name>
 	<description>Nutz, which is a collections of lightweight frameworks, each of them can be used independently</description>
 
@@ -48,7 +48,7 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz</artifactId>
-			<version>1.r.56-SNAPSHOT</version>
+			<version>1.r.56</version>
 		</dependency>
 	</dependencies>
 
@@ -105,7 +105,7 @@
 		<module>nutz-plugins-jsonrpc</module>
 	</modules>
 	<properties>
-		<nutz.version>1.r.56-SNAPSHOT</nutz.version>
+		<nutz.version>1.r.56</nutz.version>
 	</properties>
 	<distributionManagement>
 		<snapshotRepository>

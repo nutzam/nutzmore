@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.r.56-SNAPSHOT</version>
+		<version>1.r.56</version>
 	</parent>
 	<artifactId>nutz-plugins-views</artifactId>
 	<description>Nutz More Views</description>
@@ -103,7 +103,6 @@
 			</plugin>
 		</plugins>
 	</build>
-	<version>1.r.56-SNAPSHOT</version>
 	<distributionManagement>
 		<snapshotRepository>
 			<id>sonatype-snapshots</id>
