@@ -38,7 +38,7 @@ public class FreeMarkerConfigurer {
 
 	public FreeMarkerConfigurer() {
 		Configuration configuration = new Configuration();
-		this.initp(configuration, Mvcs.getServletContext(), "WEB-INF", ".ftl", null);
+		this.initp(configuration, Mvcs.getServletContext(), "WEB-INF", ".ftl", new FreemarkerDirectiveFactory());
 	}
 
 	public FreeMarkerConfigurer(Configuration configuration, ServletContext sc, String prefix, String suffix, FreemarkerDirectiveFactory freemarkerDirectiveFactory) {
