@@ -30,7 +30,7 @@ public class ResourceBundleViewResolver implements ViewMaker2 {
 	private static final String RESPONSE = "response";
 	private static final String SESSION = "session";
 	private static final String APPLICATION = "application";
-	private static final String CONFIG = "config";
+	private static final String CONFIG = "conf";
 	private static final String MULTI_VIEW_RESOVER = "multiViewResover";
 	private static final String VIEW_NAME = "viewName";
 	private static final String PATH = "path";
