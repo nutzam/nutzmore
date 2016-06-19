@@ -284,7 +284,7 @@ vr.render(req, resp, evalPath, sv);
 
 ```javascript
  // 读取配置文件
-	config : {
+	conf : {
 			type : "org.nutz.ioc.impl.PropertiesProxy",
 			fields : { paths : ["SystemGlobals.properties"] } 
 	}
