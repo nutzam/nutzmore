@@ -9,16 +9,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.nutz.http.Header;
-import org.nutz.http.Request;
-import org.nutz.http.Request.METHOD;
-import org.nutz.http.Response;
-import org.nutz.http.Sender;
+import net.dongliu.requests.Client;
+import net.dongliu.requests.Response;
+import net.dongliu.requests.Session;
+
 import org.nutz.json.Json;
 import org.nutz.lang.ContinueLoop;
 import org.nutz.lang.Each;
 import org.nutz.lang.ExitLoop;
-import org.nutz.lang.Files;
 import org.nutz.lang.Lang;
 import org.nutz.lang.LoopException;
 import org.nutz.lang.util.NutMap;
@@ -76,55 +74,18 @@ public class WebQQClient implements Closeable {
 
 	private String psessionid;
 
-	/**
-	 * @return the vfwebqq
-	 */
-	public String getVfwebqq() {
-		return vfwebqq;
-	}
+	// 客户端
+	private Client client;
 
-	/**
-	 * @return the mESSAGE_ID
-	 */
-	public static long getMESSAGE_ID() {
-		return MESSAGE_ID;
-	}
-
-	/**
-	 * @return the uin
-	 */
-	public long getUin() {
-		return uin;
-	}
-
-	/**
-	 * @param mESSAGE_ID
-	 *            the mESSAGE_ID to set
-	 */
-	public static void setMESSAGE_ID(long mESSAGE_ID) {
-		MESSAGE_ID = mESSAGE_ID;
-	}
-
-	/**
-	 * @param vfwebqq
-	 *            the vfwebqq to set
-	 */
-	public void setVfwebqq(String vfwebqq) {
-		this.vfwebqq = vfwebqq;
-	}
-
-	/**
-	 * @param uin
-	 *            the uin to set
-	 */
-	public void setUin(long uin) {
-		this.uin = uin;
-	}
+	// 会话
+	private Session session;
 
 	// 线程开关
 	private volatile boolean pollStarted;
 
 	public WebQQClient(final MessageCallback callback) {
+		this.client = Client.pooled().maxPerRoute(5).maxTotal(10).build();
+		this.session = client.session();
 		login();
 		if (callback != null) {
 			this.pollStarted = true;
@@ -165,7 +126,7 @@ public class WebQQClient implements Closeable {
 		r.put("psessionid", psessionid);
 		r.put("key", "");
 
-		Response response = post(ApiURL.POLL_MESSAGE, r);
+		Response<String> response = post(ApiURL.POLL_MESSAGE, r);
 		List<NutMap> array = getJsonArrayResult(response);
 		for (int i = 0; array != null && i < array.size(); i++) {
 			NutMap message = array.get(i);
@@ -201,16 +162,7 @@ public class WebQQClient implements Closeable {
 		} catch (IOException e) {
 			throw new RuntimeException("二维码保存失败");
 		}
-		Request request = Request.create(ApiURL.GET_QR_CODE.getUrl(), METHOD.GET);
-
-		Map<String, String> header = new HashMap<String, String>();
-
-		header.put("User-Agent", ApiURL.USER_AGENT);
-
-		request.setHeader(Header.create(header));
-
-		Sender sender = Sender.create(request);
-		Files.write(filePath, sender.send().getStream());
+		session.get(ApiURL.GET_QR_CODE.getUrl()).addHeader("User-Agent", ApiURL.USER_AGENT).file(filePath);
 		LOGGER.info("二维码已保存在 " + filePath + " 文件中，请打开手机QQ并扫描二维码");
 	}
 
@@ -220,7 +172,7 @@ public class WebQQClient implements Closeable {
 		// 阻塞直到确认二维码认证成功
 		while (true) {
 			sleep(1);
-			String result = get(ApiURL.VERIFY_QR_CODE).getContent();
+			String result = get(ApiURL.VERIFY_QR_CODE).getBody();
 			System.err.println(result);
 			if (result.contains("成功")) {
 				for (String content : result.split("','")) {
@@ -240,7 +192,7 @@ public class WebQQClient implements Closeable {
 	private void getPtwebqq(String url) {
 		LOGGER.info("开始获取ptwebqq");
 		Response response = get(ApiURL.GET_PTWEBQQ, url);
-		this.ptwebqq = response.getCookie().get("ptwebqq");
+		this.ptwebqq = response.getCookies().get("ptwebqq").iterator().next().getValue();
 	}
 
 	// 登录流程4：获取vfwebqq
@@ -277,12 +229,12 @@ public class WebQQClient implements Closeable {
 		return getResponseJson(response).getList("result", NutMap.class);
 	}
 
-	private static NutMap getResponseJson(Response response) {
+	private static NutMap getResponseJson(Response<String> response) {
 
-		if (!response.isOK()) {
-			throw new RuntimeException(String.format("请求失败，Http返回码[%d]", response.getStatus()));
+		if (response.getStatusCode() != 200) {
+			throw new RuntimeException(String.format("请求失败，Http返回码[%d]", response.getStatusCode()));
 		}
-		NutMap data = Lang.map(response.getContent());
+		NutMap data = Lang.map(response.getBody());
 		Integer retCode = data.getAs("retcode", Integer.class);
 		if (retCode == null || retCode != 0) {
 			if (retCode != null && retCode == 103) {
@@ -294,52 +246,15 @@ public class WebQQClient implements Closeable {
 		return data;
 	}
 
-	/**
-	 * get请求
-	 * 
-	 * @param url
-	 *            地址
-	 * @param params
-	 *            参数
-	 * @return
-	 */
-	protected Response get(ApiURL url, Object... params) {
-
-		Map<String, String> header = new HashMap<String, String>();
-
-		header.put("User-Agent", ApiURL.USER_AGENT);
-		header.put("Referer", url.getReferer());
-
-		Request request = Request.get(url.buildUrl(params), Header.create().addAll(header));
-
-		System.err.println(Json.toJson(request));
-
-		Sender sender = Sender.create(request);
-
-		return sender.send();
+	// 发送get请求
+	private net.dongliu.requests.Response<String> get(ApiURL url, Object... params) {
+		return session.get(url.buildUrl(params)).addHeader("User-Agent", ApiURL.USER_AGENT).addHeader("Referer", url.getReferer()).text();
 	}
 
-	/**
-	 * post 请求
-	 * 
-	 * @param url
-	 * @param data
-	 * @return
-	 */
-	protected Response post(ApiURL url, Map data) {
-
-		Request request = Request.create(url.getUrl(), METHOD.POST, NutMap.NEW().addv("r", Json.toJson(data)));
-
-		Map<String, String> header = new HashMap<String, String>();
-
-		header.put("User-Agent", ApiURL.USER_AGENT);
-		header.put("Referer", url.getReferer());
-		header.put("Origin", url.getOrigin());
-
-		request.setHeader(Header.create(header));
-
-		Sender sender = Sender.create(request);
-		return sender.send();
+	// 发送post请求
+	private net.dongliu.requests.Response<String> post(ApiURL url, NutMap r) {
+		return session.post(url.getUrl()).addHeader("User-Agent", ApiURL.USER_AGENT).addHeader("Referer", url.getReferer()).addHeader("Origin", url.getOrigin())
+				.addForm("r", Json.toJson(r)).text();
 	}
 
 	public List<Category> getFriendListWithCategory() {
@@ -447,15 +362,15 @@ public class WebQQClient implements Closeable {
 		r.put("msg_id", MESSAGE_ID++);
 		r.put("psessionid", psessionid);
 
-		Response response = post(ApiURL.SEND_MESSAGE_TO_GROUP, r);
+		Response<String> response = post(ApiURL.SEND_MESSAGE_TO_GROUP, r);
 		checkSendMsgResult(response);
 	}
 
-	private static void checkSendMsgResult(Response response) {
-		if (!response.isOK()) {
-			LOGGER.error(String.format("发送失败，Http返回码[%d]", response.getStatus()));
+	private static void checkSendMsgResult(Response<String> response) {
+		if (response.getStatusCode() != 200) {
+			LOGGER.error(String.format("发送失败，Http返回码[%d]", response.getStatusCode()));
 		}
-		NutMap result = Lang.map(response.getContent());
+		NutMap result = Lang.map(response.getBody());
 		Integer errCode = result.getAs("errCode", Integer.class);
 		if (errCode != null && errCode == 0) {
 			LOGGER.info("发送成功!");
