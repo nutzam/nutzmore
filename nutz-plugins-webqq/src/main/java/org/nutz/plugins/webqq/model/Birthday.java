@@ -3,10 +3,19 @@ package org.nutz.plugins.webqq.model;
 import org.nutz.json.Json;
 
 /**
- * 生日
  * 
- * @author ScienJus
- * @date 2015/12/24.
+ * 
+ * @author Kerbores(kerbores@gmail.com)
+ *
+ * @project nutz-plugins-webqq
+ *
+ * @file Birthday.java
+ *
+ * @description 生日
+ *
+ *
+ * @DateTime 2016年6月28日 下午1:27:39
+ *
  */
 public class Birthday {
 

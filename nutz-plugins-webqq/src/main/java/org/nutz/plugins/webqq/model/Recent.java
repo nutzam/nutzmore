@@ -3,10 +3,19 @@ package org.nutz.plugins.webqq.model;
 import org.nutz.json.Json;
 
 /**
- * 最近会话
  * 
- * @author ScienJus
- * @date 2015/12/24.
+ * 
+ * @author Kerbores(kerbores@gmail.com)
+ *
+ * @project nutz-plugins-webqq
+ *
+ * @file Recent.java
+ *
+ * @description 最近会话
+ *
+ *
+ * @DateTime 2016年6月28日 下午1:30:20
+ *
  */
 public class Recent {
 

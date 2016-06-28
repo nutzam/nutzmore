@@ -6,10 +6,19 @@ import java.util.List;
 import org.nutz.json.Json;
 
 /**
- * 群资料
  * 
- * @author ScienJus
- * @date 2015/12/24.
+ * 
+ * @author Kerbores(kerbores@gmail.com)
+ *
+ * @project nutz-plugins-webqq
+ *
+ * @file GroupInfo.java
+ *
+ * @description 群资料
+ *
+ *
+ * @DateTime 2016年6月28日 下午1:29:40
+ *
  */
 public class GroupInfo {
 

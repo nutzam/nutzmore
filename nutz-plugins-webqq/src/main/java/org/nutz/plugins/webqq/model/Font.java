@@ -3,10 +3,19 @@ package org.nutz.plugins.webqq.model;
 import org.nutz.json.Json;
 
 /**
- * 字体
  * 
- * @author ScienJus
- * @date 15/12/19.
+ * 
+ * @author Kerbores(kerbores@gmail.com)
+ *
+ * @project nutz-plugins-webqq
+ *
+ * @file Font.java
+ *
+ * @description 字体
+ *
+ *
+ * @DateTime 2016年6月28日 下午1:28:56
+ *
  */
 public class Font {
 

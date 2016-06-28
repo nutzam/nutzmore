@@ -3,11 +3,19 @@ package org.nutz.plugins.webqq.model;
 import org.nutz.json.Json;
 
 /**
- * 群消息.
+ * 
+ * 
+ * @author Kerbores(kerbores@gmail.com)
  *
- * @author ScienJus
- * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @date 15/12/19.
+ * @project nutz-plugins-webqq
+ *
+ * @file GroupMessage.java
+ *
+ * @description 群消息.
+ *
+ *
+ * @DateTime 2016年6月28日 下午1:29:51
+ *
  */
 public class GroupMessage {
 

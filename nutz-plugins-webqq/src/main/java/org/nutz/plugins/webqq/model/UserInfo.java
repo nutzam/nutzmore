@@ -4,10 +4,19 @@ import org.nutz.json.Json;
 import org.nutz.json.JsonField;
 
 /**
- * 用户
  * 
- * @author ScienJus
- * @date 2015/12/24.
+ * 
+ * @author Kerbores(kerbores@gmail.com)
+ *
+ * @project nutz-plugins-webqq
+ *
+ * @file UserInfo.java
+ *
+ * @description 用户
+ *
+ *
+ * @DateTime 2016年6月28日 下午1:30:34
+ *
  */
 public class UserInfo {
 

@@ -4,11 +4,19 @@ import org.nutz.json.Json;
 import org.nutz.lang.util.NutMap;
 
 /**
- * 消息.
+ * 
+ * 
+ * @author Kerbores(kerbores@gmail.com)
  *
- * @author ScienJus
- * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @date 15/12/19.
+ * @project nutz-plugins-webqq
+ *
+ * @file Message.java
+ *
+ * @description 消息.
+ *
+ *
+ * @DateTime 2016年6月28日 下午1:30:10
+ *
  */
 public class Message {
 

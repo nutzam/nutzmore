@@ -3,10 +3,19 @@ package org.nutz.plugins.webqq.model;
 import org.nutz.json.Json;
 
 /**
- * 讨论组消息
  * 
- * @author ScienJus
- * @date 15/12/19.
+ * 
+ * @author Kerbores(kerbores@gmail.com)
+ *
+ * @project nutz-plugins-webqq
+ *
+ * @file DiscussMessage.java
+ *
+ * @description 讨论组消息
+ *
+ *
+ * @DateTime 2016年6月28日 下午1:28:33
+ *
  */
 public class DiscussMessage {
 

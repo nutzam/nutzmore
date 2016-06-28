@@ -48,7 +48,7 @@ import org.nutz.plugins.webqq.model.UserInfo;
  *
  * @file WebQQClient.java
  *
- * @description webqq
+ * @description webqq客户端
  *
  *
  * @DateTime 2016年6月27日 下午5:16:31

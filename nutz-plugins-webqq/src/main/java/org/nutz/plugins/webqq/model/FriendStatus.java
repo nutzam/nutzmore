@@ -4,10 +4,19 @@ import org.nutz.json.Json;
 import org.nutz.json.JsonField;
 
 /**
- * 好友状态
  * 
- * @author ScienJus
- * @date 2015/12/24.
+ * 
+ * @author Kerbores(kerbores@gmail.com)
+ *
+ * @project nutz-plugins-webqq
+ *
+ * @file FriendStatus.java
+ *
+ * @description 好友状态
+ *
+ *
+ * @DateTime 2016年6月28日 下午1:29:19
+ *
  */
 public class FriendStatus {
 

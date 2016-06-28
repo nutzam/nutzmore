@@ -3,10 +3,19 @@ package org.nutz.plugins.webqq.model;
 import org.nutz.json.Json;
 
 /**
- * 群成员
  * 
- * @author ScienJus
- * @date 2015/12/24.
+ * 
+ * @author Kerbores(kerbores@gmail.com)
+ *
+ * @project nutz-plugins-webqq
+ *
+ * @file GroupUser.java
+ *
+ * @description 群成员
+ *
+ *
+ * @DateTime 2016年6月28日 下午1:30:00
+ *
  */
 public class GroupUser {
 

@@ -5,10 +5,19 @@ import org.nutz.plugins.webqq.model.GroupMessage;
 import org.nutz.plugins.webqq.model.Message;
 
 /**
- * 收到消息的回调
  * 
- * @author ScienJus
- * @date 2015/12/18.
+ * 
+ * @author Kerbores(kerbores@gmail.com)
+ *
+ * @project nutz-plugins-webqq
+ *
+ * @file MessageCallback.java
+ *
+ * @description 消息回调
+ *
+ *
+ * @DateTime 2016年6月28日 下午1:26:57
+ *
  */
 public interface MessageCallback {
 

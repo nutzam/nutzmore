@@ -12,8 +12,19 @@ import org.nutz.plugins.webqq.model.GroupMessage;
 import org.nutz.plugins.webqq.model.Message;
 
 /**
- * @author ScienJus
- * @date 2015/12/18.
+ * 
+ * 
+ * @author Kerbores(kerbores@gmail.com)
+ *
+ * @project nutz-plugins-webqq
+ *
+ * @file Application.java
+ *
+ * @description 应用示例
+ *
+ *
+ * @DateTime 2016年6月28日 下午1:26:35
+ *
  */
 public class Application {
 

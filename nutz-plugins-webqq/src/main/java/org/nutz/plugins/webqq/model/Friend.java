@@ -3,10 +3,19 @@ package org.nutz.plugins.webqq.model;
 import org.nutz.json.Json;
 
 /**
- * 好友
  * 
- * @author ScienJus
- * @date 2015/12/18.
+ * 
+ * @author Kerbores(kerbores@gmail.com)
+ *
+ * @project nutz-plugins-webqq
+ *
+ * @file Friend.java
+ *
+ * @description 好友
+ *
+ *
+ * @DateTime 2016年6月28日 下午1:29:06
+ *
  */
 public class Friend {
 

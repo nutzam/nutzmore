@@ -4,10 +4,19 @@ import org.nutz.json.Json;
 import org.nutz.json.JsonField;
 
 /**
- * 讨论组
  * 
- * @author ScienJus
- * @date 2015/12/23.
+ * 
+ * @author Kerbores(kerbores@gmail.com)
+ *
+ * @project nutz-plugins-webqq
+ *
+ * @file Discuss.java
+ *
+ * @description 讨论组
+ *
+ *
+ * @DateTime 2016年6月28日 下午1:28:07
+ *
  */
 public class Discuss {
 

@@ -6,10 +6,19 @@ import java.util.List;
 import org.nutz.json.Json;
 
 /**
- * 分组
  * 
- * @author ScienJus
- * @date 15/12/19.
+ * 
+ * @author Kerbores(kerbores@gmail.com)
+ *
+ * @project nutz-plugins-webqq
+ *
+ * @file Category.java
+ *
+ * @description 好友分组
+ *
+ *
+ * @DateTime 2016年6月28日 下午1:27:52
+ *
  */
 public class Category {
 
