@@ -221,6 +221,7 @@ public class WebQQClient implements Closeable {
 		while (true) {
 			sleep(1);
 			String result = get(ApiURL.VERIFY_QR_CODE).getContent();
+			System.err.println(result);
 			if (result.contains("成功")) {
 				for (String content : result.split("','")) {
 					if (content.startsWith("http")) {
@@ -304,14 +305,14 @@ public class WebQQClient implements Closeable {
 	 */
 	protected Response get(ApiURL url, Object... params) {
 
-		Request request = Request.create(url.buildUrl(params), METHOD.GET);
-
 		Map<String, String> header = new HashMap<String, String>();
 
 		header.put("User-Agent", ApiURL.USER_AGENT);
 		header.put("Referer", url.getReferer());
 
-		request.setHeader(Header.create(header));
+		Request request = Request.get(url.buildUrl(params), Header.create().addAll(header));
+
+		System.err.println(Json.toJson(request));
 
 		Sender sender = Sender.create(request);
 
