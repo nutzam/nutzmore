@@ -122,9 +122,9 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
         // 检查需要执行的sql
         XSqlAdapter adapter = null;
         if (db == DB.ORACLE) {
-            adapter = new XMySqlSqlAdapter();
-        } else {
             adapter = new XOracleSqlAdapter();
+        } else {
+            adapter = new XMySqlSqlAdapter();
         }
         sqlStatement.accept(adapter); // 得到将会操作的表
         List<String> tableNames = adapter.getTableNames();
