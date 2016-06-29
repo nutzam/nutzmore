@@ -15,6 +15,8 @@ import org.nutz.dao.sql.DaoStatement;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.plugins.cache.dao.api.DaoCacheProvider;
+import org.nutz.plugins.cache.dao.impl.adapter.XMySqlSqlAdapter;
+import org.nutz.plugins.cache.dao.impl.adapter.XOracleSqlAdapter;
 import org.nutz.trans.Trans;
 
 import com.alibaba.druid.sql.ast.SQLStatement;
@@ -118,9 +120,14 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
             return;
         }
         // 检查需要执行的sql
-        NSqlAdapter adapter = new NSqlAdapter();
+        XSqlAdapter adapter = null;
+        if (db == DB.ORACLE) {
+            adapter = new XMySqlSqlAdapter();
+        } else {
+            adapter = new XOracleSqlAdapter();
+        }
         sqlStatement.accept(adapter); // 得到将会操作的表
-        List<String> tableNames = adapter.tableNames;
+        List<String> tableNames = adapter.getTableNames();
         if (DEBUG)
             log.debug("sql = " + prepSql + ", tables = " + tableNames);
         if (sqlStatement instanceof SQLSelectStatement) {
@@ -219,6 +226,7 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
     protected SQLStatementParser sqlParser(String sql) {
         switch (db) {
         case MYSQL:
+        case SQLITE:
             return new MySqlStatementParser(sql);
         case ORACLE:
             return new OracleStatementParser(sql);
