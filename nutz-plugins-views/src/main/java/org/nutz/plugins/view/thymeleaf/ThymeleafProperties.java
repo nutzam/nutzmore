@@ -1,5 +1,7 @@
 package org.nutz.plugins.view.thymeleaf;
 
+import org.thymeleaf.dialect.IDialect;
+
 public class ThymeleafProperties {
     private static final String DEFAULT_ENCODING = "UTF-8";
 
@@ -13,7 +15,7 @@ public class ThymeleafProperties {
 
     private String suffix = DEFAULT_SUFFIX;
 
-    private String mode = "HTML";
+    private String mode = "HTML5";
 
     private String encoding = DEFAULT_ENCODING;
 
@@ -22,6 +24,8 @@ public class ThymeleafProperties {
     private boolean cache = true;
 
     private Long cacheTTLMs = 3600000L;
+
+    private IDialect dialect = null;
 
     public String getPrefix() {
         return this.prefix;
@@ -77,5 +81,13 @@ public class ThymeleafProperties {
 
     public void setCacheTTLMs(Long cacheTTLMs) {
         this.cacheTTLMs = cacheTTLMs;
+    }
+
+    public IDialect getDialect() {
+        return dialect;
+    }
+
+    public void setDialect(IDialect dialect) {
+        this.dialect = dialect;
     }
 }

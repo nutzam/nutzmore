@@ -67,21 +67,21 @@ mapTags : {
 这样可以在模板中直接调用标签
 `<@currentTime /> ${rekoe} ${conf['emai.to']} ${abc}`
 
-2）thymeleaf 视图使用方法：
+2）thymeleaf 视图使用方法（现只支持 `2.1.4.RELEASE` 版本）：
 
 1. 在 MainModule 的 `@IocBy` 中增加 "*org.nutz.plugins.view.freemarker.ThymeleafIocLoader"
-1. 在 MainModule 中增加 `@Views(ThymeleafViewMaker.class)`
-1. 在 `@Ok` 注解中用 `th` 表示使用 thymeleaf 视图渲染，如 `@Ok("th:home/index")`
-1. 如需自定义模板相关内容，请复制一份 thymeleaf.js 到/ioc 目录下，并修改相应内容
+2. 在 MainModule 中增加 `@Views(ThymeleafViewMaker.class)`
+3. 在 `@Ok` 注解中用 `th` 表示使用 thymeleaf 视图渲染，如 `@Ok("th:home/index")`
+4. 如需自定义模板相关内容，请创建一份 thymeleaf.js 到/ioc 目录下，并修改 `thymeleafProperties.fields` 中的相应内容
 
-```
+```js
 var ioc = {
     thymeleafProperties : {
         type: "org.nutz.plugins.view.thymeleaf.ThymeleafProperties",
         fields: {
             prefix: "/WEB-INF/template/",
             suffix: ".html",
-            mode: "HTML",
+            mode: "HTML5",
             encoding: "UTF-8",
             contentType: "text/html",
             cache: true,
@@ -89,5 +89,18 @@ var ioc = {
         }
     }
 };
+```
 
+5. 如需添加其他扩展，只需创建该扩展后注入即可
+
+```js
+var ioc = {
+    layoutDialect : { type: "nz.net.ultraq.thymeleaf.LayoutDialect" },
+    thymeleafProperties : {
+        type: "org.nutz.plugins.view.thymeleaf.ThymeleafProperties",
+        fields: {
+            dialect: [ { refer: "layoutDialect" } ]
+        }
+    }
+};
 ```

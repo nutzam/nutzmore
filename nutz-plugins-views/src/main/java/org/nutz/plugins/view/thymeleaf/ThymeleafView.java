@@ -1,17 +1,18 @@
 package org.nutz.plugins.view.thymeleaf;
 
+import java.util.Locale;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.mvc.Mvcs;
 import org.nutz.mvc.view.AbstractPathView;
 import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.context.Context;
-import org.thymeleaf.context.IContext;
+import org.thymeleaf.context.WebContext;
+import org.thymeleaf.dialect.IDialect;
 import org.thymeleaf.templateresolver.ServletContextTemplateResolver;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.Locale;
 
 public class ThymeleafView extends AbstractPathView {
 
@@ -31,9 +32,17 @@ public class ThymeleafView extends AbstractPathView {
         response.setCharacterEncoding(properties.getEncoding());
         try {
             org.nutz.lang.util.Context ctx = super.createContext(request, value);
-            IContext context = new Context(Locale.getDefault(), ctx.getInnerMap());
+            WebContext context = new WebContext(request,
+                                                response,
+                                                Mvcs.getServletContext(),
+                                                Locale.getDefault(),
+                                                ctx.getInnerMap());
             TemplateEngine templateEngine = new TemplateEngine();
             templateEngine.setTemplateResolver(initializeTemplateResolver(properties));
+            IDialect dialect = properties.getDialect();
+            if (null != dialect) {
+                templateEngine.addDialect(dialect);
+            }
             templateEngine.process(path, context, response.getWriter());
         }
         catch (Exception e) {
@@ -43,7 +52,7 @@ public class ThymeleafView extends AbstractPathView {
     }
 
     private ServletContextTemplateResolver initializeTemplateResolver(ThymeleafProperties properties) {
-        ServletContextTemplateResolver templateResolver = new ServletContextTemplateResolver(Mvcs.getServletContext());
+        ServletContextTemplateResolver templateResolver = new ServletContextTemplateResolver();
 
         templateResolver.setTemplateMode(properties.getMode());
         templateResolver.setPrefix(properties.getPrefix());

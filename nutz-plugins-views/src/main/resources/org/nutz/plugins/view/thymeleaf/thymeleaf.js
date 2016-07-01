@@ -4,7 +4,7 @@ var ioc = {
         fields: {
             prefix: "/WEB-INF/template/",
             suffix: ".html",
-            mode: "HTML",
+            mode: "HTML5",
             encoding: "UTF-8",
             contentType: "text/html",
             cache: true,
