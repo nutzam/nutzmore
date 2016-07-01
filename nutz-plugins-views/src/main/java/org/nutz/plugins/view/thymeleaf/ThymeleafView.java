@@ -39,9 +39,11 @@ public class ThymeleafView extends AbstractPathView {
                                                 ctx.getInnerMap());
             TemplateEngine templateEngine = new TemplateEngine();
             templateEngine.setTemplateResolver(initializeTemplateResolver(properties));
-            IDialect dialect = properties.getDialect();
-            if (null != dialect) {
-                templateEngine.addDialect(dialect);
+            IDialect[] dialects = properties.getDialects();
+            if (null != dialects) {
+                for (IDialect dialect : dialects) {
+                    templateEngine.addDialect(dialect);
+                }
             }
             templateEngine.process(path, context, response.getWriter());
         }

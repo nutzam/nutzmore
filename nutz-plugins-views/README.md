@@ -96,10 +96,11 @@ var ioc = {
 ```js
 var ioc = {
     layoutDialect : { type: "nz.net.ultraq.thymeleaf.LayoutDialect" },
+    java8TimeDialect: { type: "org.thymeleaf.extras.java8time.dialect.Java8TimeDialect" },
     thymeleafProperties : {
         type: "org.nutz.plugins.view.thymeleaf.ThymeleafProperties",
         fields: {
-            dialect: [ { refer: "layoutDialect" } ]
+            dialects: [ { refer: "layoutDialect" }, { refer: "java8TimeDialect" } ]
         }
     }
 };

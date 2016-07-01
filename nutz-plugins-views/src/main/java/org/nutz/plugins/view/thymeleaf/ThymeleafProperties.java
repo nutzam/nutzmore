@@ -25,7 +25,7 @@ public class ThymeleafProperties {
 
     private Long cacheTTLMs = 3600000L;
 
-    private IDialect dialect = null;
+    private IDialect[] dialects = null;
 
     public String getPrefix() {
         return this.prefix;
@@ -83,11 +83,11 @@ public class ThymeleafProperties {
         this.cacheTTLMs = cacheTTLMs;
     }
 
-    public IDialect getDialect() {
-        return dialect;
+    public IDialect[] getDialects() {
+        return dialects;
     }
 
-    public void setDialect(IDialect dialect) {
-        this.dialect = dialect;
+    public void setDialects(IDialect... dialects) {
+        this.dialects = dialects;
     }
 }
