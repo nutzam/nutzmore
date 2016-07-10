@@ -50,15 +50,17 @@ public class HessianAdaptor extends PairAdaptor {
 		Object obj = Lang.loadClass(_homeImpl).newInstance();
 		if (clazz.isAssignableFrom(Lang.loadClass(_homeImpl))) {
 			this._homeSkeleton = new HessianSkeleton(obj, clazz);
+		}else{
+			throw Lang.makeThrow(IllegalAccessException.class, "baseService must be BaseTreeableService subclass");
 		}
-		throw Lang.makeThrow(IllegalAccessException.class, "baseService must be BaseTreeableService subclass");
 	}
 
 	public HessianAdaptor(Class<?> _homeAPIClass, Object _homeImpl) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
 		if (_homeAPIClass.isAssignableFrom(_homeImpl.getClass())) {
 			this._homeSkeleton = new HessianSkeleton(_homeImpl, _homeAPIClass);
+		}else{
+			throw Lang.makeThrow(IllegalAccessException.class, "baseService must be BaseTreeableService subclass");
 		}
-		throw Lang.makeThrow(IllegalAccessException.class, "baseService must be BaseTreeableService subclass");
 	}
 
 	public HessianAdaptor(HessianSkeleton _homeSkeleton) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
