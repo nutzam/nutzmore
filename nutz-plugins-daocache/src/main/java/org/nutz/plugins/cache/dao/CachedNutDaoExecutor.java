@@ -19,6 +19,7 @@ import org.nutz.plugins.cache.dao.impl.adapter.XDb2SqlAdapter2;
 import org.nutz.plugins.cache.dao.impl.adapter.XMySqlSqlAdapter;
 import org.nutz.plugins.cache.dao.impl.adapter.XOracleSqlAdapter;
 import org.nutz.plugins.cache.dao.impl.adapter.XPgSqlAdapter;
+import org.nutz.plugins.cache.dao.impl.adapter.XSqlServerSqlAdapter;
 import org.nutz.trans.Trans;
 
 import com.alibaba.druid.sql.ast.SQLStatement;
@@ -132,6 +133,9 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
             break;
         case PSQL:
             adapter = new XPgSqlAdapter();
+            break;
+        case SQLSERVER:
+            adapter = new XSqlServerSqlAdapter();
             break;
         default:
             adapter = new XMySqlSqlAdapter();

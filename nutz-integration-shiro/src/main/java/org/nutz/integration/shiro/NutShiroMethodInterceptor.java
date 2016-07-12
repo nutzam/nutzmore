@@ -18,6 +18,7 @@ public class NutShiroMethodInterceptor extends AnnotationsAuthorizingMethodInter
 
     public void filter(InterceptorChain chain) throws Throwable {
         assertAuthorized(new NutShiroInterceptor(chain));
+        chain.doChain();
     }
 
     // 暴露父类的方法
