@@ -106,6 +106,7 @@
 		<module>nutz-integration-hessian</module>
 		<module>nutz-plugins-jsonrpc</module>
 		<module>nutz-plugins-webqq</module>
+		<module>nutz-plugins-sigar</module>
 	</modules>
 	<properties>
 		<nutz.version>1.r.56</nutz.version>
