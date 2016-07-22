@@ -1,12 +1,12 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.nutz</groupId>
-	<artifactId>nutzmore</artifactId>
-	<version>1.r.57-SNAPSHOT</version>
-	<name>nutzmore</name>
-	<description>Nutz, which is a collections of lightweight frameworks, each of them can be used independently</description>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.nutz</groupId>
+    <artifactId>nutzmore</artifactId>
+    <version>1.r.57-SNAPSHOT</version>
+  </parent>
+  <artifactId>nutz-integration-dubbo</artifactId>
+  
 
 	<url>http://nutzam.com</url>
 	<issueManagement>
@@ -44,12 +44,21 @@
 		<developerConnection>scm:git:git://github.com/nutzam/nutzmore.git</developerConnection>
 		<url>git://github.com/nutzam/nutzmore.git</url>
 	</scm>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
 	<dependencies>
-		<dependency>
-			<groupId>org.nutz</groupId>
-			<artifactId>nutz</artifactId>
-			<version>1.r.56</version>
-		</dependency>
+	<dependency>
+		<groupId>com.alibaba</groupId>
+		<artifactId>dubbo</artifactId>
+		<version>2.5.3</version>
+		<exclusions>
+			<exclusion>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring</artifactId>
+			</exclusion>
+		</exclusions>
+	</dependency>
 	</dependencies>
 
 	<build>
@@ -59,14 +68,13 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.1</version>
 				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>1.7</source>
+					<target>1.7</target>
 				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.18.1</version>
 				<configuration>
 					<forkMode>once</forkMode>
 					<argLine>-Dfile.encoding=UTF-8</argLine>
@@ -75,44 +83,13 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.10.3</version>
 				<configuration>
 					<additionalparam>-Xdoclint:none</additionalparam>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
-	<packaging>pom</packaging>
-	<modules>
-		<module>nutz-integration-spring</module>
-		<module>nutz-integration-jcache</module>
-		<module>nutz-integration-jsr303</module>
-		<module>nutz-integration-quartz</module>
-		<module>nutz-integration-dwr</module>
-		<module>nutz-integration-jsf</module>
-		<module>nutz-integration-shiro</module>
-		<module>nutz-plugins-validation</module>
-		<module>nutz-plugins-views</module>
-		<module>nutz-plugins-multiview</module>
-		<module>nutz-plugins-xmlentitymaker</module>
-		<module>nutz-plugins-iocloader</module>
-		<module>nutz-integration-jsch</module>
-		<module>nutz-plugins-daocache</module>
-		<module>nutz-plugins-protobuf</module>
-		<module>nutz-plugins-sqltpl</module>
-		<module>nutz-plugins-secken</module>
-		<module>nutz-integration-struts2</module>
-		<module>nutz-integration-zbus</module>
-		<module>nutz-integration-hessian</module>
-		<module>nutz-plugins-jsonrpc</module>
-		<module>nutz-plugins-webqq</module>
-		<module>nutz-plugins-sigar</module>
-		<module>nutz-plugins-jedis</module>
-		<module>nutz-integration-dubbo</module>
-	</modules>
-	<properties>
-		<nutz.version>1.r.56</nutz.version>
-	</properties>
+
 	<distributionManagement>
 		<snapshotRepository>
 			<id>sonatype-snapshots</id>
