@@ -25,6 +25,7 @@ import com.alibaba.dubbo.config.ReferenceConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
 import com.alibaba.dubbo.config.ServiceConfig;
 
+@SuppressWarnings("rawtypes")
 public class DubboConfigureReader {
 
     private static final Log log = Logs.get();
@@ -40,7 +41,6 @@ public class DubboConfigureReader {
     protected Map<String, ArgumentConfig> arguments = new HashMap<>();
     //protected Map<String, ParameterConfig> parameters = new HashMap<>();
     
-    @SuppressWarnings("rawtypes")
     public DubboConfigureReader(String xmlpath) {
         Document doc = Xmls.xml(getClass().getClassLoader().getResourceAsStream(xmlpath));
         doc.normalizeDocument();
@@ -58,6 +58,7 @@ public class DubboConfigureReader {
                     continue;
                 String typeName = eleName.substring("dubbo:".length());
                 NutMap attrs = toAttrMap(ele.getAttributes());
+                log.debug("found " + typeName);
                 switch (typeName) {
                 case "application":
                     ApplicationConfig application = Lang.map2Object(attrs, ApplicationConfig.class);

@@ -9,6 +9,7 @@
     <dubbo:registry address="multicast://224.5.6.7:1234" />
  
     <dubbo:protocol name="dubbo" port="20880" />
+    <dubbo:protocol name="injvm"></dubbo:protocol>
  
     <dubbo:service interface="org.nutz.integration.dubbo.service.DemoService" ref="demoServiceLocal" />
  
