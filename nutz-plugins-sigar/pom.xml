@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.nutz</groupId>
     <artifactId>nutzmore</artifactId>
-    <version>1.r.57-SNAPSHOT</version>
+    <version>1.r.58-SNAPSHOT</version>
   </parent>
   <artifactId>nutz-plugins-sigar</artifactId>
   <description>Nutz Sigar</description>

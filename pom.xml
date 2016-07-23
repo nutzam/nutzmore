@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.nutz</groupId>
 	<artifactId>nutzmore</artifactId>
-	<version>1.r.57-SNAPSHOT</version>
+	<version>1.r.58-SNAPSHOT</version>
 	<name>nutzmore</name>
 	<description>Nutz, which is a collections of lightweight frameworks, each of them can be used independently</description>
 
@@ -48,7 +48,7 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz</artifactId>
-			<version>1.r.56</version>
+			<version>1.r.58-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 
@@ -111,7 +111,7 @@
 		<module>nutz-integration-dubbo</module>
 	</modules>
 	<properties>
-		<nutz.version>1.r.56</nutz.version>
+		<nutz.version>1.r.58-SNAPSHOT</nutz.version>
 	</properties>
 	<distributionManagement>
 		<snapshotRepository>

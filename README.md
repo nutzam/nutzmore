@@ -31,3 +31,10 @@ https://oss.sonatype.org/content/repositories/snapshots/org/nutz/
 		<!-- 其他依赖 -->
 	</dependencies>
 ```
+
+## 各插件可用性
+
+| 插件名称 | 可靠性 |
+| ------| ------ |
+| daocache | 可用于生产 |
+| dubbo | 开发中 |
