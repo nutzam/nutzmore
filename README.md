@@ -8,6 +8,15 @@
 
 每个插件都有自己的文件夹,均为maven module, 请按需获取.
 
+```xml
+
+		<dependency>
+			<groupId>org.nutz</groupId>
+			<artifactId>填nutz插件名</artifactId>
+			<version>1.r.57</version>
+		</dependency>
+```
+
 # 快照版地址
 
 https://oss.sonatype.org/content/repositories/snapshots/org/nutz/
