@@ -7,6 +7,7 @@ import org.hyperic.sigar.FileSystem;
 import org.hyperic.sigar.FileSystemUsage;
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
+import org.nutz.lang.util.NutMap;
 
 /**
  * 磁盘信息收集器
@@ -20,34 +21,21 @@ public class DISKGather {
 
 	private String tempDir = System.getProperty("java.io.tmpdir");
 
+	List<NutMap> details = new ArrayList<NutMap>();
+
 	private FileSystem config;
 	private FileSystemUsage stat;
 
-	public void populate(Sigar sigar, FileSystem fs) throws SigarException {
-		config = fs;
-		try {
-			stat = sigar.getFileSystemUsage(fs.getDirName());
-		} catch (SigarException e) {
-
-		}
-	}
-
-	public static List<DISKGather> gather(Sigar sigar) throws SigarException {
-		FileSystem[] fsArr = sigar.getFileSystemList();
-		List<DISKGather> fsList = new ArrayList<DISKGather>();
-		for (FileSystem fs : fsArr) {
-			if (fs.getType() == FileSystem.TYPE_LOCAL_DISK) {
-				DISKGather fsData = DISKGather.gather(sigar, fs);
-				fsList.add(fsData);
-			}
-		}
-
-		return fsList;
-	}
-
-	public static DISKGather gather(Sigar sigar, FileSystem fs) throws SigarException {
+	public static DISKGather gather(Sigar sigar) throws SigarException {
 		DISKGather data = new DISKGather();
-		data.populate(sigar, fs);
+		FileSystem[] fsArr = sigar.getFileSystemList();
+		for (FileSystem fs : fsArr) {
+			NutMap temp = new NutMap();
+			temp.addv("fileSystem", fs);
+			temp.addv("usage", sigar.getFileSystemUsage(fs.getDirName()));
+			temp.addv("fileInfo", sigar.getFileInfo(fs.getDirName()));
+			data.details.add(temp);
+		}
 		return data;
 	}
 
@@ -79,6 +67,21 @@ public class DISKGather {
 	 */
 	public void setTempDir(String tempDir) {
 		this.tempDir = tempDir;
+	}
+
+	/**
+	 * @return the details
+	 */
+	public List<NutMap> getDetails() {
+		return details;
+	}
+
+	/**
+	 * @param details
+	 *            the details to set
+	 */
+	public void setDetails(List<NutMap> details) {
+		this.details = details;
 	}
 
 	/**

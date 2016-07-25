@@ -1,10 +1,10 @@
 package org.nutz.sigar.gather;
 
 import org.hyperic.sigar.Cpu;
-import org.hyperic.sigar.CpuInfo;
 import org.hyperic.sigar.CpuPerc;
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
+import org.nutz.lang.util.NutMap;
 
 /**
  * 收集的cpu信息
@@ -14,26 +14,13 @@ import org.hyperic.sigar.SigarException;
  */
 public class CPUGather {
 
-	private CpuInfo info;
 	private CpuPerc perc;
-	private Cpu timer;
+	private Cpu cpu;
+
+	// 详情
+	private NutMap detail = NutMap.NEW();
 
 	public CPUGather() {
-	}
-
-	/**
-	 * @return the info
-	 */
-	public CpuInfo getInfo() {
-		return info;
-	}
-
-	/**
-	 * @param info
-	 *            the info to set
-	 */
-	public void setInfo(CpuInfo info) {
-		this.info = info;
 	}
 
 	/**
@@ -41,6 +28,21 @@ public class CPUGather {
 	 */
 	public CpuPerc getPerc() {
 		return perc;
+	}
+
+	/**
+	 * @return the detail
+	 */
+	public NutMap getDetail() {
+		return detail;
+	}
+
+	/**
+	 * @param detail
+	 *            the detail to set
+	 */
+	public void setDetail(NutMap detail) {
+		this.detail = detail;
 	}
 
 	/**
@@ -52,24 +54,26 @@ public class CPUGather {
 	}
 
 	/**
-	 * @return the timer
+	 * @return the cpu
 	 */
-	public Cpu getTimer() {
-		return timer;
+	public Cpu getCpu() {
+		return cpu;
 	}
 
 	/**
-	 * @param timer
-	 *            the timer to set
+	 * @param cpu
+	 *            the cpu to set
 	 */
-	public void setTimer(Cpu timer) {
-		this.timer = timer;
+	public void setCpu(Cpu cpu) {
+		this.cpu = cpu;
 	}
 
 	public void populate(Sigar sigar) throws SigarException {
-		info = sigar.getCpuInfoList()[0];
 		perc = sigar.getCpuPerc();
-		timer = sigar.getCpu();
+		cpu = sigar.getCpu();
+		detail.addv("cpus", sigar.getCpuList());
+		detail.addv("infos", sigar.getCpuInfoList());
+		detail.addv("percs", sigar.getCpuPercList());
 	}
 
 	public static CPUGather gather(Sigar sigar) throws SigarException {
