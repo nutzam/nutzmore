@@ -1,10 +1,15 @@
 package org.nutz.integration.quartz;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.regex.Pattern;
 
+import org.nutz.dao.pager.Pager;
 import org.nutz.integration.quartz.annotation.Scheduled;
 import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.lang.Lang;
+import org.nutz.lang.Mirror;
 import org.nutz.lang.Strings;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
@@ -14,11 +19,18 @@ import org.quartz.CronTrigger;
 import org.quartz.Job;
 import org.quartz.JobBuilder;
 import org.quartz.JobDetail;
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.SimpleScheduleBuilder;
 import org.quartz.SimpleTrigger;
+import org.quartz.Trigger;
+import org.quartz.Trigger.TriggerState;
 import org.quartz.TriggerBuilder;
+import org.quartz.UnableToInterruptJobException;
+import org.quartz.core.QuartzScheduler;
+import org.quartz.impl.StdScheduler;
+import org.quartz.impl.matchers.GroupMatcher;
 
 public class NutQuartzCronJobFactory {
     
@@ -91,22 +103,204 @@ public class NutQuartzCronJobFactory {
             } else {
                 schedule.repeatForever();
             }
-            TriggerBuilder<SimpleTrigger> trigger = TriggerBuilder.newTrigger().withIdentity(name).withSchedule(schedule);
+            TriggerBuilder<SimpleTrigger> trigger = TriggerBuilder.newTrigger().withIdentity(name, Scheduler.DEFAULT_GROUP).withSchedule(schedule);
             if (scheduled.initialDelay() > 0) 
                 trigger.startAt(new Date(System.currentTimeMillis() + scheduled.initialDelay()*1000));
             
-            JobDetail job = JobBuilder.newJob((Class<? extends Job>) klass).withIdentity(name).build();
+            JobDetail job = JobBuilder.newJob((Class<? extends Job>) klass).withIdentity(name, Scheduler.DEFAULT_GROUP).build();
             scheduler.scheduleJob(job, trigger.build());
         }
     }
     
-    @SuppressWarnings("unchecked")
     public void cron(String cron, Class<?> klass) throws SchedulerException {
         String name = klass.getName();
-        JobDetail job = JobBuilder.newJob((Class<? extends Job>) klass).withIdentity(name).build();
-        CronTrigger trigger = TriggerBuilder.newTrigger().withIdentity(name)
+        this.cron(cron, klass, name, Scheduler.DEFAULT_GROUP);
+    }
+
+    @SuppressWarnings("unchecked")
+    public void cron(String cron, Class<?> klass, String name, String group) throws SchedulerException {
+        JobDetail job = JobBuilder.newJob((Class<? extends Job>) klass).withIdentity(name, group).build();
+        CronTrigger trigger = TriggerBuilder.newTrigger().withIdentity(name, group)
                 .withSchedule(CronScheduleBuilder.cronSchedule(cron))
                 .build();
         scheduler.scheduleJob(job, trigger);
+    }
+    
+    // 类Dao方法
+
+    /**
+     * 查询计划任务列表
+     * @param namePatten 需要匹配的任务名,可以是null, 代表全匹配
+     * @param groupPatten 需要匹配的任务组名,可以是null, 代表全匹配
+     * @param pager 分页,可以是null
+     * @return 符合条件的计划任务列表
+     */
+    public List<QuartzJob> query(String namePatten, String groupPatten, Pager pager) {
+        try {
+            int offset = pager == null ? 0 : pager.getOffset();
+            int size = pager == null ? 0 : pager.getPageSize();
+            int index = 0;
+            Pattern nameP = Strings.isBlank(namePatten) ? null : Pattern.compile(namePatten);
+            Pattern groupP = Strings.isBlank(groupPatten) ? null : Pattern.compile(groupPatten);
+            List<QuartzJob> jobs = new ArrayList<QuartzJob>();
+            for (String groupName : scheduler.getJobGroupNames()) {
+                if (groupName != null && groupP != null && !groupP.matcher(groupName).find())
+                    continue;
+                for (JobKey jobKey : scheduler.getJobKeys(GroupMatcher.jobGroupEquals(groupName))) {
+                    if (nameP != null && !nameP.matcher(jobKey.getName()).find())
+                        continue;
+                    List<? extends Trigger> triggers = scheduler.getTriggersOfJob(jobKey);
+                    if (size == 0 || (index >= offset && index < (offset+size))) {
+                        jobs.add(new QuartzJob(jobKey, triggers));
+                        index ++;
+                    }
+                }
+            }
+            return jobs;
+        }
+        catch (SchedulerException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    /**
+     * 清除一个Job
+     */
+    public boolean delete(QuartzJob qj) {
+        return delete(qj.getJobKey());
+    }
+
+    /**
+     * 清除一个Job
+     */
+    public boolean delete(JobKey jobKey) {
+        try {
+            if (scheduler.checkExists(jobKey))
+                return scheduler.deleteJob(jobKey);
+            return false;
+        }
+        catch (SchedulerException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * 添加一个新Job
+     * @param name 任务名称
+     * @param group 任务分组
+     * @param cron 计划任务表达式
+     * @param klass Job类
+     */
+    public void add(String name, String group, String cron, Class<?> klass) {
+        try {
+            this.cron(cron, klass, name, group);
+        }
+        catch (SchedulerException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    /**
+     * 是否存在特定的任务
+     */
+    public boolean exist(QuartzJob qj) {
+        return exist(qj.getJobKey());
+    }
+
+    /**
+     * 是否存在特定的任务
+     */
+    public boolean exist(JobKey jobKey) {
+        try {
+            return scheduler.checkExists(jobKey);
+        }
+        catch (SchedulerException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    /**
+     * 恢复一个被暂停的任务
+     */
+    public void resume(JobKey jobKey) {
+        try {
+            scheduler.resumeJob(jobKey);
+        }
+        catch (SchedulerException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * 恢复一个被暂停的任务
+     */
+    public void resume(QuartzJob qj) {
+        resume(qj.getJobKey());
+    }
+    
+    /**
+     * 清除所有的任务
+     */
+    public void clear() {
+        try {
+            scheduler.clear();
+        }
+        catch (SchedulerException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    /**
+     * 暂停一个任务
+     */
+    public void pause(QuartzJob qj) {
+        this.pause(qj.getJobKey());
+    }
+
+    /**
+     * 暂停一个任务
+     */
+    public void pause(JobKey jobKey) {
+        try {
+            scheduler.pauseJob(jobKey);
+        }
+        catch (SchedulerException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    /**
+     * 触发一个中断, 对于的Job类必须实现InterruptableJob 
+     */
+    public void interrupt(JobKey jobKey) {
+        try {
+            scheduler.interrupt(jobKey);
+        }
+        catch (UnableToInterruptJobException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * 触发一个中断, 对于的Job类必须实现InterruptableJob 
+     */
+    public void interrupt(QuartzJob qj) {
+        interrupt(qj.getJobKey());
+    }
+    
+    /**
+     * 获取一个Job的状态, 当前仅支持StdScheduler
+     */
+    public TriggerState getState(QuartzJob qj) {
+        try {
+            if (scheduler instanceof StdScheduler) {
+                QuartzScheduler qs = (QuartzScheduler)Mirror.me(scheduler).getEjecting("sched").eject(scheduler);
+                return qs.getTriggerState(qj.getTriggers().get(0).getKey());
+            }
+        }
+        catch (SchedulerException e) {
+            throw new RuntimeException(e);
+        }
+        throw Lang.noImplement();
     }
 }
