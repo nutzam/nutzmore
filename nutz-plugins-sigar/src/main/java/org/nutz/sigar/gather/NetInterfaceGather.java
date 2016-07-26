@@ -2,8 +2,10 @@ package org.nutz.sigar.gather;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.hyperic.sigar.NetInfo;
 import org.hyperic.sigar.NetInterfaceConfig;
 import org.hyperic.sigar.NetInterfaceStat;
 import org.hyperic.sigar.Sigar;
@@ -15,7 +17,7 @@ import org.nutz.lang.ExitLoop;
 import org.nutz.lang.Lang;
 import org.nutz.lang.LoopException;
 import org.nutz.lang.Strings;
-import org.nutz.lang.Times;
+import org.nutz.lang.util.NutMap;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 
@@ -32,6 +34,9 @@ public class NetInterfaceGather {
 	private static String hostName;
 
 	@JsonField(ignore = true)
+	private String activeCard;
+
+	@JsonField(ignore = true)
 	static private Log log = Logs.getLog(NetInterfaceGather.class);
 
 	static {
@@ -45,57 +50,56 @@ public class NetInterfaceGather {
 
 	private NetInterfaceConfig config;
 	private NetInterfaceStat stat;
+	private NetInfo info;
+
 	private long rxbps;
 	private long txbps;
 
-	private static long rTemp = 0;
+	private List<NutMap> detail = new ArrayList<NutMap>();
 
-	private static long tTemp = 0;
+	public static NetInterfaceGather gather(final Sigar sigar) throws SigarException, InterruptedException {
 
-	private static String activeCard = null;
+		final NetInterfaceGather data = new NetInterfaceGather();
 
-	private static Date last;
+		String active = data.fetActiveNetInterfaceName(sigar);
 
-	public NetInterfaceGather() {
-	}
+		data.config = sigar.getNetInterfaceConfig(active);
+		data.info = sigar.getNetInfo();
+		data.stat = sigar.getNetInterfaceStat(active);
+		long start = System.currentTimeMillis();
+		long rxBytesStart = data.stat.getRxBytes();
+		long txBytesStart = data.stat.getTxBytes();
+		Thread.sleep(1000);
+		long end = System.currentTimeMillis();
+		NetInterfaceStat statEnd = sigar.getNetInterfaceStat(active);
+		long rxBytesEnd = statEnd.getRxBytes();
+		long txBytesEnd = statEnd.getTxBytes();
 
-	public void populate(Sigar sigar, String name) throws SigarException {
+		data.rxbps = (rxBytesEnd - rxBytesStart) * 8 / (end - start) * 1000;
+		data.txbps = (txBytesEnd - txBytesStart) * 8 / (end - start) * 1000;
 
-		config = sigar.getNetInterfaceConfig(name);
+		Lang.each(sigar.getNetInterfaceList(), new Each<String>() {
 
-		try {
+			@Override
+			public void invoke(int arg0, String name, int arg2) throws ExitLoop, ContinueLoop, LoopException {
+				NutMap temp = NutMap.NEW();
 
-			NetInterfaceStat statStart = sigar.getNetInterfaceStat(name);
-			if (rTemp == 0 || tTemp == 0) {
-				rTemp = statStart.getRxBytes();
-				tTemp = statStart.getTxBytes();
-				last = Times.now();
-			} else {
-				long rt = statStart.getRxBytes();
-				long tt = statStart.getTxBytes();
-				Date now = Times.now();
+				try {
+					temp.addv("stat", sigar.getNetInterfaceStat(name));
+					temp.addv("config", sigar.getNetInterfaceConfig(name));
+				} catch (SigarException e) {
+					e.printStackTrace();
+				}
 
-				rxbps = (rt - rTemp) * 1000 * 1024 / (now.getTime() - last.getTime());
-				txbps = (tt - tTemp) * 1000 * 1024 / (now.getTime() - last.getTime());
-
-				rTemp = rt;
-				tTemp = tt;
-				last = now;
+				data.detail.add(temp);
 			}
 
-			stat = sigar.getNetInterfaceStat(name);
-		} catch (SigarException e) {
+		});
 
-		} catch (Exception e) {
-
-		}
+		return data;
 	}
 
-	public static NetInterfaceGather gather(Sigar sigar) throws SigarException {
-		return NetInterfaceGather.gather(sigar, fetActiveNetInterfaceName(sigar));
-	}
-
-	private static String fetActiveNetInterfaceName(final Sigar sigar) throws SigarException {
+	private String fetActiveNetInterfaceName(final Sigar sigar) throws SigarException {
 		Lang.each(sigar.getNetInterfaceList(), new Each<String>() {
 
 			@Override
@@ -113,24 +117,34 @@ public class NetInterfaceGather {
 		return activeCard;
 	}
 
-	public static NetInterfaceGather gather(Sigar sigar, String name) throws SigarException {
-		NetInterfaceGather data = new NetInterfaceGather();
-		data.populate(sigar, name);
-		return data;
-	}
-
 	/**
 	 * @return the ip
 	 */
-	public String getIp() {
+	public static String getIp() {
 		return ip;
+	}
+
+	/**
+	 * @param ip
+	 *            the ip to set
+	 */
+	public static void setIp(String ip) {
+		NetInterfaceGather.ip = ip;
 	}
 
 	/**
 	 * @return the hostName
 	 */
-	public String getHostName() {
+	public static String getHostName() {
 		return hostName;
+	}
+
+	/**
+	 * @param hostName
+	 *            the hostName to set
+	 */
+	public static void setHostName(String hostName) {
+		NetInterfaceGather.hostName = hostName;
 	}
 
 	/**
@@ -138,29 +152,6 @@ public class NetInterfaceGather {
 	 */
 	public NetInterfaceConfig getConfig() {
 		return config;
-	}
-
-	/**
-	 * @param config
-	 *            the config to set
-	 */
-	public void setConfig(NetInterfaceConfig config) {
-		this.config = config;
-	}
-
-	/**
-	 * @return the stat
-	 */
-	public NetInterfaceStat getStat() {
-		return stat;
-	}
-
-	/**
-	 * @param stat
-	 *            the stat to set
-	 */
-	public void setStat(NetInterfaceStat stat) {
-		this.stat = stat;
 	}
 
 	/**
@@ -191,6 +182,59 @@ public class NetInterfaceGather {
 	 */
 	public void setTxbps(long txbps) {
 		this.txbps = txbps;
+	}
+
+	/**
+	 * @param config
+	 *            the config to set
+	 */
+	public void setConfig(NetInterfaceConfig config) {
+		this.config = config;
+	}
+
+	/**
+	 * @return the stat
+	 */
+	public NetInterfaceStat getStat() {
+		return stat;
+	}
+
+	/**
+	 * @param stat
+	 *            the stat to set
+	 */
+	public void setStat(NetInterfaceStat stat) {
+		this.stat = stat;
+	}
+
+	/**
+	 * @return the info
+	 */
+	public NetInfo getInfo() {
+		return info;
+	}
+
+	/**
+	 * @param info
+	 *            the info to set
+	 */
+	public void setInfo(NetInfo info) {
+		this.info = info;
+	}
+
+	/**
+	 * @return the detail
+	 */
+	public List<NutMap> getDetail() {
+		return detail;
+	}
+
+	/**
+	 * @param detail
+	 *            the detail to set
+	 */
+	public void setDetail(List<NutMap> detail) {
+		this.detail = detail;
 	}
 
 }

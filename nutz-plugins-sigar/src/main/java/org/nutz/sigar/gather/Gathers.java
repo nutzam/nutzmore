@@ -1,7 +1,5 @@
 package org.nutz.sigar.gather;
 
-import java.util.List;
-
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;
 import org.nutz.lang.util.NutMap;
@@ -20,7 +18,7 @@ import org.nutz.lang.util.NutMap;
  */
 public class Gathers {
 
-	public static NutMap all() throws SigarException {
+	public static NutMap all() throws SigarException, InterruptedException {
 		Sigar sigar = new Sigar();
 		NutMap data = NutMap.NEW();
 
@@ -38,23 +36,20 @@ public class Gathers {
 			data.put("swapUasge", memory.getSwap().getUsed() * 100 / memory.getSwap().getTotal());
 		}
 
-		List<DISKGather> disks = DISKGather.gather(sigar);
-		data.put("disk", disks);
-		long totle = 0, used = 0;
-		for (DISKGather disk : disks) {
-			if (disk.getStat() != null) {
-				totle += disk.getStat().getTotal();
-				used += disk.getStat().getUsed();
-			}
-		}
-		data.put("diskUsage", used * 100 / totle);
+		data.put("disk", DISKGather.gather(sigar));
 
-		NetInterfaceGather ni = NetInterfaceGather.gather(sigar);
-		data.put("network", ni);
-		data.put("niUsage", ni.getRxbps() * 100 / ni.getStat().getSpeed());
-		data.put("noUsage", ni.getTxbps() * 100 / ni.getStat().getSpeed());
+		data.put("network", NetInterfaceGather.gather(sigar));
 
 		data.put("system", OSGather.init(sigar));
 		return data;
 	}
+
+	// public static void main(String[] args) throws SigarException,
+	// InterruptedException {
+	// long start, end = 0;
+	// System.err.println(start = System.currentTimeMillis());
+	// System.err.println(Json.toJson(Gathers.all()));
+	// System.err.println(end = System.currentTimeMillis());
+	// System.err.println(end - start);
+	// }
 }
