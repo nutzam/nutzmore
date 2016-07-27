@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.nutz.lang.Lang;
+import org.nutz.lang.Strings;
 import org.nutz.lang.Xmls;
 import org.nutz.lang.util.NutMap;
 import org.nutz.log.Log;
@@ -41,6 +42,9 @@ public class DubboConfigureReader {
     protected Map<String, ArgumentConfig> arguments = new HashMap<>();
     //protected Map<String, ParameterConfig> parameters = new HashMap<>();
     
+    protected Map<String, Object> maps = new HashMap<>();
+    
+    @SuppressWarnings("unchecked")
     public DubboConfigureReader(String xmlpath) {
         Document doc = Xmls.xml(getClass().getClassLoader().getResourceAsStream(xmlpath));
         doc.normalizeDocument();
@@ -55,10 +59,33 @@ public class DubboConfigureReader {
                 Element ele = (Element)node;
                 String eleName = ele.getNodeName();
                 if (!eleName.startsWith("dubbo:"))
-                    continue;
+                    continue; // 跳过非dubbo节点
                 String typeName = eleName.substring("dubbo:".length());
                 NutMap attrs = toAttrMap(ele.getAttributes());
                 log.debug("found " + typeName);
+                String genBeanName = ele.getAttribute("id");
+                if (Strings.isBlank(genBeanName)) {
+                    if ("protocol".equals(typeName))
+                        genBeanName = "dubbo";
+                    else {
+                        genBeanName = ele.getAttribute("interface");
+                        if (Strings.isBlank(genBeanName)) {
+                            try {
+                                genBeanName = Class.forName("com.alibaba.dubbo.config."+Strings.upperFirst(typeName)+"Config").getName();
+                            }
+                            catch (ClassNotFoundException e) {
+                                throw Lang.wrapThrow(e);
+                            }
+                        }
+                    }
+                    if (maps.containsKey(genBeanName)) {
+                        int _count = 2;
+                        while (!maps.containsKey(genBeanName+"_"+_count)) {
+                            _count++;
+                        }
+                    }
+                }
+                String id = genBeanName;
                 switch (typeName) {
                 case "application":
                     ApplicationConfig application = Lang.map2Object(attrs, ApplicationConfig.class);
@@ -74,44 +101,39 @@ public class DubboConfigureReader {
                     if (service.getId() == null) {
                         service.setId("service_"+services.size());
                     }
+                    service.setRef(_ref); // 临时的
                     services.put(service.getId(), service);
+                    maps.put(id, service);
                     break;
                 case "protocol":
                     ProtocolConfig protocol = Lang.map2Object(attrs, ProtocolConfig.class);
-                    if (protocol.getId() == null)
-                        protocol.setId("protocol_"+protocols.size());
-                    protocols.put(protocol.getId(), protocol);
+                    protocols.put(id, protocol);
+                    maps.put(id, protocol);
                     break;
                 case "registry":
                     RegistryConfig registry = Lang.map2Object(attrs, RegistryConfig.class);
-                    if (registry.getId() == null) {
-                        registry.setId("registry_"+registries.size());
-                    }
-                    registries.put(registry.getId(), registry);
+                    registries.put(id, registry);
+                    maps.put(id, registry);
                     break;
                 case "consumer":
                     ConsumerConfig consumer = Lang.map2Object(attrs, ConsumerConfig.class);
-                    if (consumer.getId() == null)
-                        consumer.setId("consumer_"+consumers.size());
-                    consumers.put(consumer.getId(), consumer);
+                    consumers.put(id, consumer);
+                    maps.put(id, consumer);
                     break;
                 case "provider":
                     ProviderConfig provider = Lang.map2Object(attrs, ProviderConfig.class);
-                    if (provider.getId() == null)
-                        provider.setId("provider_"+providers.size());
-                    providers.put(provider.getId(), provider);
+                    providers.put(id, provider);
+                    maps.put(id, provider);
                     break;
                 case "reference":
                     ReferenceConfig reference = Lang.map2Object(attrs, ReferenceConfig.class);
-                    if (reference.getId() == null)
-                        reference.setId("reference_"+references.size());
-                    references.put(reference.getId(), reference);
+                    references.put(id, reference);
+                    maps.put(id, reference);
                     break;
                 case "method":
                     MethodConfig method = Lang.map2Object(attrs, MethodConfig.class);
-                    if (method.getId() == null)
-                        method.setId("method_"+methods.size());
-                    methods.put(method.getId(), method);
+                    methods.put(id, method);
+                    maps.put(id, method);
                     break;
 //                case "argument":
 //                    ArgumentConfig argument = Lang.map2Object(attrs, ArgumentConfig.class);
