@@ -30,6 +30,8 @@ public class AviMaker {
                 String line = lines.get(i);
                 if (line.startsWith("简介(可用性:")) {
                     String avi = line.substring("简介(可用性:".length(), line.length()-1);
+                    if (avi.equals("生产"))
+                        avi = "**"+avi+"**";
                     //System.out.println(lines.get(i+3));
                     String shortt = lines.get(i+3);
                     System.out.println("|"+f.getName()+"|"+shortt+"|"+avi+"|");
