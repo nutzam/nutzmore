@@ -32,3 +32,11 @@ Nutz集成Dubbo的插件
 	ioc.get(DubboMaster.class);
 	// 该操作会触发Service的初始化
 ```
+
+TODO
+-------------------------------------------------
+
+* 支持dubbo:parameter标签
+* 支持dubbo:method标签
+* 支持dubbo:argument标签
+* 支持一次性初始化所有Bean
