@@ -44,6 +44,7 @@ https://oss.sonatype.org/content/repositories/snapshots/org/nutz/
 ## 各插件可用性
 
 | 插件名称 | 简介 | 可靠性 |
+| ------| ------ | ------ |
 |nutz-integration-autoloadcache|深度集成AutoLoadCache|生产|
 |nutz-integration-dubbo|兼容原生dubbo配置文件|开发中|
 |nutz-integration-dwr|轻度集成dwr|试用|
