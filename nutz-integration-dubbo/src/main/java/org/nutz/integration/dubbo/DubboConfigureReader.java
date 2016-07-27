@@ -1,6 +1,7 @@
 package org.nutz.integration.dubbo;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.nutz.lang.Lang;
@@ -44,6 +45,59 @@ public class DubboConfigureReader {
     
     protected Map<String, Object> maps = new HashMap<>();
     
+    public static Map<String, NutMap> read(String path) {
+        Map<String, NutMap> maps = new LinkedHashMap<>();
+        Document doc = Xmls.xml(DubboConfigureReader.class.getClassLoader().getResourceAsStream(path));
+        doc.normalizeDocument();
+        Element top = doc.getDocumentElement();
+        NodeList list = top.getChildNodes();
+        int count = list.getLength();
+
+        for (int i = 0; i < count; i++) {
+            Node node = list.item(i);
+            if (node instanceof Element) {
+                Element ele = (Element)node;
+                String eleName = ele.getNodeName();
+                if (!eleName.startsWith("dubbo:"))
+                    continue; // 跳过非dubbo节点
+                String typeName = eleName.substring("dubbo:".length());
+                NutMap attrs = toAttrMap(ele.getAttributes());
+                log.debug("found " + typeName);
+                String genBeanName = ele.getAttribute("id");
+                if (Strings.isBlank(genBeanName)) {
+                    if ("protocol".equals(typeName))
+                        genBeanName = "dubbo";
+                    else {
+                        genBeanName = ele.getAttribute("interface");
+                        if (Strings.isBlank(genBeanName)) {
+                            try {
+                                genBeanName = Class.forName("com.alibaba.dubbo.config."+Strings.upperFirst(typeName)+"Config").getName();
+                            }
+                            catch (ClassNotFoundException e) {
+                                throw Lang.wrapThrow(e);
+                            }
+                        }
+                    }
+                    if (maps.containsKey(genBeanName)) {
+                        int _count = 2;
+                        while (true) {
+                            String key = genBeanName+"_"+_count;
+                            if (maps.containsKey(key)) {
+                                _count++;
+                                continue;
+                            }
+                            genBeanName += "_"+_count;
+                            break;
+                        }
+                    }
+                }
+                attrs.put("_typeName", typeName);
+                maps.put(genBeanName, attrs);
+            }
+        }
+        return maps;
+    }
+    
     @SuppressWarnings("unchecked")
     public DubboConfigureReader(String xmlpath) {
         Document doc = Xmls.xml(getClass().getClassLoader().getResourceAsStream(xmlpath));
@@ -80,8 +134,14 @@ public class DubboConfigureReader {
                     }
                     if (maps.containsKey(genBeanName)) {
                         int _count = 2;
-                        while (!maps.containsKey(genBeanName+"_"+_count)) {
-                            _count++;
+                        while (true) {
+                            String key = genBeanName+"_"+_count;
+                            if (maps.containsKey(key)) {
+                                _count++;
+                                continue;
+                            }
+                            genBeanName += "_"+_count;
+                            break;
                         }
                     }
                 }
@@ -90,6 +150,7 @@ public class DubboConfigureReader {
                 case "application":
                     ApplicationConfig application = Lang.map2Object(attrs, ApplicationConfig.class);
                     applications.put(application.getName(), application);
+                    maps.put(id, application);
                     break;
                 case "service":
                     interfaceClass = (String)attrs.remove("interface");

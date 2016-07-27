@@ -22,33 +22,13 @@ Nutz集成Dubbo的插件
 ```java
 	@IocBy(type=ComboIocProvider.class, args={"*js", "ioc/",
 										   "*anno", "net.wendal.nutzbook",
-										   "*dubbo"})
+										   "*dubbo", "dubbo.xml"}) // dubbo.xml是配置文件的路径
 ```
 								   
 在MainSetup的init方法中加载
 -----------------------------------------------
 
 ```java
-ioc.get(DubboAnnotationLoader.class, "dubbo_anno");
-// 该操作会触发生产者和消费者的初始化
-```
-
-配置项
------------------------------------------------
-
-配置项通过名为conf的IocBean获取, 通常是PropertiesProxy类的实例
-
-```ini
-dubbo.application.name=nutzbook
-
-dubbo.registry.name=wendal
-dubbo.registry.address=10.20.130.230:9090
-dubbo.registry.username=wendal
-dubbo.registry.password=root
-
-dubbo.protocol.name=dubbo
-dubbo.protocol.port=123456
-dubbo.protocol.threads=256
-
-dubbo.anno.packages=net.wendal.nutzbook
+	ioc.get(DubboMaster.class);
+	// 该操作会触发Service的初始化
 ```
