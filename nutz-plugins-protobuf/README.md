@@ -1,4 +1,10 @@
-﻿
+# nutz-plugins-protobuf 多视图插件
+
+简介(可用性:生产)
+==================================
+
+提供protobuf双向通信所需要的适配器和View
+
 ### 传统protobuf使用过程 ###
 
 ```
@@ -98,4 +104,3 @@ public void testJProtobuf() throws IOException {
 #####关于jprotobuf的使用方法请关注#####
 
 https://github.com/jhunters/jprotobuf
-

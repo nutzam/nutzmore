@@ -1,5 +1,10 @@
 # nutz-plugins-multiview 多视图插件
 
+简介(可用性:生产)
+==================================
+
+集合N种模板引擎,可配置性强
+
 ###### 适应nutz 1.r.55以上，以下版本暂时未测试
 
 针对https://github.com/nutzam/nutz/issues/603#issuecomment-35709620上提出的问题，开发了此插件、
