@@ -73,7 +73,7 @@ mapTags : {
 这样可以在模板中直接调用标签
 `<@currentTime /> ${rekoe} ${conf['emai.to']} ${abc}`
 
-2）thymeleaf 视图使用方法（现只支持 `2.1.4.RELEASE` 版本）：
+2）thymeleaf 视图使用方法（现已支持 `thymeleaf 3.0.0.RELEASE` 版本，并自带 `thymeleaf-layout-dialect 2.0.1`）：
 
 1. 在 MainModule 的 `@IocBy` 中增加 "*org.nutz.plugins.view.freemarker.ThymeleafIocLoader"
 2. 在 MainModule 中增加 `@Views(ThymeleafViewMaker.class)`
@@ -82,7 +82,7 @@ mapTags : {
 
 ```js
 var ioc = {
-    thymeleafProperties : {
+    thymeleafProperties: {
         type: "org.nutz.plugins.view.thymeleaf.ThymeleafProperties",
         fields: {
             prefix: "/WEB-INF/template/",
@@ -101,12 +101,11 @@ var ioc = {
 
 ```js
 var ioc = {
-    layoutDialect : { type: "nz.net.ultraq.thymeleaf.LayoutDialect" },
     java8TimeDialect: { type: "org.thymeleaf.extras.java8time.dialect.Java8TimeDialect" },
-    thymeleafProperties : {
+    thymeleafProperties: {
         type: "org.nutz.plugins.view.thymeleaf.ThymeleafProperties",
         fields: {
-            dialects: [ { refer: "layoutDialect" }, { refer: "java8TimeDialect" } ]
+            dialects: [ { refer: "java8TimeDialect" } ]
         }
     }
 };
