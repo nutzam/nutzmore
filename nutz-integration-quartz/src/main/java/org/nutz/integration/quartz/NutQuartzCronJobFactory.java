@@ -1,7 +1,6 @@
 package org.nutz.integration.quartz;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -14,19 +13,12 @@ import org.nutz.lang.Strings;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.resource.Scans;
-import org.quartz.CronScheduleBuilder;
-import org.quartz.CronTrigger;
-import org.quartz.Job;
-import org.quartz.JobBuilder;
 import org.quartz.JobDetail;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
-import org.quartz.SimpleScheduleBuilder;
-import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
 import org.quartz.Trigger.TriggerState;
-import org.quartz.TriggerBuilder;
 import org.quartz.UnableToInterruptJobException;
 import org.quartz.core.QuartzScheduler;
 import org.quartz.impl.StdScheduler;
@@ -79,7 +71,6 @@ public class NutQuartzCronJobFactory {
         }
     }
     
-    @SuppressWarnings("unchecked")
     public void add(Class<?> klass, Scheduled scheduled) throws SchedulerException {
         String name = klass.getName();
         if (!Strings.isBlank(scheduled.cron())) {
@@ -95,20 +86,10 @@ public class NutQuartzCronJobFactory {
         if (scheduled.fixedRate() > 0){
             log.debugf("job define name=%s fixedRate=%s count=%s initialDelay=%s", 
                     name, scheduled.fixedRate(), scheduled.count(), scheduled.initialDelay());
-            SimpleScheduleBuilder schedule = SimpleScheduleBuilder.simpleSchedule();
-            if (scheduled.fixedRate() > 0)
-                schedule.withIntervalInSeconds(scheduled.fixedRate());
-            if (scheduled.count() > 0) {
-                schedule.withRepeatCount(scheduled.count());
-            } else {
-                schedule.repeatForever();
-            }
-            TriggerBuilder<SimpleTrigger> trigger = TriggerBuilder.newTrigger().withIdentity(name, Scheduler.DEFAULT_GROUP).withSchedule(schedule);
-            if (scheduled.initialDelay() > 0) 
-                trigger.startAt(new Date(System.currentTimeMillis() + scheduled.initialDelay()*1000));
+            Trigger trigger = Quartzs.makeSimpleTrigger(name, Scheduler.DEFAULT_GROUP, scheduled.fixedRate(), scheduled.count(), scheduled.initialDelay());
             
-            JobDetail job = JobBuilder.newJob((Class<? extends Job>) klass).withIdentity(name, Scheduler.DEFAULT_GROUP).build();
-            scheduler.scheduleJob(job, trigger.build());
+            JobDetail job = Quartzs.makeJob(name, Scheduler.DEFAULT_GROUP, klass);
+            scheduler.scheduleJob(job, trigger);
         }
     }
     
@@ -117,13 +98,8 @@ public class NutQuartzCronJobFactory {
         this.cron(cron, klass, name, Scheduler.DEFAULT_GROUP);
     }
 
-    @SuppressWarnings("unchecked")
     public void cron(String cron, Class<?> klass, String name, String group) throws SchedulerException {
-        JobDetail job = JobBuilder.newJob((Class<? extends Job>) klass).withIdentity(name, group).build();
-        CronTrigger trigger = TriggerBuilder.newTrigger().withIdentity(name, group)
-                .withSchedule(CronScheduleBuilder.cronSchedule(cron))
-                .build();
-        scheduler.scheduleJob(job, trigger);
+        scheduler.scheduleJob(Quartzs.makeJob(name, group, klass), Quartzs.makeCronTrigger(name, group, cron));
     }
     
     // 类Dao方法
@@ -151,7 +127,7 @@ public class NutQuartzCronJobFactory {
                         continue;
                     List<? extends Trigger> triggers = scheduler.getTriggersOfJob(jobKey);
                     if (size == 0 || (index >= offset && index < (offset+size))) {
-                        jobs.add(new QuartzJob(jobKey, triggers));
+                        jobs.add(new QuartzJob(jobKey, triggers.get(0), scheduler.getJobDetail(jobKey)));
                         index ++;
                     }
                 }
@@ -295,7 +271,7 @@ public class NutQuartzCronJobFactory {
         try {
             if (scheduler instanceof StdScheduler) {
                 QuartzScheduler qs = (QuartzScheduler)Mirror.me(scheduler).getEjecting("sched").eject(scheduler);
-                return qs.getTriggerState(qj.getTriggers().get(0).getKey());
+                return qs.getTriggerState(qj.getTrigger().getKey());
             }
         }
         catch (SchedulerException e) {
