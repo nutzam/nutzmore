@@ -31,5 +31,13 @@ var ioc = {
             "refer" :"@confName"
          }
       }
+   },
+   "$quartz" : {
+	   "type" :"org.nutz.integration.quartz.QuartzMaster",
+	   "fields" :{
+	         "scheduler" :{
+	            "refer" :"scheduler"
+	         }
+	    }
    }
 };
