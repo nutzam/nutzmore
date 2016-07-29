@@ -118,4 +118,28 @@ public class QuartzJob {
     public TriggerKey getTriggerKey() {
         return new TriggerKey(jobName, jobGroup);
     }
+
+    public String getClassName() {
+        return className;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
+    }
+
+    public String getDataMap() {
+        return dataMap;
+    }
+
+    public void setDataMap(String dataMap) {
+        this.dataMap = dataMap;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
 }

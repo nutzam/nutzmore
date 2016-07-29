@@ -6,6 +6,7 @@ import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
 import org.quartz.Job;
 import org.quartz.JobBuilder;
+import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
@@ -69,8 +70,18 @@ public class Quartzs {
         return makeJob(new JobKey(jobName, jobGroup), klass);
     }
     
-    @SuppressWarnings("unchecked")
+    public static JobDetail makeJob(String jobName, String jobGroup, Class<?> klass, JobDataMap data) {
+        return makeJob(new JobKey(jobName, jobGroup), klass, data);
+    }
+    
     public static JobDetail makeJob(JobKey jobKey, Class<?> klass) {
-        return JobBuilder.newJob((Class<? extends Job>) klass).withIdentity(jobKey).build();
+        return makeJob(jobKey, klass, null);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static JobDetail makeJob(JobKey jobKey, Class<?> klass, JobDataMap data) {
+        if (data == null)
+            data = new JobDataMap();
+        return JobBuilder.newJob((Class<? extends Job>) klass).withIdentity(jobKey).setJobData(data).build();
     }
 }

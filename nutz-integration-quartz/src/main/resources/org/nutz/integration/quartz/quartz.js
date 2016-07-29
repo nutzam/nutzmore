@@ -32,8 +32,8 @@ var ioc = {
          }
       }
    },
-   "$quartz" : {
-	   "type" :"org.nutz.integration.quartz.QuartzMaster",
+   "quartzManager" : {
+	   "type" :"org.nutz.integration.quartz.QuartzManager",
 	   "fields" :{
 	         "scheduler" :{
 	            "refer" :"scheduler"

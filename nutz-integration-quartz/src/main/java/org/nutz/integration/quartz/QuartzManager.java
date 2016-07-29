@@ -1,40 +1,49 @@
 package org.nutz.integration.quartz;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.nutz.dao.pager.Pager;
-import org.nutz.ioc.loader.annotation.Inject;
-import org.nutz.ioc.loader.annotation.IocBean;
+import org.nutz.json.Json;
 import org.nutz.lang.Lang;
 import org.nutz.lang.Mirror;
 import org.nutz.lang.Strings;
+import org.nutz.lang.util.NutMap;
+import org.quartz.JobDataMap;
 import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
-import org.quartz.UnableToInterruptJobException;
 import org.quartz.Trigger.TriggerState;
+import org.quartz.UnableToInterruptJobException;
 import org.quartz.core.QuartzScheduler;
 import org.quartz.impl.StdScheduler;
 import org.quartz.impl.matchers.GroupMatcher;
 
-@IocBean(name="$quartz") // 仅为了声明名称.
-public class QuartzMaster {
+/**
+ * Quartz管理器,统管Job的增删改查操作
+ * @author wendal
+ *
+ */
+public class QuartzManager {
 
-    @Inject Scheduler scheduler; // 这个注解只是表意,真正的配置在js里面
+    protected Scheduler scheduler; // 通过注入得到
     
-    public void cron(String cron, Class<?> klass) throws SchedulerException {
+    public void cron(String cron, Class<?> klass) {
         String name = klass.getName();
         this.cron(cron, klass, name, Scheduler.DEFAULT_GROUP);
     }
 
-    public void cron(String cron, Class<?> klass, String name, String group) throws SchedulerException {
-        JobKey jobKey = new JobKey(name, group);
-        if (scheduler.checkExists(jobKey))
-            delete(jobKey);
-        scheduler.scheduleJob(Quartzs.makeJob(name, group, klass), Quartzs.makeCronTrigger(name, group, cron));
+    public void cron(String cron, Class<?> klass, String name, String group) {
+        QuartzJob qj = new QuartzJob();
+        qj.setClassName(klass.getName());
+        qj.setJobName(name);
+        qj.setJobGroup(group);
+        qj.setCron(cron);
+        add(qj);
     }
     
     // 类Dao方法
@@ -63,8 +72,8 @@ public class QuartzMaster {
                     List<? extends Trigger> triggers = scheduler.getTriggersOfJob(jobKey);
                     if (size == 0 || (index >= offset && index < (offset+size))) {
                         jobs.add(new QuartzJob(jobKey, triggers.get(0), scheduler.getJobDetail(jobKey)));
-                        index ++;
                     }
+                    index ++;
                 }
             }
             return jobs;
@@ -103,11 +112,30 @@ public class QuartzMaster {
      * @param klass Job类
      */
     public void add(String name, String group, String cron, Class<?> klass) {
+        this.cron(cron, klass, name, group);
+    }
+    
+    /**
+     * 新增一个任务,如果存在就覆盖
+     */
+    public void add(QuartzJob qj) {
         try {
-            this.cron(cron, klass, name, group);
+            Class<?> klass = Class.forName(qj.getClassName());
+            JobKey jobKey = qj.getJobKey();
+            Trigger trigger = qj.getTrigger();
+            Set<Trigger> triggers = new HashSet<Trigger>();
+            triggers.add(trigger);
+            NutMap tmp = null;
+            if (!Strings.isBlank(qj.getDataMap()))
+                tmp = Json.fromJson(NutMap.class, qj.getDataMap());
+            JobDataMap data = tmp == null ? new JobDataMap() : new JobDataMap(tmp);
+            scheduler.scheduleJob(Quartzs.makeJob(jobKey, klass, data), triggers, true);
+        }
+        catch (ClassNotFoundException e) {
+            throw Lang.wrapThrow(e);
         }
         catch (SchedulerException e) {
-            throw new RuntimeException(e);
+            throw Lang.wrapThrow(e);
         }
     }
     
@@ -213,5 +241,13 @@ public class QuartzMaster {
             throw new RuntimeException(e);
         }
         throw Lang.noImplement();
+    }
+    
+    public void setScheduler(Scheduler scheduler) {
+        this.scheduler = scheduler;
+    }
+    
+    public Scheduler getScheduler() {
+        return scheduler;
     }
 }
