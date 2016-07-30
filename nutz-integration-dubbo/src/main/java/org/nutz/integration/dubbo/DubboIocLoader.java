@@ -13,20 +13,27 @@ import java.util.regex.Pattern;
 
 import org.nutz.ioc.IocLoader;
 import org.nutz.ioc.IocLoading;
+import org.nutz.ioc.Iocs;
 import org.nutz.ioc.ObjectLoadException;
-import org.nutz.ioc.meta.IocEventSet;
 import org.nutz.ioc.meta.IocField;
 import org.nutz.ioc.meta.IocObject;
 import org.nutz.ioc.meta.IocValue;
 import org.nutz.lang.Lang;
 import org.nutz.lang.Strings;
+import org.nutz.lang.Xmls;
 import org.nutz.lang.util.NutMap;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.utils.StringUtils;
-import com.alibaba.dubbo.config.ApplicationConfig;
 import com.alibaba.dubbo.config.MonitorConfig;
 import com.alibaba.dubbo.config.ProtocolConfig;
 import com.alibaba.dubbo.config.RegistryConfig;
@@ -36,85 +43,122 @@ public class DubboIocLoader implements IocLoader {
     
     private static final Log log = Logs.get();
     
-    Map<String, NutMap> maps;
-    
     protected Map<String, IocObject> iobjs = new HashMap<>();
-    
-    protected String applicationId;
-    protected String registryId;
     
     protected DubboIocLoader() {}
     
     public DubboIocLoader(String xmlpath) {
-        maps = DubboConfigureReader.read(xmlpath);
-        init();
+        Document doc = Xmls.xml(DubboConfigureReader.class.getClassLoader().getResourceAsStream(xmlpath));
+        doc.normalizeDocument();
+        Element top = doc.getDocumentElement();
+        load(top);
     }
     
-    protected void init() {
-        for (Entry<String, NutMap> en : maps.entrySet()) {
-            String id = en.getKey();
-            NutMap map = en.getValue();
-            String typeName = (String) map.remove("_typeName");
-            add(id, typeName, map);
+    public void load(Element top) {
+        NodeList list = top.getChildNodes();
+        int count = list.getLength();
+
+        for (int i = 0; i < count; i++) {
+            Node node = list.item(i);
+            if (node instanceof Element) {
+                Element ele = (Element)node;
+                String eleName = ele.getNodeName();
+                if (!eleName.startsWith("dubbo:"))
+                    continue; // 跳过非dubbo节点
+                String typeName = eleName.substring("dubbo:".length());
+                load(typeName, ele);
+            }
         }
         
-        // 检查一下application/registry是不是都设置了
-        for (IocObject iobj : iobjs.values()) {
-            if (!iobj.getFields().containsKey("application")) {
-                try {
-                    iobj.getType().getMethod("setApplication", ApplicationConfig.class);
-                    IocField field = new IocField();
-                    field.setName("application");
-                    field.setValue(new IocValue(IocValue.TYPE_REFER, applicationId));
-                    iobj.addField(field);
-                }
-                catch (Exception e) {
-                }
-            }
-            if (!iobj.getFields().containsKey("registry") && !iobj.getFields().containsKey("registries")) {
-                try {
-                    iobj.getType().getMethod("setRegistry", RegistryConfig.class);
-                    IocField field = new IocField();
-                    field.setName("registry");
-                    field.setValue(new IocValue(IocValue.TYPE_REFER, registryId));
-                    iobj.addField(field);
-                }
-                catch (Exception e) {
-                }
-            }
+        IocObject dubbo_iobjs = Iocs.wrap(iobjs);
+        dubbo_iobjs.setType(Object.class);
+        iobjs.put("dubbo_iobjs", dubbo_iobjs);
+        for (Entry<String, IocObject> en : iobjs.entrySet()) {
+            IocObject iobj = en.getValue();
+            String beanName = en.getKey();
+            DubboAgent.checkIocObject(beanName, iobj);
         }
     }
     
-    protected void add(String id, String typeName, NutMap attrs) {
-
+    public String load(String typeName, Element ele) {
+        String genBeanName = ele.getAttribute("id");
+        String id = genBeanName;
+        if (Strings.isBlank(genBeanName)) {
+            if ("protocol".equals(typeName))
+                genBeanName = "dubbo";
+            else {
+                genBeanName = ele.getAttribute("interface");
+                if (Strings.isBlank(genBeanName)) {
+                    genBeanName = "dubbo_"+typeName;
+                }
+            }
+            id = genBeanName;
+            if (iobjs.containsKey(id)) {
+                int count = 2;
+                while (!iobjs.containsKey(id)) {
+                    id = genBeanName + "_"+count;
+                }
+            }
+        }
+        try {
+            add(id, typeName, ele);
+        }
+        catch (Exception e) {
+            throw Lang.wrapThrow(e);
+        }
+        return id;
+    }
+    
+    protected void add(String id, String typeName, Element element) throws Exception {
+        IocObject iobj = new IocObject();
+        NutMap attrs = toAttrMap(element.getAttributes());
         switch (typeName) {
         case "protocol":
             // 填充其他bean的protocol
-            for (IocObject iobj : iobjs.values()) {
-                IocField field = iobj.getFields().get("protocol");
+            for (IocObject _iobj : iobjs.values()) {
+                IocField field = _iobj.getFields().get("protocol");
                 if (field != null && attrs.getString("name", "").equals(field.getValue().getValue())) {
-                    field.setValue(new IocValue(IocValue.TYPE_REFER_TYPE, id));
+                    field.setValue(new IocValue(IocValue.TYPE_REFER, id));
                 }
             }
             break;
         case "service":
-            // 直接定义一个bean,暂不支持
             String className = attrs.getString("class");
             if (className != null) {
-                throw Lang.noImplement();
+                IocObject inner = new IocObject();
+                String uu32 = id+"Impl";
+                inner.setType(Class.forName(className));
+                parseProperties(element.getChildNodes(), inner);
+                iobj.addField(DubboAgent._field("ref", new IocValue(IocValue.TYPE_REFER, uu32)));
+                iobjs.put(uu32, inner);
             }
             break;
         case "provider":
-            throw Lang.noImplement(); // 看上去是provider里面定义一个service,没搞懂
+            parseNested(element, "service", true, "service", "provider", id, iobj);
+            break;
         case "consumer":
-            throw Lang.noImplement(); // consumer里面有个ref?
+            parseNested(element, "reference", false, "reference", "consumer", id, iobj);
+            break;
         }
         try {
-            IocObject iobj = new IocObject();
-            Class<?> beanClass = Class.forName("com.alibaba.dubbo.config."+Strings.upperFirst(typeName)+"Config");
+            Class<?> beanClass = null;
+            switch (typeName) {
+            case "reference":
+                beanClass = ReferenceBean.class;
+                break;
+            case "service":
+                beanClass = ServiceBean.class;
+                break;
+            case "annotation":
+                beanClass = AnnotationBean.class;
+                break;
+            default:
+                beanClass = Class.forName("com.alibaba.dubbo.config."+Strings.upperFirst(typeName)+"Config");
+                break;
+            }
             iobj.setType(beanClass);
             Set<String> props = new HashSet<String>();
-            //NutMap parameters = null;
+            NutMap parameters = null;
             for (Method setter : beanClass.getMethods()) {
                 String name = setter.getName();
                 if (name.length() > 3 && name.startsWith("set")
@@ -138,11 +182,11 @@ public class DubboIocLoader implements IocLoader {
                         continue;
                     }
                     if ("parameters".equals(property)) {
-                        // parameters = parseParameters(element.getChildNodes(), beanDefinition);
+                        parameters = parseParameters(element.getChildNodes(), iobj);
                     } else if ("methods".equals(property)) {
-                        // parseMethods(id, element.getChildNodes(), beanDefinition, parserContext);
+                        parseMethods(id, element.getChildNodes(), iobj);
                     } else if ("arguments".equals(property)) {
-                        // parseArguments(id, element.getChildNodes(), beanDefinition, parserContext);
+                        parseArguments(id, element.getChildNodes(), iobj);
                     } else {
                         String value = attrs.getString(property);
                         if (value != null) {
@@ -191,19 +235,20 @@ public class DubboIocLoader implements IocLoader {
                                         // 兼容旧版本配置
                                         reference = convertMonitor(value);
                                     } else if ("onreturn".equals(property)) {
-                                        //int index = value.lastIndexOf(".");
-                                        //String returnRef = value.substring(0, index);
-                                        //String returnMethod = value.substring(index + 1);
-                                        //reference = new RuntimeBeanReference(returnRef);
+                                        int index = value.lastIndexOf(".");
+                                        String returnRef = value.substring(0, index);
+                                        String returnMethod = value.substring(index + 1);
+                                        reference = DubboAgent._ref(returnRef);
+                                        iobj.addField(DubboAgent._field("onreturnMethod", new IocValue(IocValue.TYPE_NORMAL, returnMethod)));
                                         //beanDefinition.getPropertyValues().addPropertyValue("onreturnMethod", returnMethod);
-                                        throw Lang.noImplement();
                                     } else if ("onthrow".equals(property)) {
-                                        //int index = value.lastIndexOf(".");
-                                        //String throwRef = value.substring(0, index);
-                                        //String throwMethod = value.substring(index + 1);
-                                        //reference = new RuntimeBeanReference(throwRef);
+                                        int index = value.lastIndexOf(".");
+                                        String throwRef = value.substring(0, index);
+                                        String throwMethod = value.substring(index + 1);
+                                        reference = DubboAgent._ref(throwRef);
+                                        iobj.addField(DubboAgent._field("onthrowMethod", new IocValue(IocValue.TYPE_NORMAL, throwMethod)));
                                         //beanDefinition.getPropertyValues().addPropertyValue("onthrowMethod", throwMethod);
-                                        throw Lang.noImplement();
+                                        //throw Lang.noImplement();
                                     } else {
                                         if ("ref".equals(property) && iobjs.containsKey(value)) {
                                             IocObject _iobj = iobjs.get(value);
@@ -241,38 +286,16 @@ public class DubboIocLoader implements IocLoader {
                 field.setValue(new IocValue(IocValue.TYPE_NORMAL, _en.getValue()));
                 iobj.addField(field);
             }
-            //if (parameters != null) {
-            //    IocField field = new IocField();
-            //    field.setName("parameters");
-            //    IocValue value = new IocValue(IocValue.TYPE_NORMAL, parameters);
-            //    iobj.addField(field);
-            //}
-            
-            // 补充events定义
-            IocEventSet events = new IocEventSet();
-            switch (typeName) {
-            case "service":
-                events.setCreate("export");
-                events.setDepose("unexport");
-                iobj.setEvents(events);
-                break;
-            case "eference":
-              // 关闭服务时需要销毁
-                events.setDepose("destroy");
-                iobj.setEvents(events);
-                break;
-            default:
-                break;
+            if (parameters != null) {
+                IocField field = new IocField();
+                field.setName("parameters");
+                IocValue value = new IocValue(IocValue.TYPE_NORMAL, parameters);
+                field.setValue(value);
+                iobj.addField(field);
             }
-            
-            if ("application".equals(typeName)) {
-                applicationId = id;
-            }
-            else if ("registry".equals(typeName) && attrs.getBoolean("default", true)) {
-                registryId = id;
-            }
+
             // 如果是reference, 那么需要生成2个bean
-            else if ("reference".equals(typeName)) {
+            if ("reference".equals(typeName)) {
                 IocObject refBean = new IocObject();
                 refBean.setFactory("$dubbo_reference_"+id+"#get");
                 refBean.setType(Class.forName((String)iobj.getFields().get("interfaceName").getValue().getValue()));
@@ -351,5 +374,160 @@ public class DubboIocLoader implements IocLoader {
             return monitorConfig;
         }
         return null;
+    }
+    
+
+    
+    public static NutMap toAttrMap(NamedNodeMap attrs) {
+        NutMap map = new NutMap();
+        int len = attrs.getLength();
+        for (int j = 0; j < len; j++) {
+            Attr attr = (Attr)attrs.item(j);
+            map.put(attr.getName(), attr.getValue());
+        }
+        return map;
+    }
+    
+    private static void parseProperties(NodeList nodeList, IocObject iobj) {
+        if (nodeList != null && nodeList.getLength() > 0) {
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                if (node instanceof Element) {
+                    if ("property".equals(node.getNodeName())
+                            || "property".equals(node.getLocalName())) {
+                        String name = ((Element) node).getAttribute("name");
+                        if (name != null && name.length() > 0) {
+                            String value = ((Element) node).getAttribute("value");
+                            String ref = ((Element) node).getAttribute("ref");
+                            if (value != null && value.length() > 0) {
+                                iobj.addField(DubboAgent._field(name, new IocValue(IocValue.TYPE_NORMAL, value)));
+                                //beanDefinition.getPropertyValues().addPropertyValue(name, value);
+                            } else if (ref != null && ref.length() > 0) {
+                                iobj.addField(DubboAgent._field(name, new IocValue(IocValue.TYPE_REFER, ref)));
+                                //beanDefinition.getPropertyValues().addPropertyValue(name, new RuntimeBeanReference(ref));
+                            } else {
+                                throw new UnsupportedOperationException("Unsupported <property name=\"" + name + "\"> sub tag, Only supported <property name=\"" + name + "\" ref=\"...\" /> or <property name=\"" + name + "\" value=\"...\" />");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private static NutMap parseParameters(NodeList nodeList, IocObject iobj) {
+        if (nodeList != null && nodeList.getLength() > 0) {
+            NutMap parameters = null;
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                if (node instanceof Element) {
+                    if ("parameter".equals(node.getNodeName())
+                            || "parameter".equals(node.getLocalName())) {
+                        if (parameters == null) {
+                            parameters = new NutMap();
+                        }
+                        String key = ((Element) node).getAttribute("key");
+                        String value = ((Element) node).getAttribute("value");
+                        boolean hide = "true".equals(((Element) node).getAttribute("hide"));
+                        if (hide) {
+                            key = Constants.HIDE_KEY_PREFIX + key;
+                        }
+                        parameters.put(key, value);
+                    }
+                }
+            }
+            return parameters;
+        }
+        return null;
+    }
+    
+    protected void parseMethods(String id, NodeList nodeList, IocObject iobj) throws Exception {
+        if (nodeList != null && nodeList.getLength() > 0) {
+            NutMap methods = null;
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                if (node instanceof Element) {
+                    Element element = (Element) node;
+                    if ("method".equals(node.getNodeName()) || "method".equals(node.getLocalName())) {
+                        String methodName = element.getAttribute("name");
+                        if (methodName == null || methodName.length() == 0) {
+                            throw new IllegalStateException("<dubbo:method> name attribute == null");
+                        }
+                        if (methods == null) {
+                            methods = new NutMap();
+                        }
+                        //BeanDefinition methodBeanDefinition = parse(((Element) node),
+                        //        parserContext, MethodConfig.class, false);
+                        String name = id + "." + methodName;
+
+                        add(name, "method", (Element) node);
+                        //BeanDefinitionHolder methodBeanDefinitionHolder = new BeanDefinitionHolder(
+                        //        methodBeanDefinition, name);
+                        methods.put(methodName, DubboAgent._ref(name));
+                    }
+                }
+            }
+            if (methods != null) {
+                iobj.addField(DubboAgent._field("methods", new IocValue(IocValue.TYPE_NORMAL, methods)));
+                //beanDefinition.getPropertyValues().addPropertyValue("methods", methods);
+            }
+        }
+    }
+    
+    private static void parseArguments(String id, NodeList nodeList, IocObject iobj) {
+        if (nodeList != null && nodeList.getLength() > 0) {
+            NutMap arguments = null;
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                if (node instanceof Element) {
+                    Element element = (Element) node;
+                    if ("argument".equals(node.getNodeName()) || "argument".equals(node.getLocalName())) {
+                        String argumentIndex = element.getAttribute("index");
+                        if (arguments == null) {
+                            arguments = new NutMap();
+                        }
+                        //BeanDefinition argumentBeanDefinition = parse(((Element) node),
+                         //       parserContext, ArgumentConfig.class, false);
+                        String name = id + "." + argumentIndex;
+                        //BeanDefinitionHolder argumentBeanDefinitionHolder = new BeanDefinitionHolder(
+                        //        argumentBeanDefinition, name);
+                        arguments.put(argumentIndex, DubboAgent._ref(name));
+                    }
+                }
+            }
+            if (arguments != null) {
+                iobj.addField(DubboAgent._field("arguments", new IocValue(IocValue.TYPE_NORMAL, arguments)));
+                //beanDefinition.getPropertyValues().addPropertyValue("arguments", arguments);
+            }
+        }
+    }
+    
+    protected void parseNested(Element element, String typeName, boolean required, String tag, String property, String ref, IocObject iobj) {
+        NodeList nodeList = element.getChildNodes();
+        if (nodeList != null && nodeList.getLength() > 0) {
+            boolean first = true;
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                if (node instanceof Element) {
+                    if (tag.equals(node.getNodeName())
+                            || tag.equals(node.getLocalName())) {
+                        if (first) {
+                            first = false;
+                            String isDefault = element.getAttribute("default");
+                            if (isDefault == null || isDefault.length() == 0) {
+                                iobj.addField(DubboAgent._field("default", new IocValue(IocValue.TYPE_NORMAL, "false")));
+                                //beanDefinition.getPropertyValues().addPropertyValue("default", "false");
+                            }
+                        }
+                        String subDefinition = load(typeName, (Element) node);
+                        //BeanDefinition subDefinition = parse((Element) node, parserContext, beanClass, required);
+                        if (subDefinition != null && ref != null && ref.length() > 0) {
+                            iobjs.get(subDefinition).addField(DubboAgent._field(property, DubboAgent._ref(ref)));
+                            //subDefinition.getPropertyValues().addPropertyValue(property, new RuntimeBeanReference(ref));
+                        }
+                    }
+                }
+            }
+        }
     }
 }

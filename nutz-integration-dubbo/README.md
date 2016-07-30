@@ -1,7 +1,7 @@
 Nutz集成Dubbo的插件
 ======================
 
-简介(可用性:开发中)
+简介(可用性:试用)
 ==================================
 
 兼容原生dubbo配置文件
@@ -102,7 +102,7 @@ public class DubboClientTest {
     
     @Before
     public void before() throws ClassNotFoundException {
-        // 载入配置
+        // 载入配置, 真实环境下会直接注入需要的对象
         ComboIocLoader loader = new ComboIocLoader("*dubbo", "dubbo-client.xml");
         ioc = new NutIoc(loader);
     }
