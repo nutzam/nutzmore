@@ -5,6 +5,7 @@ import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.aop.AnnotationsAuthorizingMethodInterceptor;
 import org.nutz.aop.InterceptorChain;
 import org.nutz.aop.MethodInterceptor;
+import org.nutz.integration.shiro.aop.NutzPermissionAnnotationMethodInterceptor;
 import org.nutz.ioc.loader.annotation.IocBean;
 
 /**
@@ -16,6 +17,10 @@ import org.nutz.ioc.loader.annotation.IocBean;
 @IocBean
 public class NutShiroMethodInterceptor extends AnnotationsAuthorizingMethodInterceptor implements MethodInterceptor {
 
+	public NutShiroMethodInterceptor(){
+		super.getMethodInterceptors().add(new NutzPermissionAnnotationMethodInterceptor());
+	}
+	
     public void filter(InterceptorChain chain) throws Throwable {
         assertAuthorized(new NutShiroInterceptor(chain));
         chain.doChain();
