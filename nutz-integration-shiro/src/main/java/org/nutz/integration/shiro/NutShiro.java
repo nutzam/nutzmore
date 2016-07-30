@@ -15,6 +15,7 @@ import org.apache.shiro.authz.annotation.RequiresGuest;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.apache.shiro.authz.annotation.RequiresUser;
+import org.nutz.integration.shiro.annotation.NutzRequiresPermissions;
 import org.nutz.json.JsonFormat;
 import org.nutz.lang.Encoding;
 import org.nutz.mvc.view.UTF8JsonView;
@@ -59,7 +60,8 @@ public class NutShiro {
                 || method.getAnnotation(RequiresAuthentication.class) != null
                 || method.getAnnotation(RequiresGuest.class) != null
                 || method.getAnnotation(RequiresPermissions.class) != null
-                || method.getAnnotation(RequiresUser.class) != null) {
+                || method.getAnnotation(RequiresUser.class) != null
+                || method.getAnnotation(NutzRequiresPermissions.class) != null) {
             return true;
         }
         return false;
@@ -78,12 +80,18 @@ public class NutShiro {
 						roles.add(role);
 					}
 				}
-				RequiresPermissions pr = method.getAnnotation(RequiresPermissions.class);
-				if (pr != null && pr.value().length > 0) {
-					for (String permission : pr.value()) {
-						permissions.add(permission);
-					}
-				}
+                RequiresPermissions pr = method.getAnnotation(RequiresPermissions.class);
+                if (pr != null && pr.value().length > 0) {
+                    for (String permission : pr.value()) {
+                        permissions.add(permission);
+                    }
+                }
+                NutzRequiresPermissions pr2 = method.getAnnotation(NutzRequiresPermissions.class);
+                if (pr2 != null && pr2.value().length > 0) {
+                    for (String permission : pr2.value()) {
+                        permissions.add(permission);
+                    }
+                }
 			}
 		}
     	return new Set[]{roles, permissions};
