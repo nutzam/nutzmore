@@ -22,13 +22,12 @@ import java.lang.annotation.Annotation;
 
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.annotation.Logical;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.authz.aop.PermissionAnnotationHandler;
 import org.apache.shiro.subject.Subject;
 import org.nutz.integration.shiro.annotation.NutzRequiresPermissions;
 
 /**
- * Checks to see if a @{@link org.apache.shiro.authz.annotation.RequiresPermissions RequiresPermissions} annotation is
+ * Checks to see if a @{@link org.apache.shiro.authz.annotation.NutzRequiresPermissionss NutzRequiresPermissionss} annotation is
  * declared, and if so, performs a permission check to see if the calling <code>Subject</code> is allowed continued
  * access.
  *
@@ -38,28 +37,18 @@ public class NurtzPermissionAnnotationHandler extends PermissionAnnotationHandle
 
     /**
      * Default no-argument constructor that ensures this handler looks for
-     * {@link org.apache.shiro.authz.annotation.RequiresPermissions RequiresPermissions} annotations.
+     * {@link org.apache.shiro.authz.annotation.NutzRequiresPermissionss NutzRequiresPermissionss} annotations.
      */
     public NurtzPermissionAnnotationHandler() {
        setAnnotationClass(NutzRequiresPermissions.class);
     }
 
-    /**
-     * Returns the annotation {@link RequiresPermissions#value value}, from which the Permission will be constructed.
-     *
-     * @param a the RequiresPermissions annotation being inspected.
-     * @return the annotation's <code>value</code>, from which the Permission will be constructed.
-     */
-    protected String[] getAnnotationValue(Annotation a) {
-        RequiresPermissions rpAnnotation = (RequiresPermissions) a;
-        return rpAnnotation.value();
-    }
 
     /**
      * Ensures that the calling <code>Subject</code> has the Annotation's specified permissions, and if not, throws an
      * <code>AuthorizingException</code> indicating access is denied.
      *
-     * @param a the RequiresPermission annotation being inspected to check for one or more permissions
+     * @param a the NutzRequiresPermissions annotation being inspected to check for one or more permissions
      * @throws org.apache.shiro.authz.AuthorizationException
      *          if the calling <code>Subject</code> does not have the permission(s) necessary to
      *          continue access or execution.
@@ -68,7 +57,7 @@ public class NurtzPermissionAnnotationHandler extends PermissionAnnotationHandle
         if (!(a instanceof NutzRequiresPermissions)) return;
 
         NutzRequiresPermissions rpAnnotation = (NutzRequiresPermissions) a;
-        String[] perms = getAnnotationValue(a);
+        String[] perms = rpAnnotation.value();
         Subject subject = getSubject();
 
         if (perms.length == 1) {
