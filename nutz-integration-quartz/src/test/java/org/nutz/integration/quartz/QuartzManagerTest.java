@@ -6,9 +6,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.nutz.dao.pager.Pager;
-import org.nutz.ioc.ObjectProxy;
 import org.nutz.ioc.impl.NutIoc;
-import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.ioc.loader.combo.ComboIocLoader;
 import org.quartz.JobKey;
 
@@ -19,8 +17,8 @@ public class QuartzManagerTest {
 
     @Before
     public void setUp() throws Exception {
+        // 模拟Mvc环境下的@IocBy
         ioc = new NutIoc(new ComboIocLoader("*quartz"));
-        ioc.getIocContext().save("app", "conf", new ObjectProxy(new PropertiesProxy()));
         manager = ioc.get(QuartzManager.class);
         manager.clear();
     }
