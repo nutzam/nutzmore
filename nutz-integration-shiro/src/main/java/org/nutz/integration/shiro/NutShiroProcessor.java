@@ -2,6 +2,7 @@ package org.nutz.integration.shiro;
 
 import org.apache.shiro.authz.UnauthenticatedException;
 import org.apache.shiro.authz.UnauthorizedException;
+import org.apache.shiro.web.util.WebUtils;
 import org.nutz.lang.util.NutMap;
 import org.nutz.mvc.ActionContext;
 import org.nutz.mvc.ActionInfo;
@@ -124,6 +125,7 @@ public class NutShiroProcessor extends AbstractProcessor {
             ((View)val).render(ac.getRequest(), ac.getResponse(), null);
             return;
         }
+        WebUtils.saveRequest(ac.getRequest());
         if (e instanceof UnauthenticatedException) {
             whenUnauthenticated(ac, (UnauthenticatedException)e);
         } else if (e instanceof UnauthorizedException) {
