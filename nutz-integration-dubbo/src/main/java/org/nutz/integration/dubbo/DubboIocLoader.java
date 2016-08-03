@@ -84,6 +84,7 @@ public class DubboIocLoader implements IocLoader {
         DubboManager dubboManager = new DubboManager();
         dubboManager.iobjs = iobjs;
         IocObject dubbo_manager = Iocs.wrap(dubboManager);
+        dubbo_manager.setType(DubboManager.class);
         dubbo_manager.addField(DubboAgent._field("ioc", DubboAgent._ref("$ioc")));
         IocEventSet events = new IocEventSet();
         events.setCreate("init");
