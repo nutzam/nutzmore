@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.nutz.integration.dubbo.DubboManager;
 import org.nutz.ioc.Ioc;
 import org.nutz.ioc.impl.NutIoc;
 import org.nutz.ioc.loader.combo.ComboIocLoader;
@@ -30,7 +31,7 @@ public class DubboIocLoaderTest {
     @Test
     public void test_simple_hi() throws Exception {
         // 导出服务
-        ioc.get(null, "org.nutz.integration.dubbo.service.DemoService");
+        ioc.get(DubboManager.class);
         
         // 获取引用
         DemoService demoService = ioc.get(DemoService.class, "demoServiceRemote");

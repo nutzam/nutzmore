@@ -15,6 +15,7 @@ import org.nutz.ioc.IocLoader;
 import org.nutz.ioc.IocLoading;
 import org.nutz.ioc.Iocs;
 import org.nutz.ioc.ObjectLoadException;
+import org.nutz.ioc.meta.IocEventSet;
 import org.nutz.ioc.meta.IocField;
 import org.nutz.ioc.meta.IocObject;
 import org.nutz.ioc.meta.IocValue;
@@ -78,6 +79,17 @@ public class DubboIocLoader implements IocLoader {
             String beanName = en.getKey();
             DubboAgent.checkIocObject(beanName, iobj);
         }
+        
+        // 填充DubboManager
+        DubboManager dubboManager = new DubboManager();
+        dubboManager.iobjs = iobjs;
+        IocObject dubbo_manager = Iocs.wrap(dubboManager);
+        dubbo_manager.addField(DubboAgent._field("ioc", DubboAgent._ref("$ioc")));
+        IocEventSet events = new IocEventSet();
+        events.setCreate("init");
+        events.setDepose("depose");
+        dubbo_manager.setEvents(events);
+        iobjs.put("dubboManager", dubbo_manager);
     }
     
     public String load(String typeName, Element ele) {

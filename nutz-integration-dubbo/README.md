@@ -25,21 +25,18 @@ Nutz集成Dubbo的插件
 										   "*dubbo", "dubbo-client.xml"}) // 配置文件的路径
 ```
 								   
-在MainSetup的init方法中加载(TODO)
+在MainSetup的init方法中加载
 -----------------------------------------------
 
 ```java
-	ioc.get(DubboMaster.class);
+	ioc.get(DubboManager.class);
 	// 该操作会触发Service的初始化
 ```
 
 TODO
 -------------------------------------------------
 
-* 支持dubbo:parameter标签
-* 支持dubbo:method标签
-* 支持dubbo:argument标签
-* 支持一次性初始化所有Bean
+* 完整支持@Reference
 
 客户端调用实例
 --------------------------------------------------
@@ -98,6 +95,18 @@ import net.wendal.nutzbook.service.DubboWayService;
 
 public class DubboClientTest {
 
+    @Test
+    public void test_simple_hi() throws Exception {
+        // 获取引用
+        DubboWayService way = ioc.get(DubboWayService.class, "dubboWayService");
+        
+        // 执行调用
+        String resp = way.hi("wendal");
+        assertEquals(resp, "hi,wendal");
+    }
+    
+    // 模拟ioc环境. 真实环境下通过@IocBy即可,千万别自行new NutIoc
+    
     Ioc ioc;
     
     @Before
@@ -111,16 +120,6 @@ public class DubboClientTest {
     public void after() {
         if (ioc != null)
             ioc.depose();
-    }
-
-    @Test
-    public void test_simple_hi() throws Exception {
-        // 获取引用
-        DubboWayService way = ioc.get(DubboWayService.class, "dubboWayService");
-        
-        // 执行调用
-        String resp = way.hi("wendal");
-        assertEquals(resp, "hi,wendal");
     }
 }
 ```
