@@ -30,8 +30,12 @@ public class PdfView implements View {
     public static String defaultfontPath;
 
     static {
-        String[] paths = new String[]{"C:\\windows\\fonts\\msyhl.ttc",
-                                      "/usr/share/fonts/msyhl.ttc"};
+        String[] paths = new String[]{
+                                      "fonts/pdf.ttc",
+                                      "fonts/pdf.ttf",
+                                      "C:\\windows\\fonts\\msyhl.ttc",
+                                      "/usr/share/fonts/msyhl.ttc"
+                                      };
         for (String path : paths) {
             try {
                 if (new File(path).exists()) {
@@ -98,7 +102,7 @@ public class PdfView implements View {
             return null;
         File f = null;
         try {
-            f = File.createTempFile("nutz.pdfview.", ".ttc");
+            f = File.createTempFile("nutz.pdfview.", ".ttf");
             SfntTool.main(new String[]{"-s", strs, sourceFont, f.getPath()});
             return BaseFont.createFont(f.getPath(), BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
         }
