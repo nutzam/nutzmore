@@ -3,13 +3,13 @@ package org.nutz.plugins.view.pdf;
 import java.io.File;
 import java.io.OutputStream;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.nutz.lang.Encoding;
 import org.nutz.lang.Files;
+import org.nutz.lang.Lang;
 import org.nutz.lang.Streams;
 import org.nutz.lang.Strings;
 import org.nutz.lang.util.Context;
@@ -17,7 +17,7 @@ import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.mvc.View;
 
-import com.itextpdf.text.FontFactory;
+import com.google.typography.font.tools.sfnttool.SfntTool;
 import com.itextpdf.text.pdf.AcroFields;
 import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfReader;
@@ -26,6 +26,8 @@ import com.itextpdf.text.pdf.PdfStamper;
 public class PdfView implements View {
 
     private static final Log log = Logs.get();
+    
+    public static String defaultfontPath;
 
     static {
         String[] paths = new String[]{"C:\\windows\\fonts\\msyhl.ttc",
@@ -33,11 +35,8 @@ public class PdfView implements View {
         for (String path : paths) {
             try {
                 if (new File(path).exists()) {
-                    FontFactory.register(path, "msyh");
-                    DEFAULT_FONT = BaseFont.createFont(path+ ",1",
-                                                       BaseFont.IDENTITY_H,
-                                                       BaseFont.NOT_EMBEDDED);
-                    log.debug("微软雅黑Light Loaded");
+                    defaultfontPath = path;
+                    log.debug("微软雅黑Light found");
                     break;
                 }
 
@@ -76,22 +75,38 @@ public class PdfView implements View {
                                                 Encoding.UTF8);
             resp.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
         }
-        BaseFont bf = format.font;
-        if (bf == null)
-            bf = DEFAULT_FONT;
-        ArrayList<BaseFont> _bf = new ArrayList<BaseFont>();
-        _bf.add(bf);
         PdfReader reader = new PdfReader(Streams.fileIn(f));
         OutputStream out = resp.getOutputStream();
         PdfStamper ps = new PdfStamper(reader, out);
         AcroFields fields = ps.getAcroFields();
-        // fields.setSubstitutionFonts(_bf);
+        StringBuilder sb = new StringBuilder();
+        for (String key : fields.getFields().keySet()) {
+            sb.append(Strings.sBlank(cnt.get(key)));
+        }
+        BaseFont bf = subFont(format.fontPath == null ? defaultfontPath : format.fontPath, sb.toString());
         for (String key : fields.getFields().keySet()) {
             fields.setField(key, Strings.sBlank(cnt.get(key)));
-            fields.setFieldProperty(key, "textfont", bf, null);
+            if (bf != null)
+                fields.setFieldProperty(key, "textfont", bf, null);
         }
         ps.setFormFlattening(true);
         ps.close();
     }
-
+    
+    public static BaseFont subFont(String sourceFont, String strs) {
+        if (sourceFont == null)
+            return null;
+        File f = null;
+        try {
+            f = File.createTempFile("nutz.pdfview.", ".ttc");
+            SfntTool.main(new String[]{"-s", strs, sourceFont, f.getPath()});
+            return BaseFont.createFont(f.getPath(), BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+        }
+        catch (Exception e) {
+            throw Lang.wrapThrow(e);
+        } finally {
+            if (f != null)
+                f.delete();
+        }
+    }
 }
