@@ -28,7 +28,18 @@ public class PdfView implements View {
 
     private static final Log log = Logs.get();
     
-    public static String defaultfontPath;
+    protected static byte[] defaultFontData;
+    
+    public static void setDefaultFontData(byte[] defaultFontData) {
+        PdfView.defaultFontData = defaultFontData;
+    }
+    
+    public static void setDefaultFontPath(String path) {
+        if (path == null)
+            defaultFontData = null;
+        else
+            defaultFontData = Files.readBytes(path);
+    }
 
     static {
         String[] paths = new String[]{
@@ -41,7 +52,7 @@ public class PdfView implements View {
         for (String path : paths) {
             try {
                 if (new File(path).exists()) {
-                    defaultfontPath = path;
+                    setDefaultFontPath(path);
                     log.debug("微软雅黑Light found");
                     break;
                 }
@@ -89,7 +100,7 @@ public class PdfView implements View {
         for (String key : fields.getFields().keySet()) {
             sb.append(Strings.sBlank(cnt.get(key)));
         }
-        BaseFont bf = subFont(format.fontPath == null ? defaultfontPath : format.fontPath, sb.toString());
+        BaseFont bf = subFont(format.fontData, sb.toString());
         for (String key : fields.getFields().keySet()) {
             fields.setField(key, Strings.sBlank(cnt.get(key)));
             if (bf != null)
@@ -99,11 +110,13 @@ public class PdfView implements View {
         ps.close();
     }
     
-    public static BaseFont subFont(String sourceFont, String strs) {
-        if (sourceFont == null)
+    public static BaseFont subFont(byte[] source, String strs) {
+        if (source == null)
+            source = defaultFontData;
+        if (source == null)
             return null;
         try {
-            byte[] buf = SfntTool.sub(new File(sourceFont), strs, false);
+            byte[] buf = SfntTool.sub(source, strs, false);
             return BaseFont.createFont("pdfview."+R.UU32()+".ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED, false, buf, null);
         }
         catch (Exception e) {

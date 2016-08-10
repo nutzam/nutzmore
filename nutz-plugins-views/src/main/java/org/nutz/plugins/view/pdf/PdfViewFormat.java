@@ -4,5 +4,5 @@ public class PdfViewFormat {
 
     protected String tmpl;
     
-    protected String fontPath;
+    protected byte[] fontData;
 }
