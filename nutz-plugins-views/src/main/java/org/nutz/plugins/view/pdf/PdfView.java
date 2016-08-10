@@ -12,6 +12,7 @@ import org.nutz.lang.Files;
 import org.nutz.lang.Lang;
 import org.nutz.lang.Streams;
 import org.nutz.lang.Strings;
+import org.nutz.lang.random.R;
 import org.nutz.lang.util.Context;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
@@ -34,7 +35,8 @@ public class PdfView implements View {
                                       "fonts/pdf.ttc",
                                       "fonts/pdf.ttf",
                                       "C:\\windows\\fonts\\msyhl.ttc",
-                                      "/usr/share/fonts/msyhl.ttc"
+                                      "/usr/share/fonts/msyhl.ttc",
+                                      "/System/Library/Fonts/msyhl.ttc"
                                       };
         for (String path : paths) {
             try {
@@ -100,17 +102,12 @@ public class PdfView implements View {
     public static BaseFont subFont(String sourceFont, String strs) {
         if (sourceFont == null)
             return null;
-        File f = null;
         try {
-            f = File.createTempFile("nutz.pdfview.", ".ttf");
-            SfntTool.main(new String[]{"-s", strs, sourceFont, f.getPath()});
-            return BaseFont.createFont(f.getPath(), BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+            byte[] buf = SfntTool.sub(new File(sourceFont), strs, false);
+            return BaseFont.createFont("pdfview."+R.UU32()+".ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED, false, buf, null);
         }
         catch (Exception e) {
             throw Lang.wrapThrow(e);
-        } finally {
-            if (f != null)
-                f.delete();
         }
     }
 }
