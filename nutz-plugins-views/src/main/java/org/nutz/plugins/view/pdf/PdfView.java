@@ -13,6 +13,7 @@ import org.nutz.lang.Lang;
 import org.nutz.lang.Streams;
 import org.nutz.lang.Strings;
 import org.nutz.lang.random.R;
+import org.nutz.lang.util.Callback;
 import org.nutz.lang.util.Context;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
@@ -78,6 +79,7 @@ public class PdfView implements View {
         this.format = format;
     }
 
+    @SuppressWarnings("unchecked")
     public void render(HttpServletRequest req, HttpServletResponse resp, Object obj)
             throws Throwable {
         File f = Files.findFile(this.format.tmpl);
@@ -87,7 +89,7 @@ public class PdfView implements View {
         }
         Context cnt = (Context) obj;
         resp.setContentType("application/pdf");
-        if (!resp.containsHeader("Content-Disposition")) {
+        if (!resp.containsHeader("Content-Disposition") && !cnt.getBoolean("*viewOnly")) {
             String filename = URLEncoder.encode(cnt.getString("filename", "out.pdf"),
                                                 Encoding.UTF8);
             resp.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
@@ -107,6 +109,9 @@ public class PdfView implements View {
                 fields.setFieldProperty(key, "textfont", bf, null);
         }
         ps.setFormFlattening(true);
+        Callback<PdfStamper> callback = cnt.getAs(Callback.class, "*callback");
+        if (callback != null)
+            callback.invoke(ps);
         ps.close();
     }
     
