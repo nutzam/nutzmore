@@ -118,20 +118,38 @@ public class SfntTool {
   
   public void subsetFontFile(File fontFile, File outputFile, int nIters)
           throws IOException {
-      subsetFontFile(fontFile, new FileOutputStream(outputFile), nIters);
+      subset(fontFile, new FileOutputStream(outputFile), nIters);
+  }
+  
+  public void subset(byte[] buf, OutputStream out, int nIters)
+          throws IOException {
+      FontFactory fontFactory = FontFactory.getInstance();
+      subset(fontFactory.loadFonts(buf)[0], out, nIters);
   }
 
-  public void subsetFontFile(File fontFile, OutputStream out, int nIters)
+  public void subset(File fontFile, OutputStream out, int nIters)
       throws IOException {
-    FontFactory fontFactory = FontFactory.getInstance();
-    FileInputStream fis = null;
+      FontFactory fontFactory = FontFactory.getInstance();
+      FileInputStream fis = null;
+      try {
+          fis = new FileInputStream(fontFile);
+          byte[] fontBytes = new byte[(int)fontFile.length()];
+          fis.read(fontBytes);
+          Font[] fontArray = null;
+          fontArray = fontFactory.loadFonts(fontBytes);
+          Font font = fontArray[0];
+          subset(font, out, nIters);
+      } finally {
+          if (fis != null) {
+              fis.close();
+          }
+      }
+  }
+
+  public void subset(Font font, OutputStream out, int nIters)
+      throws IOException {
+      FontFactory fontFactory = FontFactory.getInstance();
     try {
-      fis = new FileInputStream(fontFile);
-      byte[] fontBytes = new byte[(int)fontFile.length()];
-      fis.read(fontBytes);
-      Font[] fontArray = null;
-      fontArray = fontFactory.loadFonts(fontBytes);
-      Font font = fontArray[0];
       List<CMapTable.CMapId> cmapIds = new ArrayList<CMapTable.CMapId>();
       cmapIds.add(CMapTable.CMapId.WINDOWS_BMP);
       //byte[] newFontData = null;
@@ -190,9 +208,7 @@ public class SfntTool {
         }
       }
     } finally {
-      if (fis != null) {
-        fis.close();
-      }
+        
     }
   }
 
@@ -201,7 +217,16 @@ public class SfntTool {
       tool.subsetString = strs;
       tool.strip = strip;
       ByteArrayOutputStream out = new ByteArrayOutputStream();
-      tool.subsetFontFile(source, out, 1);
+      tool.subset(source, out, 1);
+      return out.toByteArray();
+  }
+  
+  public static byte[] sub(byte[] source, String strs, boolean strip) throws IOException {
+      SfntTool tool = new SfntTool();
+      tool.subsetString = strs;
+      tool.strip = strip;
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      tool.subset(source, out, 1);
       return out.toByteArray();
   }
 }
