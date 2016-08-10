@@ -27,10 +27,12 @@ import com.google.typography.font.tools.subsetter.HintStripper;
 import com.google.typography.font.tools.subsetter.RenumberingSubsetter;
 import com.google.typography.font.tools.subsetter.Subsetter;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -40,18 +42,17 @@ import java.util.Set;
  * @author Raph Levien
  */
 public class SfntTool {
-  private boolean strip = false;
-  private String subsetString = null;
-  private boolean woff = false;
-  private boolean eot = false;
-  private boolean mtx = false;
-  private boolean ttf = false;
+  public boolean strip = false;
+  public String subsetString = null;
+  public boolean woff = false;
+  public boolean eot = false;
+  public boolean mtx = false;
 
   public static void main(String[] args) throws IOException {
     SfntTool tool = new SfntTool();
     File fontFile = null;
     File outputFile = null;
-    boolean bench = false;
+    //boolean bench = false;
     int nIters = 1;
 
     for (int i = 0; i < args.length; i++) {
@@ -76,9 +77,7 @@ public class SfntTool {
         } else if (option.equals("e") || option.equals("eot")) {
           tool.eot = true;
         } else if (option.equals("x") || option.equals("mtx")) {
-            tool.mtx = true;
-        } else if (option.equals("ttf")) {
-            tool.ttf = true;
+          tool.mtx = true;
         } else {
           printUsage();
           System.exit(1);
@@ -116,8 +115,13 @@ public class SfntTool {
     System.out.println("\t-e,-eot\t Output EOT format");
     System.out.println("\t-x,-mtx\t Enable Microtype Express compression for EOT format");
   }
-
+  
   public void subsetFontFile(File fontFile, File outputFile, int nIters)
+          throws IOException {
+      subsetFontFile(fontFile, new FileOutputStream(outputFile), nIters);
+  }
+
+  public void subsetFontFile(File fontFile, OutputStream out, int nIters)
       throws IOException {
     FontFactory fontFactory = FontFactory.getInstance();
     FileInputStream fis = null;
@@ -130,7 +134,7 @@ public class SfntTool {
       Font font = fontArray[0];
       List<CMapTable.CMapId> cmapIds = new ArrayList<CMapTable.CMapId>();
       cmapIds.add(CMapTable.CMapId.WINDOWS_BMP);
-      byte[] newFontData = null;
+      //byte[] newFontData = null;
       for (int i = 0; i < nIters; i++) {
         Font newFont = font;
         if (subsetString != null) {
@@ -169,15 +173,20 @@ public class SfntTool {
           newFont = hintStripper.subset().build();
         }
 
-        FileOutputStream fos = new FileOutputStream(outputFile);
-        if (woff) {
-          WritableFontData woffData = new WoffWriter().convert(newFont);
-          woffData.copyTo(fos);
-        } else if (eot) {
-          WritableFontData eotData = new EOTWriter(mtx).convert(newFont);
-          eotData.copyTo(fos);
-        } else {
-          fontFactory.serializeFont(newFont, fos);
+        try {
+            if (woff) {
+                WritableFontData woffData = new WoffWriter().convert(newFont);
+                woffData.copyTo(out);
+            } else if (eot) {
+                WritableFontData eotData = new EOTWriter(mtx).convert(newFont);
+                eotData.copyTo(out);
+            } else {
+                fontFactory.serializeFont(newFont, out);
+            }
+        }
+        finally {
+            out.flush();
+            out.close();
         }
       }
     } finally {
@@ -185,5 +194,14 @@ public class SfntTool {
         fis.close();
       }
     }
+  }
+
+  public static byte[] sub(File source, String strs, boolean strip) throws IOException {
+      SfntTool tool = new SfntTool();
+      tool.subsetString = strs;
+      tool.strip = strip;
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      tool.subsetFontFile(source, out, 1);
+      return out.toByteArray();
   }
 }

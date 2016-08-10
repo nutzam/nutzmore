@@ -66,6 +66,7 @@ https://oss.sonatype.org/content/repositories/snapshots/org/nutz/
 |nutz-plugins-oauth2-server|待编写|开发中|
 |nutz-plugins-protobuf|提供protobuf双向通信所需要的适配器和View|**生产**|
 |nutz-plugins-secken|完整实现洋葱登陆协议|**生产**|
+|nutz-plugins-sfntly|sfntly的fork版本,修正错误并添加可编程调用|**生产**|
 |nutz-plugins-sigar|深度集成sigar|开发中|
 |nutz-plugins-sqltpl|支持多种模板引擎|试用|
 |nutz-plugins-validation|独立,小巧且够用的校验库|试用|
