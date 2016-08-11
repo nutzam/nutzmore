@@ -32,11 +32,10 @@ public class JProtobufAdaptor extends PairAdaptor {
 				log.warnf("!!Fail to get Type Class : type=%s , param=%s", type, param);
 			return null;
 		}
-		Field[] fields = clazz.getFields();
-		for (Field field : fields) {
+		for (Field field : clazz.getDeclaredFields()) {
 			Protobuf protobuf = field.getAnnotation(Protobuf.class);
-			if (!Lang.isEmpty(protobuf)) {
-				if (Lang.isEmpty(this.clazz)) {
+			if (protobuf != null) {
+				if (null == this.clazz) {
 					this.clazz = clazz;
 					return new JProtobufPairInjector();
 				} else {
