@@ -1,6 +1,9 @@
 ### QRCode on Nutz
 
-这是一个生成 QRCode 的项目，基于 [zxing](http://code.google.com/p/zxing/) 项目进行了封装。
+简介(可用性:生产)
+==================================
+
+生成 QRCode,基于 [zxing](http://code.google.com/p/zxing/)
 
 ### How to ues
 
