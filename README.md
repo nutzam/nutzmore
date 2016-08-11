@@ -62,6 +62,7 @@ https://oss.sonatype.org/content/repositories/snapshots/org/nutz/
 |nutz-plugins-iocloader|演示自定义IocLoader的用法|试用|
 |nutz-plugins-jedis|轻度集成jedis|开发中|
 |nutz-plugins-jsonrpc|完整实现jsonrpc, 用Mapper方式|试用|
+|nutz-plugins-mock|提供单元测试所需要的一切东西|开发中|
 |nutz-plugins-multiview|集合N种模板引擎,可配置性强|**生产**|
 |nutz-plugins-oauth2-server|待编写|开发中|
 |nutz-plugins-protobuf|提供protobuf双向通信所需要的适配器和View|**生产**|

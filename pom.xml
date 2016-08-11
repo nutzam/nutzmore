@@ -48,7 +48,7 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz</artifactId>
-			<version>1.r.58-SNAPSHOT</version>
+			<version>1.r.57.r3</version>
 		</dependency>
 	</dependencies>
 
@@ -109,9 +109,12 @@
 		<module>nutz-plugins-sigar</module>
 		<module>nutz-plugins-jedis</module>
 		<module>nutz-integration-dubbo</module>
+		<module>nutz-plugins-sfntly</module>
+		
+		<module>nutz-plugins-mock</module>
 	</modules>
 	<properties>
-		<nutz.version>1.r.58-SNAPSHOT</nutz.version>
+		<nutz.version>1.r.57.r3</nutz.version>
 	</properties>
 	<distributionManagement>
 		<snapshotRepository>
