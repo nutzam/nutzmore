@@ -7,7 +7,7 @@
 
 ### 传统protobuf使用过程 ###
 
-```
+```java
 	@At
 	@Ok("ioc:proto")
 	@AdaptBy(type = ProtobufAdaptor.class, args = { "ioc:protobufAdaptor" })
@@ -19,7 +19,7 @@
 
 ### jrotobuf使用过程 ###
 
-```
+```java
 	@At
 	@Ok("ioc:jproto")
 	@AdaptBy(type = JProtobufAdaptor.class, args = { "ioc:jprotobufAdaptor" })
@@ -30,13 +30,13 @@
 ```
 #####MainModule添加视图引用#######
 
-```
+```java
 @Views({ ProtoViewMaker.class })
 
 ```
 #####user.proto####
 
-```
+```java
 package org.nutz.plugins.protobuf.pojo;
 
 option java_package = "org.nutz.plugins.protobuf.pojo";
@@ -54,7 +54,7 @@ option java_outer_classname = "UserProto";
 ```
 ######添加ioc定义######
 
-```
+```js
 var ioc = {
 	protobufAdaptor : {
 		type : "org.nutz.plugins.protobuf.mvc.adaptor.ProtobufAdaptor"
@@ -67,7 +67,7 @@ var ioc = {
 ```
 #####测试方法#######
 
-```
+```java
 public void testJProtobuf() throws IOException {
 		Codec<UserJProtoBufProtoClass> codec = ProtobufProxy.create(UserJProtoBufProtoClass.class);
 		UserJProtoBufProtoClass udbp = new UserJProtoBufProtoClass();
