@@ -5,36 +5,29 @@
 
 提供protobuf双向通信所需要的适配器和View
 
+## 共用的必要配置
+
+在MainModule添加视图引用
+
+```java
+@Views({ ProtoViewMaker.class })
+```
+
 ### 传统protobuf使用过程 ###
+
+入口方法:
 
 ```java
 	@At
-	@Ok("ioc:proto")
-	@AdaptBy(type = ProtobufAdaptor.class, args = { "ioc:protobufAdaptor" })
+	@Ok("proto")
+	@AdaptBy(type = ProtobufAdaptor.class)
 	public Message proto(UserProto.User message) {
 		return message;
 	}
 
 ```
 
-### jrotobuf使用过程 ###
-
-```java
-	@At
-	@Ok("ioc:jproto")
-	@AdaptBy(type = JProtobufAdaptor.class, args = { "ioc:jprotobufAdaptor" })
-	public UserJProtoBufProtoClass jproto(UserJProtoBufProtoClass message) {
-		return message;
-	}
-
-```
-#####MainModule添加视图引用#######
-
-```java
-@Views({ ProtoViewMaker.class })
-
-```
-#####user.proto####
+匹配的user.proto文件
 
 ```java
 package org.nutz.plugins.protobuf.pojo;
@@ -52,25 +45,24 @@ option java_outer_classname = "UserProto";
  }
 
 ```
-######添加ioc定义######
 
-```js
-var ioc = {
-	protobufAdaptor : {
-		type : "org.nutz.plugins.protobuf.mvc.adaptor.ProtobufAdaptor",
-		singleton: false
-	},
-	jprotobufAdaptor : {
-		type : "org.nutz.plugins.protobuf.mvc.adaptor.JProtobufAdaptor",
-		singleton: false
-	}
-};
-
-```
-#####测试方法#######
+### jrotobuf使用过程 ###
 
 ```java
-public void testJProtobuf() throws IOException {
+	@At
+	@Ok("jproto")
+	@AdaptBy(type = JProtobufAdaptor.class)
+	public UserJProtoBufProtoClass jproto(UserJProtoBufProtoClass message) {
+		return message;
+	}
+
+```
+
+## 测试方法 ##
+
+```java
+
+	public void testJProtobuf() throws IOException {
 		Codec<UserJProtoBufProtoClass> codec = ProtobufProxy.create(UserJProtoBufProtoClass.class);
 		UserJProtoBufProtoClass udbp = new UserJProtoBufProtoClass();
 		udbp.id = System.currentTimeMillis();
@@ -103,6 +95,6 @@ public void testJProtobuf() throws IOException {
 	}
 ```
 
-#####关于jprotobuf的使用方法请关注#####
+## jprotobuf的使用方法
 
 https://github.com/jhunters/jprotobuf
