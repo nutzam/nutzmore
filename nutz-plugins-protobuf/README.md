@@ -57,10 +57,12 @@ option java_outer_classname = "UserProto";
 ```js
 var ioc = {
 	protobufAdaptor : {
-		type : "org.nutz.plugins.protobuf.mvc.adaptor.ProtobufAdaptor"
+		type : "org.nutz.plugins.protobuf.mvc.adaptor.ProtobufAdaptor",
+		singleton: false
 	},
 	jprotobufAdaptor : {
-		type : "org.nutz.plugins.protobuf.mvc.adaptor.JProtobufAdaptor"
+		type : "org.nutz.plugins.protobuf.mvc.adaptor.JProtobufAdaptor",
+		singleton: false
 	}
 };
 
