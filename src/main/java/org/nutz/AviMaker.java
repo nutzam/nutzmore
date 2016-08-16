@@ -34,7 +34,9 @@ public class AviMaker {
                         avi = "**"+avi+"**";
                     //System.out.println(lines.get(i+3));
                     String shortt = lines.get(i+3);
-                    System.out.println("|"+f.getName()+"|"+shortt+"|"+avi+"|");
+                    String maven = "![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/"+f.getName()+"/badge.svg)";
+                    String link = "["+f.getName()+"](https://github.com/nutzam/nutzmore/tree/master/"+f.getName()+")";
+                    System.out.printf("| %s | %s | %s | %s |\r\n", link, maven, shortt, avi);
                     flag = false;
                     break;
                 }

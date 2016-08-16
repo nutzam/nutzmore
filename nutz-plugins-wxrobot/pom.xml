@@ -3,10 +3,10 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.nutz</groupId>
 	<artifactId>wxrobot</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>1.r.58-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>nutz-wxrobot</name>
+	<name>nutz-plugin-wxrobot</name>
 	<url>http://maven.apache.org</url>
 
 	<properties>
@@ -58,6 +58,7 @@
 				<configuration>
 					<source>1.6</source>
 					<target>1.6</target>
+					<useIncrementalCompilation>false</useIncrementalCompilation>
 				</configuration>
 			</plugin>
 
@@ -72,4 +73,17 @@
 		</plugins>
 	</build>
 
+	<distributionManagement>
+		<snapshotRepository>
+			<id>sonatype-snapshots</id>
+			<name>Sonatype Nexus snapshot repository</name>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+
+		<repository>
+			<id>sonatype-release-staging</id>
+			<name>Sonatype Nexus release repository</name>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+		</repository>
+	</distributionManagement>
 </project>
