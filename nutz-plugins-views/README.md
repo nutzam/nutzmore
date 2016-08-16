@@ -4,11 +4,9 @@
 简介(可用性:生产)
 ==================================
 
-包含freemarker/velocity/thymeleaf 视图插件
+freemarker/velocity/thymeleaf/pdf 视图插件
 
-### 包含freemarker、velocity、thymeleaf 视图插件
-
-1）freemarker 视图使用方法：
+## freemarker 视图使用方法：
 
 1. 在 MainModule 的 `@IocBy` 中增加 "*org.nutz.plugins.view.freemarker.FreemarkerIocLoader"
 1. 在 MainModule 中增加 `@Views(FreemarkerViewMaker.class)`
@@ -73,7 +71,7 @@ mapTags : {
 这样可以在模板中直接调用标签
 `<@currentTime /> ${rekoe} ${conf['emai.to']} ${abc}`
 
-2）thymeleaf 视图使用方法（现已支持 `thymeleaf 3.0.0.RELEASE` 版本，并自带 `thymeleaf-layout-dialect 2.0.1`）：
+## thymeleaf 视图使用方法（现已支持 `thymeleaf 3.0.0.RELEASE` 版本，并自带 `thymeleaf-layout-dialect 2.0.1`）：
 
 1. 在 MainModule 的 `@IocBy` 中增加 "*org.nutz.plugins.view.freemarker.ThymeleafIocLoader"
 2. 在 MainModule 中增加 `@Views(ThymeleafViewMaker.class)`
