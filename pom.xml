@@ -112,6 +112,7 @@
 		<module>nutz-plugins-sfntly</module>
 		<module>nutz-plugins-mock</module>
 		<module>nutz-plugins-qrcode</module>
+        <module>nutz-plugins-wxrobot</module>
 	</modules>
 	<properties>
 		<nutz.version>1.r.57.r3</nutz.version>
