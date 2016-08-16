@@ -36,12 +36,11 @@ import org.nutz.lang.util.NutMap;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.mapl.Mapl;
+import org.nutz.repo.Base64;
 import org.nutz.runner.NutLock;
 import org.nutz.runner.NutRunner;
 import org.nutz.wxrobot.bean.SyncKey;
 import org.nutz.wxrobot.bean.WxInMsg;
-
-import sun.misc.BASE64Decoder;
 
 /**
  * Weixin Robot Client
@@ -160,11 +159,10 @@ public class Client {
     }
 
     private File base64Image(String imageDataBytes) {
-        BASE64Decoder decoder = new BASE64Decoder();
         byte[] imgBytes;
         File imgOutFile;
         try {
-            imgBytes = decoder.decodeBuffer(imageDataBytes);
+            imgBytes = Base64.decode(imageDataBytes);
             BufferedImage bufImg = ImageIO.read(new ByteArrayInputStream(imgBytes));
             imgOutFile = File.createTempFile("wxrobot_avatar_", ".jpg");
             ImageIO.write(bufImg, "jpg", imgOutFile);
@@ -191,7 +189,8 @@ public class Client {
     }
 
     private WxInMsg convertWxInMsg(Object msg) {
-        Map<String, Object> map = (Map<String, Object>) msg;
+        @SuppressWarnings("unchecked")
+		Map<String, Object> map = (Map<String, Object>) msg;
         Lang.convertMapKey(map, new MapKeyConvertor() {
             @Override
             public String convertKey(String key) {
