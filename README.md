@@ -75,3 +75,4 @@ https://oss.sonatype.org/content/repositories/snapshots/org/nutz/
 |nutz-plugins-views|包含freemarker/velocity/thymeleaf 视图插件|**生产**|
 |nutz-plugins-webqq|webqq集成|开发中|
 |nutz-plugins-xmlentitymaker|使用xml定义实体,替换原生的注解方式|试用|
+|nutz-plugins-wxrobot|个人微信号机器人|开发中|
