@@ -13,8 +13,6 @@ public class RedisDaoCacheProvider extends AbstractDaoCacheProvider {
     private static final Log log = Logs.get();
     
     protected JedisPool jedisPool;
-    
-    protected String script;
 
     public Object get(String cacheName, String key) {
         byte[] obj = null;
