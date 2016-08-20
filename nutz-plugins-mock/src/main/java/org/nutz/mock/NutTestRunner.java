@@ -17,11 +17,17 @@ public class NutTestRunner extends BlockJUnit4ClassRunner {
 
     public NutTestRunner(Class<?> klass) throws InitializationError {
         super(klass);
+        if (klass.getAnnotation(IocBean.class) == null)
+            throw new InitializationError("Must mark as @IocBean");
     }
     
     @Override
     protected void runChild(FrameworkMethod method, RunNotifier notifier) {
-        Ioc ioc = new NutIoc(getIocLoader());
+        if (isIgnored(method)) {
+            super.runChild(method, notifier);
+            return;
+        }
+        Ioc ioc = createIoc();
         try {
             iocHolder.set(ioc);
             super.runChild(method, notifier);
@@ -35,7 +41,7 @@ public class NutTestRunner extends BlockJUnit4ClassRunner {
      * 返回MainModule类,必须带IocBy注解. 一般用于Mvc环境下
      */
     protected Class<?> getMainModule() {
-        throw new IllegalArgumentException("Must override one of getMainModule/getIocArgs/getIocLoader");
+        throw new IllegalArgumentException("Must override one of getMainModule/getIocArgs/createIocLoader/createIoc");
     }
     
     /**
@@ -48,7 +54,7 @@ public class NutTestRunner extends BlockJUnit4ClassRunner {
     /**
      * 返回一个IocLoader, 一般用于测试自定义IocLoader,比较少用到.
      */
-    protected IocLoader getIocLoader() {
+    protected IocLoader createIocLoader() {
         try {
             return new ComboIocLoader(getIocArgs());
         }
@@ -57,13 +63,12 @@ public class NutTestRunner extends BlockJUnit4ClassRunner {
         }
     }
     
-    
-    protected Object createTest() throws Exception {
-        IocBean ib = getTestClass().getJavaClass().getAnnotation(IocBean.class);
-        if (ib == null)
-            return super.createTest();
-        return iocHolder.get().get(getTestClass().getJavaClass());
+    protected Ioc createIoc() {
+        return new NutIoc(createIocLoader());
     }
     
+    protected Object createTest() throws Exception {
+        return iocHolder.get().get(getTestClass().getJavaClass());
+    }
     
 }
