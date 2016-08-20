@@ -7,6 +7,7 @@ import org.apache.shiro.authc.UsernamePasswordToken;
  * QQ:5382211
  * @author wendal<wendal1985@gmail.com>
  */
+@Deprecated
 public class CaptchaUsernamePasswordToken extends UsernamePasswordToken {
 
 	private static final long serialVersionUID = 4676958151524148623L;

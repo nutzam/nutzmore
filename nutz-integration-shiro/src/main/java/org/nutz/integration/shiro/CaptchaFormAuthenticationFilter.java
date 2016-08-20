@@ -22,6 +22,7 @@ import org.nutz.mvc.View;
  * @author 科技㊣²º¹³ 2014年2月3日 下午4:48:45 http://www.rekoe.com QQ:5382211
  * @author wendal<wendal1985@gmail.com>
  */
+@Deprecated
 public class CaptchaFormAuthenticationFilter extends FormAuthenticationFilter implements ActionFilter {
     
     protected String JsonParams_KEY = "CaptchaFormAuthenticationFilter_JsonParams";

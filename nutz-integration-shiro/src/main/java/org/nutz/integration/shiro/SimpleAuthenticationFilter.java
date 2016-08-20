@@ -4,6 +4,11 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * 直接穿透
+ * @author wendal
+ *
+ */
 public class SimpleAuthenticationFilter extends org.apache.shiro.web.filter.authc.AuthenticationFilter {
 
 	protected boolean isLoginRequest(ServletRequest request, ServletResponse response) {
