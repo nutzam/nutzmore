@@ -1,8 +1,11 @@
 package org.nutz.integration.shiro;
 
+import java.util.Collection;
+
 import org.apache.shiro.aop.MethodInvocation;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.aop.AnnotationsAuthorizingMethodInterceptor;
+import org.apache.shiro.authz.aop.AuthorizingAnnotationMethodInterceptor;
 import org.nutz.aop.InterceptorChain;
 import org.nutz.aop.MethodInterceptor;
 import org.nutz.integration.shiro.aop.NutzPermissionAnnotationMethodInterceptor;
@@ -17,17 +20,23 @@ import org.nutz.ioc.loader.annotation.IocBean;
 @IocBean
 public class NutShiroMethodInterceptor extends AnnotationsAuthorizingMethodInterceptor implements MethodInterceptor {
 
-	public NutShiroMethodInterceptor(){
+	public NutShiroMethodInterceptor(Collection<AuthorizingAnnotationMethodInterceptor> interceptors) {
+		super.getMethodInterceptors().addAll(interceptors);
+	}
+
+	public NutShiroMethodInterceptor() {
 		super.getMethodInterceptors().add(new NutzPermissionAnnotationMethodInterceptor());
 	}
-	
-    public void filter(InterceptorChain chain) throws Throwable {
-        assertAuthorized(new NutShiroInterceptor(chain));
-        chain.doChain();
-    }
 
-    // 暴露父类的方法
-    public void assertAuthorized(MethodInvocation methodInvocation) throws AuthorizationException {
-        super.assertAuthorized(methodInvocation);
-    }
+	@Override
+	public void filter(InterceptorChain chain) throws Throwable {
+		assertAuthorized(new NutShiroInterceptor(chain));
+		chain.doChain();
+	}
+
+	// 暴露父类的方法
+	@Override
+	public void assertAuthorized(MethodInvocation methodInvocation) throws AuthorizationException {
+		super.assertAuthorized(methodInvocation);
+	}
 }

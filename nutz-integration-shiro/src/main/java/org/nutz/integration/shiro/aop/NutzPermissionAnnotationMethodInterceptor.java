@@ -22,31 +22,36 @@ import org.apache.shiro.aop.AnnotationResolver;
 import org.apache.shiro.authz.aop.PermissionAnnotationMethodInterceptor;
 
 /**
- * Checks to see if a @{@link org.apache.shiro.authz.annotation.RequiresPermissions RequiresPermissions} annotation is declared, and if so, performs
- * a permission check to see if the calling <code>Subject</code> is allowed to call the method.
+ * Checks to see if a @
+ * {@link org.apache.shiro.authz.annotation.RequiresPermissions
+ * RequiresPermissions} annotation is declared, and if so, performs a permission
+ * check to see if the calling <code>Subject</code> is allowed to call the
+ * method.
+ * 
  * @since 0.9
  */
 public class NutzPermissionAnnotationMethodInterceptor extends PermissionAnnotationMethodInterceptor {
 
-    /*
-     * The character to look for that closes a permission definition.
-     **/
-    //private static final char ARRAY_CLOSE_CHAR = ']';
+	/*
+	 * The character to look for that closes a permission definition.
+	 */
+	// private static final char ARRAY_CLOSE_CHAR = ']';
 
-    /**
-     * Default no-argument constructor that ensures this interceptor looks for
-     * {@link org.apache.shiro.authz.annotation.RequiresPermissions RequiresPermissions} annotations in a method declaration.
-     */
-    public NutzPermissionAnnotationMethodInterceptor() {
-        setHandler(new NurtzPermissionAnnotationHandler());
-    }
+	/**
+	 * Default no-argument constructor that ensures this interceptor looks for
+	 * {@link org.apache.shiro.authz.annotation.RequiresPermissions
+	 * RequiresPermissions} annotations in a method declaration.
+	 */
+	public NutzPermissionAnnotationMethodInterceptor() {
+		setHandler(new NurtzPermissionAnnotationHandler());
+	}
 
-    /**
-     * @param resolver
-     * @since 1.1
-     */
-    public NutzPermissionAnnotationMethodInterceptor(AnnotationResolver resolver) {
-        setHandler(new NurtzPermissionAnnotationHandler());
-        setResolver(resolver);
-    }
+	/**
+	 * @param resolver
+	 * @since 1.1
+	 */
+	public NutzPermissionAnnotationMethodInterceptor(AnnotationResolver resolver) {
+		setHandler(new NurtzPermissionAnnotationHandler());
+		setResolver(resolver);
+	}
 }

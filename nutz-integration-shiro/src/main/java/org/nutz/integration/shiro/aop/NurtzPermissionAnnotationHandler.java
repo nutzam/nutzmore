@@ -27,51 +27,61 @@ import org.apache.shiro.subject.Subject;
 import org.nutz.integration.shiro.annotation.NutzRequiresPermissions;
 
 /**
- * Checks to see if a @{@link org.apache.shiro.authz.annotation.NutzRequiresPermissionss NutzRequiresPermissionss} annotation is
- * declared, and if so, performs a permission check to see if the calling <code>Subject</code> is allowed continued
- * access.
+ * Checks to see if a @
+ * {@link org.apache.shiro.authz.annotation.NutzRequiresPermissionss
+ * NutzRequiresPermissionss} annotation is declared, and if so, performs a
+ * permission check to see if the calling <code>Subject</code> is allowed
+ * continued access.
  *
  * @since 0.9.0
  */
 public class NurtzPermissionAnnotationHandler extends PermissionAnnotationHandler {
 
-    /**
-     * Default no-argument constructor that ensures this handler looks for
-     * {@link org.apache.shiro.authz.annotation.NutzRequiresPermissionss NutzRequiresPermissionss} annotations.
-     */
-    public NurtzPermissionAnnotationHandler() {
-       setAnnotationClass(NutzRequiresPermissions.class);
-    }
+	/**
+	 * Default no-argument constructor that ensures this handler looks for
+	 * {@link org.apache.shiro.authz.annotation.NutzRequiresPermissionss
+	 * NutzRequiresPermissionss} annotations.
+	 */
+	public NurtzPermissionAnnotationHandler() {
+		setAnnotationClass(NutzRequiresPermissions.class);
+	}
 
+	/**
+	 * Ensures that the calling <code>Subject</code> has the Annotation's
+	 * specified permissions, and if not, throws an
+	 * <code>AuthorizingException</code> indicating access is denied.
+	 *
+	 * @param a
+	 *            the NutzRequiresPermissions annotation being inspected to
+	 *            check for one or more permissions
+	 * @throws org.apache.shiro.authz.AuthorizationException
+	 *             if the calling <code>Subject</code> does not have the
+	 *             permission(s) necessary to continue access or execution.
+	 */
+	@Override
+	public void assertAuthorized(Annotation a) throws AuthorizationException {
+		if (!(a instanceof NutzRequiresPermissions))
+			return;
 
-    /**
-     * Ensures that the calling <code>Subject</code> has the Annotation's specified permissions, and if not, throws an
-     * <code>AuthorizingException</code> indicating access is denied.
-     *
-     * @param a the NutzRequiresPermissions annotation being inspected to check for one or more permissions
-     * @throws org.apache.shiro.authz.AuthorizationException
-     *          if the calling <code>Subject</code> does not have the permission(s) necessary to
-     *          continue access or execution.
-     */
-    public void assertAuthorized(Annotation a) throws AuthorizationException {
-        if (!(a instanceof NutzRequiresPermissions)) return;
+		NutzRequiresPermissions rpAnnotation = (NutzRequiresPermissions) a;
+		String[] perms = rpAnnotation.value();
+		Subject subject = getSubject();
 
-        NutzRequiresPermissions rpAnnotation = (NutzRequiresPermissions) a;
-        String[] perms = rpAnnotation.value();
-        Subject subject = getSubject();
-
-        if (perms.length == 1) {
-            subject.checkPermission(perms[0]);
-            return;
-        }
-        if (Logical.AND.equals(rpAnnotation.logical())) {
-            getSubject().checkPermissions(perms);
-            return;
-        }
-        if (Logical.OR.equals(rpAnnotation.logical())) {
-            boolean hasAtLeastOnePermission = false;
-            for (String permission : perms) if (getSubject().isPermitted(permission)) hasAtLeastOnePermission = true;
-            if (!hasAtLeastOnePermission) getSubject().checkPermission(perms[0]);
-        }
-    }
+		if (perms.length == 1) {
+			subject.checkPermission(perms[0]);
+			return;
+		}
+		if (Logical.AND.equals(rpAnnotation.logical())) {
+			getSubject().checkPermissions(perms);
+			return;
+		}
+		if (Logical.OR.equals(rpAnnotation.logical())) {
+			boolean hasAtLeastOnePermission = false;
+			for (String permission : perms)
+				if (getSubject().isPermitted(permission))
+					hasAtLeastOnePermission = true;
+			if (!hasAtLeastOnePermission)
+				getSubject().checkPermission(perms[0]);
+		}
+	}
 }
