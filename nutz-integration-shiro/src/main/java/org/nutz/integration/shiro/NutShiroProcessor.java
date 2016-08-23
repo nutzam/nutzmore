@@ -1,5 +1,7 @@
 package org.nutz.integration.shiro;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.Collection;
 
 import org.apache.shiro.authz.UnauthenticatedException;
@@ -69,8 +71,11 @@ public class NutShiroProcessor extends AbstractProcessor {
 
 	protected boolean init;
 
-	public NutShiroProcessor(Collection<AuthorizingAnnotationMethodInterceptor> interceptors) {
+	protected Class<? extends Annotation>[] annotations;
+
+	public NutShiroProcessor(Collection<AuthorizingAnnotationMethodInterceptor> interceptors, Class<? extends Annotation>... annotations) {
 		interceptor = new NutShiroMethodInterceptor(interceptors);
+		this.annotations = annotations;
 	}
 
 	public NutShiroProcessor() {
@@ -82,8 +87,26 @@ public class NutShiroProcessor extends AbstractProcessor {
 		if (init) // 禁止重复初始化,常见于ioc注入且使用了单例
 			throw new IllegalStateException("this Processor have bean inited!!");
 		super.init(config, ai);
-		match = NutShiro.match(ai.getMethod());
+		if (annotations == null || annotations.length == 0) {
+			match = NutShiro.match(ai.getMethod());
+		} else {
+			match = NutShiro.match(ai.getMethod()) || hasAuthAnnotion(ai.getMethod(), annotations);
+		}
 		init = true;
+	}
+
+	/**
+	 * @param method
+	 * @param annotations2
+	 * @return
+	 */
+	private boolean hasAuthAnnotion(Method method, Class<? extends Annotation>[] annotations) {
+		for (Class<? extends Annotation> clazz : annotations) {
+			if (method.getAnnotation(clazz) != null) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
