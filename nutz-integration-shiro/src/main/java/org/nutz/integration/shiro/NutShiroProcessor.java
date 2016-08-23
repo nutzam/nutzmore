@@ -72,6 +72,10 @@ public class NutShiroProcessor extends AbstractProcessor {
 	protected boolean init;
 
 	protected Class<? extends Annotation>[] annotations;
+	
+	public NutShiroProcessor(Collection<AuthorizingAnnotationMethodInterceptor> interceptors) {
+        interceptor = new NutShiroMethodInterceptor(interceptors);
+    }
 
 	public NutShiroProcessor(Collection<AuthorizingAnnotationMethodInterceptor> interceptors, Class<? extends Annotation>... annotations) {
 		interceptor = new NutShiroMethodInterceptor(interceptors);
