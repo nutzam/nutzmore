@@ -23,7 +23,7 @@ Nutz集成Shiro的插件
 -------------------------
 
 * 添加本插件及shiro的依赖, 支持1.2+版本,建议用最新版
-* 继承AbstractNutRealm,实现一个Realm实现. 特别注意在构造方法内注册关联的Token类!!
+* 继承AbstractNutRealm,实现一个Realm. 特别注意在构造方法内注册关联的Token类!!
 * 添加 shiro.ini
 * 在web.xml中添加ShiroFilter
 * 添加入口方法完成登陆
@@ -63,7 +63,7 @@ Nutz集成Shiro的插件
 		</dependency>
 ```
 
-继承AbstractNutRealm,实现一个Realm实现
+继承AbstractNutRealm,实现一个Realm
 --------------------------------------
 
 这部分是跟具体项目的Pojo类紧密结合的,所以没有给出默认实现.
@@ -88,7 +88,7 @@ Nutz集成Shiro的插件
 web.xml中添加ShiroFilter配置
 ----------------------------
 
-必须添加在NutFilter之前,先与NutFilter进行初始化
+必须添加在NutFilter之前,让其先于NutFilter进行初始化
 
 ```xml
 	<listener>
@@ -154,7 +154,7 @@ ShiroSessionProvider用法
 	
 这个功能是可选,也是推荐的,配合ehcache/redis,可以实现session持久化
 
-配置该SessionProvider后, nutz.mvc作用于内的req.getHttpSession均返回shiro的Session.
+配置该SessionProvider后, nutz.mvc作用域内的req.getHttpSession均返回shiro的Session.
 
 UU32SessionIdGenerator 用法
 ---------------------------
@@ -170,7 +170,7 @@ UU32SessionIdGenerator 用法
 
 **使用CaptchaFormAuthenticationFilter出现各种问题无法解决的话,请立即更换为SimpleAuthenticationFilter**
 
-1. 使用CaptchaFormAuthenticationFilter, 账号密码均正确,但依然无法登陆 -- 必须带验证码,请其executeLogin
-2. 使用CaptchaFormAuthenticationFilter,登陆就404,但事实上已经登陆 -- 若已经登陆,那么再次登陆时穿透的,如果后端没有入库方法,就会404.
+1. 使用CaptchaFormAuthenticationFilter, 账号密码均正确,但依然无法登陆 -- 必须带验证码,请查看其executeLogin方法
+2. 使用CaptchaFormAuthenticationFilter,登陆就404,但事实上已经登陆 -- 若已经登陆,那么再次登陆时穿透的,如果后端没有入口方法对应,就会404.
 
 3. 使用SimpleAuthenticationFilter, 就XXX -- 还没人遇到过问题,因为登陆操作在入口方法内,由你控制!!

@@ -2,7 +2,6 @@ package org.nutz.integration.shiro;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * 直接穿透
@@ -20,7 +19,7 @@ public class SimpleAuthenticationFilter extends org.apache.shiro.web.filter.auth
 	}
 
 	protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws Exception {
-		((HttpServletResponse)response).sendError(403);
+	    saveRequestAndRedirectToLogin(request, response);
 		return false;
 	}
 	
