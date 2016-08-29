@@ -1,4 +1,4 @@
-package org.nutz.sigar.integration.watchdog;
+package org.nutz.plugin.sigar;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;

@@ -1,6 +1,6 @@
 var ioc = {
 		sigarClient : {
-			"type" : "org.nutz.sigar.integration.watchdog.SigarClient",
+			"type" : "org.nutz.plugin.sigar.integration.watchdog.SigarClient",
 		      "events" :{
 		         "create" :"init"
 		      },

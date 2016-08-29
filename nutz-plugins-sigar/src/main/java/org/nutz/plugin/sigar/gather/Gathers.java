@@ -1,4 +1,4 @@
-package org.nutz.sigar.gather;
+package org.nutz.plugin.sigar.gather;
 
 import org.hyperic.sigar.Sigar;
 import org.hyperic.sigar.SigarException;

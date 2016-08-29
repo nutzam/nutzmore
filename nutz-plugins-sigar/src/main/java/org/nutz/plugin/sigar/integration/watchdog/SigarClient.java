@@ -1,4 +1,4 @@
-package org.nutz.sigar.integration.watchdog;
+package org.nutz.plugin.sigar.integration.watchdog;
 
 import java.util.HashMap;
 
@@ -12,7 +12,7 @@ import org.nutz.lang.Strings;
 import org.nutz.lang.Tasks;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
-import org.nutz.sigar.gather.Gathers;
+import org.nutz.plugin.sigar.gather.Gathers;
 
 /**
  * @author Kerbores(kerbores@gmail.com)
