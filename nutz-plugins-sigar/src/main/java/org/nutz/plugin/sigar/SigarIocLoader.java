@@ -23,11 +23,11 @@ import org.nutz.lang.Streams;
  */
 public class SigarIocLoader extends JsonLoader {
 	public SigarIocLoader() {
-		_load("sigar.js", "conf");
+		_load("sigar.js", "sigar");
 	}
 
 	public SigarIocLoader(String... args) {
-		String confName = args.length > 0 ? args[0] : "conf";
+		String confName = args.length > 0 ? args[0] : "sigar";
 		_load("sigar.js", confName);
 	}
 
