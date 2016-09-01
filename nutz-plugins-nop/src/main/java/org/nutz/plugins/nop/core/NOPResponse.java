@@ -43,7 +43,12 @@ public class NOPResponse {
 	}
 
 	public NOPData getData() {
-		return Json.fromJson(NOPData.class, content);
+		try {
+			return Json.fromJson(NOPData.class, content);
+		} catch (Exception e) {
+			return NOPData.exception(e);
+		}
+
 	}
 
 	public Header getHeader() {

@@ -47,9 +47,13 @@ public class MemoryGather {
 		swap = sigar.getSwap();
 	}
 
-	public static MemoryGather gather(Sigar sigar) throws SigarException {
+	public static MemoryGather gather(Sigar sigar) {
 		MemoryGather data = new MemoryGather();
-		data.populate(sigar);
+		try {
+			data.populate(sigar);
+		} catch (SigarException e) {
+			e.printStackTrace();
+		}
 		return data;
 	}
 

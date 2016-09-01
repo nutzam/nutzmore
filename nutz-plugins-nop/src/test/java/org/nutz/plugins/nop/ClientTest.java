@@ -45,10 +45,7 @@ public class ClientTest {
 
 	@Test
 	public void file() {
-		System.err.println(Json.toJson(NutMap.NEW().addv("a", 5).addv("b", new UploadFile(new File("/Users/ixion/git/SYL/platform/pom.xml")))));
-		System.err
-				.println(Json.toJson(client.send(
-						NOPRequest.create("test/calc", METHOD.POST, NutMap.NEW().addv("a", 5).addv("b", new UploadFile(new File("/Users/ixion/git/SYL/platform/pom.xml"))),
-								Header.create())).getData()));
+		System.err.println(Json.toJson(client.send(
+				NOPRequest.create("test/file", METHOD.POST, NutMap.NEW().addv("a", 5).addv("b", new UploadFile(new File("D:\\a.sql"))), Header.create())).getData()));
 	}
 }

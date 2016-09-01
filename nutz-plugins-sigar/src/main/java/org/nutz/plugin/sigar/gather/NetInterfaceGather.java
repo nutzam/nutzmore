@@ -57,44 +57,50 @@ public class NetInterfaceGather {
 
 	private List<NutMap> detail = new ArrayList<NutMap>();
 
-	public static NetInterfaceGather gather(final Sigar sigar) throws SigarException, InterruptedException {
+	public static NetInterfaceGather gather(final Sigar sigar) {
 
 		final NetInterfaceGather data = new NetInterfaceGather();
 
-		String active = data.fetActiveNetInterfaceName(sigar);
+		String active;
+		try {
+			active = data.fetActiveNetInterfaceName(sigar);
+			data.config = sigar.getNetInterfaceConfig(active);
+			data.info = sigar.getNetInfo();
+			data.stat = sigar.getNetInterfaceStat(active);
+			long start = System.currentTimeMillis();
+			long rxBytesStart = data.stat.getRxBytes();
+			long txBytesStart = data.stat.getTxBytes();
+			Thread.sleep(1000);
+			long end = System.currentTimeMillis();
+			NetInterfaceStat statEnd = sigar.getNetInterfaceStat(active);
+			long rxBytesEnd = statEnd.getRxBytes();
+			long txBytesEnd = statEnd.getTxBytes();
 
-		data.config = sigar.getNetInterfaceConfig(active);
-		data.info = sigar.getNetInfo();
-		data.stat = sigar.getNetInterfaceStat(active);
-		long start = System.currentTimeMillis();
-		long rxBytesStart = data.stat.getRxBytes();
-		long txBytesStart = data.stat.getTxBytes();
-		Thread.sleep(1000);
-		long end = System.currentTimeMillis();
-		NetInterfaceStat statEnd = sigar.getNetInterfaceStat(active);
-		long rxBytesEnd = statEnd.getRxBytes();
-		long txBytesEnd = statEnd.getTxBytes();
+			data.rxbps = (rxBytesEnd - rxBytesStart) * 8 / (end - start) * 1000;
+			data.txbps = (txBytesEnd - txBytesStart) * 8 / (end - start) * 1000;
 
-		data.rxbps = (rxBytesEnd - rxBytesStart) * 8 / (end - start) * 1000;
-		data.txbps = (txBytesEnd - txBytesStart) * 8 / (end - start) * 1000;
+			Lang.each(sigar.getNetInterfaceList(), new Each<String>() {
 
-		Lang.each(sigar.getNetInterfaceList(), new Each<String>() {
+				@Override
+				public void invoke(int arg0, String name, int arg2) throws ExitLoop, ContinueLoop, LoopException {
+					NutMap temp = NutMap.NEW();
 
-			@Override
-			public void invoke(int arg0, String name, int arg2) throws ExitLoop, ContinueLoop, LoopException {
-				NutMap temp = NutMap.NEW();
+					try {
+						temp.addv("stat", sigar.getNetInterfaceStat(name));
+						temp.addv("config", sigar.getNetInterfaceConfig(name));
+					} catch (SigarException e) {
+						e.printStackTrace();
+					}
 
-				try {
-					temp.addv("stat", sigar.getNetInterfaceStat(name));
-					temp.addv("config", sigar.getNetInterfaceConfig(name));
-				} catch (SigarException e) {
-					e.printStackTrace();
+					data.detail.add(temp);
 				}
 
-				data.detail.add(temp);
-			}
-
-		});
+			});
+		} catch (SigarException e1) {
+			e1.printStackTrace();
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
 
 		return data;
 	}

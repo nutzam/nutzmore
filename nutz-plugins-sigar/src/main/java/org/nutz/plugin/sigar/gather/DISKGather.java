@@ -26,16 +26,22 @@ public class DISKGather {
 	private FileSystem config;
 	private FileSystemUsage stat;
 
-	public static DISKGather gather(Sigar sigar) throws SigarException {
+	public static DISKGather gather(Sigar sigar) {
 		DISKGather data = new DISKGather();
-		FileSystem[] fsArr = sigar.getFileSystemList();
-		for (FileSystem fs : fsArr) {
-			NutMap temp = new NutMap();
-			temp.addv("fileSystem", fs);
-			temp.addv("usage", sigar.getFileSystemUsage(fs.getDirName()));
-			temp.addv("fileInfo", sigar.getFileInfo(fs.getDirName()));
-			data.details.add(temp);
+		FileSystem[] fsArr;
+		try {
+			fsArr = sigar.getFileSystemList();
+			for (FileSystem fs : fsArr) {
+				NutMap temp = new NutMap();
+				temp.addv("fileSystem", fs);
+				temp.addv("usage", sigar.getFileSystemUsage(fs.getDirName()));
+				temp.addv("fileInfo", sigar.getFileInfo(fs.getDirName()));
+				data.details.add(temp);
+			}
+		} catch (SigarException e) {
+			e.printStackTrace();
 		}
+
 		return data;
 	}
 

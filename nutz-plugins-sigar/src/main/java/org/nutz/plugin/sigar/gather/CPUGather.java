@@ -76,9 +76,13 @@ public class CPUGather {
 		detail.addv("percs", sigar.getCpuPercList());
 	}
 
-	public static CPUGather gather(Sigar sigar) throws SigarException {
+	public static CPUGather gather(Sigar sigar) {
 		CPUGather data = new CPUGather();
-		data.populate(sigar);
+		try {
+			data.populate(sigar);
+		} catch (SigarException e) {
+			e.printStackTrace();
+		}
 		return data;
 	}
 
