@@ -5,7 +5,8 @@
 
 深度集成sigar
 ## 集成
- ### 添加依赖
+
+### 添加依赖
  
 ``` xml
 		<dependency>
@@ -15,7 +16,7 @@
         </dependency>
 ```
 
- ### 添加二进制文件
+### 添加二进制文件
  
  + 全量
      拷贝resources目录下的全部二进制文件到classPath下
