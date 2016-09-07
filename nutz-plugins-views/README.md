@@ -123,7 +123,7 @@ var ioc = {
 + 主模块配置
 
 ``` java?linenums
-@Views({ VelocityLayoutView.class })
+@Views({ VelocityViewMaker.class })
 ```
 
 + classpath配置
