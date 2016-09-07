@@ -110,7 +110,7 @@ var ioc = {
 ```
 
 ## velocity视图集成方法
-+ 添加依赖
++  添加依赖
 
 ``` xml?linenums
 <dependency>
@@ -125,6 +125,7 @@ var ioc = {
 ``` java?linenums
 @Views({ VelocityLayoutView.class })
 ```
+
 + classpath配置
 
 在classpath下增加 velocity.properties内容如下:
@@ -166,46 +167,45 @@ nutz的filter或者servlet加上初始化参数
 
 + 扩展工具
 
-	- 实现一个工具类
+  - 实现一个工具类
 
-``` java?linenums
-package com.tdb.utils;
+   ``` java?linenums
+      package com.tdb.utils;
 
-import org.apache.velocity.tools.config.DefaultKey;
-import org.apache.velocity.tools.config.InvalidScope;
+      import org.apache.velocity.tools.config.DefaultKey;
+      import org.apache.velocity.tools.config.InvalidScope;
 
-/**
- * author Jiangkun
- * created on 2016年5月22日
- */
-@DefaultKey("C")
-@InvalidScope({ "application" })
-public class CommonUtils {
-	
-	public static final int HIDDEN_LENGTH = 7;
-	public static final String HIDDEN_IDENTIFER = "*";
+      /**
+       * author Jiangkun
+       * created on 2016年5月22日
+       */
+      @DefaultKey("C")
+      @InvalidScope({ "application" })
+      public class CommonUtils {
 
-	/**
-	 * 对商户端隐藏券号码
-	 * eg: 0004123456789012 -> 0004*******012
-	 * @param ticketno
-	 * @return
-	 */
-	public static String hideTicketNo(String ticketno) {
-		StringBuffer sb = new StringBuffer();
-		String prefix = ticketno.substring(0, 4);
-		String suffix = ticketno.substring(4+HIDDEN_LENGTH);
-		sb.append(prefix);
-		for(int i=0;i<HIDDEN_LENGTH;i++)
-			sb.append(HIDDEN_IDENTIFER);
-		sb.append(suffix);
-		return sb.toString();
-	}
-}
+          public static final int HIDDEN_LENGTH = 7;
+          public static final String HIDDEN_IDENTIFER = "*";
 
-```
-
-	- 在WEB-INF目录添加tools.xml配置:
+          /**
+           * 对商户端隐藏券号码
+           * eg: 0004123456789012 -> 0004*******012
+           * @param ticketno
+           * @return
+           */
+          public static String hideTicketNo(String ticketno) {
+              StringBuffer sb = new StringBuffer();
+              String prefix = ticketno.substring(0, 4);
+              String suffix = ticketno.substring(4+HIDDEN_LENGTH);
+              sb.append(prefix);
+              for(int i=0;i<HIDDEN_LENGTH;i++)
+                  sb.append(HIDDEN_IDENTIFER);
+              sb.append(suffix);
+              return sb.toString();
+          }
+      }
+     ```
+   
+  - 在WEB-INF目录添加tools.xml配置:
 
 ``` xml?linenums
 <?xml version="1.0" encoding="UTF-8"?>
