@@ -162,7 +162,7 @@ nutz的filter或者servlet加上初始化参数
 + 使用模板
 
 ``` java?linenums
-@Ok("vel:pages/bill/list.html")
+@Ok("vm:pages/bill/list.html")
 ```
 
 + 扩展工具
