@@ -3,10 +3,9 @@
   <parent>
     <groupId>org.nutz</groupId>
     <artifactId>nutzmore</artifactId>
-    <version>1.r.57</version>
+    <version>1.r.58-SNAPSHOT</version>
   </parent>
   <artifactId>nutz-plugins-sfntly</artifactId>
-  <version>1.r.58-SNAPSHOT</version>
   <dependencies>
   	<dependency>
   		<groupId>com.ibm.icu</groupId>

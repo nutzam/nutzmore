@@ -1,10 +1,10 @@
 package org.nutz.mock;
+
 import javax.servlet.Servlet;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
-import org.nutz.mock.Mock;
 import org.nutz.mock.servlet.MockHttpServletRequest;
 import org.nutz.mock.servlet.MockHttpServletResponse;
 import org.nutz.mock.servlet.MockHttpSession;
@@ -15,51 +15,54 @@ import org.nutz.mvc.NutConfig;
 import org.nutz.mvc.NutServlet;
 
 @Ignore
+@SuppressWarnings("deprecation")
 public abstract class AbstractMvcTest extends NutIocTestBase {
 
-    protected Servlet servlet;
+	protected Servlet servlet;
 
-    protected MockHttpServletRequest request;
+	protected MockHttpServletRequest request;
 
-    protected MockHttpServletResponse response;
+	protected MockHttpServletResponse response;
 
-    protected MockHttpSession session;
+	protected MockHttpSession session;
 
-    protected MockServletContext servletContext;
+	protected MockServletContext servletContext;
 
-    protected MockServletConfig servletConfig;
-    
-    protected NutConfig nc;
+	protected MockServletConfig servletConfig;
 
-    @Before
-    public void before() throws Exception {
-        servletContext = Mock.servlet.context();
-        servletConfig = new MockServletConfig(servletContext, "nutz");
-        initServletConfig();
-        servlet = new NutServlet();
-        servlet.init(servletConfig);
-        session = Mock.servlet.session(servletContext);
-        newreq();
-        nc = Mvcs.getNutConfig();
-        ioc = nc.getIoc();
-        injectSelfFields();
-        _before();
-    }
+	protected NutConfig nc;
 
-    protected void newreq() {
-        request = Mock.servlet.request().setSession(session);
-        request.setContextPath("");
-        request.setSession(session);
-        response = new MockHttpServletResponse();
-    }
+	@Override
+	@Before
+	public void before() throws Exception {
+		servletContext = Mock.servlet.context();
+		servletConfig = new MockServletConfig(servletContext, "nutz");
+		initServletConfig();
+		servlet = new NutServlet();
+		servlet.init(servletConfig);
+		session = Mock.servlet.session(servletContext);
+		newreq();
+		nc = Mvcs.getNutConfig();
+		ioc = nc.getIoc();
+		injectSelfFields();
+		_before();
+	}
 
-    protected abstract void initServletConfig();
+	protected void newreq() {
+		request = Mock.servlet.request().setSession(session);
+		request.setContextPath("");
+		request.setSession(session);
+		response = new MockHttpServletResponse();
+	}
 
-    @After
-    public void after() throws Exception {
-        _after();
-        if (servlet != null)
-            servlet.destroy();
-    }
+	protected abstract void initServletConfig();
+
+	@Override
+	@After
+	public void after() throws Exception {
+		_after();
+		if (servlet != null)
+			servlet.destroy();
+	}
 
 }
