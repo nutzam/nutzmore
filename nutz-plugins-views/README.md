@@ -110,7 +110,7 @@ var ioc = {
 ```
 
 ## velocity视图集成方法
-1. 添加依赖
++ 添加依赖
 
 ``` xml?linenums
 <dependency>
@@ -120,12 +120,12 @@ var ioc = {
 </dependency>
 ```
 
-2. 主模块配置
++ 主模块配置
 
 ``` java?linenums
 @Views({ VelocityLayoutView.class })
 ```
-3. classpath配置
++ classpath配置
 
 在classpath下增加 velocity.properties内容如下:
 
@@ -148,7 +148,7 @@ tools.view.servlet.error.template =Error.vm
 tools.view.servlet.layout.default.template =Default.vm
 ```
 
-4. web.xml配置
++ web.xml配置
 
 nutz的filter或者servlet加上初始化参数
 ``` xml?linenums
@@ -158,13 +158,13 @@ nutz的filter或者servlet加上初始化参数
 </init-param>
 ```
 
-5. 使用模板
++ 使用模板
 
 ``` java?linenums
 @Ok("vel:pages/bill/list.html")
 ```
 
-6. 扩展工具
++ 扩展工具
 
 - 实现一个工具类
 
