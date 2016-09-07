@@ -166,7 +166,7 @@ nutz的filter或者servlet加上初始化参数
 
 + 扩展工具
 
-- 实现一个工具类
+	- 实现一个工具类
 
 ``` java?linenums
 package com.tdb.utils;
@@ -206,7 +206,7 @@ public class CommonUtils {
 ```
 
 
-- 在WEB-INF目录添加tools.xml配置:
+	- 在WEB-INF目录添加tools.xml配置:
 
 ``` xml?linenums
 <?xml version="1.0" encoding="UTF-8"?>
