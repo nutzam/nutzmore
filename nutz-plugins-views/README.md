@@ -108,3 +108,129 @@ var ioc = {
     }
 };
 ```
+
+## velocity视图集成方法
+1. 添加依赖
+
+``` xml?linenums
+<dependency>
+	<groupId>org.nutz</groupId>
+	<artifactId>nutz-plugins-views</artifactId>
+	<version>${nutz.plugins.version}</version>
+</dependency>
+```
+
+2. 主模块配置
+
+``` java?linenums
+@Views({ VelocityLayoutView.class })
+```
+3. classpath配置
+
+在classpath下增加 velocity.properties内容如下:
+
+``` java?linenums
+#资源加载器或加载器别名
+resource.loader = webapp
+#资源加载器类全限定名    
+webapp.resource.loader.class = org.apache.velocity.tools.view.WebappResourceLoader  
+#资源位置
+webapp.resource.loader.path=/WEB-INF/templates/
+#编码
+input.encoding=UTF-8  
+output.encoding=UTF-8 
+#布局文件为准 
+tools.view.servlet.layout.directory = layout/
+#默认布局文件名称
+tools.view.servlet.layout.default.template =default.html
+#默认错误文件名称
+tools.view.servlet.error.template =Error.vm
+tools.view.servlet.layout.default.template =Default.vm
+```
+
+4. web.xml配置
+
+nutz的filter或者servlet加上初始化参数
+``` xml?linenums
+<init-param>
+	<param-name>org.apache.velocity.properties</param-name><!-- 这个不能修改-->
+	<param-value>velocity.properties</param-value> <!-- 对应上一步中配置文件的位置 -->
+</init-param>
+```
+
+5. 使用模板
+
+``` java?linenums
+@Ok("vel:pages/bill/list.html")
+```
+
+6. 扩展工具
+
+- 实现一个工具类
+
+``` java?linenums
+package com.tdb.utils;
+
+import org.apache.velocity.tools.config.DefaultKey;
+import org.apache.velocity.tools.config.InvalidScope;
+
+/**
+ * author Jiangkun
+ * created on 2016年5月22日
+ */
+@DefaultKey("C")
+@InvalidScope({ "application" })
+public class CommonUtils {
+	
+	public static final int HIDDEN_LENGTH = 7;
+	public static final String HIDDEN_IDENTIFER = "*";
+
+	/**
+	 * 对商户端隐藏券号码
+	 * eg: 0004123456789012 -> 0004*******012
+	 * @param ticketno
+	 * @return
+	 */
+	public static String hideTicketNo(String ticketno) {
+		StringBuffer sb = new StringBuffer();
+		String prefix = ticketno.substring(0, 4);
+		String suffix = ticketno.substring(4+HIDDEN_LENGTH);
+		sb.append(prefix);
+		for(int i=0;i<HIDDEN_LENGTH;i++)
+			sb.append(HIDDEN_IDENTIFER);
+		sb.append(suffix);
+		return sb.toString();
+	}
+}
+
+```
+
+
+- 在WEB-INF目录添加tools.xml配置:
+
+``` xml?linenums
+<?xml version="1.0" encoding="UTF-8"?>
+<tools>
+    <data type="boolean" key="VIEW_TOOLS_AVAILABLE" value="true"/>
+    <toolbox scope="request">
+        <tool class="org.apache.velocity.tools.view.CookieTool"/>
+        <tool class="org.apache.velocity.tools.view.ImportTool"/>
+        <tool class="org.apache.velocity.tools.view.IncludeTool"/>
+        <tool class="org.apache.velocity.tools.view.LinkTool"/>
+        <tool class="org.apache.velocity.tools.view.ParameterTool"/>
+        <tool class="org.apache.velocity.tools.view.ViewContextTool"/>
+        <tool class="org.apache.velocity.tools.generic.ResourceTool"/>
+        <tool class="org.apache.velocity.tools.generic.DateTool"/>
+        <tool class="org.apache.velocity.tools.generic.MathTool"/>
+        <tool class="com.tdb.boss.tools.GlobalUtils"/>
+        <tool class="com.tdb.boss.tools.MenuUtils"/>
+        <tool class="com.tdb.boss.tools.SessionUtils"/>
+        <tool class="com.tdb.utils.CommonUtils"/>
+    </toolbox>
+    <toolbox scope="session" createSession="false">
+        <tool class="org.apache.velocity.tools.view.BrowserTool"/>
+    </toolbox>
+</tools>
+```
+
+
