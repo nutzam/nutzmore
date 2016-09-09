@@ -8,7 +8,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 供ExpUrlMapping读取
+ * 供ApidocUrlMapping读取
  * @author wendal
  * @see ApidocUrlMapping.wendal.nutzbook.mvc.ExpUrlMapping
  */
@@ -28,9 +28,18 @@ public @interface Api {
      */
     String description() default "";
     
+    /**
+     * 参数列表
+     */
     ApiParam[] params() default {};
     
+    /**
+     * 作者信息
+     */
     String author() default "";
     
+    /**
+     * 过滤模式,默认为ALL
+     */
     ApiMatchMode match() default ApiMatchMode.ALL;
 }

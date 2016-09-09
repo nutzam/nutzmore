@@ -11,7 +11,39 @@ import java.lang.annotation.Target;
 @Documented
 public @interface ApiParam {
 
-    String description();
+    /**
+     * 参数名称
+     */
+    String name() default "";
     
+    /**
+     * 描述
+     */
+    String description() default "";
+    
+    /**
+     * 类型
+     */
+    String type() default "";
+    
+    /**
+     * 缺省值
+     */
+    String defaultValue() default "";
+    
+    /**
+     * 是否可选
+     */
+    boolean optional() default false;
+    
+    /**
+     * 参数索引,用于匹配方法参数
+     */
     int index() default -1;
+    
+    /**
+     * 是否忽略
+     */
+    boolean ignore() default false;
+    
 }
