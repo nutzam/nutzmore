@@ -117,7 +117,7 @@ body {
 	border-radius: 50%;
 }
 
-.btn {
+.table .btn {
 	font-size: 12px;
 	padding: 2px 12px
 }
@@ -157,7 +157,7 @@ body {
 							<button type="button" @click="display_mode = 'bigtable'" :class="display_mode != 'bigtable' ? 'btn btn-info active': 'btn disable' ">路径总表</button>
 							<button type="button" @click="display_mode = 'detail'" :class="display_mode != 'detail' ? 'btn btn-info active': 'btn disable' ">详细列表</button>
 						</div>
-						<div class="col-xs-6 col-sm-3">
+						<div class="col-xs-12 col-sm-12 col-md-6">
 							<div class="checkbox-inline">
 								<div class="checkbox">
 									<label> <input type="checkbox" v-model="display_paths"> 路径
