@@ -31,4 +31,6 @@ public @interface Api {
     ApiParam[] params() default {};
     
     String author() default "";
+    
+    ApiMatchMode match() default ApiMatchMode.ALL;
 }

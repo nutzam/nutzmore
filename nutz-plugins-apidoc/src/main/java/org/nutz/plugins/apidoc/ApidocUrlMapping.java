@@ -36,6 +36,7 @@ import org.nutz.mvc.impl.UrlMappingImpl;
 import org.nutz.mvc.view.RawView;
 import org.nutz.mvc.view.UTF8JsonView;
 import org.nutz.plugins.apidoc.annotation.Api;
+import org.nutz.plugins.apidoc.annotation.ApiMatchMode;
 
 /**
  * Api文档生成
@@ -86,6 +87,7 @@ public class ApidocUrlMapping extends UrlMappingImpl {
     protected View view = new UTF8JsonView(JsonFormat.full());
     protected ActionInvoker docInvoker = new DocActionInvoker();
     protected String expPath = "/_/";
+    protected ApiMatchMode baseMatchMode = ApiMatchMode.ONLY;
     
     class EmtryActionInvoker extends ActionInvoker {
         public boolean invoke(ActionContext ac) {
@@ -160,29 +162,47 @@ public class ApidocUrlMapping extends UrlMappingImpl {
         ExpClass expClass = infos.get(typeName);
         if (expClass == null) {
             expClass = makeClass(ctx.ai().getModuleType(), ctx);
+            if (expClass == null) {
+                log.trace("skip null ExpClass");
+                return null;
+            }
             infos.put(typeName, expClass);
         }
         ctx.set("expClass", expClass);
-        ExpMethod expMethod = makeMethod(ctx);
         List<ExpMethod> methods = expClass.getAs("methods", List.class);
         if (methods == null) {
             methods = new ArrayList<>();
             expClass.put("methods", methods);
+        }
+        Api api = ctx.ai().getMethod().getAnnotation(Api.class);
+        if (api == null && expClass.getAs("apiMatchMode", ApiMatchMode.class) == ApiMatchMode.ONLY) {
+            log.trace("skip null @Api Method");
+            return null;
+        }
+        ExpMethod expMethod = makeMethod(ctx);
+        if (expMethod == null) {
+            log.trace("skip null ExpMethod");
+            return null;
         }
         methods.add(expMethod);
         return expMethod;
     }
     
     protected ExpClass makeClass(Class<?> klass, ExpContext ctx) {
+        Api api = klass.getAnnotation(Api.class);
+        if (api == null && baseMatchMode != ApiMatchMode.ALL)
+            return null;
+        if (api.match() == ApiMatchMode.NONE)
+            return null;
         ExpClass expClass = new ExpClass();
         expClass.put("typeName", klass.getName());
         IocBean ib = klass.getAnnotation(IocBean.class);
         if (ib != null)
             expClass.put("iocName", Strings.isBlank(ib.name()) ? Strings.lowerFirst(klass.getSimpleName()) : ib.name());
-        Api api = klass.getAnnotation(Api.class);
         if (api != null) {
             expClass.put("name", api.name());
             expClass.put("description", api.description());
+            expClass.put("apiMatchMode", api.match());
         }
         if (Strings.isBlank(expClass.getString("name")))
             expClass.put("name", klass.getSimpleName());
