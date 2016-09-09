@@ -4,11 +4,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta
-name="dhc-aware-page"
-data-indicator-element-id="dhc"
-data-console-debug="true"
->
+<meta name="dhc-aware-page" data-indicator-element-id="dhc" data-console-debug="true">
 <title>Exp 入口方法调试页</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha256-ZT4HPpdCOt2lvDkXokHuhJfdOKSPFLzeAJik5U/Q+l4="
 	crossorigin="anonymous">
@@ -77,8 +73,7 @@ body {
 	padding-left: 20px;
 }
 
-.nav-sidebar>.active>a, .nav-sidebar>.active>a:hover, .nav-sidebar>.active>a:focus
-	{
+.nav-sidebar>.active>a, .nav-sidebar>.active>a:hover, .nav-sidebar>.active>a:focus {
 	color: #fff;
 	background-color: #428bca;
 }
@@ -159,43 +154,64 @@ body {
 						</div>
 						<div class="col-xs-6 col-sm-3">
 							<div class="checkbox-inline">
-								<input type="checkbox" v-model="display_paths"><span>路径</span>
+								<div class="checkbox">
+									<label> <input type="checkbox"  v-model="display_paths"> 路径
+									</label>
+								</div>
 							</div>
 							<div class="checkbox-inline">
-								<input type="checkbox" v-model="display_methodName"><span>方法名</span>
+								<div class="checkbox">
+									<label> <input type="checkbox"  v-model="display_methodName"> 方法名
+									</label>
+								</div>
 							</div>
 							<div class="checkbox-inline">
-								<input type="checkbox" v-model="display_httpMethods"><span>Http方法</span>
+								<div class="checkbox">
+									<label> <input type="checkbox"  v-model="display_httpMethods"> Http方法
+									</label>
+								</div>
 							</div>
 							<div class="checkbox-inline">
-								<input type="checkbox" v-model="display_okView"><span>@Ok</span>
+								<div class="checkbox">
+									<label> <input type="checkbox"  v-model="display_okView"> @OK
+									</label>
+								</div>
 							</div>
 							<div class="checkbox-inline">
-								<input type="checkbox" v-model="display_failView"><span>@Fail</span>
+								<div class="checkbox">
+									<label> <input type="checkbox"  v-model="display_failView"> @Fail
+									</label>
+								</div>
 							</div>
 							<div class="checkbox-inline">
-								<input type="checkbox" v-model="display_filters"><span>@Filters</span>
+								<div class="checkbox">
+									<label> <input type="checkbox"  v-model="display_filters"> @Filters
+									</label>
+								</div>
 							</div>
 							<div class="checkbox-inline">
-								<input type="checkbox" v-model="display_ops"><span>操作</span>
+								<div class="checkbox">
+									<label> <input type="checkbox"  v-model="display_ops"> 操作
+									</label>
+								</div>
 							</div>
 						</div>
 					</div>
 					<div class="row">
 						<div class="col-md-3">
-							<input @input="doXXXFilter" v-model="path_filter" debounce="300" placeholder="路径过滤" v-if="display_paths">
+							<input @input="doXXXFilter" class="form-control" v-model="path_filter" debounce="300" placeholder="路径过滤" v-if="display_paths">
 						</div>
 						<div class="col-md-2">
-							<input @input="doXXXFilter" v-model="methodName_filter" debounce="300" placeholder="方法名过滤" v-if="display_methodName">
+							<input @input="doXXXFilter" class="form-control" v-model="methodName_filter" debounce="300" placeholder="方法名过滤" v-if="display_methodName">
 						</div>
 						<div class="col-md-3">
-							<input @input="doXXXFilter" v-model="okView_filter" debounce="300" placeholder="ok过滤" v-if="display_okView">
+							<input @input="doXXXFilter" class="form-control" v-model="okView_filter" debounce="300" placeholder="ok过滤" v-if="display_okView">
 						</div>
 						<div class="col-md-2">
-							<input @input="doXXXFilter" v-model="failView_filter" debounce="300" placeholder="fail过滤" v-if="display_failView">
+							<input @input="doXXXFilter" class="form-control" v-model="failView_filter" debounce="300" placeholder="fail过滤" v-if="display_failView">
 						</div>
 						<div class="col-md-3" style="display: none;">
-							<input @input="doXXXFilter" v-model="filters_filter" debounce="300" placeholder="filters过滤" v-if="display_filters">
+							<input @input="doXXXFilter" class="form-control" v-model="filters_filter" debounce="300" placeholder="filters过滤" v-if="display_filters">
 						</div>
 					</div>
 					<div v-for="info in infos" v-if="display_mode=='group'" trace-by="typeName">
@@ -310,155 +326,155 @@ body {
 <script type="text/javascript">
 	$(function() {
 		var vueApp = new Vue(
-				{
-					el : "#app",
-					data : {
-						display_mode : "group",
-						path_filter : "",
-						okView_filter : "",
-						failView_filter : "",
-						methodName_filter : "",
-						filters_filter : "",
-						infos : {},
-						infos_origin : {},
-						activeInfoName : "",
-						display_paths : true,
-						display_methodName : true,
-						display_okView : true,
-						display_failView : true,
-						display_filters : true,
-						display_ops : true,
-						display_httpMethods : false,
-						content_path : ""
-					},
-					methods : {
-						doReload : function() {
-							this.$http.get("exp").then(function(resp) {
-								if (!resp.ok)
-									return;
-								var j = resp.json();
-								this.content_path = j.content_path || "";
-								var re = j.data;
-								var keys = [];
-								for ( var key in re) {
-									keys.push(key);
-								}
-								keys.sort();
-								var tmp = [];
-								for ( var key in keys) {
-									tmp.push(re[keys[key]]);
-								}
-								this.infos_origin = tmp;
-								this.doXXXFilter();
-							});
-						},
-						debugCall : function(it) {
-							if (!document.getElementById("dhc")) {
-								layer.alert("未安装DHC");
+			{
+				el : "#app",
+				data : {
+					display_mode : "group",
+					path_filter : "",
+					okView_filter : "",
+					failView_filter : "",
+					methodName_filter : "",
+					filters_filter : "",
+					infos : {},
+					infos_origin : {},
+					activeInfoName : "",
+					display_paths : true,
+					display_methodName : true,
+					display_okView : true,
+					display_failView : true,
+					display_filters : true,
+					display_ops : true,
+					display_httpMethods : false,
+					content_path : ""
+				},
+				methods : {
+					doReload : function() {
+						this.$http.get("exp").then(function(resp) {
+							if (!resp.ok)
 								return;
+							var j = resp.json();
+							this.content_path = j.content_path || "";
+							var re = j.data;
+							var keys = [];
+							for (var key in re) {
+								keys.push(key);
 							}
-							var bodyType = "Form";
-							var headersType = "Form";
-							var httpMethod = it.httpMethods.length > 0 ? it.httpMethods[0] : "GET";
-							if (it.adaptorName == "org.nutz.mvc.adaptor.JsonAdaptor") {
-								bodyType = "Text";
-								headersType = "Json";
-							} else if (it.adaptorName == "org.nutz.mvc.upload.UploadAdaptor") {
-								bodyType = "Form";
-								headersType = "MultiPartForm";
-							}
-							var scheme_name = location.protocol == "http:" ? "http" : "https";
-							var payload = {
-									   body: {
-									       bodyType: bodyType
-									   },
-									   description: "exp",
-									   headers: [
-									       {
-									           name:"ExpClient",
-									           value:"https://nutz.cn",
-									           enabled:true
-									       }
-									   ],
-									   headersType: headersType,
-									   method: {
-									       "link": "",
-									       "name": httpMethod,
-									       "requestBody": true
-									   },
-									   name: "exp",
-									   uri: {
-									       "path": location.hostname + (location.port > 0 ? (":" + location.port) : "" ) + this.content_path + it.paths[0],
-									       "scheme": {
-									           "name": scheme_name,
-									           "version": "V11"
-									       }
-									   }
-									};
-							var message = {
-								      target : JSON.parse(document.getElementById("dhc").textContent).extensionId,
-								      type : "openRequest",
-								      targetTab: "exp",
-								      payloadType: "dhc",
-								      payload : payload
-								};
-							window.postMessage(message, document.origin);
-						},
-						listMethods : function() {
+							keys.sort();
 							var tmp = [];
-							for ( var i in this.infos) {
-								for ( var m in this.infos[i].methods)
-									tmp.push(this.infos[i].methods[m]);
+							for (var key in keys) {
+								tmp.push(re[keys[key]]);
 							}
-							//console.info(tmp);
-							//console.info(this.infos);
-							return tmp;
-						},
-						doXXXFilter : function() {
-							var old = this.infos_origin;
-							var tmp = [];
-							for ( var i in old) {
-								var info = old[i];
-								var methods = [];
-								for ( var m in info.methods) {
-									var method = info.methods[m];
-									var flag = false;
-									for ( var n in method.paths) {
-										var path = method.paths[n];
-										if (path.indexOf(this.path_filter) != -1) {
-											flag = true;
-											break;
-										}
-									}
-									if (!flag)
-										break;
-									if (method.methodName
-											.indexOf(this.methodName_filter) == -1)
-										break;
-									if (method.okView
-											.indexOf(this.okView_filter) == -1)
-										break;
-									if (method.failView
-											.indexOf(this.failView_filter) == -1)
-										break;
-									methods.push(this.copyObject(method));
-								}
-								if (methods.length > 0) {
-									info = this.copyObject(info);
-									info.methods = methods;
-									tmp.push(info);
-								}
-							}
-							this.infos = tmp;
-						},
-						copyObject : function(obj) {
-							return JSON.parse(JSON.stringify(obj));
-						}
+							this.infos_origin = tmp;
+							this.doXXXFilter();
+						});
 					},
-					created : function() {
-						this.doReload();
+					debugCall : function(it) {
+						if (!document.getElementById("dhc")) {
+							layer.alert("未安装DHC");
+							return;
+						}
+						var bodyType = "Form";
+						var headersType = "Form";
+						var httpMethod = it.httpMethods.length > 0 ? it.httpMethods[0] : "GET";
+						if (it.adaptorName == "org.nutz.mvc.adaptor.JsonAdaptor") {
+							bodyType = "Text";
+							headersType = "Json";
+						} else if (it.adaptorName == "org.nutz.mvc.upload.UploadAdaptor") {
+							bodyType = "Form";
+							headersType = "MultiPartForm";
+						}
+						var scheme_name = location.protocol == "http:" ? "http" : "https";
+						var payload = {
+							body : {
+								bodyType : bodyType
+							},
+							description : "exp",
+							headers : [
+								{
+									name : "ExpClient",
+									value : "https://nutz.cn",
+									enabled : true
+								}
+							],
+							headersType : headersType,
+							method : {
+								"link" : "",
+								"name" : httpMethod,
+								"requestBody" : true
+							},
+							name : "exp",
+							uri : {
+								"path" : location.hostname + (location.port > 0 ? (":" + location.port) : "") + this.content_path + it.paths[0],
+								"scheme" : {
+									"name" : scheme_name,
+									"version" : "V11"
+								}
+							}
+						};
+						var message = {
+							target : JSON.parse(document.getElementById("dhc").textContent).extensionId,
+							type : "openRequest",
+							targetTab : "exp",
+							payloadType : "dhc",
+							payload : payload
+						};
+						window.postMessage(message, document.origin);
+					},
+					listMethods : function() {
+						var tmp = [];
+						for (var i in this.infos) {
+							for (var m in this.infos[i].methods)
+								tmp.push(this.infos[i].methods[m]);
+						}
+						//console.info(tmp);
+						//console.info(this.infos);
+						return tmp;
+					},
+					doXXXFilter : function() {
+						var old = this.infos_origin;
+						var tmp = [];
+						for (var i in old) {
+							var info = old[i];
+							var methods = [];
+							for (var m in info.methods) {
+								var method = info.methods[m];
+								var flag = false;
+								for (var n in method.paths) {
+									var path = method.paths[n];
+									if (path.indexOf(this.path_filter) != -1) {
+										flag = true;
+										break;
+									}
+								}
+								if (!flag)
+									break;
+								if (method.methodName
+										.indexOf(this.methodName_filter) == -1)
+									break;
+								if (method.okView
+										.indexOf(this.okView_filter) == -1)
+									break;
+								if (method.failView
+										.indexOf(this.failView_filter) == -1)
+									break;
+								methods.push(this.copyObject(method));
+							}
+							if (methods.length > 0) {
+								info = this.copyObject(info);
+								info.methods = methods;
+								tmp.push(info);
+							}
+						}
+						this.infos = tmp;
+					},
+					copyObject : function(obj) {
+						return JSON.parse(JSON.stringify(obj));
 					}
-				});
+				},
+				created : function() {
+					this.doReload();
+				}
+			});
 	});
 </script>
 </html>
