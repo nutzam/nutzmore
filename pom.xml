@@ -114,6 +114,7 @@
 		<module>nutz-plugins-qrcode</module>
         <module>nutz-plugins-wxrobot</module>
         <module>nutz-plugins-nop</module>
+        <module>nutz-plugins-apidoc</module>
 	</modules>
 	<properties>
 		<nutz.version>1.r.57.r3</nutz.version>

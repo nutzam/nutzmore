@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta
+name="dhc-aware-page"
+data-indicator-element-id="dhc"
+data-console-debug="true"
+>
+<title>Exp 入口方法调试页</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha256-ZT4HPpdCOt2lvDkXokHuhJfdOKSPFLzeAJik5U/Q+l4="
+	crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha256-916EbMg70RQy9LHiGkXzG8hSg9EdNy97GazNG/aiY1w=" crossorigin="anonymous">
+<style type="text/css">
+/*
+ * Base structure
+ */
+
+/* Move down content because we have a fixed navbar that is 50px tall */
+body {
+	padding-top: 50px;
+}
+
+/*
+ * Global add-ons
+ */
+.sub-header {
+	padding-bottom: 10px;
+	border-bottom: 1px solid #eee;
+}
+
+/*
+ * Top navigation
+ * Hide default border to remove 1px line.
+ */
+.navbar-fixed-top {
+	border: 0;
+}
+
+/*
+ * Sidebar
+ */
+
+/* Hide for mobile, show later */
+.sidebar {
+	display: none;
+}
+
+@media ( min-width : 768px) {
+	.sidebar {
+		position: fixed;
+		top: 51px;
+		bottom: 0;
+		left: 0;
+		z-index: 1000;
+		display: block;
+		padding: 20px;
+		overflow-x: hidden;
+		overflow-y: auto;
+		/* Scrollable contents if viewport is shorter than content. */
+		background-color: #f5f5f5;
+		border-right: 1px solid #eee;
+	}
+}
+
+/* Sidebar navigation */
+.nav-sidebar {
+	margin-right: -21px; /* 20px padding + 1px border */
+	margin-bottom: 20px;
+	margin-left: -20px;
+}
+
+.nav-sidebar>li>a {
+	padding-right: 20px;
+	padding-left: 20px;
+}
+
+.nav-sidebar>.active>a, .nav-sidebar>.active>a:hover, .nav-sidebar>.active>a:focus
+	{
+	color: #fff;
+	background-color: #428bca;
+}
+
+/*
+ * Main content
+ */
+.main {
+	padding: 20px;
+}
+
+@media ( min-width : 768px) {
+	.main {
+		padding-right: 40px;
+		padding-left: 40px;
+	}
+}
+
+.main .page-header {
+	margin-top: 0;
+}
+
+/*
+ * Placeholder dashboard ideas
+ */
+.placeholders {
+	margin-bottom: 30px;
+	text-align: center;
+}
+
+.placeholders h4 {
+	margin-bottom: 0;
+}
+
+.placeholder {
+	margin-bottom: 20px;
+}
+
+.placeholder img {
+	display: inline-block;
+	border-radius: 50%;
+}
+</style>
+</head>
+<body>
+	<div id="app">
+		<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+			<div class="container-fluid">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+						<span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="#">入口方法调试页</a>
+				</div>
+				<div id="navbar" class="navbar-collapse collapse">
+					<ul class="nav navbar-nav navbar-right">
+						<li><a href="https://nutz.cn">NutzCN论坛</a></li>
+						<li><a href="http://nutzam.com">官网</a></li>
+					</ul>
+				</div>
+			</div>
+		</nav>
+
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-sm-3 col-md-2 sidebar">
+					<ul class="nav nav-sidebar" v-for="info in infos" track-by="typeName">
+						<li><a :title="info.typeName" :href="'#'+info.typeName" class="nav-header" @click="this.activeInfoName=info.typeName">{{info.name}}</a></li>
+					</ul>
+				</div>
+
+				<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+					<div class="row placeholders">
+						<div class="col-xs-6 col-sm-3">
+							<button type="button" @click="display_mode = 'group'" :class="display_mode != 'group' ? 'btn btn-info active': 'btn disable' ">模块分组</button>
+							<button type="button" @click="display_mode = 'bigtable'" :class="display_mode != 'bigtable' ? 'btn btn-info active': 'btn disable' ">路径总表</button>
+							<button type="button" @click="display_mode = 'detail'" :class="display_mode != 'detail' ? 'btn btn-info active': 'btn disable' ">详细列表</button>
+						</div>
+						<div class="col-xs-6 col-sm-3">
+							<div class="checkbox-inline">
+								<input type="checkbox" v-model="display_paths"><span>路径</span>
+							</div>
+							<div class="checkbox-inline">
+								<input type="checkbox" v-model="display_methodName"><span>方法名</span>
+							</div>
+							<div class="checkbox-inline">
+								<input type="checkbox" v-model="display_httpMethods"><span>Http方法</span>
+							</div>
+							<div class="checkbox-inline">
+								<input type="checkbox" v-model="display_okView"><span>@Ok</span>
+							</div>
+							<div class="checkbox-inline">
+								<input type="checkbox" v-model="display_failView"><span>@Fail</span>
+							</div>
+							<div class="checkbox-inline">
+								<input type="checkbox" v-model="display_filters"><span>@Filters</span>
+							</div>
+							<div class="checkbox-inline">
+								<input type="checkbox" v-model="display_ops"><span>操作</span>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-3">
+							<input @input="doXXXFilter" v-model="path_filter" debounce="300" placeholder="路径过滤" v-if="display_paths">
+						</div>
+						<div class="col-md-2">
+							<input @input="doXXXFilter" v-model="methodName_filter" debounce="300" placeholder="方法名过滤" v-if="display_methodName">
+						</div>
+						<div class="col-md-3">
+							<input @input="doXXXFilter" v-model="okView_filter" debounce="300" placeholder="ok过滤" v-if="display_okView">
+						</div>
+						<div class="col-md-2">
+							<input @input="doXXXFilter" v-model="failView_filter" debounce="300" placeholder="fail过滤" v-if="display_failView">
+						</div>
+						<div class="col-md-3" style="display: none;">
+							<input @input="doXXXFilter" v-model="filters_filter" debounce="300" placeholder="filters过滤" v-if="display_filters">
+						</div>
+					</div>
+					<div v-for="info in infos" v-if="display_mode=='group'" trace-by="typeName">
+						<h2 class="sub-header" v-bind:id="info.typeName" :title="info.typeName">{{info.name}}</h2>
+						<h4 v-if="info.description">{{info.description}}</h4>
+						<div class="table-responsive">
+							<table class="table table-striped table-bordered">
+								<thead>
+									<tr class="row">
+										<th class="col-md-3" v-if="display_paths">路径</th>
+										<th class="col-md-2" v-if="display_methodName">方法名</th>
+										<th class="col-md-1" v-if="display_httpMethods">Http方法</th>
+										<th class="col-md-3" v-if="display_okView">@Ok</th>
+										<th class="col-md-2" v-if="display_failView">@Fail</th>
+										<th class="col-md-3" v-if="display_filters">@Filters</th>
+										<th class="col-md-1" v-if="display_ops">操作</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr v-for="it in info.methods" class="row" track-by="methodId">
+										<td v-if="display_paths">{{it.paths.join(' ')}}</td>
+										<td v-if="display_methodName"><a :title="it.methodId">{{it.methodName}}</a></td>
+										<td v-if="display_httpMethods">{{it.httpMethods.join(',')}}</td>
+										<td v-if="display_okView">{{it.okView}}</td>
+										<td v-if="display_failView">{{it.failView}}</td>
+										<td v-if="display_filters">{{it.filters.join(' ')}}</td>
+										<td v-if="display_ops"><button class="btn btn-info" @click="debugCall(it)">调试</button></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+					<div v-if="display_mode=='bigtable'">
+						<div class="table-responsive">
+							<table class="table table-striped table-bordered">
+								<thead>
+									<tr class="row">
+										<th class="col-md-3" v-if="display_paths">路径</th>
+										<th class="col-md-2" v-if="display_methodName">方法名</th>
+										<th class="col-md-1" v-if="display_httpMethods">Http方法</th>
+										<th class="col-md-3" v-if="display_okView">@Ok</th>
+										<th class="col-md-2" v-if="display_failView">@Fail</th>
+										<th class="col-md-3" v-if="display_filters">@Filters</th>
+										<th class="col-md-1" v-if="display_ops">操作</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr v-for="it in listMethods()" class="row" track-by="methodId">
+										<td v-if="display_paths">{{it.paths.join(' ')}}</td>
+										<td v-if="display_methodName"><a :title="it.methodId">{{it.methodName}}</a></td>
+										<td v-if="display_httpMethods">{{it.httpMethods.join(',')}}</td>
+										<td v-if="display_okView">{{it.okView}}</td>
+										<td v-if="display_failView">{{it.failView}}</td>
+										<td v-if="display_filters">{{it.filters.join(' ')}}</td>
+										<td v-if="display_ops"><button class="btn btn-info" @click="debugCall(it)">调试</button></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+					<div v-if="display_mode == 'detail'" v-for="info in infos" trace-by="typeName">
+						<h2 class="sub-header" v-bind:id="info.typeName" :title="info.typeName">{{info.name}}</h2>
+						<div v-for="it in info.methods">
+							<div class="pull-left">
+								<h3>{{info.name}} - {{it.methodName}}</h3>
+								<button class="btn btn-info" @click="debugCall(it)">调试</button>
+							</div>
+							<div class="clearfix"></div>
+							<div v-for="path in it.paths">
+								<p>
+									<code>
+										<span class="pln">{{path}}</span>
+									</code>
+								</p>
+							</div>
+							<div v-if="it.params.length &gt; 0">
+								<h4>参数</h4>
+								<div class="table-responsive">
+									<table class="table table-striped table-bordered">
+										<thead>
+											<tr class="row">
+												<th class="col-md-2">字段</th>
+												<th class="col-md-2">类型</th>
+												<th class="col-md-8">描述</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr v-for="param in it.params" class="row">
+												<td class="code">{{param.paramName}}</td>
+												<td>{{param.typeName}}</td>
+												<td>
+													<p>{{param.paramName}}</p>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+<script src="https://cdn.jsdelivr.net/vue/2.0.0-rc.4/vue.js" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/vue.resource/0.9.3/vue-resource.min.js" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/jquery/3.1.0/jquery.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"
+	type="text/javascript"></script>
+<script src="//cdn.bootcss.com/layer/2.4/layer.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+	$(function() {
+		var vueApp = new Vue(
+				{
+					el : "#app",
+					data : {
+						display_mode : "group",
+						path_filter : "",
+						okView_filter : "",
+						failView_filter : "",
+						methodName_filter : "",
+						filters_filter : "",
+						infos : {},
+						infos_origin : {},
+						activeInfoName : "",
+						display_paths : true,
+						display_methodName : true,
+						display_okView : true,
+						display_failView : true,
+						display_filters : true,
+						display_ops : true,
+						display_httpMethods : false,
+						content_path : ""
+					},
+					methods : {
+						doReload : function() {
+							this.$http.get("exp").then(function(resp) {
+								if (!resp.ok)
+									return;
+								var j = resp.json();
+								this.content_path = j.content_path || "";
+								var re = j.data;
+								var keys = [];
+								for ( var key in re) {
+									keys.push(key);
+								}
+								keys.sort();
+								var tmp = [];
+								for ( var key in keys) {
+									tmp.push(re[keys[key]]);
+								}
+								this.infos_origin = tmp;
+								this.doXXXFilter();
+							});
+						},
+						debugCall : function(it) {
+							if (!document.getElementById("dhc")) {
+								layer.alert("未安装DHC");
+								return;
+							}
+							var bodyType = "Form";
+							var headersType = "Form";
+							var httpMethod = it.httpMethods.length > 0 ? it.httpMethods[0] : "GET";
+							if (it.adaptorName == "org.nutz.mvc.adaptor.JsonAdaptor") {
+								bodyType = "Text";
+								headersType = "Json";
+							} else if (it.adaptorName == "org.nutz.mvc.upload.UploadAdaptor") {
+								bodyType = "Form";
+								headersType = "MultiPartForm";
+							}
+							var scheme_name = location.protocol == "http:" ? "http" : "https";
+							var payload = {
+									   body: {
+									       bodyType: bodyType
+									   },
+									   description: "exp",
+									   headers: [
+									       {
+									           name:"ExpClient",
+									           value:"https://nutz.cn",
+									           enabled:true
+									       }
+									   ],
+									   headersType: headersType,
+									   method: {
+									       "link": "",
+									       "name": httpMethod,
+									       "requestBody": true
+									   },
+									   name: "exp",
+									   uri: {
+									       "path": location.hostname + (location.port > 0 ? (":" + location.port) : "" ) + this.content_path + it.paths[0],
+									       "scheme": {
+									           "name": scheme_name,
+									           "version": "V11"
+									       }
+									   }
+									};
+							var message = {
+								      target : JSON.parse(document.getElementById("dhc").textContent).extensionId,
+								      type : "openRequest",
+								      targetTab: "exp",
+								      payloadType: "dhc",
+								      payload : payload
+								};
+							window.postMessage(message, document.origin);
+						},
+						listMethods : function() {
+							var tmp = [];
+							for ( var i in this.infos) {
+								for ( var m in this.infos[i].methods)
+									tmp.push(this.infos[i].methods[m]);
+							}
+							//console.info(tmp);
+							//console.info(this.infos);
+							return tmp;
+						},
+						doXXXFilter : function() {
+							var old = this.infos_origin;
+							var tmp = [];
+							for ( var i in old) {
+								var info = old[i];
+								var methods = [];
+								for ( var m in info.methods) {
+									var method = info.methods[m];
+									var flag = false;
+									for ( var n in method.paths) {
+										var path = method.paths[n];
+										if (path.indexOf(this.path_filter) != -1) {
+											flag = true;
+											break;
+										}
+									}
+									if (!flag)
+										break;
+									if (method.methodName
+											.indexOf(this.methodName_filter) == -1)
+										break;
+									if (method.okView
+											.indexOf(this.okView_filter) == -1)
+										break;
+									if (method.failView
+											.indexOf(this.failView_filter) == -1)
+										break;
+									methods.push(this.copyObject(method));
+								}
+								if (methods.length > 0) {
+									info = this.copyObject(info);
+									info.methods = methods;
+									tmp.push(info);
+								}
+							}
+							this.infos = tmp;
+						},
+						copyObject : function(obj) {
+							return JSON.parse(JSON.stringify(obj));
+						}
+					},
+					created : function() {
+						this.doReload();
+					}
+				});
+	});
+</script>
+</html>
