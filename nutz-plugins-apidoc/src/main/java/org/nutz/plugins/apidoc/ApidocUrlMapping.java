@@ -50,6 +50,8 @@ public class ApidocUrlMapping extends UrlMappingImpl {
 	 * 按类(或组?)分类排好的列表
 	 */
 	protected LinkedHashMap<String, ExpClass> infos = new LinkedHashMap<>();
+	
+	protected NutMap projectInfo;
 
 	private static final Log log = Logs.get();
 
@@ -63,6 +65,16 @@ public class ApidocUrlMapping extends UrlMappingImpl {
 		ctx.set("ai", ai);
 		ctx.set("nc", nc);
 		_add(ctx);
+
+        if (projectInfo == null) {
+            projectInfo = new NutMap();
+            Api api = nc.getMainModule().getAnnotation(Api.class);
+            if (api != null) {
+                projectInfo.put("name", api.name());
+                projectInfo.put("description", api.description());
+                baseMatchMode = api.match();
+            }
+        }
 	}
 
 	@Override
@@ -105,6 +117,7 @@ public class ApidocUrlMapping extends UrlMappingImpl {
 				ac.getResponse().setCharacterEncoding("UTF-8");
 				NutMap re = new NutMap("data", infos);
 				re.put("content_path", ac.getRequest().getContextPath());
+				re.put("project", projectInfo);
 				view.render(ac.getRequest(), ac.getResponse(), re);
 			} catch (Throwable e) {
 				log.debug("exp fail", e);
@@ -198,7 +211,7 @@ public class ApidocUrlMapping extends UrlMappingImpl {
 		Api api = klass.getAnnotation(Api.class);
 		if (api == null && baseMatchMode != ApiMatchMode.ALL)
 			return null;
-		if (api.match() == ApiMatchMode.NONE)
+		if (api != null && api.match() == ApiMatchMode.NONE)
 			return null;
 		ExpClass expClass = new ExpClass();
 		expClass.put("typeName", klass.getName());
