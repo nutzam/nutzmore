@@ -137,6 +137,11 @@ body {
 					<a class="navbar-brand" href="#">入口方法调试页</a>
 				</div>
 				<div id="navbar" class="navbar-collapse collapse">
+					<ul class="nav navbar-nav">
+						<li><a href="#" @click="display_mode = 'group'" :class="display_mode != 'group' ? 'active': '' ">模块分组</a></li>
+						<li><a href="#" @click="display_mode = 'bigtable'" :class="display_mode != 'bigtable' ? 'active': '' ">路径总表</a></li>
+						<li><a href="#" @click="display_mode = 'detail'" :class="display_mode != 'detail' ? 'active': '' ">详细列表</a></li>
+					</ul>
 					<ul class="nav navbar-nav navbar-right">
 						<li><a href="https://nutz.cn">NutzCN论坛</a></li>
 						<li><a href="http://nutzam.com">官网</a></li>
@@ -148,18 +153,15 @@ body {
 		<div class="container-fluid">
 			<div class="row">
 				<div class="col-sm-3 col-md-2 sidebar">
-					<ul class="nav nav-sidebar" v-for="info in infos" track-by="typeName">
-						<li><a :title="info.typeName" :href="'#'+info.typeName" class="nav-header" @click="this.activeInfoName=info.typeName">{{info.name}}</a></li>
+					<ul class="nav nav-sidebar" track-by="typeName">
+						<li v-for="info in infos">
+							<a :title="info.typeName" :href="'#'+info.typeName" class="nav-header" @click="this.activeInfoName=info.typeName">{{info.name}}</a>
+						</li>
 					</ul>
 				</div>
 
 				<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
 					<div class="row placeholders">
-						<div class="col-xs-6 col-sm-3">
-							<button type="button" @click="display_mode = 'group'" :class="display_mode != 'group' ? 'btn btn-info active': 'btn disable' ">模块分组</button>
-							<button type="button" @click="display_mode = 'bigtable'" :class="display_mode != 'bigtable' ? 'btn btn-info active': 'btn disable' ">路径总表</button>
-							<button type="button" @click="display_mode = 'detail'" :class="display_mode != 'detail' ? 'btn btn-info active': 'btn disable' ">详细列表</button>
-						</div>
 						<div class="col-xs-12 col-sm-12 col-md-6">
 							<div class="checkbox-inline">
 								<div class="checkbox">
@@ -205,7 +207,7 @@ body {
 							</div>
 						</div>
 					</div>
-					<div class="row">
+					<div class="row placeholders">
 						<div class="col-md-3">
 							<input @input="doXXXFilter" class="form-control" v-model="path_filter" debounce="300" placeholder="路径过滤" v-if="display_paths">
 						</div>
