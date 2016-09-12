@@ -86,11 +86,16 @@ public class ApidocUrlMapping extends UrlMappingImpl {
 				HttpServletResponse resp = ac.getResponse();
 				resp.setCharacterEncoding("UTF-8");
 				resp.setContentType("text/html");
+				InputStream ins = ac.getServletContext().getResourceAsStream(expPath+"/index.html");
+				if (ins == null) {
+				    ins = getClass().getResourceAsStream("index.html");
+				}
 				try {
-					new RawView("html").render(ac.getRequest(), resp, getClass().getResourceAsStream("index.html"));
+					new RawView("html").render(ac.getRequest(), resp, ins);
 				} catch (Throwable e) {
 					log.debug(e.getMessage(), e);
 				}
+				return new EmtryActionInvoker();
 			} else if (path.equals(expPath + "exp")) {
 				return docInvoker;
 			}
