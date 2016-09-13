@@ -32,6 +32,11 @@ public @interface ApiParam {
     String defaultValue() default "";
     
     /**
+     * 日期格式
+     */
+    String dateFormat() default "";
+    
+    /**
      * 是否可选
      */
     boolean optional() default false;

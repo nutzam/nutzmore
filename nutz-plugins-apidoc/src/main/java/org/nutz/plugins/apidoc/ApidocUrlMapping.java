@@ -1,6 +1,7 @@
 package org.nutz.plugins.apidoc;
 
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -12,7 +13,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.nutz.ioc.loader.annotation.IocBean;
 import org.nutz.json.JsonFormat;
+import org.nutz.lang.Encoding;
 import org.nutz.lang.Mirror;
+import org.nutz.lang.Streams;
 import org.nutz.lang.Strings;
 import org.nutz.lang.util.ClassMeta;
 import org.nutz.lang.util.ClassMetaReader;
@@ -37,6 +40,7 @@ import org.nutz.mvc.view.RawView;
 import org.nutz.mvc.view.UTF8JsonView;
 import org.nutz.plugins.apidoc.annotation.Api;
 import org.nutz.plugins.apidoc.annotation.ApiMatchMode;
+import org.nutz.plugins.apidoc.annotation.ApiParam;
 
 /**
  * Api文档生成
@@ -86,7 +90,15 @@ public class ApidocUrlMapping extends UrlMappingImpl {
 				HttpServletResponse resp = ac.getResponse();
 				resp.setCharacterEncoding("UTF-8");
 				resp.setContentType("text/html");
-				InputStream ins = ac.getServletContext().getResourceAsStream(expPath+"/index.html");
+				InputStream ins = ac.getServletContext().getResourceAsStream(expPath+"index.html");
+				if (ins != null) {
+				    String tmp = Streams.readAndClose(new InputStreamReader(ins, Encoding.CHARSET_UTF8));
+				    if (Strings.isBlank(tmp)) {
+				        ins = null;
+				    } else {
+				        ins = ac.getServletContext().getResourceAsStream(expPath+"index.html");
+				    }
+				}
 				if (ins == null) {
 				    ins = getClass().getResourceAsStream("index.html");
 				}
@@ -133,13 +145,6 @@ public class ApidocUrlMapping extends UrlMappingImpl {
 
 	protected static class ExpClass extends NutMap {
 		private static final long serialVersionUID = 1L;
-		// String name;
-		// String typeName;
-		// String description;
-		// String iocName;
-		// String[] pathPrefixs;
-		// List<ExpMethod> methods = new ArrayList<>();
-		// TODO 是不是应该加上作者
 	}
 
 	protected static class ExpMethod extends NutMap {
@@ -154,12 +159,6 @@ public class ApidocUrlMapping extends UrlMappingImpl {
 	 */
 	protected static class ExpParam extends NutMap {
 		private static final long serialVersionUID = 1L;
-		// String paramName;
-		// String paramVale;
-		// String defaultValue;
-		// String defaultDateFormat;
-		// String className;
-		// String attrName;
 	}
 
 	protected static class ExpContext extends SimpleContext {
@@ -273,6 +272,8 @@ public class ApidocUrlMapping extends UrlMappingImpl {
 			expMethod.put("author", api.author());
 			expMethod.put("name", api.name());
 			expMethod.put("description", api.description());
+		} else {
+		    expMethod.put("name", expMethod.get("methodName"));
 		}
 		expMethod.put("params", make(ai.getMethod(), expMethod, ctx));
 		return expMethod;
@@ -285,6 +286,12 @@ public class ApidocUrlMapping extends UrlMappingImpl {
 		List<String> paramNames = meta == null ? null : meta.paramNames.get(metaKey);
 		// TODO 还得解析参数
 		List<ExpParam> params = new ArrayList<>();
+		ApiParam[] apiParams = null;
+		Api api = method.getAnnotation(Api.class);
+		if (api != null)
+		    apiParams = api.params();
+		else
+		    apiParams = new ApiParam[0];
 		Annotation[][] annos = method.getParameterAnnotations();
 		Type[] types = method.getGenericParameterTypes();
 		for (int i = 0; i < types.length; i++) {
@@ -302,8 +309,10 @@ public class ApidocUrlMapping extends UrlMappingImpl {
 				if (anno instanceof Param) {
 					Param _param = (Param) anno;
 					expParam.put("annoParamName", _param.value());
-					expParam.put("annoParamDefault", _param.df());
-					expParam.put("annoParamDateFormat", _param.dfmt());
+                    expParam.put("annoParamDefault", _param.df());
+                    expParam.put("paramDefault", _param.df());
+                    expParam.put("annoParamDateFormat", _param.dfmt());
+                    expParam.put("paramDateFormat", _param.dfmt());
 				} else if (anno instanceof Attr) {
 					Attr attr = (Attr) anno;
 					expParam.put("annoAttrName", attr.value());
@@ -316,10 +325,52 @@ public class ApidocUrlMapping extends UrlMappingImpl {
 				else
 					expParam.put("paramName", expParam.getString("paramLocalName"));
 			}
-
-			params.add(expParam);
+			
+			for (int j = 0; j < apiParams.length; j++) {
+                ApiParam apiParam = apiParams[j];
+                if (apiParam == null)
+                    continue;
+                if (apiParam.name().equals(expParam.getString("paramName")) || 
+                        apiParam.index() == i) {
+                    // 主动忽略参数
+                    if (apiParam.ignore()) {
+                        expParam = null;
+                        apiParams[j] = null;
+                        break;
+                    }
+                    expParam.put("paramName", apiParam.name());
+                    expParam.put("description", apiParam.description());
+                    if (!Strings.isBlank(apiParam.type()))
+                        expParam.put("typeName", apiParam.type());
+                    if (!Strings.isBlank(apiParam.defaultValue()))
+                        expParam.put("paramDefault", apiParam.defaultValue());
+                    if (!Strings.isBlank(apiParam.dateFormat()))
+                        expParam.put("paramDateFormat", apiParam.dateFormat());
+                    expParam.put("optional", apiParam.optional());
+                    apiParams[j] = null;
+                    break;
+                }
+            }
+			
+			if (expParam != null)
+			    params.add(expParam);
 		}
-		// Api api = method.getAnnotation(Api.class);
+		for (int j = 0; j < apiParams.length; j++) {
+            ApiParam apiParam = apiParams[j];
+            if (apiParam == null)
+                continue;
+            ExpParam expParam = new ExpParam();
+            expParam.put("index", apiParam.index());
+            expParam.put("description", apiParam.description());
+            expParam.put("paramName", apiParam.name());
+            expParam.put("typeName", apiParam.type());
+            expParam.put("paramDefault", apiParam.defaultValue());
+            expParam.put("paramDateFormat", apiParam.dateFormat());
+            expParam.put("optional", apiParam.optional());
+            params.add(expParam);
+            
+            // TODO 解析复杂参数
+		}
 		return params;
 	}
 

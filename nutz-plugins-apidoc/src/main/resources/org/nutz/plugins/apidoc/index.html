@@ -134,7 +134,7 @@ body {
 					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
 						<span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span>
 					</button>
-					<a class="navbar-brand" href="#">入口方法调试页</a>
+					<a class="navbar-brand" href="#" id="expTitle">入口方法调试页</a>
 				</div>
 				<div id="navbar" class="navbar-collapse collapse">
 					<ul class="nav navbar-nav">
@@ -286,7 +286,7 @@ body {
 						<h2 class="sub-header" v-bind:id="info.typeName" :title="info.typeName">{{info.name}}</h2>
 						<div v-for="it in info.methods">
 							<div class="pull-left">
-								<h3>{{info.name}} - {{it.methodName}}   <span class="method-description">{{it.description}}</span></h3>
+								<h3>{{info.name}} - {{it.name}} <span class="method-description" v-if="it.description"> : {{it.description || it.methodName}}</span></h3>
 								<button class="btn btn-info" @click="debugCall(it)">调试</button>
 							</div>
 							<div class="clearfix"></div>
@@ -303,9 +303,10 @@ body {
 									<table class="table table-striped table-bordered">
 										<thead>
 											<tr class="row">
-												<th class="col-md-2">字段</th>
+												<th class="col-md-1">字段</th>
 												<th class="col-md-2">类型</th>
 												<th class="col-md-8">描述</th>
+												<th class="col-md-1">可选</th>
 											</tr>
 										</thead>
 										<tbody>
@@ -313,7 +314,10 @@ body {
 												<td class="code">{{param.paramName}}</td>
 												<td>{{param.typeName}}</td>
 												<td>
-													<p>{{param.paramName}}</p>
+													<p>{{param.description}}</p>
+												</td>
+												<td>
+													<p>{{param.optional != false}}</p>
 												</td>
 											</tr>
 										</tbody>
@@ -376,6 +380,10 @@ body {
 							}
 							this.infos_origin = tmp;
 							this.doXXXFilter();
+							if (j.project) {
+								document.title = j.project.name;
+								$("#expTitle").html(j.project.name);
+							}
 						});
 					},
 					debugCall : function(it) {
@@ -417,7 +425,8 @@ body {
 								"path" : location.hostname + (location.port > 0 ? (":" + location.port) : "") + this.content_path + it.paths[0],
 								"scheme" : {
 									"name" : scheme_name,
-									"version" : "V11"
+									"version" : "V11",
+									"secure": scheme_name == "https"
 								}
 							}
 						};
