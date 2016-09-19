@@ -93,12 +93,12 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
 
     public void exec(Connection conn, DaoStatement st) {
         if (!enable || ("true".equals(st.getContext().attr(CacheSkipMark)))) {
-            super.exec(conn, st);
+            _exec(conn, st);
             return;
         }
         String prepSql = st.toPreparedStatement();
         if (prepSql == null) {
-            super.exec(conn, st);
+            _exec(conn, st);
             return;
         }
         SQLStatementParser parser = sqlParser(prepSql);
@@ -108,18 +108,18 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
         }
         catch (Exception e) {
             log.debug("parser SQL sql, skip cache detect!! SQL=" + prepSql);
-            super.exec(conn, st);
+            _exec(conn, st);
             return;
         }
         if (statementList.size() != 1) {
             log.warn("more than one sql in one DaoStatement!! skip cache detect!! SQL=" + prepSql);
-            super.exec(conn, st);
+            _exec(conn, st);
             return;
         }
         SQLStatement sqlStatement = statementList.get(0);
         if (sqlStatement == null) {
             log.warn("can't parse SQL !! skip cache detect!! SQL=" + prepSql);
-            super.exec(conn, st);
+            _exec(conn, st);
             return;
         }
         // 检查需要执行的sql
@@ -166,7 +166,7 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
                     } else {
                         if (DEBUG)
                             log.debug("cache miss = " + prepSql);
-                        super.exec(conn, st);
+                        _exec(conn, st);
                         cachedValue = st.getContext().getResult();
                         if (cachedValue != null || cache4Null)
                             getCacheProvider().put(genCacheName(tableName), key, cachedValue);
@@ -184,7 +184,7 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
                 tableNames.clear();
         }
         try {
-            super.exec(conn, st);
+            _exec(conn, st);
         }
         finally {
             try {
@@ -311,5 +311,9 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
     
     public void setMeta(DatabaseMeta meta) {
         this.db = meta.getType();
+    }
+    
+    protected void _exec(Connection conn, DaoStatement st) {
+        super.exec(conn, st);
     }
 }

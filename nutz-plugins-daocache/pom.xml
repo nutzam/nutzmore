@@ -81,6 +81,11 @@
 			<version>2.7.3</version>
 			<optional>true</optional>
 		</dependency>
+		<dependency>
+			<groupId>org.nutz</groupId>
+			<artifactId>nutz</artifactId>
+			<version>1.r.58-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 
 	<build>
