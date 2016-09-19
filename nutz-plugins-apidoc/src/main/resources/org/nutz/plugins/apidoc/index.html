@@ -380,7 +380,7 @@ body {
 							}
 							this.infos_origin = tmp;
 							this.doXXXFilter();
-							if (j.project) {
+							if (j.project.title) {
 								document.title = j.project.name;
 								$("#expTitle").html(j.project.name);
 							}
@@ -452,21 +452,21 @@ body {
 					doXXXFilter : function() {
 						var old = this.infos_origin;
 						var tmp = [];
-						for (var i in old) {
+						 for (var i in old) {
 							var info = old[i];
 							var methods = [];
-							for (var m in info.methods) {
+						for (var m in info.methods) {
 								var method = info.methods[m];
 								var flag = false;
-								for (var n in method.paths) {
+							for (var n in method.paths) {
 									var path = method.paths[n];
 									if (path.indexOf(this.path_filter) != -1) {
 										flag = true;
-										break;
+										break ;
 									}
 								}
 								if (!flag)
-									break;
+									continue;
 								if (method.methodName
 										.indexOf(this.methodName_filter) == -1)
 									break;
