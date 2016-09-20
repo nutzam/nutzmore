@@ -121,7 +121,8 @@ body {
 	font-size: 12px;
 	padding: 2px 12px
 }
-.method-description{
+
+.method-description {
 	font-size: 16px;
 }
 </style>
@@ -154,9 +155,7 @@ body {
 			<div class="row">
 				<div class="col-sm-3 col-md-2 sidebar">
 					<ul class="nav nav-sidebar" track-by="typeName">
-						<li v-for="info in infos">
-							<a :title="info.typeName" :href="'#'+info.typeName" class="nav-header" @click="this.activeInfoName=info.typeName">{{info.name}}</a>
-						</li>
+						<li v-for="info in infos"><a :title="info.typeName" :href="'#'+info.typeName" class="nav-header" @click="this.activeInfoName=info.typeName">{{info.name}}</a></li>
 					</ul>
 				</div>
 
@@ -243,7 +242,7 @@ body {
 								<tbody>
 									<tr v-for="it in info.methods" class="row" track-by="methodId">
 										<td v-if="display_paths">{{it.paths.join(' ')}}</td>
-										<td v-if="display_methodName"><a :title="it.methodId">{{it.methodName}}</a></td>
+										<td v-if="display_methodName"><a :title="it.methodId" @click="showParas(it)" :href="'#'">{{it.methodName}}</a></td>
 										<td v-if="display_httpMethods">{{it.httpMethods.join(',')}}</td>
 										<td v-if="display_okView">{{it.okView}}</td>
 										<td v-if="display_failView">{{it.failView}}</td>
@@ -271,7 +270,7 @@ body {
 								<tbody>
 									<tr v-for="it in listMethods()" class="row" track-by="methodId">
 										<td v-if="display_paths">{{it.paths.join(' ')}}</td>
-										<td v-if="display_methodName"><a :title="it.methodId">{{it.methodName}}</a></td>
+										<td v-if="display_methodName"><a :title="it.methodId" @click="showParas(it)" :href="'#'">{{it.methodName}}</a></td>
 										<td v-if="display_httpMethods">{{it.httpMethods.join(',')}}</td>
 										<td v-if="display_okView">{{it.okView}}</td>
 										<td v-if="display_failView">{{it.failView}}</td>
@@ -286,7 +285,9 @@ body {
 						<h2 class="sub-header" v-bind:id="info.typeName" :title="info.typeName">{{info.name}}</h2>
 						<div v-for="it in info.methods">
 							<div class="pull-left">
-								<h3>{{info.name}} - {{it.name}} <span class="method-description" v-if="it.description"> : {{it.description || it.methodName}}</span></h3>
+								<h3>
+									{{info.name}} - {{it.name}} <span class="method-description" v-if="it.description"> : {{it.description || it.methodName}}</span>
+								</h3>
 								<button class="btn btn-info" @click="debugCall(it)">调试</button>
 							</div>
 							<div class="clearfix"></div>
@@ -386,6 +387,33 @@ body {
 							}
 						});
 					},
+					showParas : function(it) {
+						var html = '<table class="table table-bordered table-hover table-condensed">\
+										  <thead>\
+									        <tr>\
+									          <th>字段</th>\
+									          <th>类型</th>\
+									          <th>描述</th>\
+									          <th>可选</th>\
+									        </tr>\
+									      </thead>\
+									      <tbody>';
+						for (var index in it.params) {
+							var p = it.params[index];
+							html += '<tr>\
+								          <td>' + p.paramName + '</td>\
+								          <td>' + p.typeName + '</td>\
+								          <td>' + (p.description || '') + '</td>\
+								          <td>' + (p.optional != false) + '</td>\
+								        </tr>';
+						}
+						html += '</tbody> </table>';
+						layer.open({
+							title : '参数列表',
+							area : [ '800px', '600px' ],
+							content : html
+						});
+					},
 					debugCall : function(it) {
 						if (!document.getElementById("dhc")) {
 							layer.alert("未安装DHC");
@@ -426,7 +454,7 @@ body {
 								"scheme" : {
 									"name" : scheme_name,
 									"version" : "V11",
-									"secure": scheme_name == "https"
+									"secure" : scheme_name == "https"
 								}
 							}
 						};
@@ -452,13 +480,13 @@ body {
 					doXXXFilter : function() {
 						var old = this.infos_origin;
 						var tmp = [];
-						 for (var i in old) {
+						for (var i in old) {
 							var info = old[i];
 							var methods = [];
-						for (var m in info.methods) {
+							for (var m in info.methods) {
 								var method = info.methods[m];
 								var flag = false;
-							for (var n in method.paths) {
+								for (var n in method.paths) {
 									var path = method.paths[n];
 									if (path.indexOf(this.path_filter) != -1) {
 										flag = true;
