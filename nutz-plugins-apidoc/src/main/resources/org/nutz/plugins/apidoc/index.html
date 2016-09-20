@@ -242,7 +242,7 @@ body {
 								<tbody>
 									<tr v-for="it in info.methods" class="row" track-by="methodId">
 										<td v-if="display_paths">{{it.paths.join(' ')}}</td>
-										<td v-if="display_methodName"><a :title="it.methodId" @click="showParas(it)" :href="'#'">{{it.methodName}}</a></td>
+										<td v-if="display_methodName"><a :title="it.methodId" @click="showDetail(it)" :href="'#'">{{it.methodName}}</a></td>
 										<td v-if="display_httpMethods">{{it.httpMethods.join(',')}}</td>
 										<td v-if="display_okView">{{it.okView}}</td>
 										<td v-if="display_failView">{{it.failView}}</td>
@@ -270,7 +270,7 @@ body {
 								<tbody>
 									<tr v-for="it in listMethods()" class="row" track-by="methodId">
 										<td v-if="display_paths">{{it.paths.join(' ')}}</td>
-										<td v-if="display_methodName"><a :title="it.methodId" @click="showParas(it)" :href="'#'">{{it.methodName}}</a></td>
+										<td v-if="display_methodName"><a :title="it.methodId" @click="showDetail(it)" :href="'#'">{{it.methodName}}</a></td>
 										<td v-if="display_httpMethods">{{it.httpMethods.join(',')}}</td>
 										<td v-if="display_okView">{{it.okView}}</td>
 										<td v-if="display_failView">{{it.failView}}</td>
@@ -387,8 +387,8 @@ body {
 							}
 						});
 					},
-					showParas : function(it) {
-						var html = '<table class="table table-bordered table-hover table-condensed">\
+					showDetail : function(it) {
+						var html = '<h4>参数列表</h4><table class="table table-bordered table-hover table-condensed">\
 										  <thead>\
 									        <tr>\
 									          <th>字段</th>\
@@ -408,8 +408,25 @@ body {
 								        </tr>';
 						}
 						html += '</tbody> </table>';
+
+						html += '<h4>返回值说明</h4><table class="table table-bordered table-hover table-condensed">\
+										  <thead>\
+									        <tr>\
+									          <th>字段</th>\
+									          <th>描述</th>\
+									        </tr>\
+									      </thead>\
+									      <tbody>';
+						for (var index in it.returnKeys) {
+							var k = it.returnKeys[index];
+							html += '<tr>\
+								          <td>' + k.key + '</td>\
+								          <td>' + k.description + '</td>\
+								        </tr>';
+						}
+						html += '</tbody> </table>';
 						layer.open({
-							title : '参数列表',
+							title : 'Api详情',
 							area : [ '800px', '600px' ],
 							content : html
 						});
