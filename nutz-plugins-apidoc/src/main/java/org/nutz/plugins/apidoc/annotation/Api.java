@@ -38,11 +38,18 @@ public @interface Api {
 	ApiParam[] params() default {};
 
 	/**
-	 * Api返回值
+	 * 成功返回
 	 * 
 	 * @return
 	 */
-	ReturnKey[] returnKeys() default {};
+	ReturnKey[] ok() default {};
+
+	/**
+	 * 失败返回
+	 * 
+	 * @return
+	 */
+	ReturnKey[] fail() default {};
 
 	/**
 	 * 作者信息

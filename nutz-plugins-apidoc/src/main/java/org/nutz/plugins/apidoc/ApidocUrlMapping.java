@@ -293,16 +293,18 @@ public class ApidocUrlMapping extends UrlMappingImpl {
 		// TODO 还得解析参数
 		List<ExpParam> params = new ArrayList<>();
 		ApiParam[] apiParams = null;
-		ReturnKey[] returnKeys = null;
+		ReturnKey[] oks = null;
+		ReturnKey[] fails = null;
 		Api api = method.getAnnotation(Api.class);
 		if (api != null) {
 			apiParams = api.params();
-			returnKeys = api.returnKeys();
+			oks = api.ok();
+			fails = api.fail();
 		} else
 			apiParams = new ApiParam[0];
-		if (returnKeys != null) {
+		if (oks != null) {
 			final List<NutMap> data = new ArrayList<NutMap>();
-			Lang.each(returnKeys, new Each<ReturnKey>() {
+			Lang.each(oks, new Each<ReturnKey>() {
 
 				@Override
 				public void invoke(int index, ReturnKey key, int length) throws ExitLoop, ContinueLoop, LoopException {
@@ -312,7 +314,21 @@ public class ApidocUrlMapping extends UrlMappingImpl {
 					data.add(temp);
 				}
 			});
-			expMethod.put("returnKeys", data);
+			expMethod.put("oks", data);
+		}
+		if (fails != null) {
+			final List<NutMap> data = new ArrayList<NutMap>();
+			Lang.each(fails, new Each<ReturnKey>() {
+				
+				@Override
+				public void invoke(int index, ReturnKey key, int length) throws ExitLoop, ContinueLoop, LoopException {
+					NutMap temp = NutMap.NEW();
+					temp.put("key", key.key());
+					temp.put("description", key.description());
+					data.add(temp);
+				}
+			});
+			expMethod.put("fails", data);
 		}
 		Annotation[][] annos = method.getParameterAnnotations();
 		Type[] types = method.getGenericParameterTypes();

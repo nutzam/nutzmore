@@ -299,7 +299,7 @@ body {
 								</p>
 							</div>
 							<div v-if="it.params.length &gt; 0">
-								<h4>参数</h4>
+								<h4>请求参数</h4>
 								<div class="table-responsive">
 									<table class="table table-striped table-bordered">
 										<thead>
@@ -325,6 +325,51 @@ body {
 									</table>
 								</div>
 							</div>
+
+							<div v-if="it.oks && it.oks.length &gt; 0">
+								<h4>返回值</h4>
+								<div class="table-responsive">
+									<table class="table table-striped table-bordered">
+										<thead>
+											<tr>
+												<th>字段</th>
+												<th>描述</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr v-for="ok in it.oks">
+												<td>{{ok.key }}</td>
+												<td>
+													<p>{{ok.description}}</p>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+							
+							<div v-if="it.fails && it.fails.length &gt; 0">
+								<h4>错误码</h4>
+								<div class="table-responsive">
+									<table class="table table-striped table-bordered">
+										<thead>
+											<tr>
+												<th>字段</th>
+												<th>描述</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr v-for="fail in it.fails">
+												<td>{{fail.key }}</td>
+												<td>
+													<p>{{fail.description}}</p>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+						
 						</div>
 					</div>
 				</div>
@@ -417,8 +462,25 @@ body {
 									        </tr>\
 									      </thead>\
 									      <tbody>';
-						for (var index in it.returnKeys) {
-							var k = it.returnKeys[index];
+						for (var index in it.oks) {
+							var k = it.oks[index];
+							html += '<tr>\
+								          <td>' + k.key + '</td>\
+								          <td>' + k.description + '</td>\
+								        </tr>';
+						}
+						html += '</tbody> </table>';
+
+						html += '<h4>错误码说明</h4><table class="table table-bordered table-hover table-condensed">\
+										  <thead>\
+									        <tr>\
+									          <th>字段</th>\
+									          <th>描述</th>\
+									        </tr>\
+									      </thead>\
+									      <tbody>';
+						for (var index in it.fails) {
+							var k = it.fails[index];
 							html += '<tr>\
 								          <td>' + k.key + '</td>\
 								          <td>' + k.description + '</td>\
