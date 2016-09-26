@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.r.58-SNAPSHOT</version>
+		<version>1.r.58</version>
 	</parent>
 	<artifactId>nutz-integration-quartz</artifactId>
 	<properties>
@@ -32,6 +32,10 @@
 				<configuration>
 					<source>1.6</source>
 					<target>1.6</target>
+					<compilerArgs>
+						<arg>-parameters</arg>
+					</compilerArgs>
+					<useIncrementalCompilation>false</useIncrementalCompilation>
 				</configuration>
 			</plugin>
 			<plugin>

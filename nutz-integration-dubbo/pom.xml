@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.nutz</groupId>
     <artifactId>nutzmore</artifactId>
-    <version>1.r.58-SNAPSHOT</version>
+    <version>1.r.58</version>
   </parent>
   <artifactId>nutz-integration-dubbo</artifactId>
   
@@ -82,6 +82,10 @@
 				<configuration>
 					<source>1.7</source>
 					<target>1.7</target>
+					<compilerArgs>
+						<arg>-parameters</arg>
+					</compilerArgs>
+					<useIncrementalCompilation>false</useIncrementalCompilation>
 				</configuration>
 			</plugin>
 			<plugin>

@@ -14,7 +14,10 @@ import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.mvc.annotation.IocBy;
 
-@Deprecated
+/**
+ * @author wendal
+ *
+ */
 public abstract class NutIocTestBase extends Assert {
     
     private static final Log log = Logs.get();

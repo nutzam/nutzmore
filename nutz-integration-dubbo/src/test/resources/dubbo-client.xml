@@ -12,4 +12,11 @@
  
     <dubbo:reference id="dubboWayService" interface="net.wendal.nutzbook.service.DubboWayService" url="dubbo://nutz.cn:20880/net.wendal.nutzbook.service.DubboWayService"/>
  
+ 	<bean id="dao" type="org.nutz.impl.NutDao">
+ 		<property name="dataSource" ref="dataSource"></property>
+ 		<property name="executor" ref="masterSlaveExecutor"></property>
+ 	</bean>
+    <bean id="masterSlaveExecutor" type="net.wendal.nutzbook.util.MasterSlaveDaoExecutor">
+    	<property name="slave" ref="dataSource_slave"></property>
+    </bean>
 </beans>

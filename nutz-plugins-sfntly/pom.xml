@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.nutz</groupId>
     <artifactId>nutzmore</artifactId>
-    <version>1.r.58-SNAPSHOT</version>
+    <version>1.r.58</version>
   </parent>
   <artifactId>nutz-plugins-sfntly</artifactId>
   <dependencies>
@@ -46,4 +46,18 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<description>Just a fork of sfntly, but without icu4j-charset</description>
+	
+	<distributionManagement>
+		<snapshotRepository>
+			<id>sonatype-snapshots</id>
+			<name>Sonatype Nexus snapshot repository</name>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+
+		<repository>
+			<id>sonatype-release-staging</id>
+			<name>Sonatype Nexus release repository</name>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+		</repository>
+	</distributionManagement>
 </project>

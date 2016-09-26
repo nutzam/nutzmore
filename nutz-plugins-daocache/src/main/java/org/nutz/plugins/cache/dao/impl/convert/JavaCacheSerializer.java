@@ -24,7 +24,8 @@ public class JavaCacheSerializer extends AbstractCacheSerializer {
         try {
             ByteArrayOutputStream bao = new ByteArrayOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(bao);
-            oos.writeObject(obj);
+            oos.writeUnshared(obj);
+            oos.close();
             return bao.toByteArray();
         } catch (Exception e) {
             log.info("Object to bytes fail", e);
@@ -38,7 +39,10 @@ public class JavaCacheSerializer extends AbstractCacheSerializer {
         if (isNULL_OBJ(obj))
             return CacheResult.NULL;
         try {
-            return new ObjectInputStream(new ByteArrayInputStream((byte[])obj)).readObject();
+            ObjectInputStream ins = new ObjectInputStream(new ByteArrayInputStream((byte[])obj));
+            Object tmp = ins.readUnshared();
+            ins.close();
+            return tmp;
         } catch (Exception e) {
             log.info("bytes to Object fail", e);
             return null;

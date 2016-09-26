@@ -8,6 +8,7 @@ Nutz的Dao层插件
 
 适用性: 1.b.38以上的版本理论上可用, 1.b.50以上的版本测试过
 
+
 当前实现的局限性
 -------------------
 
@@ -17,6 +18,8 @@ Nutz的Dao层插件
 
 示例配置
 -------------------
+
+*1.r.58及以上请使用interceptors注入,1.r.57.r3及以下使用executor方式注入*
 
 	var ioc = {
 		dataSource : {
@@ -37,11 +40,12 @@ Nutz的Dao层插件
 	        }
 		},
 		dao : {
-		        // NutDaoExt是为了兼容1.b.52及以下版本, 53版或以上请直接用NutDao 
+		    // NutDaoExt是为了兼容1.b.52及以下版本, 53版或以上请直接用NutDao 
 			type : "org.nutz.dao.impl.NutDaoExt", 
 			args : [{refer:"dataSource"}],
 			fields : {
-				executor : {refer:"cacheExecutor"}
+				//executor : {refer:"cacheExecutor"} // executor是1.r.57.r3及以下版本的写法.
+				interceptors : [{refer:"cacheExecutor"}, "log"] // 这是1.r.58及以上的写法
 			}
 		},
 		cacheExecutor : {
@@ -71,7 +75,7 @@ Ehcache示例配置
 
 与Shiro一起使用不是必须条件, daocache与shiro的联系只是共享一个CacheManager实例,这是可选的
 
-为shiro和daocache分配不同的CacheManager实例是完全可以
+为shiro和daocache分配不同的CacheManager实例是完全可以,请注意区分场景!!
 
 ```
 var ioc = {
@@ -121,7 +125,8 @@ var ioc = {
 			type : "org.nutz.dao.impl.NutDaoExt",
 			args : [{refer:"dataSource"}],
 			fields : {
-				executor : {refer:"cacheExecutor"}
+				//executor : {refer:"cacheExecutor"} // executor是1.r.57.r3及以下版本的写法.
+				interceptors : [{refer:"cacheExecutor"}, "log"] // 这是1.r.58及以上的写法
 			}
 		},
 		cacheExecutor : {

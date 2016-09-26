@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import org.nutz.ioc.Ioc;
 import org.nutz.ioc.meta.IocObject;
 
+import com.alibaba.dubbo.config.ProtocolConfig;
 import com.alibaba.dubbo.config.ServiceConfig;
 
 public class DubboManager {
@@ -21,5 +22,7 @@ public class DubboManager {
         }
     }
     
-    public void depose() {}
+    public void depose() {
+        ProtocolConfig.destroyAll();
+    }
 }

@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.r.58-SNAPSHOT</version>
+		<version>1.r.58</version>
 	</parent>
 	<artifactId>nutz-integration-autoloadcache</artifactId>
 	<properties>
@@ -20,7 +20,7 @@
 		<dependency>
 			<groupId>com.github.qiujiayu</groupId>
 			<artifactId>autoload-cache</artifactId>
-			<version>4.1</version>
+			<version>4.15</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.springframework</groupId>
@@ -36,6 +36,23 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.nutz</groupId>
+			<artifactId>nutz</artifactId>
+			<version>1.r.58</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
@@ -46,6 +63,10 @@
 				<configuration>
 					<source>1.6</source>
 					<target>1.6</target>
+					<compilerArgs>
+						<arg>-parameters</arg>
+					</compilerArgs>
+					<useIncrementalCompilation>false</useIncrementalCompilation>
 				</configuration>
 			</plugin>
 			<plugin>

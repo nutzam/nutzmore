@@ -4,10 +4,13 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.r.58-SNAPSHOT</version>
+		<version>1.r.58</version>
 	</parent>
 	<artifactId>nutz-plugins-nop</artifactId>
-	<build />
+	
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>javax.servlet</groupId>
@@ -61,4 +64,29 @@
 		</repository>
 	</distributionManagement>
 	<description>nutz open platform</description>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.1</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+					<compilerArgs>
+						<arg>-parameters</arg>
+					</compilerArgs>
+					<useIncrementalCompilation>false</useIncrementalCompilation>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.10.3</version>
+				<configuration>
+					<additionalparam>-Xdoclint:none</additionalparam>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>
