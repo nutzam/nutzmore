@@ -23,7 +23,7 @@ Nutz集成Shiro的插件
 -------------------------
 
 * 添加本插件及shiro的依赖, 支持1.2+版本,建议用最新版
-* 继承AbstractNutRealm,实现一个Realm. 特别注意在构造方法内注册关联的Token类!!
+* 继承AbstractRealm,实现一个Realm. 特别注意在构造方法内注册关联的Token类!!
 * 添加 shiro.ini
 * 在web.xml中添加ShiroFilter
 * 添加入口方法完成登陆
@@ -63,7 +63,7 @@ Nutz集成Shiro的插件
 		</dependency>
 ```
 
-继承AbstractNutRealm,实现一个Realm
+继承AbstractRealm,实现一个Realm
 --------------------------------------
 
 这部分是跟具体项目的Pojo类紧密结合的,所以没有给出默认实现.
