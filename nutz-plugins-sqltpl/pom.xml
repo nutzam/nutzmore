@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.r.58</version>
+		<version>1.r.59-SNAPSHOT</version>
 	</parent>
 	<artifactId>nutz-plugins-sqltpl</artifactId>
 	<description>
@@ -61,7 +61,7 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz</artifactId>
-			<version>1.r.58</version>
+			<version>1.r.59-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.ibeetl</groupId>

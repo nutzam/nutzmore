@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>nutz-plugins-oauth2</groupId>
 	<artifactId>oauth2-server</artifactId>
-	<version>1.r.58</version>
+	<version>1.r.59-SNAPSHOT</version>
 	<packaging>war</packaging>
 	<name>nutz-plugins-oauth2-server</name>
 	<url>http://maven.apache.org</url>
