@@ -9,7 +9,7 @@ nutz-integration-zbus
 添加maven依赖项
 ==================================
 
-```
+```xml
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz-integration-zbus</artifactId>
@@ -76,7 +76,8 @@ zbus.rpc.service.consumerCount=2
 		}
 		// 启动 生产者/消费者(即MQ服务), 若不需要切勿调用.
 		ZBusFactory zbus = ioc.get(ZBusFactory.class, "zbus");
-		zbus.init(getClass().getPackage().getName());
+		//zbus.init(getClass().getPackage().getName());
+		Mirror.me(zbus).setValue(zbus, "pkgs", Arrays.asList(getClass().getPackage().getName()));
 ```
 
 RPC用法
@@ -133,5 +134,44 @@ public class YvrService {
     	dao.insert(topic);
     	emailService.send("vt400@qq.com", "有新帖子", "https://nutz.cn/yvr/t/" + topic.getId());
     }
+}
+```
+
+
+## MQ用法
+
+### 订阅者 @ZBusConsumer
+
+可以标注在方法上(推荐):
+
+```java
+public class YvrService {
+	@ZBusConsumer(mq="topic:update")
+	public void topicUpdate(Message msg, Session session) {
+		// ...
+	}
+}
+```
+
+可以标注在类上:
+
+```
+@ZBusConsumer(mq="topic")
+@IocBean
+public class YvrService implements MessageHandler {
+   // ...
+}
+```
+
+### 发布者
+
+```
+@IocBean
+public class YvrSuper {
+
+	@Inject("java:$zbus.getProducer('topic:update')")
+	protect ZBusProducer topicUpdateMq;
+
+	// 然后 就可以操作zbus的ZBusProducer实例了
 }
 ```
