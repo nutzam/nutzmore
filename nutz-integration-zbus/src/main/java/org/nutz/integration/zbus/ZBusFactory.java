@@ -56,11 +56,20 @@ public class ZBusFactory {
 	}
 
 	public void init() {
-		for (String pkg : pkgs) {
-			for (Class<?> klass : Scans.me().scanPackage(pkg)) {
-				addConsumer(klass);
-			}
-		}
+		if (pkgs != null)
+		    init(pkgs.toArray(new String[0]));
+	}
+	
+	public void init(String...pkgs) {
+	    if (pkgs == null)
+	        return;
+	    for (String pkg : pkgs) {
+	        if (pkg == null)
+	            continue;
+            for (Class<?> klass : Scans.me().scanPackage(pkg)) {
+                addConsumer(klass);
+            }
+        }
 	}
 
 	@SuppressWarnings("rawtypes")
