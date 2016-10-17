@@ -2,7 +2,7 @@ sudo: false
 language: java
 script: mvn -Dmaven.test.skip=true clean source:jar deploy --settings mvn_settings.xml --fail-at-end
 jdk:
-  - openjdk8
+  - oraclejdk8
 # whitelist
 branches:
   only:
