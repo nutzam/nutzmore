@@ -44,6 +44,15 @@
 		<developerConnection>scm:git:git://github.com/nutzam/nutzmore.git</developerConnection>
 		<url>git://github.com/nutzam/nutzmore.git</url>
 	</scm>
+	<repositories>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
 	<dependencies>
 		<dependency>
 			<groupId>org.nutz</groupId>
