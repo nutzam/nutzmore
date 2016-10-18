@@ -13,11 +13,11 @@ var ioc = {
 			fields : {
 				serverHost : {java:"$conf.get('zbus.serverHost', '0.0.0.0')"},
 				serverPort : {java:"$conf.getInt('zbus.serverPort', 15555)"},
-				trackServerList : {java:"$conf.get('zbus.trackServerList')"},
-				thriftServer : {java:"$conf.get('zbus.thriftServer')"},
+				//trackServerList : {java:"$conf.get('zbus.trackServerList')"},
+				//thriftServer : {java:"$conf.get('zbus.thriftServer')"},
 				verbose : {java:"$conf.getBoolean('zbus.verbose', false)"},
-				selectorCount : {java:"$conf.getInt('zbus.selectorCount', 1)"},
-				executorCount : {java:"$conf.getInt('zbus.executorCount', 64)"},
+				//selectorCount : {java:"$conf.getInt('zbus.selectorCount', 1)"},
+				//executorCount : {java:"$conf.getInt('zbus.executorCount', 64)"},
 				verbose : {java:"$conf.getBoolean('zbus.verbose', false)"},
 				storePath : {java:"$conf.get('zbus.storePath', 'mq')"}
 			}
