@@ -22,12 +22,11 @@ import org.nutz.log.Logs;
 import org.nutz.resource.Scans;
 import org.zbus.broker.Broker;
 import org.zbus.mq.Consumer;
+import org.zbus.mq.Consumer.ConsumerHandler;
 import org.zbus.mq.MqConfig;
 import org.zbus.mq.Protocol.MqMode;
 import org.zbus.net.Client;
-import org.zbus.net.core.Session;
 import org.zbus.net.http.Message;
-import org.zbus.net.http.Message.MessageHandler;
 import org.zbus.rpc.RpcProcessor;
 
 public class ZBusFactory {
@@ -97,50 +96,50 @@ public class ZBusFactory {
 		ZBusConsumer z = klass.getAnnotation(ZBusConsumer.class);
 		if (z != null && z.enable()) {
 			MqConfig mqConfig = fromAnnotation(broker, z);
-			proxy(mqConfig, (MessageHandler) ioc.get(klass));
+			proxy(mqConfig, (ConsumerHandler) ioc.get(klass));
 		}
 		for (final Method method : klass.getMethods()) {
 			z = method.getAnnotation(ZBusConsumer.class);
 			if (z != null && z.enable()) {
 				MqConfig mqConfig = fromAnnotation(broker, z);
 				final Object obj = ioc.get(klass);
-				MessageHandler handler = null;
+				ConsumerHandler handler = null;
 				switch (method.getParameterTypes().length) {
 				case 0:
-					handler = new MessageHandler() {
-						@Override
-						public void handle(Message msg, Session sess) throws IOException {
-							try {
-								method.invoke(obj);
-							} catch (Exception e) {
-								throw new RuntimeException(e.getCause());
-							}
+					handler = new ConsumerHandler() {
+						public void handle(Message msg, Consumer consumer) throws IOException {
+						    try {
+                                method.invoke(obj);
+                            }
+                            catch (Exception e) {
+                                throw new IOException(e);
+                            }
 						}
 					};
 					break;
 				case 1:
-					handler = new MessageHandler() {
-						@Override
-						public void handle(Message msg, Session sess) throws IOException {
-							try {
-								method.invoke(obj, msg);
-							} catch (Exception e) {
-								throw new RuntimeException(e.getCause());
-							}
-						}
+					handler = new ConsumerHandler() {
+					    public void handle(Message msg, Consumer consumer) throws IOException {
+                            try {
+                                method.invoke(obj, msg);
+                            }
+                            catch (Exception e) {
+                                throw new IOException(e);
+                            }
+                        }
 					};
 					break;
 				case 2:
-					handler = new MessageHandler() {
-						@Override
-						public void handle(Message msg, Session sess) throws IOException {
-							try {
-								method.invoke(obj, msg, sess);
-							} catch (Exception e) {
-								throw new RuntimeException(e.getCause());
-							}
-						}
-					};
+				    handler = new ConsumerHandler() {
+                        public void handle(Message msg, Consumer consumer) throws IOException {
+                            try {
+                                method.invoke(obj, msg, consumer);
+                            }
+                            catch (Exception e) {
+                                throw new IOException(e);
+                            }
+                        }
+                    };
 					break;
 				default:
 					throw new RuntimeException("method[" + method + "] not good");
@@ -160,17 +159,16 @@ public class ZBusFactory {
 		return mqConfig;
 	}
 
-	protected void proxy(MqConfig mqConfig, MessageHandler handler) {
+	protected void proxy(MqConfig mqConfig, ConsumerHandler handler) {
 		Consumer c = new Consumer(mqConfig);
 		try {
-			c.onMessage(handler);
 			if (mqConfig.getMode() == MqMode.MQ.intValue())
 				c.createMQ();
+	        c.start(handler);
 		} catch (Exception e) {
 			Streams.safeClose(c);
 			throw new RuntimeException("create Consumer fail obj=" + handler.getClass().getName(), e);
 		}
-		c.start();
 		consumers.add(c);
 	}
 

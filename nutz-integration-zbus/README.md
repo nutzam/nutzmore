@@ -6,6 +6,10 @@ nutz-integration-zbus
 
 深度集成zbus,提供mq,rpc支持
 
+由于zbus api大改,本插件无法同时兼容新老zbus
+
+1.r.59开始仅支持zbus 7.x+
+
 添加maven依赖项
 ==================================
 
@@ -13,7 +17,7 @@ nutz-integration-zbus
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz-integration-zbus</artifactId>
-			<version>1.r.58</version>
+			<version>1.r.59-SNAPSHOT</version>
 		</dependency>
 ```
 
@@ -23,7 +27,7 @@ nutz-integration-zbus
 ```java
 @IocBy(args={"*js", "ioc/",
 			 "*anno", "net.wendal.nutzbook",
-			 "*org.nutz.integration.zbus.ZBusIocLoader", "net.wendal.nutzbook"})
+			 "*zbus", "net.wendal.nutzbook"})
 ```
 
 注意其可选参数,代表需要扫描的ZBus代理接口
@@ -67,17 +71,16 @@ zbus.rpc.service.consumerCount=2
 		if (conf.getBoolean("zbus.server.embed.enable", false)) {
 			ioc.get(MqServer.class);
 		}
-		// 启动RPC服务端
+		// 启动RPC服务端,按需选用
 		if (conf.getBoolean("zbus.rpc.service.enable", false)) {
 			RpcProcessor rpcProcessor = ioc.get(RpcProcessor.class);
 			// 通过buildServices扫描所有标准了@ZBusService的类
 			ZBusFactory.buildServices(rpcProcessor, ioc, getClass().getPackage().getName());
 			ioc.get(Service.class, "rpcService"); // 注意, Service与服务器连接是异步操作
 		}
-		// 启动 生产者/消费者(即MQ服务), 若不需要切勿调用.
+		// 启动 生产者/消费者(即MQ服务),按需选用
 		ZBusFactory zbus = ioc.get(ZBusFactory.class, "zbus");
-		//zbus.init(getClass().getPackage().getName());
-		Mirror.me(zbus).setValue(zbus, "pkgs", Arrays.asList(getClass().getPackage().getName()));
+		zbus.init(getClass().getPackage().getName());
 ```
 
 RPC用法
@@ -147,7 +150,7 @@ public class YvrService {
 ```java
 public class YvrService {
 	@ZBusConsumer(mq="topic:update")
-	public void topicUpdate(Message msg, Session session) {
+	public void topicUpdate(Message msg, Consumer consumer) {
 		// ...
 	}
 }
@@ -158,7 +161,7 @@ public class YvrService {
 ```
 @ZBusConsumer(mq="topic")
 @IocBean
-public class YvrService implements MessageHandler {
+public class YvrService implements ConsumerHandler {
    // ...
 }
 ```

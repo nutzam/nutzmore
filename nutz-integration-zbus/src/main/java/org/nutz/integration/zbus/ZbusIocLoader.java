@@ -18,13 +18,13 @@ import org.nutz.resource.Scans;
  * @author wendal
  *
  */
-public class ZBusIocLoader extends JsonLoader {
+public class ZbusIocLoader extends JsonLoader {
     
     private static final Log log = Logs.get();
 	
-	public ZBusIocLoader(){}
+	public ZbusIocLoader(){}
 
-	public ZBusIocLoader(String... pkgs) {
+	public ZbusIocLoader(String... pkgs) {
 		for (String pkg : pkgs) {
 			add(pkg);
 		}

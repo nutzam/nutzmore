@@ -16,7 +16,7 @@ var ioc = {
 		zbus : {
 			type: "org.nutz.integration.zbus.ZBusFactory",
 			fields : {
-				pkgs : ["net.wendal.nutzbook"],
+				//pkgs : ["net.wendal.nutzbook"],
 				ioc : {refer:"$ioc"},
 				broker : {refer:"broker"}
 			},
