@@ -191,7 +191,9 @@ public class ZBusFactory {
 				name = Strings.lowerFirst(klass.getSimpleName());
 			}
 			log.debugf("define zbus Invoker bean name=%s type=%s", name, klass.getName());
-			NutMap _map = new NutMap().setv("factory", "$rpc#getService").setv("args", new String[] { klass.getName() });
+			NutMap _map = new NutMap().setv("factory", "$rpc#getService");
+			_map.setv("args", new String[] { klass.getName() });
+			_map.setv("type", klass.getName());
 			map.put(name, _map);
 		}
 	}
