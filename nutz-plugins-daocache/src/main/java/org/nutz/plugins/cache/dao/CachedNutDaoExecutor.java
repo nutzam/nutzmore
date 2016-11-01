@@ -107,7 +107,7 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
             statementList = parser.parseStatementList();
         }
         catch (Exception e) {
-            log.debug("parser SQL sql, skip cache detect!! SQL=" + prepSql);
+            log.debug("Exception when parser SQL sql, skip cache detect!! SQL=" + prepSql);
             _exec(conn, st);
             return;
         }

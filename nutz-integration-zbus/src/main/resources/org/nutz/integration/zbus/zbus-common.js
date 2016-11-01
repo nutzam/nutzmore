@@ -7,7 +7,7 @@ var ioc = {
 			}
 		},
 		broker : {
-			type : "org.zbus.broker.SingleBroker",
+			type : "org.zbus.broker.ZbusBroker",
 			args : [{refer:"brokerConfig"}],
 			events : {
 				depose : "close"
