@@ -19,13 +19,13 @@
 
 # 快照版地址
 
-https://oss.sonatype.org/content/repositories/snapshots/org/nutz/
+http://maven.nutz.cn/nexus/content/repositories/snapshots/org/nutz/
 
 ```xml
 	<repositories>
 		<repository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+			<id>nutzcn-snapshots</id>
+			<url>http://maven.nutz.cn/nexus/content/repositories/snapshots</url>
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
