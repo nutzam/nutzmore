@@ -28,4 +28,9 @@ public class SimpleAuthenticationFilter extends org.apache.shiro.web.filter.auth
 			return true;
 		return super.isAccessAllowed(request, response, mappedValue);
 	}
+	
+	public void setLoginUrl(String loginUrl) {
+	    super.setLoginUrl(loginUrl);
+	    NutShiro.DefaultLoginURL = loginUrl;
+	}
 }
