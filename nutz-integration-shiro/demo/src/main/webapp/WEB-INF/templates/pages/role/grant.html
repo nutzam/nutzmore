@@ -1,0 +1,56 @@
+<!--# 
+layout("/layout/default.html",{"menu":["acl","role_admin"],"breadcrumbs":[{"name":"角色列表","url":"role/list"},{"name":"角色授权"}]}){ 
+ #-->
+<div class="space-4"></div>
+<div class="row">
+	<div class="col-md-8 col-md-offset-2 col-sm-12">
+		<div class="panel panel-info">
+			<div class="panel-heading">
+				<h3 class="panel-title">角色授权</h3>
+			</div>
+			<div class="panel-body">
+				<div class="col-sm-12">
+					<form id="setPermissionForm">
+						<div class="form-group">
+							<select multiple="multiple" size="10" name="permissions" id="duallist">
+								<!--# for(permission in obj.data.records){ #-->
+								<option value="${permission.id!}"${permission.hasr_permission!}>${permission.p_name!} ${permission.p_desc!}</option>
+								<!--# } #-->
+							</select>
+						</div>
+						<div class="form-group">
+							<div class="pull-right" style="margin-right: 45px">
+								<button type="button" class="btn btn-sm btn-primary" onclick="setPermission(this)">
+									<i class="fa fa-save"></i> 提交
+								</button>
+								<button class="btn btn-sm btn-warning  btn-back">
+									<i class="fa fa-undo"></i> 返回
+								</button>
+							</div>
+							<input type="hidden" name="id" value="${obj.data.roleId!}">
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script src="${base!}/assets/addon/jquery.bootstrap-duallistbox.js"></script>
+<script>
+	$(function($) {
+		$('select[name="permissions"]').bootstrapDualListbox({
+			selectedListLabel : '已选权限',
+			nonSelectedListLabel : '未选权限'
+		}).bootstrapDualListbox('getContainer').find('.btn').addClass('btn-white btn-info btn-sm');
+	});
+	function setPermission(dom) {
+		$.post(Common.getRootPath() + '/role/grant', $('#setPermissionForm').serialize(), function(result) {
+			if (result.operationState == "SUCCESS") {
+				location.href = Common.getRootPath() + "/role/list";
+			} else {
+				Common.validationFail(result.data.reason, dom);
+			}
+		}, 'json');
+	}
+</script>
+<!--# } #-->

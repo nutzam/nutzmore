@@ -1,0 +1,91 @@
+<!--# 
+layout("/layout/default.html",{"menu":["acl","user_admin"],"breadcrumbs":[{"name":"用户列表"}]}){ 
+ #-->
+<table class="table  table-hover general-table table-striped table-bordered">
+	<thead>
+		<tr>
+			<th colspan="6">
+				<div class="row">
+					<div class="col-md-3 ">
+						<form action="${base}/user/search" class="search-form">
+							<div class="input-group">
+								<span class="input-group-addon">关键字</span> <input type="text" class="form-control" placeholder="请输入关键词进行检索..." style="font-weight: 500" name="key"
+									value="${obj.data.pager.paras.key!}" data-type="reg" data-reg="/^[\u4e00-\u9fa5\d\w]{1,}$/" data-default="Search..." data-error="请输入搜索关键词" placeholder="请输入角色名检索">
+								<span class="input-group-addon search-btn" style="cursor: pointer;"><i class="fa fa-search"></i> GO</span>
+							</div>
+						</form>
+					</div>
+					<div class="col-md-2 col-md-offset-7">
+						<!--# if(hasPermission('user.add')){ #-->
+						<a href="${base}/user/add" class="btn btn-info btn-sm"><i class="fa fa-plus-circle"></i> 添加用户</a>
+						<!--# } #-->
+					</div>
+				</div>
+			</th>
+		</tr>
+		<tr>
+			<th>ID</th>
+			<th class="hidden-phone">登录名</th>
+			<th>真实姓名</th>
+			<th>创建时间</th>
+			<th>状态</th>
+			<th>操作</th>
+		</tr>
+	</thead>
+	<tbody>
+		<!--# for(user in obj.data.pager.entities){ #-->
+		<tr>
+			<td>${user.id!}</td>
+			<td>${user.name!}</td>
+			<td>${user.realName!}</td>
+			<td>${user.createTime,"yyyy-MM-dd"}</td>
+			<td><span class="label label-${user.status=="ACTIVED" ? "success" : "warning"} label-mini">${user.status}</span></td>
+			<td class="center">
+				<div class="hidden-sm hidden-xs btn-group">
+					<!--# if(hasPermission('user.detail')){ #-->
+					<a class="btn btn-xs btn-success" href="${base}/user/detail/${user.id!}"> <i class="ace-icon fa fa-check bigger-120"></i> 详情
+					</a>
+					<!--# } #-->
+					<!--# if(hasPermission('user.role')){ #-->
+					<a class="btn btn-xs btn-warning " href='${base}/user/role/${user.id!}'> <i class="ace-icon fa fa-fire  bigger-120"></i> 设置角色
+					</a>
+					<!--# } #-->
+					<!--# if(hasPermission('user.grant')){ #-->
+					<a class="btn btn-xs btn-danger" href='${base}/user/grant/${user.id!}'> <i class="ace-icon fa fa-bolt  bigger-120"></i> 设置权限
+					</a>
+					<!--# } #-->
+					<!--# if(hasPermission('user.edit')){ #-->
+					<a class="btn btn-xs btn-info" href="${base}/user/edit/${user.id!}"> <i class="ace-icon fa fa-pencil bigger-120"></i> 编辑
+					</a>
+					<!--# } #-->
+					<!--# if(hasPermission('user.delete')){ #-->
+					<button class="btn btn-xs btn-danger btn-delete" data-url='/user/delete' data-id='${user.id!}'>
+						<i class="ace-icon fa fa-trash-o bigger-120"></i> 删除
+					</button>
+					<!--# } #-->
+				</div>
+			</td>
+		</tr>
+		<!--#	} #-->
+	</tbody>
+	<tfoot>
+		<!--# 
+		if(obj.data.pager.entities.~size == 0){
+		#-->
+		<tr>
+			<td colspan="6" class="null-pager">没有符合条件的数据</td>
+		</tr>
+		<!--#
+		}else{
+		#-->
+		<tr>
+			<td colspan="6">
+				<div class="pull-right">${obj.data.pager.pagerBar!}</div>
+			</td>
+		</tr>
+		<!--#
+		}
+	#-->
+	</tfoot>
+</table>
+<!--# } #-->

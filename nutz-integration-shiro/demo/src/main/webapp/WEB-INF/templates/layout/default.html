@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<!--[if IE 8]> <html lang="en" class="ie8 no-js"> <![endif]-->
+<!--[if IE 9]> <html lang="en" class="ie9 no-js"> <![endif]-->
+<!--[if !IE]><!-->
+<html lang="en">
+<!--<![endif]-->
+<head>
+<meta charset="utf-8" />
+<title>${config("application.name")} ${obj.title!}</title>
+
+<meta content="kerbores" name="author" />
+<meta name="description" content='${config("application.name")}' />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<script type="text/javascript">
+	var contextPath = '${base}';
+</script>
+<meta content="width=device-width, initial-scale=1" name="viewport" />
+<link href="${base}/assets/metronic/global/plugins/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+<link href="${base}/assets/metronic/global/plugins/simple-line-icons/simple-line-icons.min.css" rel="stylesheet" type="text/css" />
+<link href="${base}/assets/metronic/global/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+<link href="${base}/assets/metronic/global/plugins/uniform/css/uniform.default.css" rel="stylesheet" type="text/css" />
+<link href="${base}/assets/metronic/global/plugins/bootstrap-switch/css/bootstrap-switch.min.css" rel="stylesheet" type="text/css" />
+<link href="${base}/assets/metronic/global/css/components-md.min.css" rel="stylesheet" id="style_components" type="text/css" />
+<link href="${base}/assets/metronic/global/css/plugins-md.min.css" rel="stylesheet" type="text/css" />
+<link href="${base}/assets/metronic/layouts/layout/css/layout.min.css" rel="stylesheet" type="text/css" />
+<link href="${base}/assets/metronic/layouts/layout/css/themes/darkblue.min.css" rel="stylesheet" type="text/css" id="style_color" />
+<link href="${base}/assets/metronic/layouts/layout/css/custom.min.css" rel="stylesheet" type="text/css" />
+<link rel="shortcut icon" href="${base}/assets/metronic/pages/img/login/logo.ico" />
+<script src="${base}/assets/metronic/global/plugins/jquery.min.js" type="text/javascript"></script>
+<script src="${base}/assets/layer/layer.js" type="text/javascript"></script>
+<script src="${base}/assets/n-csm/js/common.js" type="text/javascript"></script>
+<script src="${base}/assets/n-csm/js/validation.js" type="text/javascript"></script>
+</head>
+
+<body class="page-header-fixed page-sidebar-closed-hide-logo page-content-white page-md ">
+	<div class="page-header navbar navbar-fixed-top">
+		<div class="page-header-inner ">
+			<div class="page-logo">
+				<a href="#"> <img src="${base}/assets/metronic/pages/img/login/logo.png" height="28"  alt="logo" class="logo-default" />
+				</a>
+				<div class="menu-toggler sidebar-toggler"></div>
+			</div>
+			<a href="javascript:;" class="menu-toggler responsive-toggler" data-toggle="collapse" data-target=".navbar-collapse"> </a>
+			<div class="top-menu">
+				<ul class="nav navbar-nav pull-right">
+						<li class="dropdown dropdown-user"><a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true"> <img alt=""
+							class="img-circle" src="${null != subject('heanKey') ? subject('heanKey') : base + '/assets/metronic/layouts/layout/img/avatar3_small.jpg' }" /> <span class="username username-hide-on-mobile"> ${subject('nickName') } </span> <i
+							class="fa fa-angle-down"></i>
+							</a>
+					
+						<ul class="dropdown-menu dropdown-menu-default">
+							<li><a href="${base!}/setting/profile"> <i class="icon-user"></i> 我的资料
+							</a></li>
+							<li class="divider"></li>
+							<li><a href="javascript:Common.logout();"> <i class="icon-key"></i> 登出
+							</a></li>
+						</ul></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+	<div class="clearfix"></div>
+	<div class="page-container">
+		<div class="page-sidebar-wrapper">
+			<div class="page-sidebar navbar-collapse collapse">
+				<ul class="page-sidebar-menu  page-header-fixed " data-keep-expanded="false" data-auto-scroll="true" data-slide-speed="200" style="padding-top: 20px">
+					<li class="sidebar-toggler-wrapper hide">
+						<div class="sidebar-toggler"></div>
+					</li>
+					<li class="sidebar-search-wrapper">
+						<form class="sidebar-search  sidebar-search-bordered" action="page_general_search_3.html" method="POST">
+							<a href="javascript:;" class="remove"> <i class="icon-close"></i>
+							</a>
+							<div class="input-group">
+								<input type="text" class="form-control" placeholder="搜一下..."> <span class="input-group-btn"> <a href="javascript:;" class="btn submit"> <i
+										class="icon-magnifier"></i>
+								</a>
+								</span>
+							</div>
+						</form> 
+					</li>
+					
+					<li class="heading">
+						<h3 class="uppercase">
+							<i class="fa fa-anchor"></i> 系統功能
+						</h3>
+					</li>
+
+
+					<li class="nav-item  ${ menu[0] =='acl' ?'active open':''}"><a href="javascript:;" class="nav-link nav-toggle"> <i class="icon-users"></i> <span class="title">访问控制</span>
+							<span class="arrow"></span>
+					</a>
+						<ul class="sub-menu">
+							<!--# if(hasPermission('user.list')){ #-->
+							<li class="nav-item  ${ menu[1] =='user_admin' ?'active':''}"><a href="${base!}/user/list" class="nav-link "> <i class="fa fa-user"></i> <span class="title">用户管理</span>
+							</a></li>
+							<!--# } #-->
+							<!--# if(hasPermission('role.list')){ #-->
+							<li class="nav-item  ${ menu[1] =='role_admin' ?'active':''}"><a href="${base!}/role/list" class="nav-link "><i class="fa fa-lock"></i>  <span class="title">角色管理 </span>
+							</a></li>
+							<!--# } #-->
+							<!--# if(hasPermission('permission.list')){ #-->
+							<li class="nav-item  ${ menu[1] =='permission_admin' ?'active':''}"><a href="${base!}/permission/list" class="nav-link "><i class="fa fa-eye"></i>  <span class="title">权限管理</span>
+							</a></li>
+							<!--# } #-->
+						</ul></li>
+				</ul>
+			</div>
+		</div>
+		<div class="page-content-wrapper">
+			<div class="page-content">
+				<div class="theme-panel hidden-xs hidden-sm">
+					<div class="toggler"></div>
+					<div class="toggler-close"></div>
+					<div class="theme-options">
+						<div class="theme-option theme-colors clearfix">
+							<span> 主题切换 </span>
+							<ul>
+								<li class="color-default current tooltips" data-style="default" data-container="body" data-original-title="默认"></li>
+								<li class="color-darkblue tooltips" data-style="darkblue" data-container="body" data-original-title="深蓝"></li>
+								<li class="color-blue tooltips" data-style="blue" data-container="body" data-original-title="蓝色"></li>
+								<li class="color-grey tooltips" data-style="grey" data-container="body" data-original-title="灰色"></li>
+								<li class="color-light tooltips" data-style="light" data-container="body" data-original-title="明亮"></li>
+								<li class="color-light2 tooltips" data-style="light2" data-container="body" data-html="true" data-original-title="反色"></li>
+							</ul>
+						</div>
+						<div class="theme-option">
+							<span> 主题样式 </span> <select class="layout-style-option form-control input-sm">
+								<option value="square" selected="selected">方角</option>
+								<option value="rounded">圆角</option>
+							</select>
+						</div>
+						<div class="theme-option">
+							<span> 布局 </span> <select class="layout-option form-control input-sm">
+								<option value="fluid" selected="selected">流式</option>
+								<option value="boxed">盒子</option>
+							</select>
+						</div>
+						<div class="theme-option">
+							<span> 头部 </span> <select class="page-header-option form-control input-sm">
+								<option value="fixed" selected="selected">固定</option>
+								<option value="default">默认</option>
+							</select>
+						</div>
+						<div class="theme-option">
+							<span> 顶部导航</span> <select class="page-header-top-dropdown-style-option form-control input-sm">
+								<option value="light" selected="selected">亮</option>
+								<option value="dark">暗</option>
+							</select>
+						</div>
+						<div class="theme-option">
+							<span> 侧边栏模式 </span> <select class="sidebar-option form-control input-sm">
+								<option value="fixed">固定</option>
+								<option value="default" selected="selected">默认</option>
+							</select>
+						</div>
+						<div class="theme-option">
+							<span> 侧边栏触发 </span> <select class="sidebar-menu-option form-control input-sm">
+								<option value="accordion" selected="selected">点击</option>
+								<option value="hover">悬浮</option>
+							</select>
+						</div>
+						<div class="theme-option">
+							<span> 侧边栏样式 </span> <select class="sidebar-style-option form-control input-sm">
+								<option value="default" selected="selected">默认</option>
+								<option value="light">明亮</option>
+							</select>
+						</div>
+						<div class="theme-option">
+							<span> 侧边栏位置 </span> <select class="sidebar-pos-option form-control input-sm">
+								<option value="left" selected="selected">左</option>
+								<option value="right">右</option>
+							</select>
+						</div>
+						<div class="theme-option">
+							<span> 版权信息 </span> <select class="page-footer-option form-control input-sm">
+								<option value="fixed">固定</option>
+								<option value="default" selected="selected">默认</option>
+							</select>
+						</div>
+					</div>
+				</div>
+				<div class="page-bar">
+					<ul class="page-breadcrumb">
+						<li><i class="ace-icon fa fa-home home-icon"></i> <a href="${base}">首页</a> <i class="fa fa-circle"></i></li>
+						<!--#  
+							for(breadcrumb in breadcrumbs){ 
+								if(breadcrumb.url != null){
+						#-->
+						<li><a href="${base}/${breadcrumb.url}">${breadcrumb.name}</a> <i class="fa fa-circle"></i></li>
+						<!--#		}else{#-->
+						<li class="active">${breadcrumb.name}</li>
+						<!--#	}
+							}
+						#-->
+					</ul>
+				</div>
+				<!--# if(null != obj.title!){ #-->
+				<h3 class="page-title">${obj.title!}</h3>
+				<!--# }  #-->
+				<!--# if(config("debug")){ #-->
+				<div class="portlet box blue">
+					<div class="portlet-title">
+						<div class="caption">
+							<i class="ace-icon fa fa-bug"></i> 调试数据
+						</div>
+						<div class="tools">
+							<a href="javascript:;" class="expand" data-original-title="" title=""> </a>
+						</div>
+					</div>
+					<div class="portlet-body" style="display: none;">
+						<pre>${obj}</pre>
+					</div>
+				</div>
+				<!--#	} #-->
+				${layoutContent}
+			</div>
+		</div>
+	</div>
+	<div class="page-footer">
+		<div class="page-footer-inner">${config("copy.right")}</div>
+		<div class="scroll-to-top">
+			<i class="icon-arrow-up"></i>
+		</div>
+	</div>
+	<!--[if lt IE 9]>
+<script src="${base}/assets/metronic/global/plugins/respond.min.js"></script>
+<script src="${base}/assets/metronic/global/plugins/excanvas.min.js"></script> 
+<![endif]-->
+	<script src="${base}/assets/metronic/global/plugins/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+	<script src="${base}/assets/metronic/global/plugins/js.cookie.min.js" type="text/javascript"></script>
+	<script src="${base}/assets/metronic/global/plugins/bootstrap-hover-dropdown/bootstrap-hover-dropdown.min.js" type="text/javascript"></script>
+	<script src="${base}/assets/metronic/global/plugins/jquery-slimscroll/jquery.slimscroll.min.js" type="text/javascript"></script>
+	<script src="${base}/assets/metronic/global/plugins/jquery.blockui.min.js" type="text/javascript"></script>
+	<script src="${base}/assets/metronic/global/plugins/uniform/jquery.uniform.min.js" type="text/javascript"></script>
+	<script src="${base}/assets/metronic/global/plugins/bootstrap-switch/js/bootstrap-switch.min.js" type="text/javascript"></script>
+	<script src="${base}/assets/metronic/global/scripts/app.js" type="text/javascript"></script>
+	<script src="${base}/assets/metronic/layouts/layout/scripts/layout.js" type="text/javascript"></script>
+	<script src="${base}/assets/metronic/layouts/layout/scripts/demo.min.js" type="text/javascript"></script>
+	<script src="${base}/assets/metronic/layouts/global/scripts/quick-sidebar.min.js" type="text/javascript"></script>
+</body>
+
+</html>
