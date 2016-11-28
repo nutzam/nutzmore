@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+	<bean id="nutDao" class="org.nutz.dao.impl.NutDao">
+		<property name="dataSource" ref="dataSource" />
+		<!-- 如果要使用Trans,移除springDaoRunner -->
+		<property name="runner" ref="springDaoRunner" />
+		<property name="interceptors">
+			<list>
+				<bean class="org.nutz.integration.spring.SimpleDaoInterceptor"></bean>
+				<value>log</value>
+			</list>
+		</property>
+	</bean>
+	<bean id="springDaoRunner" class="org.nutz.integration.spring.SpringDaoRunner">
+	</bean>
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+		<property name="url" value="jdbc:h2:~/spring"/>
+	</bean>
+</beans>
