@@ -7,15 +7,15 @@
 		<property name="dataSource" ref="dataSource" />
 		<!-- 如果要使用Trans,移除springDaoRunner -->
 		<property name="runner" ref="springDaoRunner" />
+		<!-- 1.r.58新增 -->
 		<property name="interceptors">
 			<list>
 				<bean class="org.nutz.integration.spring.SimpleDaoInterceptor"></bean>
-				<value>log</value>
+				<value>log</value> <!-- 添加默认日志拦截器,一般放在最后就好了 -->
 			</list>
 		</property>
 	</bean>
-	<bean id="springDaoRunner" class="org.nutz.integration.spring.SpringDaoRunner">
-	</bean>
+	<bean id="springDaoRunner" class="org.nutz.integration.spring.SpringDaoRunner"></bean>
 	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
 		<property name="url" value="jdbc:h2:~/spring"/>
 	</bean>
