@@ -1,0 +1,94 @@
+<!--# 
+layout("/layout/default.html",{"menu":["acl","role_admin"],"breadcrumbs":[{"name":"角色列表","url":"role/list"},{"name":obj.data.role == null ? "添加角色" : "编辑角色"}]}){ 
+ #-->
+<link rel="stylesheet" href="${base!}/assets/kindeditor/themes/default/default.css" />
+<script charset="utf-8" src="${base!}/assets/kindeditor/kindeditor-min.js"></script>
+<script charset="utf-8" src="${base!}/assets/kindeditor/lang/zh_CN.js"></script>
+<div class="space-4"></div>
+<div class="row">
+	<div class="col-md-9 col-md-offset-2 col-sm-12">
+		<div class="panel panel-info">
+			<div class="panel-heading">
+				<h3 class="panel-title">${obj.data.role == null ? "添加角色" : "编辑角色"}</h3>
+			</div>
+			<div class="panel-body">
+				<form id="addRoleForm" class="cmxform form-horizontal adminex-form" novalidate="novalidate">
+					<div class="form-group ">
+						<label class="control-label col-lg-3"> 角色名</label>
+						<div class="col-lg-9">
+							<input class="form-control" type="text" placeholder="请输入角色名" name="name" data-type='required' data-error='请输入角色名' value="${obj.data.role.name!}" ${obj.data.role== null ? "":"disabled"} />
+						</div>
+					</div>
+					<div class="form-group ">
+						<label class="control-label col-lg-3">角色描述</label>
+						<div class="col-lg-9">
+							<input type="hidden" name="description" id="description">
+							<textarea rows="25" class="form-control" placeholder="请输入角色描述" name="content">${obj.data.role.description!}</textarea>
+						</div>
+					</div>
+					<input type="hidden" id="id" name="id" value="${obj.data.role.id!}">
+					<div class="pull-right" style="margin-right: 45px">
+						<button type="button" class="btn btn-sm btn-primary" onclick="save(this)">
+							<i class="fa fa-save"></i> 提交
+						</button>
+						<button class="btn btn-sm btn-default btn-back">
+							<i class="fa fa-undo"></i> 返回
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+	var editor;
+	$(function() {
+
+		KindEditor.lang({
+			preview : '预览'
+		});
+		KindEditor.plugin('preview', function(K) {
+			var self = this,
+				name = 'preview';
+			self.clickToolbar(name, function() {
+				layer.open({
+					title : '内容预览',
+					type : 1,
+					skin : 'layui-layer-rim',
+					area : [ '540px', '700px' ],
+					content : self.html()
+				});
+			});
+		});
+
+		//kindeditor 初始化
+		KindEditor.ready(function(K) {
+			editor = K.create('textarea[name="content"]', {
+				uploadJson : Common.getRootPath() + '/kind/upload'
+			});
+		})
+	});
+	function save(dom) {
+		$('#description').val(editor.html());
+		if ($('input').validation()) {
+			if ($('#id').val() > 0) {
+				$.post(Common.getRootPath() + '/role/update', $('#addRoleForm').serialize(), function(result) {
+					if (result.operationState == "SUCCESS") {
+						location.href = Common.getRootPath() + "/role/list";
+					} else {
+						Common.validationFail(result.data.reason, dom);
+					}
+				}, 'json');
+			} else {
+				$.post(Common.getRootPath() + '/role/add', $('#addRoleForm').serialize(), function(result) {
+					if (result.operationState == "SUCCESS") {
+						location.href = Common.getRootPath() + "/role/list";
+					} else {
+						Common.validationFail(result.data.reason, dom);
+					}
+				}, 'json');
+			}
+		}
+	}
+</script>
+<!--# } #-->

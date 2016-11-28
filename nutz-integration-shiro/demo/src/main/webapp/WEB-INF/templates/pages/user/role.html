@@ -1,0 +1,56 @@
+<!--# 
+layout("/layout/default.html",{"menu":["acl","user_admin"],"breadcrumbs":[{"name":"用户列表",url:"user/list"},{"name":"设置角色"}]}){ 
+ #-->
+<div class="space-4"></div>
+<div class="row">
+	<div class="col-md-8 col-md-offset-2 col-sm-12">
+		<div class="panel panel-info">
+			<div class="panel-heading">
+				<h3 class="panel-title">设置角色</h3>
+			</div>
+			<div class="panel-body">
+				<div class="col-sm-12">
+					<form id="setRoleForm">
+						<div class="form-group">
+							<select multiple="multiple" size="10" name="roles" id="duallist">
+								<!--#  for(role in obj.data.records){ #-->
+								<option value="${role.id!}"${role.has_role!}>${role.r_name!} ${role.r_desc!}</option>
+								<!--#	} #-->
+							</select>
+						</div>
+						<div class="form-group">
+							<div class="pull-right" style="margin-right: 45px">
+								<button type="button" class="btn btn-sm btn-primary" onclick="setRole(this)">
+									<i class="fa fa-save"></i> 提交
+								</button>
+								<button class="btn btn-sm btn-warning btn-back">
+									<i class="fa fa-undo"></i> 返回
+								</button>
+							</div>
+							<input type="hidden" name="id" value="${obj.data.userId!}">
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script src="${base!}/assets/addon/jquery.bootstrap-duallistbox.js"></script>
+<script>
+	$(function($) {
+		$('select[name="roles"]').bootstrapDualListbox({
+			selectedListLabel : '已选角色',
+			nonSelectedListLabel : '未选角色'
+		}).bootstrapDualListbox('getContainer').find('.btn').addClass('btn-info btn-sm');
+	});
+	function setRole(dom) {
+		$.post(Common.getRootPath() + '/user/role', $('#setRoleForm').serialize(), function(result) {
+			if (result.operationState == "SUCCESS") {
+				location.href = Common.getRootPath() + "/user/list";
+			} else {
+				Common.validationFail(result.data.reason, dom);
+			}
+		}, 'json');
+	}
+</script>
+<!--# } #-->

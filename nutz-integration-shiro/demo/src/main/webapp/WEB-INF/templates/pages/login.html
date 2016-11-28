@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<!--[if IE 8]> <html lang="en" class="ie8 no-js"> <![endif]-->
+<!--[if IE 9]> <html lang="en" class="ie9 no-js"> <![endif]-->
+<!--[if !IE]><!-->
+<html lang="en">
+<!--<![endif]-->
+
+<head>
+<meta charset="utf-8" />
+<title>${config("application.name")} ${obj.title!}</title>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta content="width=device-width, initial-scale=1" name="viewport" />
+<meta content="" name="description" />
+<meta content="" name="author" />
+<script type="text/javascript">
+	var contextPath = '${base}';
+</script>
+<link href="${base}/assets/metronic/global/plugins/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+<link href="${base}/assets/metronic/global/plugins/simple-line-icons/simple-line-icons.min.css" rel="stylesheet" type="text/css" />
+<link href="${base}/assets/metronic/global/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+<link href="${base}/assets/metronic/global/plugins/uniform/css/uniform.default.css" rel="stylesheet" type="text/css" />
+<link href="${base}/assets/metronic/global/plugins/bootstrap-switch/css/bootstrap-switch.min.css" rel="stylesheet" type="text/css" />
+<link href="${base}/assets/metronic/global/plugins/select2/css/select2.min.css" rel="stylesheet" type="text/css" />
+<link href="${base}/assets/metronic/global/plugins/select2/css/select2-bootstrap.min.css" rel="stylesheet" type="text/css" />
+<link href="${base}/assets/metronic/global/css/components-md.min.css" rel="stylesheet" id="style_components" type="text/css" />
+<link href="${base}/assets/metronic/global/css/plugins-md.min.css" rel="stylesheet" type="text/css" />
+<link href="${base}/assets/metronic/pages/css/login-5.min.css" rel="stylesheet" type="text/css" />
+<style>
+.login-captcha {
+	padding-bottom: 30px;
+	cursor: pointer;
+}
+</style>
+<link rel="shortcut icon" href="${base}/assets/metronic/pages/img/login/logo.ico" />
+<script src="${base}/assets/metronic/global/plugins/jquery.min.js" type="text/javascript"></script>
+<script src="${base}/assets/layer/layer.js" type="text/javascript"></script>
+<script src="${base}/assets/n-csm/js/common.js" type="text/javascript"></script>
+<script src="${base}/assets/n-csm/js/validation.js" type="text/javascript"></script>
+</head>
+
+<body class=" login">
+	<div class="user-login-5">
+		<div class="row bs-reset">
+			<div class="col-md-6 bs-reset">
+				<div class="login-bg" style="background-image:url(${base}/assets/metronic/pages/img/login/bg1.jpg)">
+					<img class="login-logo" src="${base}/assets/metronic/pages/img/login/logo.png"  />
+				</div>
+			</div>
+			<div class="col-md-6 login-container bs-reset">
+				<div class="login-content">
+					<h1>${config("application.name")}</h1>
+					<p>演示shiro集成</p>
+					<form action="${base!}/system/login" class="login-form" method="post">
+						<div class="row">
+							<div class="col-xs-6">
+								<input class="form-control form-control-solid placeholder-no-fix" type="text" data-type="required" autocomplete="off" placeholder="请输入用户名" name="user" id="user" value="${loginInfo.user! }"/>
+							</div>
+							<div class="col-xs-6">
+								<input class="form-control form-control-solid placeholder-no-fix" data-type="password" type="password" autocomplete="off" placeholder="请输入密码" name="password" id="password" value="${loginInfo.password! }"  />
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-sm-4">
+								<div class="rem-password">
+									<p>
+										记住我 <input type="checkbox" class="rem-checkbox" id="rememberMeCheckBox" ${null != loginInfo.rememberMe && loginInfo.rememberMe!  ? 'checked' : '' } />
+									</p>
+								</div>
+							</div>
+							<div class="col-sm-8 text-right">
+								<div class="forgot-password">
+									<a href="javascript:;" id="forget-password" class="forget-password">忘记密码?</a>
+								</div>
+								<button class="btn blue" type="submit" id="login-btn">登录</button>
+							</div>
+						</div>
+					</form>
+					<form class="forget-form" action="javascript:;" method="post">
+						<h3 class="font-green">忘记密码 ?</h3>
+						<p>请输入你的邮箱进行密码重置操作.</p>
+						<div class="form-group">
+							<div class="form-group form-md-line-input has-success">
+								<div class="input-icon right">
+									<input type="text" class="form-control placeholder-no-fix" placeholder="请输入电子邮箱" name="email"> <i class="icon-envelope"></i>
+								</div>
+							</div>
+						</div>
+						<div class="form-actions">
+							<button type="button" id="back-btn" class="btn grey btn-default">返回</button>
+							<button type="submit" class="btn blue btn-success uppercase pull-right">重置</button>
+						</div>
+					</form>
+				</div>
+				<div class="login-footer">
+					<div class="row bs-reset">
+						<div class="col-xs-4 bs-reset">
+							<ul class="login-social">
+								<li><a href="javascript:;"> <i class="icon-social-facebook"></i>
+								</a></li>
+								<li><a href="javascript:;"> <i class="icon-social-twitter"></i>
+								</a></li>
+								<li><a href="javascript:;"> <i class="icon-social-dribbble"></i>
+								</a></li>
+							</ul>
+						</div>
+						<div class="col-xs-8 bs-reset">
+							<div class="login-copyright text-right">
+								<p>${config("copy.right")}</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!--[if lt IE 9]>
+<script src="${base}/assets/metronic/global/plugins/respond.min.js"></script>
+<script src="${base}/assets/metronic/global/plugins/excanvas.min.js"></script>
+<![endif]-->
+	<script src="${base}/assets/metronic/global/plugins/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+	<script src="${base}/assets/metronic/global/plugins/js.cookie.min.js" type="text/javascript"></script>
+	<script src="${base}/assets/metronic/global/plugins/bootstrap-hover-dropdown/bootstrap-hover-dropdown.min.js" type="text/javascript"></script>
+	<script src="${base}/assets/metronic/global/plugins/jquery-slimscroll/jquery.slimscroll.min.js" type="text/javascript"></script>
+	<script src="${base}/assets/metronic/global/plugins/jquery.blockui.min.js" type="text/javascript"></script>
+	<script src="${base}/assets/metronic/global/plugins/uniform/jquery.uniform.min.js" type="text/javascript"></script>
+	<script src="${base}/assets/metronic/global/plugins/bootstrap-switch/js/bootstrap-switch.min.js" type="text/javascript"></script>
+	<script src="${base}/assets/metronic/global/plugins/select2/js/select2.full.min.js" type="text/javascript"></script>
+	<script src="${base}/assets/metronic/global/plugins/backstretch/jquery.backstretch.min.js" type="text/javascript"></script>
+	<script src="${base}/assets/metronic/global/scripts/app.min.js" type="text/javascript"></script>
+	<script type="text/javascript">
+		$(function() {
+			//轮播
+			$('.login-bg').backstretch([
+				Common.getRootPath() + "/assets/metronic/pages/img/login/ops1.jpg",
+				Common.getRootPath() + "/assets/metronic/pages/img/login/ops2.jpg",
+				Common.getRootPath() + "/assets/metronic/pages/img/login/bg1.jpg"
+			], {
+				fade : 500,
+				duration : 3000
+			}
+			);
+			//隐藏找回密码
+			$('.forget-form').hide();
+			//交互事件
+			$(document).on('click', '.login-captcha', function() {
+				LOGIN.refreshCaptcha();
+			}).on('keypress', '.login-form input', function(e) {
+				if (e.which == 13) {
+					LOGIN.doLogin();
+				}
+			}).on('keypress', '.forget-form input', function(e) {
+				if (e.which == 13) {
+					LOGIN.doReset();
+				}
+			}).on('click', '#forget-password', function() {
+				LOGIN.toReset();
+			}).on('click', '#back-btn', function() {
+				LOGIN.toLogin();
+			}).on('click', '#login-btn', function() {
+				LOGIN.doLogin();
+			});
+		})
+		var LOGIN = {
+			refreshCaptcha : function() { //刷新验证码
+				$('.login-captcha').attr('src', Common.getRootPath() + "/captcha?length=4&" + Math.random());
+			},
+			doLogin : function() { //登录
+				if ($('.login-form').validation()) {
+					$('.login-form').submit();
+				} else {
+					return false;
+				}
+			},
+			doReset : function() { //重置
+				if ($('.forget-form').validation()) {
+					$('.forget-form').submit();
+				} else {
+					return false;
+				}
+			},
+			toReset : function() { //显示重置
+				$('.login-form').hide();
+				$('.forget-form').show();
+			},
+			toLogin : function() { //显示登录
+				$('.login-form').show();
+				$('.forget-form').hide();
+			}
+		}
+	</script>
+</body>
+
+</html>
