@@ -13,7 +13,7 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>填nutz插件名</artifactId>
-			<version>1.r.58</version>
+			<version>1.r.59</version>
 		</dependency>
 ```
 

@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.r.59</version>
+		<version>1.r.60-SNAPSHOT</version>
 	</parent>
 	<artifactId>nutz-plugins-xmlentitymaker</artifactId>
 	<url>http://nutzam.com</url>
