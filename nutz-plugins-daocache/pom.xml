@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.r.59-SNAPSHOT</version>
+		<version>1.r.59</version>
 	</parent>
 	<artifactId>nutz-plugins-daocache</artifactId>
 	<description>Nutz Dao Cache</description>
@@ -84,7 +84,7 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz</artifactId>
-			<version>1.r.59-SNAPSHOT</version>
+			<version>1.r.59</version>
 		</dependency>
 	</dependencies>
 

@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.nutz</groupId>
 	<artifactId>nutz-plugins-wxrobot</artifactId>
-	<version>1.r.59-SNAPSHOT</version>
+	<version>1.r.59</version>
 	<packaging>jar</packaging>
 
 	<name>nutz-plugin-wxrobot</name>
@@ -40,12 +40,12 @@
 		<dependency>
             <groupId>org.nutz</groupId>
             <artifactId>nutz</artifactId>
-            <version>1.r.59-SNAPSHOT</version>
+            <version>1.r.59</version>
         </dependency>
 <!-- 		<dependency>
             <groupId>org.nutz</groupId>
             <artifactId>nutzwx</artifactId>
-            <version>1.r.59-SNAPSHOT</version>
+            <version>1.r.59</version>
         </dependency> -->
 	</dependencies>
 
