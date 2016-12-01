@@ -19,13 +19,13 @@
 
 # 快照版地址
 
-http://maven.nutz.cn/nexus/content/repositories/snapshots/org/nutz/
+https://jfrog.nutz.cn/artifactory/snapshots/org/nutz/
 
 ```xml
 	<repositories>
 		<repository>
 			<id>nutzcn-snapshots</id>
-			<url>http://maven.nutz.cn/nexus/content/repositories/snapshots</url>
+			<url>https://jfrog.nutz.cn/artifactory/snapshots</url>
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
