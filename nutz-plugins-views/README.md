@@ -12,7 +12,7 @@ freemarker/velocity/thymeleaf/pdf 视图插件
 1. 在 MainModule 中增加 `@Views(FreemarkerViewMaker.class)`
 1. 如需自定义模板相关内容，请复制一份 freemarker.js 到/ioc 目录下，并修改相应内容
 
-```
+```js
 var ioc = {
     currentTime : {
         type : "org.nutz.plugins.view.freemarker.directive.CurrentTimeDirective"
@@ -46,7 +46,7 @@ var ioc = {
 
 如自定义标签加载 请在js中添加
 
-```
+```js
 mapTags : {
 	factory : "$freeMarkerConfigurer#addTags",
 	args : [ {
@@ -122,7 +122,7 @@ var ioc = {
 
 + 主模块配置
 
-``` java?linenums
+```java?linenums
 @Views({ VelocityViewMaker.class })
 ```
 
@@ -130,7 +130,7 @@ var ioc = {
 
 在classpath下增加 velocity.properties内容如下:
 
-``` java?linenums
+```java?linenums
 #资源加载器或加载器别名
 resource.loader = webapp
 #资源加载器类全限定名    
@@ -232,4 +232,7 @@ nutz的filter或者servlet加上初始化参数
 </tools>
 ```
 
+## 验证码视图
+
+请查验 http://nutz-captcha.mydoc.io
 
