@@ -29,3 +29,9 @@ activiti.asyncExecutorActivate=false
 		    "*tx",
 		    "*activiti") // 添加activiti支持
 ```
+
+在MainSetup的init方法内主动初始化
+
+```java
+ioc.get(ProcessEngine.class); 
+```
