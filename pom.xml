@@ -129,7 +129,7 @@
         <module>nutz-integration-activiti</module>
 	</modules>
 	<properties>
-		<nutz.version>1.r.58</nutz.version>
+		<nutz.version>1.r.59</nutz.version>
 	</properties>
 	<distributionManagement>
 		<snapshotRepository>

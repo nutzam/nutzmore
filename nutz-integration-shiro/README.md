@@ -186,9 +186,9 @@ securityManager.sessionManager = $sessionManager
 cacheManager_ehcache = org.apache.shiro.cache.ehcache.EhCacheManager
 cacheManager_ehcache.cacheManagerConfigFile=classpath:ehcache.xml
 ### 第二层是redis,独立进程,持久化,集群化
-cacheManager_redis = net.wendal.nutzbook.shiro.cache.RedisCacheManager
+cacheManager_redis = org.nutz.integration.shiro.cache.RedisCacheManager
 ### 使用LCacheManager组合两层缓存.
-cacheManager = net.wendal.nutzbook.shiro.cache.LCacheManager
+cacheManager = org.nutz.integration.shiro.cache.LCacheManager
 cacheManager.level1 = $cacheManager_ehcache
 cacheManager.level2 = $cacheManager_redis
 ### 设置全局缓存实现
