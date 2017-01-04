@@ -13,6 +13,7 @@ Nutz集成Shiro的插件
 * SimpleShiroToken 不带校验信息的token实现
 * ShiroSessionProvider 在Nutz.MVC作用域内,使用Shiro替换容器原生的Session机制
 * ShiroProxy 用于模板引擎中方便调用shiro
+* LCache 多层次缓存实现
 
 **原CaptchaFormAuthenticationFilter已经废弃** 原因是出错了都不知道哪里错,而且不好定制.
 
@@ -29,6 +30,7 @@ Nutz集成Shiro的插件
 * 添加入口方法完成登陆
 * 可选: 注册ShiroSessionProvider
 * 可选: 登记UU32SessionIdGenerator
+* 可选: Session缓存与持久化
 
 添加本插件及依赖
 -----------------------------
@@ -37,14 +39,8 @@ Nutz集成Shiro的插件
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz-integration-shiro</artifactId>
-			<version>1.r.56</version>
+			<version>1.r.59</version>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.shiro</groupId>
-			<artifactId>shiro-core</artifactId>
-			<version>1.3.0</version>
-		</dependency>
-		<!-- 下面的是缓存相关的,可选 -->
 		<dependency>
 			<groupId>org.apache.shiro</groupId>
 			<artifactId>shiro-all</artifactId>
@@ -96,7 +92,9 @@ web.xml中添加ShiroFilter配置
 	</listener>
 	<filter>
 		<filter-name>ShiroFilter</filter-name>
- 		<filter-class>org.apache.shiro.web.servlet.ShiroFilter</filter-class>
+ 		<!-- filter-class>org.apache.shiro.web.servlet.ShiroFilter</filter-class -->
+ 		<!-- 原生ShiroFilter,每次请求都会touch一次session,导致session持久化的时候压力非常大.ShiroFilter2能解决这个问题 -->
+ 		<filter-class>org.nutz.integration.shiro.ShiroFilter2</filter-class>
 	</filter>
 	<filter-mapping>
 		<filter-name>ShiroFilter</filter-name>
@@ -164,6 +162,46 @@ UU32SessionIdGenerator 用法
     # use R.UU32()
     sessionIdGenerator = org.nutz.integration.shiro.UU32SessionIdGenerator
     securityManager.sessionManager.sessionDAO.sessionIdGenerator = $sessionIdGenerator
+    
+Session缓存与持久化
+---------------------------
+
+本插件在1.r.60版开始集成了nutzcn验证过的Session持久化方案,使用2层缓存(可扩展至无限层), 第一层为ehcache,第二层为redis, 使用redis的订阅发布机制实现集群同步
+
+```ini
+[main]
+
+#Session
+sessionManager = org.apache.shiro.web.session.mgt.DefaultWebSessionManager
+### 禁用session有效性检查,可选
+sessionManager.sessionValidationSchedulerEnabled = false
+
+# Session Cache
+sessionDAO = org.apache.shiro.session.mgt.eis.EnterpriseCacheSessionDAO
+sessionManager.sessionDAO = $sessionDAO
+securityManager.sessionManager = $sessionManager
+
+### 声明2层缓存
+### 第一层是ehcache,本地缓存,速度快
+cacheManager_ehcache = org.apache.shiro.cache.ehcache.EhCacheManager
+cacheManager_ehcache.cacheManagerConfigFile=classpath:ehcache.xml
+### 第二层是redis,独立进程,持久化,集群化
+cacheManager_redis = net.wendal.nutzbook.shiro.cache.RedisCacheManager
+### 使用LCacheManager组合两层缓存.
+cacheManager = net.wendal.nutzbook.shiro.cache.LCacheManager
+cacheManager.level1 = $cacheManager_ehcache
+cacheManager.level2 = $cacheManager_redis
+### 设置全局缓存实现
+securityManager.cacheManager = $cacheManager
+```
+
+然后在MainSetup的init中初始化
+
+```java
+		// 初始化RedisCacheManager
+		LCacheManager.me().setupJedisPool(ioc.get(JedisPool.class));
+		//RedisCache.DEBUG = true;
+```
 	
 常见问题
 ---------------------------
