@@ -1,4 +1,4 @@
-package org.nutz.plugin.jedis;
+package org.nutz.integration.jedis;
 
 import org.nutz.ioc.loader.json.JsonLoader;
 

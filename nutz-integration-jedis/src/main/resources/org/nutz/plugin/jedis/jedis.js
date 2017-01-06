@@ -24,12 +24,12 @@ var ioc = {
 			}
 		},
 		redis : {
-			type : "org.nutz.plugin.jedis.RedisInterceptor",
+			type : "org.nutz.integration.jedis.RedisInterceptor",
 			fields : {
 				jedisPool : {refer:"jedisPool"}
 			}
 		},
 		redisService : {
-			type : "org.nutz.plugin.jedis.RedisService"
+			type : "org.nutz.integration.jedis.RedisService"
 		}
 };

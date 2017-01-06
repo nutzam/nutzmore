@@ -1,6 +1,6 @@
-package org.nutz.plugin.jedis;
+package org.nutz.integration.jedis;
 
-import static org.nutz.plugin.jedis.RedisInterceptor.jedis;
+import static org.nutz.integration.jedis.RedisInterceptor.jedis;
 
 import java.util.List;
 import java.util.Map;

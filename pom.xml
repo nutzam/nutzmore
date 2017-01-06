@@ -127,6 +127,8 @@
         <module>nutz-plugins-nop</module>
         <module>nutz-plugins-apidoc</module>
         <module>nutz-integration-activiti</module>
+        <module>nutz-plugins-websocket</module>
+        <module>nutz-integration-jedis</module>
 	</modules>
 	<properties>
 		<nutz.version>1.r.59</nutz.version>

@@ -6,7 +6,7 @@
 		<artifactId>nutzmore</artifactId>
 		<version>1.r.60-SNAPSHOT</version>
 	</parent>
-	<artifactId>nutz-plugins-jedis</artifactId>
+	<artifactId>nutz-integration-jedis</artifactId>
 	
 
 	<properties>

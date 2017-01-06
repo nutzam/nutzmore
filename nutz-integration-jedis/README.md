@@ -30,7 +30,7 @@ nutz-plugins-jedis
 
 
 ```java
-import static org.nutz.plugin.jedis.RedisInterceptor.jedis;
+import static org.nutz.integration.jedis.RedisInterceptor.jedis;
 
 @Aop("redis")
 public void addTopic(Topic topic) {
