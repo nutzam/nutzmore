@@ -1,5 +1,5 @@
 var ioc = {
-// 参考 https://github.com/xetorthio/jedis/wiki/Getting-started
+		// 参考 https://github.com/xetorthio/jedis/wiki/Getting-started
 		jedisPoolConfig : {
 			type : "redis.clients.jedis.JedisPoolConfig",
 			fields : {
@@ -22,5 +22,14 @@ var ioc = {
 			events : {
 				depose : "destroy" // 关闭应用时必须关掉呢
 			}
+		},
+		redis : {
+			type : "org.nutz.plugin.jedis.RedisInterceptor",
+			fields : {
+				jedisPool : {refer:"jedisPool"}
+			}
+		},
+		redisService : {
+			type : "org.nutz.plugin.jedis.RedisService"
 		}
 };
