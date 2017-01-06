@@ -5,13 +5,13 @@ import java.sql.Connection;
 import javax.sql.DataSource;
 
 import org.nutz.dao.ConnCallback;
-import org.nutz.dao.impl.DaoRunner;
+import org.nutz.dao.impl.sql.run.NutDaoRunner;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 
-public class SpringDaoRunner implements DaoRunner {
+public class SpringDaoRunner extends NutDaoRunner {
 
 	@Override
-	public void run(DataSource dataSource, ConnCallback callback) {
+	public void _run(DataSource dataSource, ConnCallback callback) {
 
 		Connection con = DataSourceUtils.getConnection(dataSource);
 		try {
