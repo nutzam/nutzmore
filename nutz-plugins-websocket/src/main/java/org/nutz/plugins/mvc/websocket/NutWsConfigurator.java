@@ -1,4 +1,4 @@
-package org.nutz.plugin.websocket;
+package org.nutz.plugins.mvc.websocket;
 
 import javax.websocket.server.ServerEndpointConfig;
 
