@@ -12,6 +12,7 @@ import org.nutz.lang.Streams;
 public class ActivitiIocLoader extends JsonLoader {
 
     public ActivitiIocLoader() {
+        super(new String[]{});
         _load("activiti-engine.js", "conf");
         _load("activiti-service.js", "conf");
     }

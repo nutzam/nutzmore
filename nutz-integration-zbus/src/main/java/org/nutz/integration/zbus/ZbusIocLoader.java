@@ -25,6 +25,7 @@ public class ZbusIocLoader extends JsonLoader {
 	public ZbusIocLoader(){}
 
 	public ZbusIocLoader(String... pkgs) {
+        super(new String[]{});
 		for (String pkg : pkgs) {
 			add(pkg);
 		}

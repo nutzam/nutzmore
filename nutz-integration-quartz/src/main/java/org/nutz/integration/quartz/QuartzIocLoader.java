@@ -18,10 +18,12 @@ import org.nutz.lang.Streams;
 public class QuartzIocLoader extends JsonLoader {
 
 	public QuartzIocLoader() {
+        super(new String[]{});
 		_load("quartz.js", "conf");
 	}
 
 	public QuartzIocLoader(String... args) {
+        super(new String[]{});
 		String confName = args.length > 0 ? args[0] : "conf";
 		_load("quartz.js", confName);
 	}
