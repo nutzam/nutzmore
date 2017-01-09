@@ -1,16 +1,13 @@
 package org.nutz.integration.jedis.pubsub;
 
-import static org.nutz.integration.jedis.RedisInterceptor.jedis;
-
 import java.util.ArrayList;
 import java.util.List;
 
-import org.nutz.ioc.aop.Aop;
-import org.nutz.ioc.loader.annotation.Inject;
-import org.nutz.ioc.loader.annotation.IocBean;
+import org.nutz.lang.Streams;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
 public class PubSubService {
@@ -31,10 +28,15 @@ public class PubSubService {
         }.start();
     }
     
-    @Aop("redis")
     public void fire(String channel, String message) {
         log.debugf("publish channel=%s msg=%s", channel, message);
-        jedis().publish(channel, message);
+        Jedis jedis = null;
+        try {
+            jedis = jedisPool.getResource();
+            jedis.publish(channel, message);
+        } finally {
+            Streams.safeClose(jedis);
+        }
     }
 
     public void depose() {

@@ -46,6 +46,7 @@ https://jfrog.nutz.cn/artifactory/snapshots/org/nutz/
 | 插件名称 | 版本 | 简介 | 可靠性 |
 | ------| ------ | ------ | ------ |
 | [nutz-integration-activiti](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-activiti) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-activiti/badge.svg) | 提供Activiti相关的Ioc配置 | 开发中 |
+| [nutz-integration-autoloadcache](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-autoloadcache) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-autoloadcache/badge.svg) | 深度集成AutoLoadCache | **生产** |
 | [nutz-integration-dubbo](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-dubbo) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-dubbo/badge.svg) | 兼容原生dubbo配置文件 | 试用 |
 | [nutz-integration-dwr](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-dwr) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-dwr/badge.svg) | 轻度集成dwr | 试用 |
 | [nutz-integration-hessian](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-hessian) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-hessian/badge.svg) | 提供hessian的Mvc适配器 | **生产** |
@@ -72,10 +73,10 @@ https://jfrog.nutz.cn/artifactory/snapshots/org/nutz/
 | [nutz-plugins-secken](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-secken) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-secken/badge.svg) | 完整实现洋葱登陆协议 | **生产** |
 | [nutz-plugins-sfntly](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-sfntly) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-sfntly/badge.svg) | sfntly的fork版本,修正错误并添加可编程调用 | **生产** |
 | [nutz-plugins-sigar](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-sigar) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-sigar/badge.svg) | 深度集成sigar | 试用 |
+| [nutz-plugins-slog](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-slog) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-slog/badge.svg) | 注解式系统日志 | 试用 |
 | [nutz-plugins-sqltpl](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-sqltpl) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-sqltpl/badge.svg) | 支持多种模板引擎 | 试用 |
 | [nutz-plugins-validation](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-validation) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-validation/badge.svg) | 独立,小巧且够用的校验库 | 试用 |
 | [nutz-plugins-views](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-views) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-views/badge.svg) | freemarker/velocity/thymeleaf/pdf 视图插件 | **生产** |
 | [nutz-plugins-webqq](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-webqq) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-webqq/badge.svg) | webqq集成 | 开发中 |
-| [nutz-plugins-websocket](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-websocket) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-websocket/badge.svg) | 待编写 | 开发中 |
-| [nutz-plugins-wxrobot](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-wxrobot) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-wxrobot/badge.svg) | 微信个人账户的机器人 | 开发中 |
+| [nutz-plugins-websocket](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-websocket) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-websocket/badge.svg) | 为websocket提供支持 | **生产** |
 | [nutz-plugins-xmlentitymaker](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-xmlentitymaker) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-xmlentitymaker/badge.svg) | 使用xml定义实体,替换原生的注解方式 | 试用 |

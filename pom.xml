@@ -129,6 +129,7 @@
         <module>nutz-plugins-nop</module>
         <module>nutz-plugins-apidoc</module>
         <module>nutz-plugins-websocket</module>
+        <module>nutz-plugins-slog</module>
 	</modules>
 	<properties>
 		<nutz.version>1.r.59</nutz.version>

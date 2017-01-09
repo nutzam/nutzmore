@@ -32,7 +32,7 @@ var ioc = {
 		redisService : {
 			type : "org.nutz.integration.jedis.RedisService"
 		},
-		pubsubService : {
+		pubSubService : {
 			type : "org.nutz.integration.jedis.pubsub.PubSubService",
 			fields : {
 				jedisPool : {refer:"jedisPool"}
