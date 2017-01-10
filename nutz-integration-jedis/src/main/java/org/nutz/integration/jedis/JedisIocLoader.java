@@ -5,6 +5,6 @@ import org.nutz.ioc.loader.json.JsonLoader;
 public class JedisIocLoader extends JsonLoader {
 
     public JedisIocLoader() {
-        super("org/nutz/plugin/jedis/jedis.js");
+        super("org/nutz/integration/jedis/jedis.js");
     }
 }
