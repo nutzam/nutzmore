@@ -9,12 +9,17 @@ import org.apache.shiro.cache.CacheException;
 import org.apache.shiro.cache.CacheManager;
 import org.apache.shiro.util.Destroyable;
 import org.apache.shiro.util.Initializable;
+import org.nutz.lang.Lang;
 import org.nutz.lang.random.R;
+import org.nutz.log.Log;
+import org.nutz.log.Logs;
 
 import redis.clients.jedis.JedisPool;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class LCacheManager implements CacheManager, Initializable, Destroyable, Runnable {
+    
+    private static final Log log = Logs.get();
 
     public static String PREFIX = "LCache:";
     
@@ -44,7 +49,22 @@ public class LCacheManager implements CacheManager, Initializable, Destroyable, 
     
     @Override
     public void run() {
-        pool.getResource().psubscribe(pubSub, PREFIX + "*");
+        int count = 1;
+        while (!pool.isClosed()) {
+            try {
+                log.debug("psubscribe " + PREFIX + "*");
+                pool.getResource().psubscribe(pubSub, PREFIX + "*");
+            }
+            catch (Exception e) {
+                if (pool.isClosed())
+                    break;
+                log.debug("psubscribe fail, retry after "+count+"seconds", e);
+                Lang.quiteSleep(count * 1000);
+                if (count < 15)
+                    count ++;
+            }
+        }
+        
     }
 
     public void depose() {

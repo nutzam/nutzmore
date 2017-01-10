@@ -3,6 +3,7 @@ package org.nutz.integration.jedis.pubsub;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.nutz.lang.Lang;
 import org.nutz.lang.Streams;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
@@ -24,6 +25,21 @@ public class PubSubService {
         new Thread("jedis.pubsub." + pattern) {
             public void run() {
                 jedisPool.getResource().psubscribe(proxy, pattern);
+                int count = 1;
+                while (!jedisPool.isClosed()) {
+                    try {
+                        log.debug("psubscribe " + pattern);
+                        jedisPool.getResource().psubscribe(proxy, pattern);
+                    }
+                    catch (Exception e) {
+                        if (jedisPool.isClosed())
+                            break;
+                        log.debug("psubscribe fail, retry after "+count+"seconds", e);
+                        Lang.quiteSleep(count * 1000);
+                        if (count < 15)
+                            count ++;
+                    }
+                }
             }
         }.start();
     }
@@ -41,6 +57,11 @@ public class PubSubService {
 
     public void depose() {
         for (PubSubProxy proxy : list)
-            proxy.punsubscribe(proxy.pattern);
+            try {
+                proxy.punsubscribe(proxy.pattern);
+            }
+            catch (Exception e) {
+                log.debug("punsubscribe " + proxy.pattern, e);
+            }
     }
 }
