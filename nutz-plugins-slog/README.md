@@ -43,6 +43,7 @@ public User add(User user) {
 * e 异常对象,仅error时可用
 * req 请求对象,仅mvc请求作用域内可用
 * resp 响应对象,仅mvc请求作用域内可用
+* 方法参数 依赖ecj或jdk8的-paramters编译选项.
 
 扩展与自定义
 =======================================

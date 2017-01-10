@@ -1,20 +1,25 @@
 package org.nutz.plugins.slog.service;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
 import org.apache.shiro.SecurityUtils;
+import org.nutz.Nutz;
 import org.nutz.aop.interceptor.async.Async;
 import org.nutz.dao.Dao;
 import org.nutz.dao.util.Daos;
 import org.nutz.el.El;
 import org.nutz.lang.Lang;
 import org.nutz.lang.segment.CharSegment;
+import org.nutz.lang.util.ClassMetaReader;
 import org.nutz.lang.util.Context;
+import org.nutz.lang.util.MethodParamNamesScaner;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.mvc.Mvcs;
@@ -168,6 +173,32 @@ public class SlogService {
         String _msg = null;
         if (seg.hasKey()) {
             Context ctx = Lang.context();
+            List<String> names = null;
+            if (Nutz.majorVersion() == 1 && Nutz.minorVersion() < 60) {
+                Class<?> klass = re.getClass();
+                if (klass.getName().endsWith("$$NUTZAOP"))
+                    klass = klass.getSuperclass();
+                String key = re.getClass().getName();
+                if (caches.containsKey(key))
+                    names = caches.get(key).get(ClassMetaReader.getKey(method));
+                else {
+                    try {
+                        Map<String, List<String>> tmp = MethodParamNamesScaner.getParamNames(klass);
+                        names = tmp.get(ClassMetaReader.getKey(method));
+                        caches.put(key, tmp);
+                    }
+                    catch (IOException e1) {
+                        log.debug("error when reading param name");
+                    }
+                }
+            } else {
+                names = MethodParamNamesScaner.getParamNames(method);
+            }
+            if (names != null) {
+                for (int i = 0; i < names.size() && i < args.length; i++) {
+                    ctx.set(names.get(i), args[i]);
+                }
+            }
             ctx.set("obj", obj);
             ctx.set("args", args);
             ctx.set("re", re);
@@ -184,4 +215,6 @@ public class SlogService {
         }
         log(t, tag, source, _msg, async);
     }
+    
+    protected static Map<String, Map<String, List<String>>> caches = new HashMap<String, Map<String,List<String>>>();
 }
