@@ -212,3 +212,11 @@ securityManager.cacheManager = $cacheManager
 2. 使用CaptchaFormAuthenticationFilter,登陆就404,但事实上已经登陆 -- 若已经登陆,那么再次登陆时穿透的,如果后端没有入口方法对应,就会404.
 
 3. 使用SimpleAuthenticationFilter, 就XXX -- 还没人遇到过问题,因为登陆操作在入口方法内,由你控制!!
+
+### 在linux上shiro初始化很久
+
+tomcat, 在env.sh添加如下
+
+```
+JAVA_OPTS=-Djava.security.egd=file:/dev/urandom ...其他配置
+```
