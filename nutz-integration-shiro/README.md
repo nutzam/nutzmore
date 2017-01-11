@@ -62,7 +62,7 @@ Nutz集成Shiro的插件
 继承AbstractRealm,实现一个Realm
 --------------------------------------
 
-这部分是跟具体项目的Pojo类紧密结合的,所以没有给出默认实现.
+这部分是跟具体项目的Pojo类紧密结合的,所以没有给出默认实现. 严重建议继承AbstractSimpleAuthorizingRealm
 
 请参考[NutzCN论坛的源码](https://github.com/wendal/nutz-book-project)中的net.wendal.nutzbook.shiro.realm.SimpleAuthorizingRealm类
 
@@ -73,13 +73,15 @@ Nutz集成Shiro的插件
 
 其中的net.wendal.nutzbook.shiro.realm.NutDaoRealm是nutzbook中的NutDaoRealm实现.
 
+```ini
 	[main]
-	nutzdao_realm = net.wendal.nutzbook.shiro.realm.NutDaoRealm
+	nutzdao_realm = net.wendal.nutzbook.shiro.realm.SimpleAuthorizingRealm
 	authc = org.nutz.integration.shiro.SimpleAuthenticationFilter
 	authc.loginUrl  = /user/login
 
 	[urls]
 	/user/logout = logout
+```
 	
 web.xml中添加ShiroFilter配置
 ----------------------------
@@ -148,8 +150,10 @@ ShiroSessionProvider用法
 
 在MainModule中的配置
 
+```java
 	@SessionBy(ShiroSessionProvider.class)
-	
+```
+
 这个功能是可选,也是推荐的,配合ehcache/redis,可以实现session持久化
 
 配置该SessionProvider后, nutz.mvc作用域内的req.getHttpSession均返回shiro的Session.
@@ -159,10 +163,12 @@ UU32SessionIdGenerator 用法
 
 在shiro.ini内添加:
 
+```java
     # use R.UU32()
     sessionIdGenerator = org.nutz.integration.shiro.UU32SessionIdGenerator
     securityManager.sessionManager.sessionDAO.sessionIdGenerator = $sessionIdGenerator
-    
+```
+
 Session缓存与持久化
 ---------------------------
 
@@ -215,7 +221,7 @@ securityManager.cacheManager = $cacheManager
 
 ### 在linux上shiro初始化很久
 
-tomcat, 在env.sh添加如下
+tomcat, 在setenv.sh添加如下
 
 ```
 JAVA_OPTS=-Djava.security.egd=file:/dev/urandom ...其他配置
