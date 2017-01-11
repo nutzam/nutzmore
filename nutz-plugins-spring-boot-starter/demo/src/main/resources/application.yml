@@ -1,0 +1,34 @@
+spring:
+    datasource:
+        name: test
+        url: jdbc:h2:~/.h2db/nutz-starter;MODE=MYSQL
+        #url: jdbc:mysql://127.0.0.1:3306/camunda?useUnicode=true&characterEncoding=utf-8&useSSL=false
+        username: root
+        password: 123456
+        # 使用druid数据源
+        type: com.alibaba.druid.pool.DruidDataSource
+        driver-class-name: org.h2.Driver
+        #driver-class-name: com.mysql.jdbc.Driver
+        filters: stat,wall,log4j
+        connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+        maxActive: 20
+        initialSize: 1
+        maxWait: 60000
+        minIdle: 1
+        timeBetweenEvictionRunsMillis: 60000
+        minEvictableIdleTimeMillis: 300000
+        validationQuery: select 'x'
+        testWhileIdle: true
+        testOnBorrow: false
+        testOnReturn: false
+        poolPreparedStatements: true
+        maxOpenPreparedStatements: 20
+    jackson:
+        date-format: yyyy-MM-dd HH:mm:ss
+        
+nutz:
+    dao:
+        runtime:
+            create: true
+            migration: true
+            basepackage: demo
