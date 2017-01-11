@@ -15,7 +15,6 @@ import org.nutz.mvc.NutConfig;
 import org.nutz.mvc.NutServlet;
 
 @Ignore
-@SuppressWarnings("deprecation")
 public abstract class AbstractMvcTest extends NutIocTestBase {
 
 	protected Servlet servlet;
