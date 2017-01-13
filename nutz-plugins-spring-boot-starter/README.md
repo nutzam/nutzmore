@@ -41,6 +41,13 @@ basepackage 实体类所在包名
 
 ## 使用nutz-dao
     dao操作及自定义sql操作请移步 https://www.nutzam.com
+    
+## properties配置方式
+    数组声明直接用','分割即可,如:
+``` java
+    nutz.dao.sqlmanager.paths=demo,sqls
+```
+
 
 
 
