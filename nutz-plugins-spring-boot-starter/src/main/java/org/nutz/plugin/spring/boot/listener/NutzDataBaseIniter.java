@@ -21,7 +21,7 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnBean({ Dao.class })
 @EnableConfigurationProperties(NutzDaoRuntimeProperties.class)
 @AutoConfigureAfter({ NutzDaoAutoConfiguration.class })
-public class NutzDataBaseaMender {
+public class NutzDataBaseIniter {
 
 	@Autowired
 	private NutzDaoRuntimeProperties nutzDaoRuntimeProperties;
