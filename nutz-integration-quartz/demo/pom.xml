@@ -4,7 +4,7 @@
 	<groupId>net.wendal</groupId>
 	<artifactId>nutz-quartz-demo</artifactId>
 	<packaging>war</packaging>
-	<version>1.r.60-SNAPSHOT</version>
+	<version>1.r.61-SNAPSHOT</version>
 	<name>nutzdemo Maven Webapp</name>
 	<url>http://maven.apache.org</url>
 	<properties>

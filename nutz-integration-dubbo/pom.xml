@@ -1,14 +1,15 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>org.nutz</groupId>
-    <artifactId>nutzmore</artifactId>
-    <version>1.r.60-SNAPSHOT</version>
-  </parent>
-  <artifactId>nutz-integration-dubbo</artifactId>
-  
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.nutz</groupId>
+		<artifactId>nutzmore</artifactId>
+		<version>1.r.61-SNAPSHOT</version>
+	</parent>
+	<artifactId>nutz-integration-dubbo</artifactId>
 
-	<url>http://nutzam.com</url>
+
+	<url>https://nutzam.com</url>
 	<issueManagement>
 		<system>Github Issue</system>
 		<url>http://github.com/nutzam/nutzmore/issues</url>
@@ -47,31 +48,6 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
-	<dependencies>
-	<dependency>
-		<groupId>com.alibaba</groupId>
-		<artifactId>dubbo</artifactId>
-		<version>2.5.3</version>
-		<exclusions>
-			<exclusion>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring</artifactId>
-			</exclusion>
-		</exclusions>
-	</dependency>
-	<dependency>
-		<groupId>junit</groupId>
-		<artifactId>junit</artifactId>
-		<version>4.12</version>
-		<scope>test</scope>
-	</dependency>
-	<dependency>
-		<groupId>log4j</groupId>
-		<artifactId>log4j</artifactId>
-		<version>1.2.17</version>
-		<optional>true</optional>
-	</dependency>
-	</dependencies>
 
 	<build>
 		<plugins>
@@ -103,6 +79,17 @@
 					<additionalparam>-Xdoclint:none</additionalparam>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
@@ -119,4 +106,29 @@
 			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
 		</repository>
 	</distributionManagement>
+	<dependencies>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dubbo</artifactId>
+			<version>2.5.3</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
+			<optional>true</optional>
+		</dependency>
+	</dependencies>
 </project>

@@ -30,7 +30,7 @@ Nutz集成Quartz的插件
 
 	@IocBy(type=ComboIocProvider.class, args={"*js", "ioc/",
 										   "*anno", "net.wendal.nutzbook",
-										   "*org.nutz.integration.quartz.QuartzIocLoader"})
+										   "*quartz"})
 										   
 在Module或Service中引用Scheduler
 -----------------------------------------------

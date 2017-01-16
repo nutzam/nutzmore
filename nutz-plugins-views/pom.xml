@@ -3,12 +3,12 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.r.60-SNAPSHOT</version>
+		<version>1.r.61-SNAPSHOT</version>
 	</parent>
 	<artifactId>nutz-plugins-views</artifactId>
 	<description>Nutz More Views</description>
 
-	<url>http://nutzam.com</url>
+	<url>https://nutzam.com</url>
 	<issueManagement>
 		<system>Github Issue</system>
 		<url>http://github.com/nutzam/nutzmore/issues</url>
@@ -103,14 +103,9 @@
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.codehaus.groovy/groovy -->
 		<dependency>
-			<groupId>org.codehaus.groovy</groupId>
-			<artifactId>groovy</artifactId>
-			<version>2.4.7</version>
-		</dependency>
-		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz-plugins-sfntly</artifactId>
-			<version>1.r.60-SNAPSHOT</version>
+			<version>1.r.61-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 	<build>
