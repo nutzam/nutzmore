@@ -7,6 +7,7 @@ import java.io.Reader;
 import java.nio.charset.Charset;
 
 import org.nutz.json.Json;
+import org.nutz.json.JsonFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
@@ -85,7 +86,7 @@ public class NutzJsonMessageConverter extends AbstractHttpMessageConverter<Objec
 		Charset charset = getCharset(outputMessage.getHeaders());
 		OutputStreamWriter writer = new OutputStreamWriter(outputMessage.getBody(), charset);
 		try {
-			Json.toJson(writer, obj);
+			Json.toJson(writer, obj, JsonFormat.compact());
 		} catch (Exception ex) {
 			throw new HttpMessageNotWritableException("Could not write JSON: " + ex.getMessage(), ex);
 		}
