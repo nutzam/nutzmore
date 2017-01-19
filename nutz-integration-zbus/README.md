@@ -17,7 +17,7 @@ nutz-integration-zbus
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz-integration-zbus</artifactId>
-			<version>1.r.59-SNAPSHOT</version>
+			<version>1.r.60</version>
 		</dependency>
 ```
 
@@ -68,9 +68,9 @@ zbus.rpc.service.consumerCount=2
 
 		// 启动zbus######################
 		// 启动内置zbus服务器,通常不需要!!!
-		if (conf.getBoolean("zbus.server.embed.enable", false)) {
-			ioc.get(MqServer.class);
-		}
+		//if (conf.getBoolean("zbus.server.embed.enable", false)) {
+		//	ioc.get(MqServer.class);
+		//}
 		// 启动RPC服务端,按需选用
 		if (conf.getBoolean("zbus.rpc.service.enable", false)) {
 			RpcProcessor rpcProcessor = ioc.get(RpcProcessor.class);
