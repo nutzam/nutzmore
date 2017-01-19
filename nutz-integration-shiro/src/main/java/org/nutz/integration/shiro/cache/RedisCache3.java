@@ -11,26 +11,24 @@ import java.util.Set;
 
 import org.apache.shiro.cache.Cache;
 import org.apache.shiro.cache.CacheException;
-import org.nutz.lang.Streams;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisCluster;
 
 @SuppressWarnings("unchecked")
-public class RedisCache2<K, V> implements Cache<K, V> {
+public class RedisCache3<K, V> implements Cache<K, V> {
 
     private static final Log log = Logs.get();
     
     private String name;
     private byte[] nameByteArray;
 
-    protected JedisPool _pool() {
-        return LCacheManager.me.jedisPool;
+    protected JedisCluster jedisc() {
+        return LCacheManager.me.jedisCluster;
     }
 
-    public RedisCache2<K, V> setName(String name) {
+    public RedisCache3<K, V> setName(String name) {
         this.name = name;
         this.nameByteArray = (name+":").getBytes();
         return this;
@@ -40,44 +38,26 @@ public class RedisCache2<K, V> implements Cache<K, V> {
     public V get(K key) throws CacheException {
         if (RedisCache.DEBUG)
             log.debugf("GET name=%s key=%s", name, key);
-        Jedis jedis = null;
-        try {
-            jedis = _pool().getResource();
-            byte[] buf = jedis.get(genKey(key));
-            if (buf == null)
-                return null;
-            return (V) toObject(buf);
-        } finally {
-            Streams.safeClose(jedis);
-        }
+        byte[] buf = jedisc().get(genKey(key));
+        if (buf == null)
+            return null;
+        return (V) toObject(buf);
     }
 
     @Override
     public V put(K key, V value) throws CacheException {
         if (RedisCache.DEBUG)
             log.debugf("SET name=%s key=%s", name, key);
-        Jedis jedis = null;
-        try {
-            jedis = _pool().getResource();
-            jedis.set(genKey(key), toByteArray(value));
-            return null;
-        } finally {
-            Streams.safeClose(jedis);
-        }
+        jedisc().set(genKey(key), toByteArray(value));
+        return null;
     }
 
     @Override
     public V remove(K key) throws CacheException {
         if (RedisCache.DEBUG)
             log.debugf("DEL name=%s key=%s", name, key);
-        Jedis jedis = null;
-        try {
-            jedis = _pool().getResource();
-            jedis.del(genKey(key));
-            return null;
-        } finally {
-            Streams.safeClose(jedis);
-        }
+        jedisc().del(genKey(key));
+        return null;
     }
 
     @Override

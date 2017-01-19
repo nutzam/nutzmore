@@ -14,6 +14,7 @@ import org.nutz.lang.random.R;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPool;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
@@ -28,7 +29,8 @@ public class LCacheManager implements CacheManager, Initializable, Destroyable, 
     protected CacheManager level1;
     protected CacheManager level2;
 
-    protected JedisPool pool;
+    protected JedisPool jedisPool;
+    protected JedisCluster jedisCluster;
     protected CachePubSub pubSub = new CachePubSub();
     protected Map<String, LCache> caches = new HashMap<String, LCache>();
 
@@ -43,20 +45,23 @@ public class LCacheManager implements CacheManager, Initializable, Destroyable, 
     }
 
     public void setupJedisPool(JedisPool pool) {
-        this.pool = pool;
+        this.jedisPool = pool;
         new Thread(this, "lcache.pubsub").start();
     }
     
-    @Override
+    public void setupJedisCluster(JedisCluster jedisCluster) {
+        this.jedisCluster = jedisCluster;
+    }
+    
     public void run() {
         int count = 1;
-        while (!pool.isClosed()) {
+        while (!jedisPool.isClosed()) {
             try {
                 log.debug("psubscribe " + PREFIX + "*");
-                pool.getResource().psubscribe(pubSub, PREFIX + "*");
+                jedisPool.getResource().psubscribe(pubSub, PREFIX + "*");
             }
             catch (Exception e) {
-                if (pool.isClosed())
+                if (jedisPool.isClosed())
                     break;
                 log.debug("psubscribe fail, retry after "+count+"seconds", e);
                 Lang.quiteSleep(count * 1000);

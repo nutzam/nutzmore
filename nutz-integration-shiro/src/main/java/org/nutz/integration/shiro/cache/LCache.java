@@ -92,7 +92,7 @@ public class LCache<K, V> implements Cache<K, V> {
 
     public void fire(String key) {
         if (pool == null)
-            pool = LCacheManager.me.pool;
+            pool = LCacheManager.me.jedisPool;
         if (pool != null) {
             Jedis jedis = null;
             try {

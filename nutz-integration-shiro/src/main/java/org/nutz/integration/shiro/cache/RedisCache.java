@@ -29,7 +29,7 @@ public class RedisCache<K, V> implements Cache<K, V> {
     private byte[] nameByteArray;
 
     protected JedisPool _pool() {
-        return LCacheManager.me.pool;
+        return LCacheManager.me.jedisPool;
     }
 
     public RedisCache<K, V> setName(String name) {
