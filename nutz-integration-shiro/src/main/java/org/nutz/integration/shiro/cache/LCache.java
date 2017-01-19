@@ -11,8 +11,8 @@ import org.apache.shiro.cache.CacheException;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.MultiKeyCommands;
+import redis.clients.jedis.MultiKeyJedisClusterCommands;
 
 public class LCache<K, V> implements Cache<K, V> {
     
@@ -21,8 +21,6 @@ public class LCache<K, V> implements Cache<K, V> {
     protected List<Cache<K, V>> list = new ArrayList<Cache<K, V>>();
 
     protected String name;
-
-    protected JedisPool pool;
 
     public LCache(String name) {
         this.name = name;
@@ -91,22 +89,18 @@ public class LCache<K, V> implements Cache<K, V> {
     }
 
     public void fire(String key) {
-        if (pool == null)
-            pool = LCacheManager.me.jedisPool;
-        if (pool != null) {
-            Jedis jedis = null;
-            try {
-                jedis = pool.getResource();
-                String channel = (LCacheManager.PREFIX + name);
-                String msg = LCacheManager.me().id + ":" + key;
-                log.debugf("fire channel=%s msg=%s", channel, msg);
-                jedis.publish(channel, msg);
-            }
-            catch (Exception e) {}
-            finally {
-                if (jedis != null)
-                    jedis.close();
-            }
+        Object jedis = null;
+        try {
+            jedis = LCacheManager.me.jedis();
+            String channel = (LCacheManager.PREFIX + name);
+            String msg = LCacheManager.me().id + ":" + key;
+            log.debugf("fire channel=%s msg=%s", channel, msg);
+            if (jedis instanceof MultiKeyCommands)
+                ((MultiKeyCommands)jedis).publish(channel, msg);
+            else if (jedis instanceof MultiKeyJedisClusterCommands)
+                ((MultiKeyJedisClusterCommands)jedis).publish(channel, msg);
+        } finally {
+            LCacheManager.safeClose(jedis);
         }
     }
 }

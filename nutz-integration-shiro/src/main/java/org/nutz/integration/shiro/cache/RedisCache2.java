@@ -1,146 +1,105 @@
 package org.nutz.integration.shiro.cache;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
-import org.apache.shiro.cache.Cache;
 import org.apache.shiro.cache.CacheException;
-import org.nutz.lang.Streams;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.BinaryJedisClusterCommands;
+import redis.clients.jedis.BinaryJedisCommands;
 
 @SuppressWarnings("unchecked")
-public class RedisCache2<K, V> implements Cache<K, V> {
+public class RedisCache2<K, V> extends RedisCache<K, V> {
 
     private static final Log log = Logs.get();
-    
-    private String name;
-    private byte[] nameByteArray;
 
-    protected JedisPool _pool() {
-        return LCacheManager.me.jedisPool;
-    }
+    private String name;
 
     public RedisCache2<K, V> setName(String name) {
         this.name = name;
-        this.nameByteArray = (name+":").getBytes();
         return this;
     }
 
     @Override
     public V get(K key) throws CacheException {
-        if (RedisCache.DEBUG)
-            log.debugf("GET name=%s key=%s", name, key);
-        Jedis jedis = null;
+        if (DEBUG)
+            log.debugf("GET key=%s:%s", name, key);
+        Object jedis = null;
+        byte[] buf = null;
         try {
-            jedis = _pool().getResource();
-            byte[] buf = jedis.get(genKey(key));
-            if (buf == null)
-                return null;
-            return (V) toObject(buf);
+            jedis = LCacheManager.me.jedis();
+            if (jedis instanceof BinaryJedisCommands)
+                buf = ((BinaryJedisCommands)jedis).get(genKey(key));
+            else if (jedis instanceof BinaryJedisClusterCommands)
+                buf = ((BinaryJedisClusterCommands)jedis).get(genKey(key));
+            return (V) LCacheManager.toObject(buf);
         } finally {
-            Streams.safeClose(jedis);
+            LCacheManager.safeClose(jedis);
         }
     }
 
     @Override
     public V put(K key, V value) throws CacheException {
-        if (RedisCache.DEBUG)
-            log.debugf("SET name=%s key=%s", name, key);
-        Jedis jedis = null;
+        if (DEBUG)
+            log.debugf("SET key=%s:%s", name, key);
+        Object jedis = null;
         try {
-            jedis = _pool().getResource();
-            jedis.set(genKey(key), toByteArray(value));
+            jedis = LCacheManager.me.jedis();
+            if (jedis instanceof BinaryJedisCommands)
+                ((BinaryJedisCommands)jedis).set(genKey(key), LCacheManager.toByteArray(value));
+            else if (jedis instanceof BinaryJedisClusterCommands)
+                ((BinaryJedisClusterCommands)jedis).set(genKey(key), LCacheManager.toByteArray(value));
             return null;
         } finally {
-            Streams.safeClose(jedis);
+            LCacheManager.safeClose(jedis);
         }
     }
 
     @Override
     public V remove(K key) throws CacheException {
-        if (RedisCache.DEBUG)
-            log.debugf("DEL name=%s key=%s", name, key);
-        Jedis jedis = null;
+        if (DEBUG)
+            log.debugf("DEL key=%s:%s", name, key);
+        Object jedis = null;
         try {
-            jedis = _pool().getResource();
-            jedis.del(genKey(key));
+            jedis = LCacheManager.me.jedis();
+            if (jedis instanceof BinaryJedisCommands)
+                ((BinaryJedisCommands)jedis).del(genKey(key));
+            else if (jedis instanceof BinaryJedisClusterCommands)
+                ((BinaryJedisClusterCommands)jedis).del(genKey(key));
             return null;
         } finally {
-            Streams.safeClose(jedis);
+            LCacheManager.safeClose(jedis);
         }
     }
 
-    @Override
     public void clear() throws CacheException {
-        if (RedisCache.DEBUG)
+        if (DEBUG)
             log.debugf("CLR name=%s", name);
     }
 
     public int size() {
-        if (RedisCache.DEBUG)
-            log.debugf("SIZE name=%s", name);
+        if (DEBUG)
+            log.debugf("SIZ name=%s", name);
         return 0;
     }
 
     public Set<K> keys() {
-        if (RedisCache.DEBUG)
+        if (DEBUG)
             log.debugf("KEYS name=%s", name);
         return Collections.EMPTY_SET;
     }
 
-    @Override
     public Collection<V> values() {
-        if (RedisCache.DEBUG)
+        if (DEBUG)
             log.debugf("VLES name=%s", name);
         return Collections.EMPTY_LIST;
     }
-
+    
     protected byte[] genKey(Object key) {
-        try {
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            out.write(nameByteArray);
-            out.write(key.toString().getBytes());
-            return out.toByteArray();
-        }
-        catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return (name + ":" + key).getBytes();
     }
 
-    public static final byte[] toByteArray(Object obj) {
-        try {
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(out);
-            oos.writeObject(obj);
-            oos.flush();
-            oos.close();
-            return out.toByteArray();
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public static final Object toObject(byte[] buf) {
-        try {
-            ByteArrayInputStream ins = new ByteArrayInputStream(buf);
-            ObjectInputStream ois = new ObjectInputStream(ins);
-            return ois.readObject();
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
 }

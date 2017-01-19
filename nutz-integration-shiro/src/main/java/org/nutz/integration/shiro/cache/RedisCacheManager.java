@@ -10,9 +10,17 @@ import org.apache.shiro.cache.CacheManager;
  *
  */
 public class RedisCacheManager implements CacheManager {
+    
+    protected String mode;
 
     public <K, V> Cache<K, V> getCache(String name) throws CacheException {
-        return (Cache<K, V>) new RedisCache<K, V>().setName(name);
+        if (mode == null || mode.equals("hset"))
+            return (Cache<K, V>) new RedisCache<K, V>().setName(name);
+        return (Cache<K, V>) new RedisCache2<K, V>().setName(name);
+    }
+    
+    public void setMode(String mode) {
+        this.mode = mode;
     }
 
 }
