@@ -23,6 +23,25 @@ var ioc = {
 				depose : "destroy" // 关闭应用时必须关掉呢
 			}
 		},
+		jedisClusterNodes : {
+			type : "java.util.HashSet",
+			args : [
+				[{
+					type : "redis.clients.jedis.HostAndPort",
+					args : [
+						{java : "$conf.get('redis.host', 'localhost')"},
+						{java : "$conf.getInt('redis.port', 6379)"}
+					]
+				}]
+			]
+		},
+		jedisCluster : {
+			type : "redis.clients.jedis.JedisCluster",
+			args : [
+				{refer:"jedisClusterNodes"},
+				{refer:"jedisPoolConfig"}
+			]
+		},
 		redis : {
 			type : "org.nutz.integration.jedis.RedisInterceptor",
 			fields : {
