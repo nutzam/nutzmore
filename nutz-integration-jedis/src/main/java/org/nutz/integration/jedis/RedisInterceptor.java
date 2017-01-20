@@ -5,11 +5,10 @@ import org.nutz.aop.MethodInterceptor;
 import org.nutz.lang.Streams;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
 
 public class RedisInterceptor implements MethodInterceptor {
 
-	protected JedisPool jedisPool;
+	protected JedisProxy jedisProxy;
 	
 	protected static ThreadLocal<Jedis> TL = new ThreadLocal<Jedis>();
 	
@@ -20,7 +19,7 @@ public class RedisInterceptor implements MethodInterceptor {
 		}
 		Jedis jedis = null;
 		try {
-		    jedis = jedisPool.getResource();
+		    jedis = jedisProxy.jedis();
 			TL.set(jedis);
 			chain.doChain();
 		} finally{
@@ -28,8 +27,13 @@ public class RedisInterceptor implements MethodInterceptor {
 			TL.remove();
 		}
 	}
+	
 
 	public static Jedis jedis() {
 		return TL.get();
 	}
+	
+	public void setJedisProxy(JedisProxy jedisProxy) {
+        this.jedisProxy = jedisProxy;
+    }
 }

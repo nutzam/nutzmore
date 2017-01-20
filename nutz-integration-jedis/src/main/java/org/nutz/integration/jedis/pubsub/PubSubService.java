@@ -1,54 +1,57 @@
 package org.nutz.integration.jedis.pubsub;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import org.nutz.lang.Lang;
+import org.nutz.integration.jedis.JedisProxy;
 import org.nutz.lang.Streams;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
 
 public class PubSubService {
     
     private static final Log log = Logs.get();
     
-    protected JedisPool jedisPool;
+    protected JedisProxy jedisProxy;
     
-    List<PubSubProxy> list = new ArrayList<>();
+    protected List<PubSubProxy> list = new ArrayList<PubSubProxy>();
+    protected Set<String> patterns = new HashSet<String>();
 
     public void reg(final String pattern, PubSub pb) {
         final PubSubProxy proxy = new PubSubProxy(pattern, pb);
         list.add(proxy);
-        new Thread("jedis.pubsub." + pattern) {
+        Thread t = new Thread("jedis.pubsub." + pattern) {
             public void run() {
-                jedisPool.getResource().psubscribe(proxy, pattern);
-                int count = 1;
-                while (!jedisPool.isClosed()) {
+                while (patterns.contains(pattern)) {
                     try {
-                        log.debug("psubscribe " + pattern);
-                        jedisPool.getResource().psubscribe(proxy, pattern);
-                    }
-                    catch (Exception e) {
-                        if (jedisPool.isClosed())
+                        jedisProxy.jedis().psubscribe(proxy, pattern);
+                    } catch (Exception e) {
+                        if (!patterns.contains(pattern))
                             break;
-                        log.debug("psubscribe fail, retry after "+count+"seconds", e);
-                        Lang.quiteSleep(count * 1000);
-                        if (count < 15)
-                            count ++;
+                        log.warn("something wrong!! sleep 3s", e);
+                        try {
+                            Thread.sleep(3000);
+                        }
+                        catch (Throwable _e) {
+                            break;
+                        }
                     }
                 }
             }
-        }.start();
+        };
+        t.start();
+        patterns.add(pattern);
     }
     
     public void fire(String channel, String message) {
         log.debugf("publish channel=%s msg=%s", channel, message);
         Jedis jedis = null;
         try {
-            jedis = jedisPool.getResource();
+            jedis = jedisProxy.jedis();
             jedis.publish(channel, message);
         } finally {
             Streams.safeClose(jedis);
@@ -58,10 +61,15 @@ public class PubSubService {
     public void depose() {
         for (PubSubProxy proxy : list)
             try {
+                patterns.remove(proxy.pattern);
                 proxy.punsubscribe(proxy.pattern);
             }
             catch (Exception e) {
                 log.debug("punsubscribe " + proxy.pattern, e);
             }
+    }
+    
+    public void setJedisProxy(JedisProxy jedisProxy) {
+        this.jedisProxy = jedisProxy;
     }
 }

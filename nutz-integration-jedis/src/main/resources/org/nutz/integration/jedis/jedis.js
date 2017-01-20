@@ -45,7 +45,7 @@ var ioc = {
 		redis : {
 			type : "org.nutz.integration.jedis.RedisInterceptor",
 			fields : {
-				jedisPool : {refer:"jedisPool"}
+				jedisProxy : {refer:"jedisProxy"}
 			}
 		},
 		redisService : {
@@ -54,10 +54,21 @@ var ioc = {
 		pubSubService : {
 			type : "org.nutz.integration.jedis.pubsub.PubSubService",
 			fields : {
-				jedisPool : {refer:"jedisPool"}
+				jedisProxy : {refer:"jedisProxy"}
 			},
 			events : {
 				depose : "depose"
 			}
+		},
+		jedisProxy : {
+			type : "org.nutz.integration.jedis.JedisProxy",
+			fields : {
+				ioc : {refer:"$ioc"},
+				conf : {refer:"conf"}
+			}
+		},
+		jedisClusterWrapper : {
+			type : "org.nutz.integration.jedis.JedisClusterWrapper",
+			args : [{refer:"jedisCluster"}]
 		}
 };
