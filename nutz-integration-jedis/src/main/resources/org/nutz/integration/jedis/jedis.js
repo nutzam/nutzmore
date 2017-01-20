@@ -40,7 +40,10 @@ var ioc = {
 			args : [
 				{refer:"jedisClusterNodes"},
 				{refer:"jedisPoolConfig"}
-			]
+			],
+			events : {
+				depose : "close"
+			}
 		},
 		redis : {
 			type : "org.nutz.integration.jedis.RedisInterceptor",
