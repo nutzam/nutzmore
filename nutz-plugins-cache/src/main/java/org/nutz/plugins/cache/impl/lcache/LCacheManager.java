@@ -9,10 +9,12 @@ import org.apache.shiro.util.Destroyable;
 import org.apache.shiro.util.Initializable;
 import org.nutz.integration.jedis.JedisProxy;
 import org.nutz.lang.Lang;
+import org.nutz.lang.Mirror;
 import org.nutz.lang.random.R;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 
+import redis.clients.jedis.Client;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.util.Pool;
@@ -33,6 +35,7 @@ public class LCacheManager implements CacheManager, Runnable, Destroyable, Initi
     protected CachePubSub pubSub = new CachePubSub();
     protected Map<String, LCache> caches = new HashMap<String, LCache>();
     protected boolean running = true;
+    protected Thread t;
 
     protected static LCacheManager me;
 
@@ -49,18 +52,17 @@ public class LCacheManager implements CacheManager, Runnable, Destroyable, Initi
     }
 
     public void setupJedisPool(Pool<Jedis> pool) {
-        this.jedisProxy = new JedisProxy(pool);
-        new Thread(this, "lcache.pubsub").start();
+        setJedisProxy(new JedisProxy(pool));
     }
 
     public void setupJedisCluster(JedisCluster jedisCluster) {
-        this.jedisProxy = new JedisProxy(jedisCluster);
-        new Thread(this, "lcache.pubsub").start();
+        setJedisProxy(new JedisProxy(jedisCluster));
     }
 
     public void setJedisProxy(JedisProxy jedisProxy) {
         this.jedisProxy = jedisProxy;
-        new Thread(this, "lcache.pubsub").start();
+        t = new Thread(this, "lcache.pubsub");
+        t.start();
     }
 
     public void run() {
@@ -82,7 +84,13 @@ public class LCacheManager implements CacheManager, Runnable, Destroyable, Initi
     public void destroy() throws Exception {
         running = false;
         if (pubSub != null)
-            pubSub.unsubscribe(PREFIX + "*");
+            pubSub.unsubscribe();
+        try {
+            Client client = (Client) Mirror.me(pubSub).getValue(pubSub, "client");
+            if (client != null)
+                client.close();
+        } catch (Throwable e) {
+        }
         if (level2 != null && level2 instanceof Destroyable)
             ((Destroyable) level2).destroy();
         if (level1 != null && level1 instanceof Destroyable)

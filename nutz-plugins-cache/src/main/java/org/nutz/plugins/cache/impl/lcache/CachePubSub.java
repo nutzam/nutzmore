@@ -17,7 +17,7 @@ public class CachePubSub extends JedisPubSub {
             return;
         String cacheName = channel.substring(LCacheManager.PREFIX.length());
         LCache cache = LCacheManager.me.caches.get(cacheName);
-        if (cache != null)
+        if (cache != null && cache.list.size() > 1)
             ((Cache) cache.list.get(0)).remove(message.substring(LCacheManager.me.id.length() + 1));
     }
 }
