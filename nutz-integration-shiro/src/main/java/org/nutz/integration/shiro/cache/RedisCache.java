@@ -1,6 +1,6 @@
 package org.nutz.integration.shiro.cache;
 
-public class RedisCache {
+@Deprecated
+public class RedisCache<K, V> extends org.nutz.plugins.cache.impl.redis.RedisCache<K, V> {
 
-    public static boolean DEBUG = false;
 }

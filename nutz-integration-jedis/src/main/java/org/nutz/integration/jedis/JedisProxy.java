@@ -4,6 +4,7 @@ import org.nutz.ioc.Ioc;
 import org.nutz.ioc.impl.PropertiesProxy;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.util.Pool;
 
 /**
@@ -22,6 +23,20 @@ public class JedisProxy {
     // 将JedisCluster封装为Jedis,就可以实现自动切换了
     protected JedisClusterWrapper jedisClusterWrapper;
     
+    public JedisProxy() {}
+
+    public JedisProxy(Pool<Jedis> jedisPool) {
+        this.jedisPool = jedisPool;
+        this.conf = new PropertiesProxy();
+    }
+
+    public JedisProxy(JedisCluster jedisCluster) {
+        super();
+        this.jedisClusterWrapper = new JedisClusterWrapper(jedisCluster);
+        this.conf = new PropertiesProxy().set("redis.mode", "cluster");
+    }
+
+
     /**
      * 若redis.mode=cluster,则返回集群对象,否则返回JedisPool(或Pool<Jedis>)的Jedis实例
      * @return
@@ -30,6 +45,10 @@ public class JedisProxy {
         if (!"cluster".equals(conf.get("redis.mode")))
             return getJedisPool().getResource();
         return getJedisClusterWrapper();
+    }
+    
+    public Jedis getResource() {
+        return jedis();
     }
     
     @SuppressWarnings("unchecked")
@@ -43,5 +62,21 @@ public class JedisProxy {
         if (jedisClusterWrapper == null)
             jedisClusterWrapper = ioc.get(JedisClusterWrapper.class);
         return jedisClusterWrapper;
+    }
+    
+    public void setJedisPool(Pool<Jedis> jedisPool) {
+        this.jedisPool = jedisPool;
+    }
+    
+    public void setJedisClusterWrapper(JedisClusterWrapper jedisClusterWrapper) {
+        this.jedisClusterWrapper = jedisClusterWrapper;
+    }
+    
+    public void setConf(PropertiesProxy conf) {
+        this.conf = conf;
+    }
+    
+    public void setIoc(Ioc ioc) {
+        this.ioc = ioc;
     }
 }
