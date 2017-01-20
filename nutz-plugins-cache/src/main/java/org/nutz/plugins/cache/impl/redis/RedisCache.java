@@ -42,6 +42,8 @@ public class RedisCache<K, V> implements Cache<K, V> {
         try {
             jedis = jedis();
             buf = jedis.hget(nameByteArray, genKey(key));
+            if (buf == null)
+                return null;
             return (V) serializer.toObject(buf);
         } finally {
             Streams.safeClose(jedis);
