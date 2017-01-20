@@ -85,6 +85,11 @@
 			<version>2.10.2.2.21</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.nutz</groupId>
+			<artifactId>nutz-plugins-cache</artifactId>
+			<version>1.r.61-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
