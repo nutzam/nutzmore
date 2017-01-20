@@ -131,6 +131,7 @@
         <module>nutz-plugins-websocket</module>
         <module>nutz-plugins-slog</module>
         <module>nutz-plugins-spring-boot-starter</module>
+        <module>nutz-plugins-cache</module>
 	</modules>
 	<properties>
 		<nutz.version>1.r.59</nutz.version>
