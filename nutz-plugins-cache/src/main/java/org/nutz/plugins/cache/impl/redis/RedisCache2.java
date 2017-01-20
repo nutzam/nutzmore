@@ -71,6 +71,9 @@ public class RedisCache2<K, V> extends RedisCache<K, V> {
     public void clear() {
         if (DEBUG)
             log.debugf("CLR name=%s", name);
+        for (K key : keys()) {
+            remove(key);
+        }
     }
 
     public int size() {
@@ -82,7 +85,13 @@ public class RedisCache2<K, V> extends RedisCache<K, V> {
     public Set<K> keys() {
         if (DEBUG)
             log.debugf("KEYS name=%s", name);
-        return Collections.EMPTY_SET;
+        Jedis jedis = null;
+        try {
+            jedis = LCacheManager.me().jedis();
+            return (Set<K>) jedis.keys(name + ":*");
+        } finally {
+            Streams.safeClose(jedis);
+        }
     }
 
     public Collection<V> values() {
