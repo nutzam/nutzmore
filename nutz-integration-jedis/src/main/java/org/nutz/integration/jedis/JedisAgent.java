@@ -8,7 +8,7 @@ import redis.clients.jedis.JedisCluster;
 import redis.clients.util.Pool;
 
 /**
- * 
+ * 封装JedisPool和JedisCluster,抹平两者的差异. 通过redis.mode配置, 当等于cluster时,使用JedisCluster, 否则是使用JedisPool
  * @author wendal
  *
  */
@@ -38,7 +38,7 @@ public class JedisAgent {
 
 
     /**
-     * 若redis.mode=cluster,则返回集群对象,否则返回JedisPool(或Pool<Jedis>)的Jedis实例
+     * 若redis.mode=cluster,则返回JedisClusterWrapper对象,否则返回JedisPool(或Pool<Jedis>)的Jedis实例
      * @return
      */
     public Jedis jedis() {
