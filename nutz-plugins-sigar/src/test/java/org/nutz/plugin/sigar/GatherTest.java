@@ -4,11 +4,11 @@ import org.hyperic.sigar.Sigar;
 import org.junit.Before;
 import org.junit.Test;
 import org.nutz.json.Json;
-import org.nutz.plugin.sigar.gather.CPUGather;
-import org.nutz.plugin.sigar.gather.DISKGather;
-import org.nutz.plugin.sigar.gather.MemoryGather;
-import org.nutz.plugin.sigar.gather.NetInterfaceGather;
-import org.nutz.plugin.sigar.gather.OSGather;
+import org.nutz.plugins.sigar.gather.CPUGather;
+import org.nutz.plugins.sigar.gather.DISKGather;
+import org.nutz.plugins.sigar.gather.MemoryGather;
+import org.nutz.plugins.sigar.gather.NetInterfaceGather;
+import org.nutz.plugins.sigar.gather.OSGather;
 
 public class GatherTest {
 

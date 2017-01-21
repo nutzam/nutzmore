@@ -7,7 +7,7 @@
  *
  * @description // TODO write some description of this class
  *
- * @time 2016年8月30日 上午12:00:43
+ * @time 2016年8月30日 上午12:00:54
  *
  */
-package org.nutz.plugin.sigar.integration;
+package org.nutz.plugins.sigar.integration.servlet;

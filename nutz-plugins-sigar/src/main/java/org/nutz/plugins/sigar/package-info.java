@@ -10,4 +10,4 @@
  * @time 2016年8月29日 下午11:59:17
  *
  */
-package org.nutz.plugin.sigar;
+package org.nutz.plugins.sigar;

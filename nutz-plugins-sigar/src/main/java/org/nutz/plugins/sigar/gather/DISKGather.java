@@ -1,4 +1,4 @@
-package org.nutz.plugin.sigar.gather;
+package org.nutz.plugins.sigar.gather;
 
 import java.util.ArrayList;
 import java.util.List;

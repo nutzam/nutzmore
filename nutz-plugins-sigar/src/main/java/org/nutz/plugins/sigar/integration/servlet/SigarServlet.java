@@ -1,4 +1,4 @@
-package org.nutz.plugin.sigar.integration.servlet;
+package org.nutz.plugins.sigar.integration.servlet;
 
 import java.io.IOException;
 
@@ -11,12 +11,12 @@ import org.hyperic.sigar.Sigar;
 import org.nutz.json.Json;
 import org.nutz.lang.Strings;
 import org.nutz.lang.util.NutMap;
-import org.nutz.plugin.sigar.gather.CPUGather;
-import org.nutz.plugin.sigar.gather.DISKGather;
-import org.nutz.plugin.sigar.gather.Gathers;
-import org.nutz.plugin.sigar.gather.MemoryGather;
-import org.nutz.plugin.sigar.gather.NetInterfaceGather;
-import org.nutz.plugin.sigar.gather.OSGather;
+import org.nutz.plugins.sigar.gather.CPUGather;
+import org.nutz.plugins.sigar.gather.DISKGather;
+import org.nutz.plugins.sigar.gather.Gathers;
+import org.nutz.plugins.sigar.gather.MemoryGather;
+import org.nutz.plugins.sigar.gather.NetInterfaceGather;
+import org.nutz.plugins.sigar.gather.OSGather;
 
 public class SigarServlet extends HttpServlet {
 

@@ -1,4 +1,4 @@
-package org.nutz.plugin.sigar;
+package org.nutz.plugins.sigar;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
