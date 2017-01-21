@@ -8,7 +8,7 @@ import redis.clients.jedis.Jedis;
 
 public class RedisInterceptor implements MethodInterceptor {
 
-	protected JedisProxy jedisProxy;
+	protected JedisAgent jedisAgent;
 	
 	protected static ThreadLocal<Jedis> TL = new ThreadLocal<Jedis>();
 	
@@ -19,7 +19,7 @@ public class RedisInterceptor implements MethodInterceptor {
 		}
 		Jedis jedis = null;
 		try {
-		    jedis = jedisProxy.jedis();
+		    jedis = jedisAgent.jedis();
 			TL.set(jedis);
 			chain.doChain();
 		} finally{
@@ -33,7 +33,7 @@ public class RedisInterceptor implements MethodInterceptor {
 		return TL.get();
 	}
 	
-	public void setJedisProxy(JedisProxy jedisProxy) {
-        this.jedisProxy = jedisProxy;
+	public void setJedisAgent(JedisAgent jedisAgent) {
+        this.jedisAgent = jedisAgent;
     }
 }

@@ -7,7 +7,7 @@ import org.apache.shiro.cache.Cache;
 import org.apache.shiro.cache.CacheManager;
 import org.apache.shiro.util.Destroyable;
 import org.apache.shiro.util.Initializable;
-import org.nutz.integration.jedis.JedisProxy;
+import org.nutz.integration.jedis.JedisAgent;
 import org.nutz.lang.Lang;
 import org.nutz.lang.Mirror;
 import org.nutz.lang.random.R;
@@ -31,7 +31,7 @@ public class LCacheManager implements CacheManager, Runnable, Destroyable, Initi
     protected CacheManager level1;
     protected CacheManager level2;
 
-    protected JedisProxy jedisProxy;
+    protected JedisAgent jedisAgent;
     protected CachePubSub pubSub = new CachePubSub();
     protected Map<String, LCache> caches = new HashMap<String, LCache>();
     protected boolean running = true;
@@ -48,19 +48,19 @@ public class LCacheManager implements CacheManager, Runnable, Destroyable, Initi
     }
 
     public Jedis jedis() {
-        return jedisProxy.jedis();
+        return jedisAgent.jedis();
     }
 
     public void setupJedisPool(Pool<Jedis> pool) {
-        setJedisProxy(new JedisProxy(pool));
+        setJedisAgent(new JedisAgent(pool));
     }
 
     public void setupJedisCluster(JedisCluster jedisCluster) {
-        setJedisProxy(new JedisProxy(jedisCluster));
+        setJedisAgent(new JedisAgent(jedisCluster));
     }
 
-    public void setJedisProxy(JedisProxy jedisProxy) {
-        this.jedisProxy = jedisProxy;
+    public void setJedisAgent(JedisAgent jedisAgent) {
+        this.jedisAgent = jedisAgent;
         t = new Thread(this, "lcache.pubsub");
         t.start();
     }

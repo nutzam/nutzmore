@@ -12,7 +12,7 @@ import redis.clients.util.Pool;
  * @author wendal
  *
  */
-public class JedisProxy {
+public class JedisAgent {
 
     // 通过注入得到
     protected Ioc ioc;
@@ -23,14 +23,14 @@ public class JedisProxy {
     // 将JedisCluster封装为Jedis,就可以实现自动切换了
     protected JedisClusterWrapper jedisClusterWrapper;
     
-    public JedisProxy() {}
+    public JedisAgent() {}
 
-    public JedisProxy(Pool<Jedis> jedisPool) {
+    public JedisAgent(Pool<Jedis> jedisPool) {
         this.jedisPool = jedisPool;
         this.conf = new PropertiesProxy();
     }
 
-    public JedisProxy(JedisCluster jedisCluster) {
+    public JedisAgent(JedisCluster jedisCluster) {
         super();
         this.jedisClusterWrapper = new JedisClusterWrapper(jedisCluster);
         this.conf = new PropertiesProxy().set("redis.mode", "cluster");

@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.nutz.integration.jedis.JedisProxy;
+import org.nutz.integration.jedis.JedisAgent;
 import org.nutz.lang.Streams;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
@@ -16,7 +16,7 @@ public class PubSubService {
     
     private static final Log log = Logs.get();
     
-    protected JedisProxy jedisProxy;
+    protected JedisAgent jedisAgent;
     
     protected List<PubSubProxy> list = new ArrayList<PubSubProxy>();
     protected Set<String> patterns = new HashSet<String>();
@@ -28,7 +28,7 @@ public class PubSubService {
             public void run() {
                 while (patterns.contains(pattern)) {
                     try {
-                        jedisProxy.jedis().psubscribe(proxy, pattern);
+                        jedisAgent.jedis().psubscribe(proxy, pattern);
                     } catch (Exception e) {
                         if (!patterns.contains(pattern))
                             break;
@@ -51,7 +51,7 @@ public class PubSubService {
         log.debugf("publish channel=%s msg=%s", channel, message);
         Jedis jedis = null;
         try {
-            jedis = jedisProxy.jedis();
+            jedis = jedisAgent.jedis();
             jedis.publish(channel, message);
         } finally {
             Streams.safeClose(jedis);
@@ -69,7 +69,7 @@ public class PubSubService {
             }
     }
     
-    public void setJedisProxy(JedisProxy jedisProxy) {
-        this.jedisProxy = jedisProxy;
+    public void setJedisAgent(JedisAgent jedisAgent) {
+        this.jedisAgent = jedisAgent;
     }
 }
