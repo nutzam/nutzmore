@@ -13,7 +13,7 @@ public class RedisCacheManager implements CacheManager {
     protected String mode;
 
     public <K, V> Cache<K, V> getCache(String name) {
-        if (mode == null || !mode.equals("hset"))
+        if (mode == null || !mode.equals("kv"))
             return (Cache<K, V>) new RedisCache<K, V>().setName(name);
         return (Cache<K, V>) new RedisCache2<K, V>().setName(name);
     }
