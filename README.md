@@ -13,7 +13,18 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>填nutz插件名</artifactId>
-			<version>1.r.60</version>
+			<version>1.r.60.r2</version>
+		</dependency>
+```
+
+或者直接上聚合jar, 包含大部分常用插件和第三方集成
+
+```xml
+
+		<dependency>
+			<groupId>org.nutz</groupId>
+			<artifactId>nutzmore-aggregate</artifactId>
+			<version>1.r.60.r2</version>
 		</dependency>
 ```
 
