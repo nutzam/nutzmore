@@ -13,7 +13,7 @@ public interface CacheSerializer {
     Object fromObject(Object obj);
     
     /**
-     * 要求: 如果对象无法还原,返回null, 如果缓存的是null, 那么返回CacheResult.NULL
+     * 要求: 如果对象无法还原,返回null
      */
     Object toObject(Object obj);
 

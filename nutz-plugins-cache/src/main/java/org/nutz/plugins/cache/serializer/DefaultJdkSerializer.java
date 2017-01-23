@@ -7,15 +7,13 @@ import java.io.ObjectOutputStream;
 
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
-import org.nutz.plugins.cache.CacheResult;
+import org.nutz.plugins.cache.CacheSerializer;
 
-public class DefaultJdkSerializer extends AbstractCacheSerializer {
+public class DefaultJdkSerializer implements CacheSerializer {
     
     private static final Log log = Logs.get();
 
     public Object fromObject(Object obj) {
-        if (obj == null)
-            return NULL_OBJ;
         try {
             ByteArrayOutputStream bao = new ByteArrayOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(bao);
@@ -31,8 +29,6 @@ public class DefaultJdkSerializer extends AbstractCacheSerializer {
     public Object toObject(Object obj) {
         if (obj == null)
             return null;
-        if (isNULL_OBJ(obj))
-            return CacheResult.NULL;
         try {
             ObjectInputStream ins = new ObjectInputStream(new ByteArrayInputStream((byte[])obj));
             Object tmp = ins.readUnshared();

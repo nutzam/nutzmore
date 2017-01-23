@@ -25,7 +25,7 @@ public class RedisCache2<K, V> extends RedisCache<K, V> {
 
     @Override
     public V get(K key) {
-        if (DEBUG)
+        if (debug)
             log.debugf("GET key=%s:%s", name, key);
         Jedis jedis = null;
         byte[] buf = null;
@@ -42,7 +42,7 @@ public class RedisCache2<K, V> extends RedisCache<K, V> {
 
     @Override
     public V put(K key, V value) {
-        if (DEBUG)
+        if (debug)
             log.debugf("SET key=%s:%s", name, key);
         Jedis jedis = null;
         try {
@@ -56,7 +56,7 @@ public class RedisCache2<K, V> extends RedisCache<K, V> {
 
     @Override
     public V remove(K key) {
-        if (DEBUG)
+        if (debug)
             log.debugf("DEL key=%s:%s", name, key);
         Jedis jedis = null;
         try {
@@ -69,7 +69,7 @@ public class RedisCache2<K, V> extends RedisCache<K, V> {
     }
 
     public void clear() {
-        if (DEBUG)
+        if (debug)
             log.debugf("CLR name=%s", name);
         for (K key : keys()) {
             remove(key);
@@ -77,13 +77,13 @@ public class RedisCache2<K, V> extends RedisCache<K, V> {
     }
 
     public int size() {
-        if (DEBUG)
+        if (debug)
             log.debugf("SIZ name=%s", name);
         return keys().size();
     }
 
     public Set<K> keys() {
-        if (DEBUG)
+        if (debug)
             log.debugf("KEYS name=%s", name);
         Jedis jedis = null;
         try {
@@ -95,7 +95,7 @@ public class RedisCache2<K, V> extends RedisCache<K, V> {
     }
 
     public Collection<V> values() {
-        if (DEBUG)
+        if (debug)
             log.debugf("VLES name=%s", name);
         return Collections.EMPTY_LIST;
     }
