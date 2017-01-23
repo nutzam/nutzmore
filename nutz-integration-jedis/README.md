@@ -106,6 +106,17 @@ public void addTopic2(Topic topic) {
 }
 ```
 
+注入JedisPool和JedisCluster依然是可用的,虽然不推荐.
+
+```java
+// 下面两种对象,不要声明在同一个类哦
+
+// 普通模式
+@Inject JedisPool jedisPool;
+
+// 集群模式
+@Inject JedisCluster jedisCluster;
+```
 
 配置方式
 -----------------------------
@@ -132,3 +143,11 @@ redis.port=6379
 redis.timeout=2000
 redis.mode=cluster
 ```
+
+如何定制
+--------------------------------------
+
+与其他基于ioc的插件一样,同名的bean,优先使用在*您自己*的ioc js定义的类,
+所以,jedisPool,jedisCluster等定义均可覆盖哦
+
+请参考插件源码中的jedis.js
