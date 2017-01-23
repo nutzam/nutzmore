@@ -20,12 +20,15 @@ public class RedisCache<K, V> implements Cache<K, V> {
 
     private static final Log log = Logs.get();
 
+    @Deprecated
     public static boolean DEBUG = false;
 
     private String name;
     private byte[] nameByteArray;
     
     protected CacheSerializer serializer = new DefaultJdkSerializer();
+    
+    protected boolean debug;
 
     public RedisCache<K, V> setName(String name) {
         this.name = name;
@@ -35,7 +38,7 @@ public class RedisCache<K, V> implements Cache<K, V> {
 
     @Override
     public V get(K key) {
-        if (DEBUG)
+        if (debug)
             log.debugf("HGET name=%s key=%s", name, key);
         Jedis jedis = null;
         byte[] buf = null;
@@ -52,7 +55,7 @@ public class RedisCache<K, V> implements Cache<K, V> {
 
     @Override
     public V put(K key, V value) {
-        if (DEBUG)
+        if (debug)
             log.debugf("HSET name=%s key=%s", name, key);
         Jedis jedis = null;
         try {
@@ -66,7 +69,7 @@ public class RedisCache<K, V> implements Cache<K, V> {
 
     @Override
     public V remove(K key) {
-        if (DEBUG)
+        if (debug)
             log.debugf("HDEL name=%s key=%s", name, key);
         Jedis jedis = null;
         try {
@@ -80,7 +83,7 @@ public class RedisCache<K, V> implements Cache<K, V> {
 
     @Override
     public void clear() {
-        if (DEBUG)
+        if (debug)
             log.debugf("DEL name=%s", name);
         Jedis jedis = null;
         try {
@@ -92,7 +95,7 @@ public class RedisCache<K, V> implements Cache<K, V> {
     }
 
     public int size() {
-        if (DEBUG)
+        if (debug)
             log.debugf("HLEN name=%s", name);
         Jedis jedis = null;
         try {
@@ -104,7 +107,7 @@ public class RedisCache<K, V> implements Cache<K, V> {
     }
 
     public Set<K> keys() {
-        if (DEBUG)
+        if (debug)
             log.debugf("HKEYS name=%s", name);
         Jedis jedis = null;
         try {
@@ -117,7 +120,7 @@ public class RedisCache<K, V> implements Cache<K, V> {
 
     @Override
     public Collection<V> values() {
-        if (DEBUG)
+        if (debug)
             log.debugf("HVALES name=%s", name);
         Jedis jedis = null;
         try {
@@ -138,5 +141,14 @@ public class RedisCache<K, V> implements Cache<K, V> {
     
     protected Jedis jedis() {
         return LCacheManager.me().jedis();
+    }
+    
+    public RedisCache<K, V> setDebug(boolean debug) {
+        this.debug = debug;
+        return this;
+    }
+    
+    public boolean isDebug() {
+        return debug;
     }
 }

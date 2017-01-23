@@ -11,11 +11,13 @@ import org.apache.shiro.cache.CacheManager;
 public class RedisCacheManager implements CacheManager {
     
     protected String mode;
+    
+    protected boolean debug;
 
     public <K, V> Cache<K, V> getCache(String name) {
         if (mode == null || !mode.equals("kv"))
-            return (Cache<K, V>) new RedisCache<K, V>().setName(name);
-        return (Cache<K, V>) new RedisCache2<K, V>().setName(name);
+            return (Cache<K, V>) new RedisCache<K, V>().setName(name).setDebug(debug);;
+        return (Cache<K, V>) new RedisCache2<K, V>().setName(name).setDebug(debug);
     }
     
     public void setMode(String mode) {
@@ -26,4 +28,7 @@ public class RedisCacheManager implements CacheManager {
 
     public void depose() {}
 
+    public void setDebug(boolean debug) {
+        this.debug = debug;
+    }
 }

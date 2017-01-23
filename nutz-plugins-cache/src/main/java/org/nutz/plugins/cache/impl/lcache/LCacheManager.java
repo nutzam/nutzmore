@@ -67,6 +67,10 @@ public class LCacheManager implements CacheManager, Runnable, Destroyable, Initi
 
     public void run() {
         int count = 1;
+        while (running && (jedisAgent == null || !jedisAgent.isReady())) {
+            Lang.quiteSleep(100);
+        }
+        log.info("JedisAgent is Ready ...");
         while (running) {
             try {
                 log.debug("psubscribe " + PREFIX + "*");

@@ -2,6 +2,7 @@ package org.nutz.integration.jedis;
 
 import org.nutz.ioc.Ioc;
 import org.nutz.ioc.impl.PropertiesProxy;
+import org.nutz.mvc.Mvcs;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
@@ -42,6 +43,8 @@ public class JedisAgent {
      * @return
      */
     public Jedis jedis() {
+        if (jedisPool == null && jedisClusterWrapper == null && ioc == null && conf == null)
+            ioc();//触发ioc获取
         if (!"cluster".equals(conf.get("redis.mode")))
             return getJedisPool().getResource();
         return getJedisClusterWrapper();
@@ -54,13 +57,13 @@ public class JedisAgent {
     @SuppressWarnings("unchecked")
     public Pool<Jedis> getJedisPool() {
         if (jedisPool == null)
-            jedisPool = ioc.get(Pool.class, "jedisPool");
+            jedisPool = ioc().get(Pool.class, "jedisPool");
         return jedisPool;
     }
     
     public JedisClusterWrapper getJedisClusterWrapper() {
         if (jedisClusterWrapper == null)
-            jedisClusterWrapper = ioc.get(JedisClusterWrapper.class);
+            jedisClusterWrapper = ioc().get(JedisClusterWrapper.class);
         return jedisClusterWrapper;
     }
     
@@ -78,5 +81,22 @@ public class JedisAgent {
     
     public void setIoc(Ioc ioc) {
         this.ioc = ioc;
+    }
+    
+    public synchronized Ioc ioc() {
+        if (ioc == null) {
+            ioc = Mvcs.ctx().getDefaultIoc();
+            if (conf == null)
+                conf = ioc.get(PropertiesProxy.class, "conf");
+        }
+        return ioc;
+    }
+    
+    public boolean isReady() {
+        if (jedisPool != null || jedisClusterWrapper != null)
+            return true;
+        if (ioc != null)
+            return true;
+        return Mvcs.ctx().getDefaultIoc() != null;
     }
 }
