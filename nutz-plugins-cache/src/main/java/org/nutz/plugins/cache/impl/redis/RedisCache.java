@@ -151,4 +151,9 @@ public class RedisCache<K, V> implements Cache<K, V> {
     public boolean isDebug() {
         return debug;
     }
+    
+    public RedisCache<K, V> setSerializer(CacheSerializer serializer) {
+        this.serializer = serializer;
+        return this;
+    }
 }
