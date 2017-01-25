@@ -49,7 +49,7 @@ Nutz的Dao层插件
 			}
 		},
 		cacheExecutor : {
-			type : "org.nutz.plugins.cache.dao.CachedNutDaoExecutor",
+			type : "org.nutz.plugins.cache.dao.DaoCacheInterceptor",
 			fields : {
 				cacheProvider : {refer:"cacheProvider"},
 				cachedTableNames : ["tb_user", "tb_user_profile"], // 需要缓存的表
