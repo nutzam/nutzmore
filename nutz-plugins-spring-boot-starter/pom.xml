@@ -63,22 +63,6 @@
 					<useIncrementalCompilation>false</useIncrementalCompilation>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<forkMode>once</forkMode>
-					<argLine>-Dfile.encoding=UTF-8</argLine>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<configuration>
-					<additionalparam>-Xdoclint:none</additionalparam>
-				</configuration>
-			</plugin>
-
 		</plugins>
 	</build>
 

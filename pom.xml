@@ -57,7 +57,7 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz</artifactId>
-			<version>1.r.61-SNAPSHOT</version>
+			<version>1.r.60</version>
 		</dependency>
 	</dependencies>
 
@@ -132,11 +132,7 @@
         <module>nutz-plugins-slog</module>
         <module>nutz-plugins-spring-boot-starter</module>
         <module>nutz-plugins-cache</module>
-        <module>nutzmore-aggregate</module>
 	</modules>
-	<properties>
-		<nutz.version>1.r.59</nutz.version>
-	</properties>
 	<distributionManagement>
 		<snapshotRepository>
 			<id>nutzcn-snapshots</id>

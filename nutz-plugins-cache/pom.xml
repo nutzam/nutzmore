@@ -31,4 +31,83 @@
   		<scope>provided</scope>
   	</dependency>
   </dependencies>
+  
+	<url>https://nutzam.com</url>
+	<issueManagement>
+		<system>Github Issue</system>
+		<url>http://github.com/nutzam/nutzmore/issues</url>
+	</issueManagement>
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
+	</licenses>
+	<developers>
+		<developer>
+			<id>zozoh</id>
+			<name>zozoh</name>
+			<email>zozohtnt@gmail.com</email>
+			<url>http://weibo.com/zozoh</url>
+		</developer>
+		<developer>
+			<id>wendal</id>
+			<name>Wendal Chen</name>
+			<email>wendal1985@gmail.com</email>
+			<url>http://wendal.net/</url>
+		</developer>
+		<developer>
+			<id>juqkai</id>
+			<name>Juqkai</name>
+			<email>Bird.Wyatt@gmail.com</email>
+			<url>https://github.com/juqkai</url>
+		</developer>
+	</developers>
+	<scm>
+		<connection>scm:git:git://github.com/nutzam/nutzmore.git</connection>
+		<developerConnection>scm:git:git://github.com/nutzam/nutzmore.git</developerConnection>
+		<url>git://github.com/nutzam/nutzmore.git</url>
+	</scm>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.1</version>
+				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
+					<compilerArgs>
+						<arg>-parameters</arg>
+					</compilerArgs>
+					<useIncrementalCompilation>false</useIncrementalCompilation>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<additionalparam>-Xdoclint:none</additionalparam>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>nutzcn-snapshots</id>
+			<name>NutzCN snapshot repository</name>
+			<url>https://jfrog.nutz.cn/artifactory/snapshots</url>
+		</snapshotRepository>
+
+		<repository>
+			<id>sonatype-release-staging</id>
+			<name>Sonatype Nexus release repository</name>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+		</repository>
+	</distributionManagement>
 </project>
