@@ -132,6 +132,8 @@
         <module>nutz-plugins-slog</module>
         <module>nutz-plugins-spring-boot-starter</module>
         <module>nutz-plugins-cache</module>
+        <module>nutz-plugins-hotplug</module>
+        <module>nutz-plugins-daomapping</module>
 	</modules>
 	<distributionManagement>
 		<snapshotRepository>

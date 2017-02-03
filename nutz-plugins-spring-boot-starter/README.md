@@ -1,6 +1,10 @@
 # nutz-plugins-spring-boot-starter
 ## maven
 
+简介(可用性:开发中)
+==================================
+
+待编写
 ``` xml
 <dependency>
 	<groupId>org.nutz</groupId>
@@ -47,7 +51,6 @@ basepackage 实体类所在包名
 ``` java
     nutz.dao.sqlmanager.paths=demo,sqls
 ```
-
 
 
 
