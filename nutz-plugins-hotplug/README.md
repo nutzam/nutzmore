@@ -176,7 +176,7 @@ src
 			- yvr_index.css
 ```
 
-hotplug.XXX.json文件的歌声要求
+hotplug.XXX.json文件的格式要求
 ===================================================
 
 如它名字所示,它是一个json文件,是HotPlugConfig序列化后的结果
