@@ -9,28 +9,9 @@ import java.util.Set;
 
 import org.nutz.ioc.aop.Aop;
 
+import redis.clients.jedis.*;
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
-import redis.clients.jedis.BinaryJedisPubSub;
-import redis.clients.jedis.BitOP;
-import redis.clients.jedis.BitPosParams;
-import redis.clients.jedis.Client;
-import redis.clients.jedis.DebugParams;
-import redis.clients.jedis.GeoCoordinate;
-import redis.clients.jedis.GeoRadiusResponse;
-import redis.clients.jedis.GeoUnit;
-import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster.Reset;
-import redis.clients.jedis.JedisMonitor;
-import redis.clients.jedis.JedisPubSub;
-import redis.clients.jedis.Pipeline;
-import redis.clients.jedis.PipelineBlock;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
-import redis.clients.jedis.SortingParams;
-import redis.clients.jedis.Transaction;
-import redis.clients.jedis.TransactionBlock;
-import redis.clients.jedis.Tuple;
-import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.geo.GeoRadiusParam;
 import redis.clients.jedis.params.sortedset.ZAddParams;
 import redis.clients.jedis.params.sortedset.ZIncrByParams;
@@ -39,27 +20,65 @@ import redis.clients.util.Slowlog;
 
 /**
  * 代理jedis的全部方法. <b>调用pipeline()方法的时候,调用者也需要在@Aop("reids")的作用域内.</>
- * @author wendal
  *
+ * @author wendal
  */
 @SuppressWarnings("deprecation")
 public class RedisService extends Jedis {
 
+    /**
+     * Set the string value as value of the key. The string can't be longer than 1073741824 bytes (1GB).
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @param value
+     * @return Status code reply
+     */
     @Aop("redis")
     public String set(String key, String value) {
         return jedis().set(key, value);
     }
 
+    /**
+     * Set the string value as value of the key. The string can't be longer than 1073741824 bytes (1
+     * GB).
+     *
+     * @param key
+     * @param value
+     * @param nxxx  NX|XX, NX -- Only set the key if it does not already exist. XX -- Only set the key
+     *              if it already exist.
+     * @param expx  EX|PX, expire time units: EX = seconds; PX = milliseconds
+     * @param time  expire time in the units of <code>expx</code>
+     * @return Status code reply
+     */
     @Aop("redis")
     public String set(String key, String value, String nxxx, String expx, long time) {
         return jedis().set(key, value, nxxx, expx, time);
     }
 
+    /**
+     * Get the value of the specified key. If the key does not exist null is returned. If the value
+     * stored at key is not a string an error is returned because GET can only handle string values.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @return Bulk reply
+     */
     @Aop("redis")
     public String get(String key) {
         return jedis().get(key);
     }
 
+    /**
+     * Test if the specified key exists. The command returns the number of keys existed Time
+     * complexity: O(N)
+     *
+     * @param keys
+     * @return Integer reply, specifically: an integer greater than 0 if one or more keys were removed
+     * 0 if none of the specified key existed
+     */
     @Aop("redis")
     public Long exists(String... keys) {
         return jedis().exists(keys);
@@ -70,26 +89,108 @@ public class RedisService extends Jedis {
         return jedis().ping();
     }
 
+    /**
+     * Set the string value as value of the key. The string can't be longer than 1073741824 bytes (1GB).
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @param value
+     * @return Status code reply
+     */
     @Aop("redis")
     public String set(byte[] key, byte[] value) {
         return jedis().set(key, value);
     }
 
+    /**
+     * Indicates whether some other object is "equal to" this one.
+     * <p>
+     * The {@code equals} method implements an equivalence relation
+     * on non-null object references:
+     * <ul>
+     * <li>It is <i>reflexive</i>: for any non-null reference value
+     * {@code x}, {@code x.equals(x)} should return
+     * {@code true}.
+     * <li>It is <i>symmetric</i>: for any non-null reference values
+     * {@code x} and {@code y}, {@code x.equals(y)}
+     * should return {@code true} if and only if
+     * {@code y.equals(x)} returns {@code true}.
+     * <li>It is <i>transitive</i>: for any non-null reference values
+     * {@code x}, {@code y}, and {@code z}, if
+     * {@code x.equals(y)} returns {@code true} and
+     * {@code y.equals(z)} returns {@code true}, then
+     * {@code x.equals(z)} should return {@code true}.
+     * <li>It is <i>consistent</i>: for any non-null reference values
+     * {@code x} and {@code y}, multiple invocations of
+     * {@code x.equals(y)} consistently return {@code true}
+     * or consistently return {@code false}, provided no
+     * information used in {@code equals} comparisons on the
+     * objects is modified.
+     * <li>For any non-null reference value {@code x},
+     * {@code x.equals(null)} should return {@code false}.
+     * </ul>
+     * <p>
+     * The {@code equals} method for class {@code Object} implements
+     * the most discriminating possible equivalence relation on objects;
+     * that is, for any non-null reference values {@code x} and
+     * {@code y}, this method returns {@code true} if and only
+     * if {@code x} and {@code y} refer to the same object
+     * ({@code x == y} has the value {@code true}).
+     * <p>
+     * Note that it is generally necessary to override the {@code hashCode}
+     * method whenever this method is overridden, so as to maintain the
+     * general contract for the {@code hashCode} method, which states
+     * that equal objects must have equal hash codes.
+     *
+     * @param obj the reference object with which to compare.
+     * @return {@code true} if this object is the same as the obj
+     * argument; {@code false} otherwise.
+     * @see #hashCode()
+     * @see java.util.HashMap
+     */
     @Aop("redis")
     public boolean equals(Object obj) {
         return jedis().equals(obj);
     }
 
+    /**
+     * Test if the specified key exists. The command returns "1" if the key exists, otherwise "0" is
+     * returned. Note that even keys set with an empty string as value will return "1". Time
+     * complexity: O(1)
+     *
+     * @param key
+     * @return Boolean reply, true if the key exists, otherwise false
+     */
     @Aop("redis")
     public Boolean exists(String key) {
         return jedis().exists(key);
     }
 
+    /**
+     * Set the string value as value of the key. The string can't be longer than 1073741824 bytes (1GB).
+     *
+     * @param key
+     * @param value
+     * @param nxxx  NX|XX, NX -- Only set the key if it does not already exist. XX -- Only set the key
+     *              if it already exist.
+     * @param expx  EX|PX, expire time units: EX = seconds; PX = milliseconds
+     * @param time  expire time in the units of <code>expx</code>
+     * @return Status code reply
+     */
     @Aop("redis")
     public String set(byte[] key, byte[] value, byte[] nxxx, byte[] expx, long time) {
         return jedis().set(key, value, nxxx, expx, time);
     }
 
+    /**
+     * Remove the specified keys. If a given key does not exist no operation is performed for this
+     * key. The command returns the number of keys removed. Time complexity: O(1)
+     *
+     * @param keys
+     * @return Integer reply, specifically: an integer greater than 0 if one or more keys were removed
+     * 0 if none of the specified key existed
+     */
     @Aop("redis")
     public Long del(String... keys) {
         return jedis().del(keys);
@@ -100,36 +201,112 @@ public class RedisService extends Jedis {
         return jedis().del(key);
     }
 
+    /**
+     * Get the value of the specified key. If the key does not exist the special value 'nil' is
+     * returned. If the value stored at key is not a string an error is returned because GET can only
+     * handle string values.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @return Bulk reply
+     */
     @Aop("redis")
     public byte[] get(byte[] key) {
         return jedis().get(key);
     }
 
+    /**
+     * Return the type of the value stored at key in form of a string. The type can be one of "none",
+     * "string", "list", "set". "none" is returned if the key does not exist. Time complexity: O(1)
+     *
+     * @param key
+     * @return Status code reply, specifically: "none" if the key does not exist "string" if the key
+     * contains a String value "list" if the key contains a List value "set" if the key
+     * contains a Set value "zset" if the key contains a Sorted Set value "hash" if the key
+     * contains a Hash value
+     */
     @Aop("redis")
     public String type(String key) {
         return jedis().type(key);
     }
 
+    /**
+     * Ask the server to silently close the connection.
+     */
     @Aop("redis")
     public String quit() {
         return jedis().quit();
     }
 
+    /**
+     * Test if the specified keys exist. The command returns the number of keys existed Time
+     * complexity: O(N)
+     *
+     * @param keys
+     * @return Integer reply, specifically: an integer greater than 0 if one or more keys existed 0 if
+     * none of the specified keys existed
+     */
     @Aop("redis")
     public Long exists(byte[]... keys) {
         return jedis().exists(keys);
     }
 
+    /**
+     * Returns all the keys matching the glob-style pattern as space separated strings. For example if
+     * you have in the database the keys "foo" and "foobar" the command "KEYS foo*" will return
+     * "foo foobar".
+     * <p>
+     * Note that while the time complexity for this operation is O(n) the constant times are pretty
+     * low. For example Redis running on an entry level laptop can scan a 1 million keys database in
+     * 40 milliseconds. <b>Still it's better to consider this one of the slow commands that may ruin
+     * the DB performance if not used with care.</b>
+     * <p>
+     * In other words this command is intended only for debugging and special operations like creating
+     * a script to change the DB schema. Don't use it in your normal code. Use Redis Sets in order to
+     * group together a subset of objects.
+     * <p>
+     * Glob style patterns examples:
+     * <ul>
+     * <li>h?llo will match hello hallo hhllo
+     * <li>h*llo will match hllo heeeello
+     * <li>h[ae]llo will match hello and hallo, but not hillo
+     * </ul>
+     * <p>
+     * Use \ to escape special chars if you want to match them verbatim.
+     * <p>
+     * Time complexity: O(n) (with n being the number of keys in the DB, and assuming keys and pattern
+     * of limited length)
+     *
+     * @param pattern
+     * @return Multi bulk reply
+     */
     @Aop("redis")
     public Set<String> keys(String pattern) {
         return jedis().keys(pattern);
     }
 
+    /**
+     * Test if the specified key exists. The command returns "1" if the key exists, otherwise "0" is
+     * returned. Note that even keys set with an empty string as value will return "1". Time
+     * complexity: O(1)
+     *
+     * @param key
+     * @return Boolean reply, true if the key exists, otherwise false
+     */
     @Aop("redis")
     public Boolean exists(byte[] key) {
         return jedis().exists(key);
     }
 
+    /**
+     * Remove the specified keys. If a given key does not exist no operation is performed for this
+     * key. The command returns the number of keys removed. Time complexity: O(1)
+     *
+     * @param keys
+     * @return Integer reply, specifically: an integer greater than 0 if one or more keys were removed
+     * 0 if none of the specified key existed
+     */
     @Aop("redis")
     public Long del(byte[]... keys) {
         return jedis().del(keys);
@@ -140,472 +317,1771 @@ public class RedisService extends Jedis {
         return jedis().del(key);
     }
 
+    /**
+     * Return the type of the value stored at key in form of a string. The type can be one of "none",
+     * "string", "list", "set". "none" is returned if the key does not exist. Time complexity: O(1)
+     *
+     * @param key
+     * @return Status code reply, specifically: "none" if the key does not exist "string" if the key
+     * contains a String value "list" if the key contains a List value "set" if the key
+     * contains a Set value "zset" if the key contains a Sorted Set value "hash" if the key
+     * contains a Hash value
+     */
     @Aop("redis")
     public String type(byte[] key) {
         return jedis().type(key);
     }
 
+    /**
+     * Return a randomly selected key from the currently selected DB.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @return Singe line reply, specifically the randomly selected key or an empty string is the
+     * database is empty
+     */
     @Aop("redis")
     public String randomKey() {
         return jedis().randomKey();
     }
 
+    /**
+     * Atomically renames the key oldkey to newkey. If the source and destination name are the same an
+     * error is returned. If newkey already exists it is overwritten.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param oldkey
+     * @param newkey
+     * @return Status code repy
+     */
     @Aop("redis")
     public String rename(String oldkey, String newkey) {
         return jedis().rename(oldkey, newkey);
     }
 
+    /**
+     * Delete all the keys of the currently selected DB. This command never fails.
+     *
+     * @return Status code reply
+     */
     @Aop("redis")
     public String flushDB() {
         return jedis().flushDB();
     }
 
+    /**
+     * Rename oldkey into newkey but fails if the destination key newkey already exists.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param oldkey
+     * @param newkey
+     * @return Integer reply, specifically: 1 if the key was renamed 0 if the target key already exist
+     */
     @Aop("redis")
     public Long renamenx(String oldkey, String newkey) {
         return jedis().renamenx(oldkey, newkey);
     }
 
+    /**
+     * Returns all the keys matching the glob-style pattern as space separated strings. For example if
+     * you have in the database the keys "foo" and "foobar" the command "KEYS foo*" will return
+     * "foo foobar".
+     * <p>
+     * Note that while the time complexity for this operation is O(n) the constant times are pretty
+     * low. For example Redis running on an entry level laptop can scan a 1 million keys database in
+     * 40 milliseconds. <b>Still it's better to consider this one of the slow commands that may ruin
+     * the DB performance if not used with care.</b>
+     * <p>
+     * In other words this command is intended only for debugging and special operations like creating
+     * a script to change the DB schema. Don't use it in your normal code. Use Redis Sets in order to
+     * group together a subset of objects.
+     * <p>
+     * Glob style patterns examples:
+     * <ul>
+     * <li>h?llo will match hello hallo hhllo
+     * <li>h*llo will match hllo heeeello
+     * <li>h[ae]llo will match hello and hallo, but not hillo
+     * </ul>
+     * <p>
+     * Use \ to escape special chars if you want to match them verbatim.
+     * <p>
+     * Time complexity: O(n) (with n being the number of keys in the DB, and assuming keys and pattern of limited length)
+     *
+     * @param pattern
+     * @return Multi bulk reply
+     */
     @Aop("redis")
     public Set<byte[]> keys(byte[] pattern) {
         return jedis().keys(pattern);
     }
 
+    /**
+     * Set a timeout on the specified key. After the timeout the key will be automatically deleted by
+     * the server. A key with an associated timeout is said to be volatile in Redis terminology.
+     * <p>
+     * Voltile keys are stored on disk like the other keys, the timeout is persistent too like all the
+     * other aspects of the dataset. Saving a dataset containing expires and stopping the server does
+     * not stop the flow of time as Redis stores on disk the time when the key will no longer be
+     * available as Unix time, and not the remaining seconds.
+     * <p>
+     * Since Redis 2.1.3 you can update the value of the timeout of a key already having an expire
+     * set. It is also possible to undo the expire at all turning the key into a normal key using the
+     * {@link #persist(String) PERSIST} command.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @param seconds
+     * @return Integer reply, specifically: 1: the timeout was set. 0: the timeout was not set since
+     * the key already has an associated timeout (this may happen only in Redis versions &lt;
+     * 2.1.3, Redis &gt;= 2.1.3 will happily update the timeout), or the key does not exist.
+     * @see <a href="http://code.google.com/p/redis/wiki/ExpireCommand">ExpireCommand</a>
+     */
     @Aop("redis")
     public Long expire(String key, int seconds) {
         return jedis().expire(key, seconds);
     }
 
+    /**
+     * Return a randomly selected key from the currently selected DB.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @return Singe line reply, specifically the randomly selected key or an empty string is the
+     * database is empty
+     */
     @Aop("redis")
     public byte[] randomBinaryKey() {
         return jedis().randomBinaryKey();
     }
 
-
+    /**
+     * Atomically renames the key oldkey to newkey. If the source and destination name are the same an
+     * error is returned. If newkey already exists it is overwritten.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param oldkey
+     * @param newkey
+     * @return Status code repy
+     */
     @Aop("redis")
     public String rename(byte[] oldkey, byte[] newkey) {
         return jedis().rename(oldkey, newkey);
     }
 
+    /**
+     * EXPIREAT works exctly like {@link #expire(String, int) EXPIRE} but instead to get the number of
+     * seconds representing the Time To Live of the key as a second argument (that is a relative way
+     * of specifing the TTL), it takes an absolute one in the form of a UNIX timestamp (Number of
+     * seconds elapsed since 1 Gen 1970).
+     * <p>
+     * EXPIREAT was introduced in order to implement the Append Only File persistence mode so that
+     * EXPIRE commands are automatically translated into EXPIREAT commands for the append only file.
+     * Of course EXPIREAT can also used by programmers that need a way to simply specify that a given
+     * key should expire at a given time in the future.
+     * <p>
+     * Since Redis 2.1.3 you can update the value of the timeout of a key already having an expire
+     * set. It is also possible to undo the expire at all turning the key into a normal key using the
+     * {@link #persist(String) PERSIST} command.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @param unixTime
+     * @return Integer reply, specifically: 1: the timeout was set. 0: the timeout was not set since
+     * the key already has an associated timeout (this may happen only in Redis versions &lt;
+     * 2.1.3, Redis &gt;= 2.1.3 will happily update the timeout), or the key does not exist.
+     * @see <a href="http://code.google.com/p/redis/wiki/ExpireCommand">ExpireCommand</a>
+     */
     @Aop("redis")
     public Long expireAt(String key, long unixTime) {
         return jedis().expireAt(key, unixTime);
     }
 
+    /**
+     * Rename oldkey into newkey but fails if the destination key newkey already exists.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param oldkey
+     * @param newkey
+     * @return Integer reply, specifically: 1 if the key was renamed 0 if the target key already exist
+     */
     @Aop("redis")
     public Long renamenx(byte[] oldkey, byte[] newkey) {
         return jedis().renamenx(oldkey, newkey);
     }
 
+    /**
+     * Return the number of keys in the currently selected database.
+     *
+     * @return Integer reply
+     */
     @Aop("redis")
     public Long dbSize() {
         return jedis().dbSize();
     }
 
+    /**
+     * Set a timeout on the specified key. After the timeout the key will be automatically deleted by
+     * the server. A key with an associated timeout is said to be volatile in Redis terminology.
+     * <p>
+     * Voltile keys are stored on disk like the other keys, the timeout is persistent too like all the
+     * other aspects of the dataset. Saving a dataset containing expires and stopping the server does
+     * not stop the flow of time as Redis stores on disk the time when the key will no longer be
+     * available as Unix time, and not the remaining seconds.
+     * <p>
+     * Since Redis 2.1.3 you can update the value of the timeout of a key already having an expire
+     * set. It is also possible to undo the expire at all turning the key into a normal key using the
+     * {@link #persist(byte[]) PERSIST} command.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @param seconds
+     * @return Integer reply, specifically: 1: the timeout was set. 0: the timeout was not set since
+     * the key already has an associated timeout (this may happen only in Redis versions &lt;
+     * 2.1.3, Redis &gt;= 2.1.3 will happily update the timeout), or the key does not exist.
+     * @see <a href="http://code.google.com/p/redis/wiki/ExpireCommand">ExpireCommand</a>
+     */
     @Aop("redis")
     public Long expire(byte[] key, int seconds) {
         return jedis().expire(key, seconds);
     }
 
+    /**
+     * The TTL command returns the remaining time to live in seconds of a key that has an
+     * {@link #expire(String, int) EXPIRE} set. This introspection capability allows a Redis client to
+     * check how many seconds a given key will continue to be part of the dataset.
+     *
+     * @param key
+     * @return Integer reply, returns the remaining time to live in seconds of a key that has an
+     * EXPIRE. In Redis 2.6 or older, if the Key does not exists or does not have an
+     * associated expire, -1 is returned. In Redis 2.8 or newer, if the Key does not have an
+     * associated expire, -1 is returned or if the Key does not exists, -2 is returned.
+     */
     @Aop("redis")
     public Long ttl(String key) {
         return jedis().ttl(key);
     }
 
+    /**
+     * Move the specified key from the currently selected DB to the specified destination DB. Note
+     * that this command returns 1 only if the key was successfully moved, and 0 if the target key was
+     * already there or if the source key was not found at all, so it is possible to use MOVE as a
+     * locking primitive.
+     *
+     * @param key
+     * @param dbIndex
+     * @return Integer reply, specifically: 1 if the key was moved 0 if the key was not moved because
+     * already present on the target DB or was not found in the current DB.
+     */
     @Aop("redis")
     public Long move(String key, int dbIndex) {
         return jedis().move(key, dbIndex);
     }
 
+    /**
+     * GETSET is an atomic set this value and return the old value command. Set key to the string
+     * value and return the old value stored at key. The string can't be longer than 1073741824 bytes (1 GB).
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @param value
+     * @return Bulk reply
+     */
     @Aop("redis")
     public String getSet(String key, String value) {
         return jedis().getSet(key, value);
     }
 
+    /**
+     * Get the values of all the specified keys. If one or more keys dont exist or is not of type
+     * String, a 'nil' value is returned instead of the value of the specified key, but the operation
+     * never fails.
+     * <p>
+     * Time complexity: O(1) for every key
+     *
+     * @param keys
+     * @return Multi bulk reply
+     */
     @Aop("redis")
     public List<String> mget(String... keys) {
         return jedis().mget(keys);
     }
 
+    /**
+     * SETNX works exactly like {@link #set(String, String) SET} with the only difference that if the
+     * key already exists no operation is performed. SETNX actually means "SET if Not eXists".
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @param value
+     * @return Integer reply, specifically: 1 if the key was set 0 if the key was not set
+     */
     @Aop("redis")
     public Long setnx(String key, String value) {
         return jedis().setnx(key, value);
     }
 
+    /**
+     * EXPIREAT works exctly like {@link #expire(byte[], int) EXPIRE} but instead to get the number of
+     * seconds representing the Time To Live of the key as a second argument (that is a relative way
+     * of specifing the TTL), it takes an absolute one in the form of a UNIX timestamp (Number of
+     * seconds elapsed since 1 Gen 1970).
+     * <p>
+     * EXPIREAT was introduced in order to implement the Append Only File persistence mode so that
+     * EXPIRE commands are automatically translated into EXPIREAT commands for the append only file.
+     * Of course EXPIREAT can also used by programmers that need a way to simply specify that a given
+     * key should expire at a given time in the future.
+     * <p>
+     * Since Redis 2.1.3 you can update the value of the timeout of a key already having an expire
+     * set. It is also possible to undo the expire at all turning the key into a normal key using the
+     * {@link #persist(byte[]) PERSIST} command.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @param unixTime
+     * @return Integer reply, specifically: 1: the timeout was set. 0: the timeout was not set since
+     * the key already has an associated timeout (this may happen only in Redis versions &lt;
+     * 2.1.3, Redis &gt;= 2.1.3 will happily update the timeout), or the key does not exist.
+     * @see <a href="http://code.google.com/p/redis/wiki/ExpireCommand">ExpireCommand</a>
+     */
     @Aop("redis")
     public Long expireAt(byte[] key, long unixTime) {
         return jedis().expireAt(key, unixTime);
     }
 
+    /**
+     * The command is exactly equivalent to the following group of commands:
+     * {@link #set(String, String) SET} + {@link #expire(String, int) EXPIRE}. The operation is
+     * atomic.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @param seconds
+     * @param value
+     * @return Status code reply
+     */
     @Aop("redis")
     public String setex(String key, int seconds, String value) {
         return jedis().setex(key, seconds, value);
     }
 
+    /**
+     * Set the the respective keys to the respective values. MSET will replace old values with new
+     * values, while {@link #msetnx(String...) MSETNX} will not perform any operation at all even if
+     * just a single key already exists.
+     * <p>
+     * Because of this semantic MSETNX can be used in order to set different keys representing
+     * different fields of an unique logic object in a way that ensures that either all the fields or
+     * none at all are set.
+     * <p>
+     * Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
+     * are modified, another client talking to Redis can either see the changes to both A and B at
+     * once, or no modification at all.
+     *
+     * @param keysvalues
+     * @return Status code reply Basically +OK as MSET can't fail
+     * @see #msetnx(String...)
+     */
     @Aop("redis")
     public String mset(String... keysvalues) {
         return jedis().mset(keysvalues);
     }
 
+    /**
+     * The TTL command returns the remaining time to live in seconds of a key that has an
+     * {@link #expire(byte[], int) EXPIRE} set. This introspection capability allows a Redis client to
+     * check how many seconds a given key will continue to be part of the dataset.
+     *
+     * @param key
+     * @return Integer reply, returns the remaining time to live in seconds of a key that has an
+     * EXPIRE. If the Key does not exists or does not have an associated expire, -1 is
+     * returned.
+     */
     @Aop("redis")
     public Long ttl(byte[] key) {
         return jedis().ttl(key);
     }
 
+    /**
+     * Set the the respective keys to the respective values. {@link #mset(String...) MSET} will
+     * replace old values with new values, while MSETNX will not perform any operation at all even if
+     * just a single key already exists.
+     * <p>
+     * Because of this semantic MSETNX can be used in order to set different keys representing
+     * different fields of an unique logic object in a way that ensures that either all the fields or
+     * none at all are set.
+     * <p>
+     * Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
+     * are modified, another client talking to Redis can either see the changes to both A and B at
+     * once, or no modification at all.
+     *
+     * @param keysvalues
+     * @return Integer reply, specifically: 1 if the all the keys were set 0 if no key was set (at
+     * least one key already existed)
+     * @see #mset(String...)
+     */
     @Aop("redis")
     public Long msetnx(String... keysvalues) {
         return jedis().msetnx(keysvalues);
     }
 
+    /**
+     * Select the DB with having the specified zero-based numeric index. For default every new client
+     * connection is automatically selected to DB 0.
+     *
+     * @param index
+     * @return Status code reply
+     */
     @Aop("redis")
     public String select(int index) {
         return jedis().select(index);
     }
 
+    /**
+     * Move the specified key from the currently selected DB to the specified destination DB. Note
+     * that this command returns 1 only if the key was successfully moved, and 0 if the target key was
+     * already there or if the source key was not found at all, so it is possible to use MOVE as a
+     * locking primitive.
+     *
+     * @param key
+     * @param dbIndex
+     * @return Integer reply, specifically: 1 if the key was moved 0 if the key was not moved because
+     * already present on the target DB or was not found in the current DB.
+     */
     @Aop("redis")
     public Long move(byte[] key, int dbIndex) {
         return jedis().move(key, dbIndex);
     }
 
+    /**
+     * IDECRBY work just like {@link #decr(String) INCR} but instead to decrement by 1 the decrement
+     * is integer.
+     * <p>
+     * INCR commands are limited to 64 bit signed integers.
+     * <p>
+     * Note: this is actually a string operation, that is, in Redis there are not "integer" types.
+     * Simply the string stored at the key is parsed as a base 10 64 bit signed integer, incremented,
+     * and then converted back as a string.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @param integer
+     * @return Integer reply, this commands will reply with the new value of key after the increment.
+     * @see #incr(String)
+     * @see #decr(String)
+     * @see #incrBy(String, long)
+     */
     @Aop("redis")
     public Long decrBy(String key, long integer) {
         return jedis().decrBy(key, integer);
     }
 
+    /**
+     * Delete all the keys of all the existing databases, not just the currently selected one. This
+     * command never fails.
+     *
+     * @return Status code reply
+     */
     @Aop("redis")
     public String flushAll() {
         return jedis().flushAll();
     }
 
+    /**
+     * GETSET is an atomic set this value and return the old value command. Set key to the string
+     * value and return the old value stored at key. The string can't be longer than 1073741824 bytes (1 GB).
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @param value
+     * @return Bulk reply
+     */
     @Aop("redis")
     public byte[] getSet(byte[] key, byte[] value) {
         return jedis().getSet(key, value);
     }
 
+    /**
+     * Decrement the number stored at key by one. If the key does not exist or contains a value of a
+     * wrong type, set the key to the value of "0" before to perform the decrement operation.
+     * <p>
+     * INCR commands are limited to 64 bit signed integers.
+     * <p>
+     * Note: this is actually a string operation, that is, in Redis there are not "integer" types.
+     * Simply the string stored at the key is parsed as a base 10 64 bit signed integer, incremented,
+     * and then converted back as a string.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @return Integer reply, this commands will reply with the new value of key after the increment.
+     * @see #incr(String)
+     * @see #incrBy(String, long)
+     * @see #decrBy(String, long)
+     */
     @Aop("redis")
     public Long decr(String key) {
         return jedis().decr(key);
     }
 
+    /**
+     * Get the values of all the specified keys. If one or more keys dont exist or is not of type
+     * String, a 'nil' value is returned instead of the value of the specified key, but the operation
+     * never fails.
+     * <p>
+     * Time complexity: O(1) for every key
+     *
+     * @param keys
+     * @return Multi bulk reply
+     */
     @Aop("redis")
     public List<byte[]> mget(byte[]... keys) {
         return jedis().mget(keys);
     }
 
+    /**
+     * INCRBY work just like {@link #incr(String) INCR} but instead to increment by 1 the increment is
+     * integer.
+     * <p>
+     * INCR commands are limited to 64 bit signed integers.
+     * <p>
+     * Note: this is actually a string operation, that is, in Redis there are not "integer" types.
+     * Simply the string stored at the key is parsed as a base 10 64 bit signed integer, incremented,
+     * and then converted back as a string.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @param integer
+     * @return Integer reply, this commands will reply with the new value of key after the increment.
+     * @see #incr(String)
+     * @see #decr(String)
+     * @see #decrBy(String, long)
+     */
     @Aop("redis")
     public Long incrBy(String key, long integer) {
         return jedis().incrBy(key, integer);
     }
 
+    /**
+     * SETNX works exactly like {@link #set(byte[], byte[]) SET} with the only difference that if the
+     * key already exists no operation is performed. SETNX actually means "SET if Not eXists".
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @param value
+     * @return Integer reply, specifically: 1 if the key was set 0 if the key was not set
+     */
     @Aop("redis")
     public Long setnx(byte[] key, byte[] value) {
         return jedis().setnx(key, value);
     }
 
+    /**
+     * The command is exactly equivalent to the following group of commands:
+     * {@link #set(byte[], byte[]) SET} + {@link #expire(byte[], int) EXPIRE}. The operation is
+     * atomic.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @param seconds
+     * @param value
+     * @return Status code reply
+     */
     @Aop("redis")
     public String setex(byte[] key, int seconds, byte[] value) {
         return jedis().setex(key, seconds, value);
     }
 
+    /**
+     * INCRBYFLOAT
+     * <p>
+     * INCRBYFLOAT commands are limited to double precision floating point values.
+     * <p>
+     * Note: this is actually a string operation, that is, in Redis there are not "double" types.
+     * Simply the string stored at the key is parsed as a base double precision floating point value,
+     * incremented, and then converted back as a string. There is no DECRYBYFLOAT but providing a
+     * negative value will work as expected.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @param value
+     * @return Double reply, this commands will reply with the new value of key after the increment.
+     */
     @Aop("redis")
     public Double incrByFloat(String key, double value) {
         return jedis().incrByFloat(key, value);
     }
 
+    /**
+     * Set the the respective keys to the respective values. MSET will replace old values with new
+     * values, while {@link #msetnx(byte[]...) MSETNX} will not perform any operation at all even if
+     * just a single key already exists.
+     * <p>
+     * Because of this semantic MSETNX can be used in order to set different keys representing
+     * different fields of an unique logic object in a way that ensures that either all the fields or
+     * none at all are set.
+     * <p>
+     * Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
+     * are modified, another client talking to Redis can either see the changes to both A and B at
+     * once, or no modification at all.
+     *
+     * @param keysvalues
+     * @return Status code reply Basically +OK as MSET can't fail
+     * @see #msetnx(byte[]...)
+     */
     @Aop("redis")
     public String mset(byte[]... keysvalues) {
         return jedis().mset(keysvalues);
     }
 
+    /**
+     * Increment the number stored at key by one. If the key does not exist or contains a value of a
+     * wrong type, set the key to the value of "0" before to perform the increment operation.
+     * <p>
+     * INCR commands are limited to 64 bit signed integers.
+     * <p>
+     * Note: this is actually a string operation, that is, in Redis there are not "integer" types.
+     * Simply the string stored at the key is parsed as a base 10 64 bit signed integer, incremented,
+     * and then converted back as a string.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @return Integer reply, this commands will reply with the new value of key after the increment.
+     * @see #incrBy(String, long)
+     * @see #decr(String)
+     * @see #decrBy(String, long)
+     */
     @Aop("redis")
     public Long incr(String key) {
         return jedis().incr(key);
     }
 
+    /**
+     * Set the the respective keys to the respective values. {@link #mset(byte[]...) MSET} will
+     * replace old values with new values, while MSETNX will not perform any operation at all even if
+     * just a single key already exists.
+     * <p>
+     * Because of this semantic MSETNX can be used in order to set different keys representing
+     * different fields of an unique logic object in a way that ensures that either all the fields or
+     * none at all are set.
+     * <p>
+     * Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
+     * are modified, another client talking to Redis can either see the changes to both A and B at
+     * once, or no modification at all.
+     *
+     * @param keysvalues
+     * @return Integer reply, specifically: 1 if the all the keys were set 0 if no key was set (at
+     * least one key already existed)
+     * @see #mset(byte[]...)
+     */
     @Aop("redis")
     public Long msetnx(byte[]... keysvalues) {
         return jedis().msetnx(keysvalues);
     }
 
+    /**
+     * If the key already exists and is a string, this command appends the provided value at the end
+     * of the string. If the key does not exist it is created and set as an empty string, so APPEND
+     * will be very similar to SET in this special case.
+     * <p>
+     * Time complexity: O(1). The amortized time complexity is O(1) assuming the appended value is
+     * small and the already present value is of any size, since the dynamic string library used by
+     * Redis will double the free space available on every reallocation.
+     *
+     * @param key
+     * @param value
+     * @return Integer reply, specifically the total length of the string after the append operation.
+     */
     @Aop("redis")
     public Long append(String key, String value) {
         return jedis().append(key, value);
     }
 
+    /**
+     * DECRBY work just like {@link #decr(byte[]) INCR} but instead to decrement by 1 the decrement is
+     * integer.
+     * <p>
+     * INCR commands are limited to 64 bit signed integers.
+     * <p>
+     * Note: this is actually a string operation, that is, in Redis there are not "integer" types.
+     * Simply the string stored at the key is parsed as a base 10 64 bit signed integer, incremented,
+     * and then converted back as a string.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @param integer
+     * @return Integer reply, this commands will reply with the new value of key after the increment.
+     * @see #incr(byte[])
+     * @see #decr(byte[])
+     * @see #incrBy(byte[], long)
+     */
     @Aop("redis")
     public Long decrBy(byte[] key, long integer) {
         return jedis().decrBy(key, integer);
     }
 
+    /**
+     * Return a subset of the string from offset start to offset end (both offsets are inclusive).
+     * Negative offsets can be used in order to provide an offset starting from the end of the string.
+     * So -1 means the last char, -2 the penultimate and so forth.
+     * <p>
+     * The function handles out of range requests without raising an error, but just limiting the
+     * resulting range to the actual length of the string.
+     * <p>
+     * Time complexity: O(start+n) (with start being the start index and n the total length of the
+     * requested range). Note that the lookup part of this command is O(1) so for small strings this
+     * is actually an O(1) command.
+     *
+     * @param key
+     * @param start
+     * @param end
+     * @return Bulk reply
+     */
     @Aop("redis")
     public String substr(String key, int start, int end) {
         return jedis().substr(key, start, end);
     }
 
+    /**
+     * Decrement the number stored at key by one. If the key does not exist or contains a value of a
+     * wrong type, set the key to the value of "0" before to perform the decrement operation.
+     * <p>
+     * INCR commands are limited to 64 bit signed integers.
+     * <p>
+     * Note: this is actually a string operation, that is, in Redis there are not "integer" types.
+     * Simply the string stored at the key is parsed as a base 10 64 bit signed integer, incremented,
+     * and then converted back as a string.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @return Integer reply, this commands will reply with the new value of key after the increment.
+     * @see #incr(byte[])
+     * @see #incrBy(byte[], long)
+     * @see #decrBy(byte[], long)
+     */
     @Aop("redis")
     public Long decr(byte[] key) {
         return jedis().decr(key);
     }
 
+    /**
+     * Set the specified hash field to the specified value.
+     * <p>
+     * If key does not exist, a new key holding a hash is created.
+     * <p>
+     * <b>Time complexity:</b> O(1)
+     *
+     * @param key
+     * @param field
+     * @param value
+     * @return If the field already exists, and the HSET just produced an update of the value, 0 is
+     * returned, otherwise if a new field is created 1 is returned.
+     */
     @Aop("redis")
     public Long hset(String key, String field, String value) {
         return jedis().hset(key, field, value);
     }
 
+    /**
+     * INCRBY work just like {@link #incr(byte[]) INCR} but instead to increment by 1 the increment is
+     * integer.
+     * <p>
+     * INCR commands are limited to 64 bit signed integers.
+     * <p>
+     * Note: this is actually a string operation, that is, in Redis there are not "integer" types.
+     * Simply the string stored at the key is parsed as a base 10 64 bit signed integer, incremented,
+     * and then converted back as a string.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @param integer
+     * @return Integer reply, this commands will reply with the new value of key after the increment.
+     * @see #incr(byte[])
+     * @see #decr(byte[])
+     * @see #decrBy(byte[], long)
+     */
     @Aop("redis")
     public Long incrBy(byte[] key, long integer) {
         return jedis().incrBy(key, integer);
     }
 
+    /**
+     * If key holds a hash, retrieve the value associated to the specified field.
+     * <p>
+     * If the field is not found or the key does not exist, a special 'nil' value is returned.
+     * <p>
+     * <b>Time complexity:</b> O(1)
+     *
+     * @param key
+     * @param field
+     * @return Bulk reply
+     */
     @Aop("redis")
     public String hget(String key, String field) {
         return jedis().hget(key, field);
     }
 
+    /**
+     * Set the specified hash field to the specified value if the field not exists. <b>Time
+     * complexity:</b> O(1)
+     *
+     * @param key
+     * @param field
+     * @param value
+     * @return If the field already exists, 0 is returned, otherwise if a new field is created 1 is
+     * returned.
+     */
     @Aop("redis")
     public Long hsetnx(String key, String field, String value) {
         return jedis().hsetnx(key, field, value);
     }
 
+    /**
+     * INCRBYFLOAT work just like {@link #incrBy(byte[], long)} INCRBY} but increments by floats
+     * instead of integers.
+     * <p>
+     * INCRBYFLOAT commands are limited to double precision floating point values.
+     * <p>
+     * Note: this is actually a string operation, that is, in Redis there are not "double" types.
+     * Simply the string stored at the key is parsed as a base double precision floating point value,
+     * incremented, and then converted back as a string. There is no DECRYBYFLOAT but providing a
+     * negative value will work as expected.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key     the key to increment
+     * @param integer the value to increment by
+     * @return Integer reply, this commands will reply with the new value of key after the increment.
+     * @see #incr(byte[])
+     * @see #decr(byte[])
+     * @see #decrBy(byte[], long)
+     */
     @Aop("redis")
     public Double incrByFloat(byte[] key, double integer) {
         return jedis().incrByFloat(key, integer);
     }
 
+    /**
+     * Set the respective fields to the respective values. HMSET replaces old values with new values.
+     * <p>
+     * If key does not exist, a new key holding a hash is created.
+     * <p>
+     * <b>Time complexity:</b> O(N) (with N being the number of fields)
+     *
+     * @param key
+     * @param hash
+     * @return Return OK or Exception if hash is empty
+     */
     @Aop("redis")
     public String hmset(String key, Map<String, String> hash) {
         return jedis().hmset(key, hash);
     }
 
+    /**
+     * Retrieve the values associated to the specified fields.
+     * <p>
+     * If some of the specified fields do not exist, nil values are returned. Non existing keys are
+     * considered like empty hashes.
+     * <p>
+     * <b>Time complexity:</b> O(N) (with N being the number of fields)
+     *
+     * @param key
+     * @param fields
+     * @return Multi Bulk Reply specifically a list of all the values associated with the specified
+     * fields, in the same order of the request.
+     */
     @Aop("redis")
     public List<String> hmget(String key, String... fields) {
         return jedis().hmget(key, fields);
     }
 
+    /**
+     * Increment the number stored at key by one. If the key does not exist or contains a value of a
+     * wrong type, set the key to the value of "0" before to perform the increment operation.
+     * <p>
+     * INCR commands are limited to 64 bit signed integers.
+     * <p>
+     * Note: this is actually a string operation, that is, in Redis there are not "integer" types.
+     * Simply the string stored at the key is parsed as a base 10 64 bit signed integer, incremented,
+     * and then converted back as a string.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @return Integer reply, this commands will reply with the new value of key after the increment.
+     * @see #incrBy(byte[], long)
+     * @see #decr(byte[])
+     * @see #decrBy(byte[], long)
+     */
     @Aop("redis")
     public Long incr(byte[] key) {
         return jedis().incr(key);
     }
 
+    /**
+     * Increment the number stored at field in the hash at key by value. If key does not exist, a new
+     * key holding a hash is created. If field does not exist or holds a string, the value is set to 0
+     * before applying the operation. Since the value argument is signed you can use this command to
+     * perform both increments and decrements.
+     * <p>
+     * The range of values supported by HINCRBY is limited to 64 bit signed integers.
+     * <p>
+     * <b>Time complexity:</b> O(1)
+     *
+     * @param key
+     * @param field
+     * @param value
+     * @return Integer reply The new value at field after the increment operation.
+     */
     @Aop("redis")
     public Long hincrBy(String key, String field, long value) {
         return jedis().hincrBy(key, field, value);
     }
 
+    /**
+     * If the key already exists and is a string, this command appends the provided value at the end
+     * of the string. If the key does not exist it is created and set as an empty string, so APPEND
+     * will be very similar to SET in this special case.
+     * <p>
+     * Time complexity: O(1). The amortized time complexity is O(1) assuming the appended value is
+     * small and the already present value is of any size, since the dynamic string library used by
+     * Redis will double the free space available on every reallocation.
+     *
+     * @param key
+     * @param value
+     * @return Integer reply, specifically the total length of the string after the append operation.
+     */
     @Aop("redis")
     public Long append(byte[] key, byte[] value) {
         return jedis().append(key, value);
     }
 
+    /**
+     * Increment the number stored at field in the hash at key by a double precision floating point
+     * value. If key does not exist, a new key holding a hash is created. If field does not exist or
+     * holds a string, the value is set to 0 before applying the operation. Since the value argument
+     * is signed you can use this command to perform both increments and decrements.
+     * <p>
+     * The range of values supported by HINCRBYFLOAT is limited to double precision floating point
+     * values.
+     * <p>
+     * <b>Time complexity:</b> O(1)
+     *
+     * @param key
+     * @param field
+     * @param value
+     * @return Double precision floating point reply The new value at field after the increment
+     * operation.
+     */
     @Aop("redis")
     public Double hincrByFloat(String key, String field, double value) {
         return jedis().hincrByFloat(key, field, value);
     }
 
+    /**
+     * Return a subset of the string from offset start to offset end (both offsets are inclusive).
+     * Negative offsets can be used in order to provide an offset starting from the end of the string.
+     * So -1 means the last char, -2 the penultimate and so forth.
+     * <p>
+     * The function handles out of range requests without raising an error, but just limiting the
+     * resulting range to the actual length of the string.
+     * <p>
+     * Time complexity: O(start+n) (with start being the start index and n the total length of the
+     * requested range). Note that the lookup part of this command is O(1) so for small strings this
+     * is actually an O(1) command.
+     *
+     * @param key
+     * @param start
+     * @param end
+     * @return Bulk reply
+     */
     @Aop("redis")
     public byte[] substr(byte[] key, int start, int end) {
         return jedis().substr(key, start, end);
     }
 
+    /**
+     * Test for existence of a specified field in a hash. <b>Time complexity:</b> O(1)
+     *
+     * @param key
+     * @param field
+     * @return Return 1 if the hash stored at key contains the specified field. Return 0 if the key is
+     * not found or the field is not present.
+     */
     @Aop("redis")
     public Boolean hexists(String key, String field) {
         return jedis().hexists(key, field);
     }
 
+    /**
+     * Remove the specified field from an hash stored at key.
+     * <p>
+     * <b>Time complexity:</b> O(1)
+     *
+     * @param key
+     * @param fields
+     * @return If the field was present in the hash it is deleted and 1 is returned, otherwise 0 is
+     * returned and no operation is performed.
+     */
     @Aop("redis")
     public Long hdel(String key, String... fields) {
         return jedis().hdel(key, fields);
     }
 
+    /**
+     * Set the specified hash field to the specified value.
+     * <p>
+     * If key does not exist, a new key holding a hash is created.
+     * <p>
+     * <b>Time complexity:</b> O(1)
+     *
+     * @param key
+     * @param field
+     * @param value
+     * @return If the field already exists, and the HSET just produced an update of the value, 0 is
+     * returned, otherwise if a new field is created 1 is returned.
+     */
     @Aop("redis")
     public Long hset(byte[] key, byte[] field, byte[] value) {
         return jedis().hset(key, field, value);
     }
 
+    /**
+     * Return the number of items in a hash.
+     * <p>
+     * <b>Time complexity:</b> O(1)
+     *
+     * @param key
+     * @return The number of entries (fields) contained in the hash stored at key. If the specified
+     * key does not exist, 0 is returned assuming an empty hash.
+     */
     @Aop("redis")
     public Long hlen(String key) {
         return jedis().hlen(key);
     }
 
+    /**
+     * If key holds a hash, retrieve the value associated to the specified field.
+     * <p>
+     * If the field is not found or the key does not exist, a special 'nil' value is returned.
+     * <p>
+     * <b>Time complexity:</b> O(1)
+     *
+     * @param key
+     * @param field
+     * @return Bulk reply
+     */
     @Aop("redis")
     public byte[] hget(byte[] key, byte[] field) {
         return jedis().hget(key, field);
     }
 
+    /**
+     * Return all the fields in a hash.
+     * <p>
+     * <b>Time complexity:</b> O(N), where N is the total number of entries
+     *
+     * @param key
+     * @return All the fields names contained into a hash.
+     */
     @Aop("redis")
     public Set<String> hkeys(String key) {
         return jedis().hkeys(key);
     }
 
+    /**
+     * Set the specified hash field to the specified value if the field not exists. <b>Time
+     * complexity:</b> O(1)
+     *
+     * @param key
+     * @param field
+     * @param value
+     * @return If the field already exists, 0 is returned, otherwise if a new field is created 1 is
+     * returned.
+     */
     @Aop("redis")
     public Long hsetnx(byte[] key, byte[] field, byte[] value) {
         return jedis().hsetnx(key, field, value);
     }
 
+    /**
+     * Return all the values in a hash.
+     * <p>
+     * <b>Time complexity:</b> O(N), where N is the total number of entries
+     *
+     * @param key
+     * @return All the fields values contained into a hash.
+     */
     @Aop("redis")
     public List<String> hvals(String key) {
         return jedis().hvals(key);
     }
 
+    /**
+     * Set the respective fields to the respective values. HMSET replaces old values with new values.
+     * <p>
+     * If key does not exist, a new key holding a hash is created.
+     * <p>
+     * <b>Time complexity:</b> O(N) (with N being the number of fields)
+     *
+     * @param key
+     * @param hash
+     * @return Always OK because HMSET can't fail
+     */
     @Aop("redis")
     public String hmset(byte[] key, Map<byte[], byte[]> hash) {
         return jedis().hmset(key, hash);
     }
 
+    /**
+     * Return all the fields and associated values in a hash.
+     * <p>
+     * <b>Time complexity:</b> O(N), where N is the total number of entries
+     *
+     * @param key
+     * @return All the fields and values contained into a hash.
+     */
     @Aop("redis")
     public Map<String, String> hgetAll(String key) {
         return jedis().hgetAll(key);
     }
 
+    /**
+     * Add the string value to the head (LPUSH) or tail (RPUSH) of the list stored at key. If the key
+     * does not exist an empty list is created just before the append operation. If the key exists but
+     * is not a List an error is returned.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @param strings
+     * @return Integer reply, specifically, the number of elements inside the list after the push
+     * operation.
+     */
     @Aop("redis")
     public Long rpush(String key, String... strings) {
         return jedis().rpush(key, strings);
     }
 
+    /**
+     * Retrieve the values associated to the specified fields.
+     * <p>
+     * If some of the specified fields do not exist, nil values are returned. Non existing keys are
+     * considered like empty hashes.
+     * <p>
+     * <b>Time complexity:</b> O(N) (with N being the number of fields)
+     *
+     * @param key
+     * @param fields
+     * @return Multi Bulk Reply specifically a list of all the values associated with the specified
+     * fields, in the same order of the request.
+     */
     @Aop("redis")
     public List<byte[]> hmget(byte[] key, byte[]... fields) {
         return jedis().hmget(key, fields);
     }
 
+    /**
+     * Add the string value to the head (LPUSH) or tail (RPUSH) of the list stored at key. If the key
+     * does not exist an empty list is created just before the append operation. If the key exists but
+     * is not a List an error is returned.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @param strings
+     * @return Integer reply, specifically, the number of elements inside the list after the push
+     * operation.
+     */
     @Aop("redis")
     public Long lpush(String key, String... strings) {
         return jedis().lpush(key, strings);
     }
 
+    /**
+     * Increment the number stored at field in the hash at key by value. If key does not exist, a new
+     * key holding a hash is created. If field does not exist or holds a string, the value is set to 0
+     * before applying the operation. Since the value argument is signed you can use this command to
+     * perform both increments and decrements.
+     * <p>
+     * The range of values supported by HINCRBY is limited to 64 bit signed integers.
+     * <p>
+     * <b>Time complexity:</b> O(1)
+     *
+     * @param key
+     * @param field
+     * @param value
+     * @return Integer reply The new value at field after the increment operation.
+     */
     @Aop("redis")
     public Long hincrBy(byte[] key, byte[] field, long value) {
         return jedis().hincrBy(key, field, value);
     }
 
+    /**
+     * Return the length of the list stored at the specified key. If the key does not exist zero is
+     * returned (the same behaviour as for empty lists). If the value stored at key is not a list an
+     * error is returned.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @return The length of the list.
+     */
     @Aop("redis")
     public Long llen(String key) {
         return jedis().llen(key);
     }
 
+    /**
+     * Increment the number stored at field in the hash at key by a double precision floating point
+     * value. If key does not exist, a new key holding a hash is created. If field does not exist or
+     * holds a string, the value is set to 0 before applying the operation. Since the value argument
+     * is signed you can use this command to perform both increments and decrements.
+     * <p>
+     * The range of values supported by HINCRBYFLOAT is limited to double precision floating point
+     * values.
+     * <p>
+     * <b>Time complexity:</b> O(1)
+     *
+     * @param key
+     * @param field
+     * @param value
+     * @return Double precision floating point reply The new value at field after the increment
+     * operation.
+     */
     @Aop("redis")
     public Double hincrByFloat(byte[] key, byte[] field, double value) {
         return jedis().hincrByFloat(key, field, value);
     }
 
+    /**
+     * Return the specified elements of the list stored at the specified key. Start and end are
+     * zero-based indexes. 0 is the first element of the list (the list head), 1 the next element and
+     * so on.
+     * <p>
+     * For example LRANGE foobar 0 2 will return the first three elements of the list.
+     * <p>
+     * start and end can also be negative numbers indicating offsets from the end of the list. For
+     * example -1 is the last element of the list, -2 the penultimate element and so on.
+     * <p>
+     * <b>Consistency with range functions in various programming languages</b>
+     * <p>
+     * Note that if you have a list of numbers from 0 to 100, LRANGE 0 10 will return 11 elements,
+     * that is, rightmost item is included. This may or may not be consistent with behavior of
+     * range-related functions in your programming language of choice (think Ruby's Range.new,
+     * Array#slice or Python's range() function).
+     * <p>
+     * LRANGE behavior is consistent with one of Tcl.
+     * <p>
+     * <b>Out-of-range indexes</b>
+     * <p>
+     * Indexes out of range will not produce an error: if start is over the end of the list, or start
+     * &gt; end, an empty list is returned. If end is over the end of the list Redis will threat it
+     * just like the last element of the list.
+     * <p>
+     * Time complexity: O(start+n) (with n being the length of the range and start being the start
+     * offset)
+     *
+     * @param key
+     * @param start
+     * @param end
+     * @return Multi bulk reply, specifically a list of elements in the specified range.
+     */
     @Aop("redis")
     public List<String> lrange(String key, long start, long end) {
         return jedis().lrange(key, start, end);
     }
 
+    /**
+     * Test for existence of a specified field in a hash. <b>Time complexity:</b> O(1)
+     *
+     * @param key
+     * @param field
+     * @return Return 1 if the hash stored at key contains the specified field. Return 0 if the key is
+     * not found or the field is not present.
+     */
     @Aop("redis")
     public Boolean hexists(byte[] key, byte[] field) {
         return jedis().hexists(key, field);
     }
 
+    /**
+     * Remove the specified field from an hash stored at key.
+     * <p>
+     * <b>Time complexity:</b> O(1)
+     *
+     * @param key
+     * @param fields
+     * @return If the field was present in the hash it is deleted and 1 is returned, otherwise 0 is
+     * returned and no operation is performed.
+     */
     @Aop("redis")
     public Long hdel(byte[] key, byte[]... fields) {
         return jedis().hdel(key, fields);
     }
 
+    /**
+     * Trim an existing list so that it will contain only the specified range of elements specified.
+     * Start and end are zero-based indexes. 0 is the first element of the list (the list head), 1 the
+     * next element and so on.
+     * <p>
+     * For example LTRIM foobar 0 2 will modify the list stored at foobar key so that only the first
+     * three elements of the list will remain.
+     * <p>
+     * start and end can also be negative numbers indicating offsets from the end of the list. For
+     * example -1 is the last element of the list, -2 the penultimate element and so on.
+     * <p>
+     * Indexes out of range will not produce an error: if start is over the end of the list, or start
+     * &gt; end, an empty list is left as value. If end over the end of the list Redis will threat it
+     * just like the last element of the list.
+     * <p>
+     * Hint: the obvious use of LTRIM is together with LPUSH/RPUSH. For example:
+     * <p>
+     * {@code lpush("mylist", "someelement"); ltrim("mylist", 0, 99); * }
+     * <p>
+     * The above two commands will push elements in the list taking care that the list will not grow
+     * without limits. This is very useful when using Redis to store logs for example. It is important
+     * to note that when used in this way LTRIM is an O(1) operation because in the average case just
+     * one element is removed from the tail of the list.
+     * <p>
+     * Time complexity: O(n) (with n being len of list - len of range)
+     *
+     * @param key
+     * @param start
+     * @param end
+     * @return Status code reply
+     */
     @Aop("redis")
     public String ltrim(String key, long start, long end) {
         return jedis().ltrim(key, start, end);
     }
 
+    /**
+     * Return the number of items in a hash.
+     * <p>
+     * <b>Time complexity:</b> O(1)
+     *
+     * @param key
+     * @return The number of entries (fields) contained in the hash stored at key. If the specified
+     * key does not exist, 0 is returned assuming an empty hash.
+     */
     @Aop("redis")
     public Long hlen(byte[] key) {
         return jedis().hlen(key);
     }
 
+    /**
+     * Return all the fields in a hash.
+     * <p>
+     * <b>Time complexity:</b> O(N), where N is the total number of entries
+     *
+     * @param key
+     * @return All the fields names contained into a hash.
+     */
     @Aop("redis")
     public Set<byte[]> hkeys(byte[] key) {
         return jedis().hkeys(key);
     }
 
+    /**
+     * Return all the values in a hash.
+     * <p>
+     * <b>Time complexity:</b> O(N), where N is the total number of entries
+     *
+     * @param key
+     * @return All the fields values contained into a hash.
+     */
     @Aop("redis")
     public List<byte[]> hvals(byte[] key) {
         return jedis().hvals(key);
     }
 
+    /**
+     * Return all the fields and associated values in a hash.
+     * <p>
+     * <b>Time complexity:</b> O(N), where N is the total number of entries
+     *
+     * @param key
+     * @return All the fields and values contained into a hash.
+     */
     @Aop("redis")
     public Map<byte[], byte[]> hgetAll(byte[] key) {
         return jedis().hgetAll(key);
     }
 
+    /**
+     * Return the specified element of the list stored at the specified key. 0 is the first element, 1
+     * the second and so on. Negative indexes are supported, for example -1 is the last element, -2
+     * the penultimate and so on.
+     * <p>
+     * If the value stored at key is not of list type an error is returned. If the index is out of
+     * range a 'nil' reply is returned.
+     * <p>
+     * Note that even if the average time complexity is O(n) asking for the first or the last element
+     * of the list is O(1).
+     * <p>
+     * Time complexity: O(n) (with n being the length of the list)
+     *
+     * @param key
+     * @param index
+     * @return Bulk reply, specifically the requested element
+     */
     @Aop("redis")
     public String lindex(String key, long index) {
         return jedis().lindex(key, index);
     }
 
+    /**
+     * Add the string value to the head (LPUSH) or tail (RPUSH) of the list stored at key. If the key
+     * does not exist an empty list is created just before the append operation. If the key exists but
+     * is not a List an error is returned.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @param strings
+     * @return Integer reply, specifically, the number of elements inside the list after the push
+     * operation.
+     * @see BinaryJedis#rpush(byte[], byte[]...)
+     */
     @Aop("redis")
     public Long rpush(byte[] key, byte[]... strings) {
         return jedis().rpush(key, strings);
     }
 
+    /**
+     * Add the string value to the head (LPUSH) or tail (RPUSH) of the list stored at key. If the key
+     * does not exist an empty list is created just before the append operation. If the key exists but
+     * is not a List an error is returned.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @param strings
+     * @return Integer reply, specifically, the number of elements inside the list after the push
+     * operation.
+     * @see BinaryJedis#rpush(byte[], byte[]...)
+     */
     @Aop("redis")
     public Long lpush(byte[] key, byte[]... strings) {
         return jedis().lpush(key, strings);
     }
 
+    /**
+     * Set a new value as the element at index position of the List at key.
+     * <p>
+     * Out of range indexes will generate an error.
+     * <p>
+     * Similarly to other list commands accepting indexes, the index can be negative to access
+     * elements starting from the end of the list. So -1 is the last element, -2 is the penultimate,
+     * and so forth.
+     * <p>
+     * <b>Time complexity:</b>
+     * <p>
+     * O(N) (with N being the length of the list), setting the first or last elements of the list is
+     * O(1).
+     *
+     * @param key
+     * @param index
+     * @param value
+     * @return Status code reply
+     * @see #lindex(String, long)
+     */
     @Aop("redis")
     public String lset(String key, long index, String value) {
         return jedis().lset(key, index, value);
     }
 
+    /**
+     * Return the length of the list stored at the specified key. If the key does not exist zero is
+     * returned (the same behaviour as for empty lists). If the value stored at key is not a list an
+     * error is returned.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @return The length of the list.
+     */
     @Aop("redis")
     public Long llen(byte[] key) {
         return jedis().llen(key);
     }
 
+    /**
+     * Remove the first count occurrences of the value element from the list. If count is zero all the
+     * elements are removed. If count is negative elements are removed from tail to head, instead to
+     * go from head to tail that is the normal behaviour. So for example LREM with count -2 and hello
+     * as value to remove against the list (a,b,c,hello,x,hello,hello) will lave the list
+     * (a,b,c,hello,x). The number of removed elements is returned as an integer, see below for more
+     * information about the returned value. Note that non existing keys are considered like empty
+     * lists by LREM, so LREM against non existing keys will always return 0.
+     * <p>
+     * Time complexity: O(N) (with N being the length of the list)
+     *
+     * @param key
+     * @param count
+     * @param value
+     * @return Integer Reply, specifically: The number of removed elements if the operation succeeded
+     */
     @Aop("redis")
     public Long lrem(String key, long count, String value) {
         return jedis().lrem(key, count, value);
     }
 
+    /**
+     * Return the specified elements of the list stored at the specified key. Start and end are
+     * zero-based indexes. 0 is the first element of the list (the list head), 1 the next element and
+     * so on.
+     * <p>
+     * For example LRANGE foobar 0 2 will return the first three elements of the list.
+     * <p>
+     * start and end can also be negative numbers indicating offsets from the end of the list. For
+     * example -1 is the last element of the list, -2 the penultimate element and so on.
+     * <p>
+     * <b>Consistency with range functions in various programming languages</b>
+     * <p>
+     * Note that if you have a list of numbers from 0 to 100, LRANGE 0 10 will return 11 elements,
+     * that is, rightmost item is included. This may or may not be consistent with behavior of
+     * range-related functions in your programming language of choice (think Ruby's Range.new,
+     * Array#slice or Python's range() function).
+     * <p>
+     * LRANGE behavior is consistent with one of Tcl.
+     * <p>
+     * <b>Out-of-range indexes</b>
+     * <p>
+     * Indexes out of range will not produce an error: if start is over the end of the list, or start
+     * &gt; end, an empty list is returned. If end is over the end of the list Redis will threat it
+     * just like the last element of the list.
+     * <p>
+     * Time complexity: O(start+n) (with n being the length of the range and start being the start
+     * offset)
+     *
+     * @param key
+     * @param start
+     * @param end
+     * @return Multi bulk reply, specifically a list of elements in the specified range.
+     */
     @Aop("redis")
     public List<byte[]> lrange(byte[] key, long start, long end) {
         return jedis().lrange(key, start, end);
     }
 
+    /**
+     * Atomically return and remove the first (LPOP) or last (RPOP) element of the list. For example
+     * if the list contains the elements "a","b","c" LPOP will return "a" and the list will become
+     * "b","c".
+     * <p>
+     * If the key does not exist or the list is already empty the special value 'nil' is returned.
+     *
+     * @param key
+     * @return Bulk reply
+     * @see #rpop(String)
+     */
     @Aop("redis")
     public String lpop(String key) {
         return jedis().lpop(key);
     }
 
+    /**
+     * Atomically return and remove the first (LPOP) or last (RPOP) element of the list. For example
+     * if the list contains the elements "a","b","c" RPOP will return "c" and the list will become
+     * "a","b".
+     * <p>
+     * If the key does not exist or the list is already empty the special value 'nil' is returned.
+     *
+     * @param key
+     * @return Bulk reply
+     * @see #lpop(String)
+     */
     @Aop("redis")
     public String rpop(String key) {
         return jedis().rpop(key);
     }
 
+    /**
+     * Trim an existing list so that it will contain only the specified range of elements specified.
+     * Start and end are zero-based indexes. 0 is the first element of the list (the list head), 1 the
+     * next element and so on.
+     * <p>
+     * For example LTRIM foobar 0 2 will modify the list stored at foobar key so that only the first
+     * three elements of the list will remain.
+     * <p>
+     * start and end can also be negative numbers indicating offsets from the end of the list. For
+     * example -1 is the last element of the list, -2 the penultimate element and so on.
+     * <p>
+     * Indexes out of range will not produce an error: if start is over the end of the list, or start
+     * &gt; end, an empty list is left as value. If end over the end of the list Redis will threat it
+     * just like the last element of the list.
+     * <p>
+     * Hint: the obvious use of LTRIM is together with LPUSH/RPUSH. For example:
+     * <p>
+     * {@code lpush("mylist", "someelement"); ltrim("mylist", 0, 99); * }
+     * <p>
+     * The above two commands will push elements in the list taking care that the list will not grow
+     * without limits. This is very useful when using Redis to store logs for example. It is important
+     * to note that when used in this way LTRIM is an O(1) operation because in the average case just
+     * one element is removed from the tail of the list.
+     * <p>
+     * Time complexity: O(n) (with n being len of list - len of range)
+     *
+     * @param key
+     * @param start
+     * @param end
+     * @return Status code reply
+     */
     @Aop("redis")
     public String ltrim(byte[] key, long start, long end) {
         return jedis().ltrim(key, start, end);
     }
 
+    /**
+     * Atomically return and remove the last (tail) element of the srckey list, and push the element
+     * as the first (head) element of the dstkey list. For example if the source list contains the
+     * elements "a","b","c" and the destination list contains the elements "foo","bar" after an
+     * RPOPLPUSH command the content of the two lists will be "a","b" and "c","foo","bar".
+     * <p>
+     * If the key does not exist or the list is already empty the special value 'nil' is returned. If
+     * the srckey and dstkey are the same the operation is equivalent to removing the last element
+     * from the list and pusing it as first element of the list, so it's a "list rotation" command.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param srckey
+     * @param dstkey
+     * @return Bulk reply
+     */
     @Aop("redis")
     public String rpoplpush(String srckey, String dstkey) {
         return jedis().rpoplpush(srckey, dstkey);
     }
 
+    /**
+     * Add the specified member to the set value stored at key. If member is already a member of the
+     * set no operation is performed. If key does not exist a new set with the specified member as
+     * sole member is created. If the key exists but does not hold a set value an error is returned.
+     * <p>
+     * Time complexity O(1)
+     *
+     * @param key
+     * @param members
+     * @return Integer reply, specifically: 1 if the new element was added 0 if the element was
+     * already a member of the set
+     */
     @Aop("redis")
     public Long sadd(String key, String... members) {
         return jedis().sadd(key, members);
     }
 
+    /**
+     * Return the specified element of the list stored at the specified key. 0 is the first element, 1
+     * the second and so on. Negative indexes are supported, for example -1 is the last element, -2
+     * the penultimate and so on.
+     * <p>
+     * If the value stored at key is not of list type an error is returned. If the index is out of
+     * range a 'nil' reply is returned.
+     * <p>
+     * Note that even if the average time complexity is O(n) asking for the first or the last element
+     * of the list is O(1).
+     * <p>
+     * Time complexity: O(n) (with n being the length of the list)
+     *
+     * @param key
+     * @param index
+     * @return Bulk reply, specifically the requested element
+     */
     @Aop("redis")
     public byte[] lindex(byte[] key, long index) {
         return jedis().lindex(key, index);
     }
 
+    /**
+     * Return all the members (elements) of the set value stored at key. This is just syntax glue for
+     * {@link #sinter(String...) SINTER}.
+     * <p>
+     * Time complexity O(N)
+     *
+     * @param key
+     * @return Multi bulk reply
+     */
     @Aop("redis")
     public Set<String> smembers(String key) {
         return jedis().smembers(key);
     }
 
+    /**
+     * Remove the specified member from the set value stored at key. If member was not a member of the
+     * set no operation is performed. If key does not hold a set value an error is returned.
+     * <p>
+     * Time complexity O(1)
+     *
+     * @param key
+     * @param members
+     * @return Integer reply, specifically: 1 if the new element was removed 0 if the new element was
+     * not a member of the set
+     */
     @Aop("redis")
     public Long srem(String key, String... members) {
         return jedis().srem(key, members);
     }
 
+    /**
+     * Set a new value as the element at index position of the List at key.
+     * <p>
+     * Out of range indexes will generate an error.
+     * <p>
+     * Similarly to other list commands accepting indexes, the index can be negative to access
+     * elements starting from the end of the list. So -1 is the last element, -2 is the penultimate,
+     * and so forth.
+     * <p>
+     * <b>Time complexity:</b>
+     * <p>
+     * O(N) (with N being the length of the list), setting the first or last elements of the list is
+     * O(1).
+     *
+     * @param key
+     * @param index
+     * @param value
+     * @return Status code reply
+     * @see #lindex(byte[], long)
+     */
     @Aop("redis")
     public String lset(byte[] key, long index, byte[] value) {
         return jedis().lset(key, index, value);
     }
 
+    /**
+     * Remove a random element from a Set returning it as return value. If the Set is empty or the key
+     * does not exist, a nil object is returned.
+     * <p>
+     * The {@link #srandmember(String)} command does a similar work but the returned element is not
+     * removed from the Set.
+     * <p>
+     * Time complexity O(1)
+     *
+     * @param key
+     * @return Bulk reply
+     */
     @Aop("redis")
     public String spop(String key) {
         return jedis().spop(key);
@@ -616,76 +2092,262 @@ public class RedisService extends Jedis {
         return jedis().spop(key, count);
     }
 
+    /**
+     * Remove the first count occurrences of the value element from the list. If count is zero all the
+     * elements are removed. If count is negative elements are removed from tail to head, instead to
+     * go from head to tail that is the normal behaviour. So for example LREM with count -2 and hello
+     * as value to remove against the list (a,b,c,hello,x,hello,hello) will have the list
+     * (a,b,c,hello,x). The number of removed elements is returned as an integer, see below for more
+     * information about the returned value. Note that non existing keys are considered like empty
+     * lists by LREM, so LREM against non existing keys will always return 0.
+     * <p>
+     * Time complexity: O(N) (with N being the length of the list)
+     *
+     * @param key
+     * @param count
+     * @param value
+     * @return Integer Reply, specifically: The number of removed elements if the operation succeeded
+     */
     @Aop("redis")
     public Long lrem(byte[] key, long count, byte[] value) {
         return jedis().lrem(key, count, value);
     }
 
+    /**
+     * Move the specifided member from the set at srckey to the set at dstkey. This operation is
+     * atomic, in every given moment the element will appear to be in the source or destination set
+     * for accessing clients.
+     * <p>
+     * If the source set does not exist or does not contain the specified element no operation is
+     * performed and zero is returned, otherwise the element is removed from the source set and added
+     * to the destination set. On success one is returned, even if the element was already present in
+     * the destination set.
+     * <p>
+     * An error is raised if the source or destination keys contain a non Set value.
+     * <p>
+     * Time complexity O(1)
+     *
+     * @param srckey
+     * @param dstkey
+     * @param member
+     * @return Integer reply, specifically: 1 if the element was moved 0 if the element was not found
+     * on the first set and no operation was performed
+     */
     @Aop("redis")
     public Long smove(String srckey, String dstkey, String member) {
         return jedis().smove(srckey, dstkey, member);
     }
 
+    /**
+     * Atomically return and remove the first (LPOP) or last (RPOP) element of the list. For example
+     * if the list contains the elements "a","b","c" LPOP will return "a" and the list will become
+     * "b","c".
+     * <p>
+     * If the key does not exist or the list is already empty the special value 'nil' is returned.
+     *
+     * @param key
+     * @return Bulk reply
+     * @see #rpop(byte[])
+     */
     @Aop("redis")
     public byte[] lpop(byte[] key) {
         return jedis().lpop(key);
     }
 
+    /**
+     * Return the set cardinality (number of elements). If the key does not exist 0 is returned, like
+     * for empty sets.
+     *
+     * @param key
+     * @return Integer reply, specifically: the cardinality (number of elements) of the set as an
+     * integer.
+     */
     @Aop("redis")
     public Long scard(String key) {
         return jedis().scard(key);
     }
 
+    /**
+     * Atomically return and remove the first (LPOP) or last (RPOP) element of the list. For example
+     * if the list contains the elements "a","b","c" LPOP will return "a" and the list will become
+     * "b","c".
+     * <p>
+     * If the key does not exist or the list is already empty the special value 'nil' is returned.
+     *
+     * @param key
+     * @return Bulk reply
+     * @see #lpop(byte[])
+     */
     @Aop("redis")
     public byte[] rpop(byte[] key) {
         return jedis().rpop(key);
     }
 
+    /**
+     * Return 1 if member is a member of the set stored at key, otherwise 0 is returned.
+     * <p>
+     * Time complexity O(1)
+     *
+     * @param key
+     * @param member
+     * @return Integer reply, specifically: 1 if the element is a member of the set 0 if the element
+     * is not a member of the set OR if the key does not exist
+     */
     @Aop("redis")
     public Boolean sismember(String key, String member) {
         return jedis().sismember(key, member);
     }
 
+    /**
+     * Atomically return and remove the last (tail) element of the srckey list, and push the element
+     * as the first (head) element of the dstkey list. For example if the source list contains the
+     * elements "a","b","c" and the destination list contains the elements "foo","bar" after an
+     * RPOPLPUSH command the content of the two lists will be "a","b" and "c","foo","bar".
+     * <p>
+     * If the key does not exist or the list is already empty the special value 'nil' is returned. If
+     * the srckey and dstkey are the same the operation is equivalent to removing the last element
+     * from the list and pusing it as first element of the list, so it's a "list rotation" command.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param srckey
+     * @param dstkey
+     * @return Bulk reply
+     */
     @Aop("redis")
     public byte[] rpoplpush(byte[] srckey, byte[] dstkey) {
         return jedis().rpoplpush(srckey, dstkey);
     }
 
+    /**
+     * Return the members of a set resulting from the intersection of all the sets hold at the
+     * specified keys. Like in {@link #lrange(String, long, long) LRANGE} the result is sent to the
+     * client as a multi-bulk reply (see the protocol specification for more information). If just a
+     * single key is specified, then this command produces the same result as
+     * {@link #smembers(String) SMEMBERS}. Actually SMEMBERS is just syntax sugar for SINTER.
+     * <p>
+     * Non existing keys are considered like empty sets, so if one of the keys is missing an empty set
+     * is returned (since the intersection with an empty set always is an empty set).
+     * <p>
+     * Time complexity O(N*M) worst case where N is the cardinality of the smallest set and M the
+     * number of sets
+     *
+     * @param keys
+     * @return Multi bulk reply, specifically the list of common elements.
+     */
     @Aop("redis")
     public Set<String> sinter(String... keys) {
         return jedis().sinter(keys);
     }
 
+    /**
+     * Add the specified member to the set value stored at key. If member is already a member of the
+     * set no operation is performed. If key does not exist a new set with the specified member as
+     * sole member is created. If the key exists but does not hold a set value an error is returned.
+     * <p>
+     * Time complexity O(1)
+     *
+     * @param key
+     * @param members
+     * @return Integer reply, specifically: 1 if the new element was added 0 if the element was
+     * already a member of the set
+     */
     @Aop("redis")
     public Long sadd(byte[] key, byte[]... members) {
         return jedis().sadd(key, members);
     }
 
+    /**
+     * This commnad works exactly like {@link #sinter(String...) SINTER} but instead of being returned
+     * the resulting set is sotred as dstkey.
+     * <p>
+     * Time complexity O(N*M) worst case where N is the cardinality of the smallest set and M the
+     * number of sets
+     *
+     * @param dstkey
+     * @param keys
+     * @return Status code reply
+     */
     @Aop("redis")
     public Long sinterstore(String dstkey, String... keys) {
         return jedis().sinterstore(dstkey, keys);
     }
 
+    /**
+     * Return all the members (elements) of the set value stored at key. This is just syntax glue for
+     * {@link #sinter(byte[]...)} SINTER}.
+     * <p>
+     * Time complexity O(N)
+     *
+     * @param key the key of the set
+     * @return Multi bulk reply
+     */
     @Aop("redis")
     public Set<byte[]> smembers(byte[] key) {
         return jedis().smembers(key);
     }
 
+    /**
+     * Return the members of a set resulting from the union of all the sets hold at the specified
+     * keys. Like in {@link #lrange(String, long, long) LRANGE} the result is sent to the client as a
+     * multi-bulk reply (see the protocol specification for more information). If just a single key is
+     * specified, then this command produces the same result as {@link #smembers(String) SMEMBERS}.
+     * <p>
+     * Non existing keys are considered like empty sets.
+     * <p>
+     * Time complexity O(N) where N is the total number of elements in all the provided sets
+     *
+     * @param keys
+     * @return Multi bulk reply, specifically the list of common elements.
+     */
     @Aop("redis")
     public Set<String> sunion(String... keys) {
         return jedis().sunion(keys);
     }
 
+    /**
+     * Remove the specified member from the set value stored at key. If member was not a member of the
+     * set no operation is performed. If key does not hold a set value an error is returned.
+     * <p>
+     * Time complexity O(1)
+     *
+     * @param key    the key of the set
+     * @param member the set member to remove
+     * @return Integer reply, specifically: 1 if the new element was removed 0 if the new element was
+     * not a member of the set
+     */
     @Aop("redis")
     public Long srem(byte[] key, byte[]... member) {
         return jedis().srem(key, member);
     }
 
+    /**
+     * Remove a random element from a Set returning it as return value. If the Set is empty or the key
+     * does not exist, a nil object is returned.
+     * <p>
+     * The {@link #srandmember(byte[])} command does a similar work but the returned element is not
+     * removed from the Set.
+     * <p>
+     * Time complexity O(1)
+     *
+     * @param key
+     * @return Bulk reply
+     */
     @Aop("redis")
     public byte[] spop(byte[] key) {
         return jedis().spop(key);
     }
 
+    /**
+     * This command works exactly like {@link #sunion(String...) SUNION} but instead of being returned
+     * the resulting set is stored as dstkey. Any existing value in dstkey will be over-written.
+     * <p>
+     * Time complexity O(N) where N is the total number of elements in all the provided sets
+     *
+     * @param dstkey
+     * @param keys
+     * @return Status code reply
+     */
     @Aop("redis")
     public Long sunionstore(String dstkey, String... keys) {
         return jedis().sunionstore(dstkey, keys);
@@ -696,31 +2358,110 @@ public class RedisService extends Jedis {
         return jedis().spop(key, count);
     }
 
+    /**
+     * Return the difference between the Set stored at key1 and all the Sets key2, ..., keyN
+     * <p>
+     * <b>Example:</b>
+     * <p>
+     * <pre>
+     * key1 = [x, a, b, c]
+     * key2 = [c]
+     * key3 = [a, d]
+     * SDIFF key1,key2,key3 =&gt; [x, b]
+     * </pre>
+     * <p>
+     * Non existing keys are considered like empty sets.
+     * <p>
+     * <b>Time complexity:</b>
+     * <p>
+     * O(N) with N being the total number of elements of all the sets
+     *
+     * @param keys
+     * @return Return the members of a set resulting from the difference between the first set
+     * provided and all the successive sets.
+     */
     @Aop("redis")
     public Set<String> sdiff(String... keys) {
         return jedis().sdiff(keys);
     }
 
+    /**
+     * Move the specified member from the set at srckey to the set at dstkey. This operation is
+     * atomic, in every given moment the element will appear to be in the source or destination set
+     * for accessing clients.
+     * <p>
+     * If the source set does not exist or does not contain the specified element no operation is
+     * performed and zero is returned, otherwise the element is removed from the source set and added
+     * to the destination set. On success one is returned, even if the element was already present in
+     * the destination set.
+     * <p>
+     * An error is raised if the source or destination keys contain a non Set value.
+     * <p>
+     * Time complexity O(1)
+     *
+     * @param srckey
+     * @param dstkey
+     * @param member
+     * @return Integer reply, specifically: 1 if the element was moved 0 if the element was not found
+     * on the first set and no operation was performed
+     */
     @Aop("redis")
     public Long smove(byte[] srckey, byte[] dstkey, byte[] member) {
         return jedis().smove(srckey, dstkey, member);
     }
 
+    /**
+     * This command works exactly like {@link #sdiff(String...) SDIFF} but instead of being returned
+     * the resulting set is stored in dstkey.
+     *
+     * @param dstkey
+     * @param keys
+     * @return Status code reply
+     */
     @Aop("redis")
     public Long sdiffstore(String dstkey, String... keys) {
         return jedis().sdiffstore(dstkey, keys);
     }
 
+    /**
+     * Return a random element from a Set, without removing the element. If the Set is empty or the
+     * key does not exist, a nil object is returned.
+     * <p>
+     * The SPOP command does a similar work but the returned element is popped (removed) from the Set.
+     * <p>
+     * Time complexity O(1)
+     *
+     * @param key
+     * @return Bulk reply
+     */
     @Aop("redis")
     public String srandmember(String key) {
         return jedis().srandmember(key);
     }
 
+    /**
+     * Return the set cardinality (number of elements). If the key does not exist 0 is returned, like
+     * for empty sets.
+     *
+     * @param key
+     * @return Integer reply, specifically: the cardinality (number of elements) of the set as an
+     * integer.
+     */
     @Aop("redis")
     public Long scard(byte[] key) {
         return jedis().scard(key);
     }
 
+    /**
+     * Return 1 if member is a member of the set stored at key, otherwise 0 is returned.
+     * <p>
+     * Time complexity O(1)
+     *
+     * @param key
+     * @param member
+     * @return Integer reply, specifically: 1 if the element is a member of the set 0 if the element
+     * is not a member of the set OR if the key does not exist
+     */
     @Aop("redis")
     public Boolean sismember(byte[] key, byte[] member) {
         return jedis().sismember(key, member);
@@ -731,11 +2472,44 @@ public class RedisService extends Jedis {
         return jedis().srandmember(key, count);
     }
 
+    /**
+     * Add the specified member having the specifeid score to the sorted set stored at key. If member
+     * is already a member of the sorted set the score is updated, and the element reinserted in the
+     * right position to ensure sorting. If key does not exist a new sorted set with the specified
+     * member as sole member is crated. If the key exists but does not hold a sorted set value an
+     * error is returned.
+     * <p>
+     * The score value can be the string representation of a double precision floating point number.
+     * <p>
+     * Time complexity O(log(N)) with N being the number of elements in the sorted set
+     *
+     * @param key
+     * @param score
+     * @param member
+     * @return Integer reply, specifically: 1 if the new element was added 0 if the element was
+     * already a member of the sorted set and the score was updated
+     */
     @Aop("redis")
     public Long zadd(String key, double score, String member) {
         return jedis().zadd(key, score, member);
     }
 
+    /**
+     * Return the members of a set resulting from the intersection of all the sets hold at the
+     * specified keys. Like in {@link #lrange(byte[], long, long)} LRANGE} the result is sent to the
+     * client as a multi-bulk reply (see the protocol specification for more information). If just a
+     * single key is specified, then this command produces the same result as
+     * {@link #smembers(byte[]) SMEMBERS}. Actually SMEMBERS is just syntax sugar for SINTER.
+     * <p>
+     * Non existing keys are considered like empty sets, so if one of the keys is missing an empty set
+     * is returned (since the intersection with an empty set always is an empty set).
+     * <p>
+     * Time complexity O(N*M) worst case where N is the cardinality of the smallest set and M the
+     * number of sets
+     *
+     * @param keys
+     * @return Multi bulk reply, specifically the list of common elements.
+     */
     @Aop("redis")
     public Set<byte[]> sinter(byte[]... keys) {
         return jedis().sinter(keys);
@@ -751,6 +2525,17 @@ public class RedisService extends Jedis {
         return jedis().zadd(key, scoreMembers);
     }
 
+    /**
+     * This commnad works exactly like {@link #sinter(byte[]...) SINTER} but instead of being returned
+     * the resulting set is sotred as dstkey.
+     * <p>
+     * Time complexity O(N*M) worst case where N is the cardinality of the smallest set and M the
+     * number of sets
+     *
+     * @param dstkey
+     * @param keys
+     * @return Status code reply
+     */
     @Aop("redis")
     public Long sinterstore(byte[] dstkey, byte[]... keys) {
         return jedis().sinterstore(dstkey, keys);
@@ -766,26 +2551,102 @@ public class RedisService extends Jedis {
         return jedis().zrange(key, start, end);
     }
 
+    /**
+     * Return the members of a set resulting from the union of all the sets hold at the specified
+     * keys. Like in {@link #lrange(byte[], long, long)} LRANGE} the result is sent to the client as a
+     * multi-bulk reply (see the protocol specification for more information). If just a single key is
+     * specified, then this command produces the same result as {@link #smembers(byte[]) SMEMBERS}.
+     * <p>
+     * Non existing keys are considered like empty sets.
+     * <p>
+     * Time complexity O(N) where N is the total number of elements in all the provided sets
+     *
+     * @param keys
+     * @return Multi bulk reply, specifically the list of common elements.
+     */
     @Aop("redis")
     public Set<byte[]> sunion(byte[]... keys) {
         return jedis().sunion(keys);
     }
 
+    /**
+     * Remove the specified member from the sorted set value stored at key. If member was not a member
+     * of the set no operation is performed. If key does not not hold a set value an error is
+     * returned.
+     * <p>
+     * Time complexity O(log(N)) with N being the number of elements in the sorted set
+     *
+     * @param key
+     * @param members
+     * @return Integer reply, specifically: 1 if the new element was removed 0 if the new element was
+     * not a member of the set
+     */
     @Aop("redis")
     public Long zrem(String key, String... members) {
         return jedis().zrem(key, members);
     }
 
+    /**
+     * If member already exists in the sorted set adds the increment to its score and updates the
+     * position of the element in the sorted set accordingly. If member does not already exist in the
+     * sorted set it is added with increment as score (that is, like if the previous score was
+     * virtually zero). If key does not exist a new sorted set with the specified member as sole
+     * member is crated. If the key exists but does not hold a sorted set value an error is returned.
+     * <p>
+     * The score value can be the string representation of a double precision floating point number.
+     * It's possible to provide a negative value to perform a decrement.
+     * <p>
+     * For an introduction to sorted sets check the Introduction to Redis data types page.
+     * <p>
+     * Time complexity O(log(N)) with N being the number of elements in the sorted set
+     *
+     * @param key
+     * @param score
+     * @param member
+     * @return The new score
+     */
     @Aop("redis")
     public Double zincrby(String key, double score, String member) {
         return jedis().zincrby(key, score, member);
     }
 
+    /**
+     * This command works exactly like {@link #sunion(byte[]...) SUNION} but instead of being returned
+     * the resulting set is stored as dstkey. Any existing value in dstkey will be over-written.
+     * <p>
+     * Time complexity O(N) where N is the total number of elements in all the provided sets
+     *
+     * @param dstkey
+     * @param keys
+     * @return Status code reply
+     */
     @Aop("redis")
     public Long sunionstore(byte[] dstkey, byte[]... keys) {
         return jedis().sunionstore(dstkey, keys);
     }
 
+    /**
+     * Return the difference between the Set stored at key1 and all the Sets key2, ..., keyN
+     * <p>
+     * <b>Example:</b>
+     * <p>
+     * <pre>
+     * key1 = [x, a, b, c]
+     * key2 = [c]
+     * key3 = [a, d]
+     * SDIFF key1,key2,key3 =&gt; [x, b]
+     * </pre>
+     * <p>
+     * Non existing keys are considered like empty sets.
+     * <p>
+     * <b>Time complexity:</b>
+     * <p>
+     * O(N) with N being the total number of elements of all the sets
+     *
+     * @param keys
+     * @return Return the members of a set resulting from the difference between the first set
+     * provided and all the successive sets.
+     */
     @Aop("redis")
     public Set<byte[]> sdiff(byte[]... keys) {
         return jedis().sdiff(keys);
@@ -796,16 +2657,52 @@ public class RedisService extends Jedis {
         return jedis().zincrby(key, score, member, params);
     }
 
+    /**
+     * This command works exactly like {@link #sdiff(byte[]...) SDIFF} but instead of being returned
+     * the resulting set is stored in dstkey.
+     *
+     * @param dstkey
+     * @param keys
+     * @return Status code reply
+     */
     @Aop("redis")
     public Long sdiffstore(byte[] dstkey, byte[]... keys) {
         return jedis().sdiffstore(dstkey, keys);
     }
 
+    /**
+     * Return the rank (or index) or member in the sorted set at key, with scores being ordered from
+     * low to high.
+     * <p>
+     * When the given member does not exist in the sorted set, the special value 'nil' is returned.
+     * The returned rank (or index) of the member is 0-based for both commands.
+     * <p>
+     * <b>Time complexity:</b>
+     * <p>
+     * O(log(N))
+     *
+     * @param key
+     * @param member
+     * @return Integer reply or a nil bulk reply, specifically: the rank of the element as an integer
+     * reply if the element exists. A nil bulk reply if there is no such element.
+     * @see #zrevrank(String, String)
+     */
     @Aop("redis")
     public Long zrank(String key, String member) {
         return jedis().zrank(key, member);
     }
 
+    /**
+     * Return a random element from a Set, without removing the element. If the Set is empty or the
+     * key does not exist, a nil object is returned.
+     * <p>
+     * The SPOP command does a similar work but the returned element is popped (removed) from the Set.
+     * <p>
+     * Time complexity O(1)
+     *
+     * @param key
+     * @return Bulk reply
+     */
     @Aop("redis")
     public byte[] srandmember(byte[] key) {
         return jedis().srandmember(key);
@@ -816,11 +2713,45 @@ public class RedisService extends Jedis {
         return jedis().srandmember(key, count);
     }
 
+    /**
+     * Return the rank (or index) or member in the sorted set at key, with scores being ordered from
+     * high to low.
+     * <p>
+     * When the given member does not exist in the sorted set, the special value 'nil' is returned.
+     * The returned rank (or index) of the member is 0-based for both commands.
+     * <p>
+     * <b>Time complexity:</b>
+     * <p>
+     * O(log(N))
+     *
+     * @param key
+     * @param member
+     * @return Integer reply or a nil bulk reply, specifically: the rank of the element as an integer
+     * reply if the element exists. A nil bulk reply if there is no such element.
+     * @see #zrank(String, String)
+     */
     @Aop("redis")
     public Long zrevrank(String key, String member) {
         return jedis().zrevrank(key, member);
     }
 
+    /**
+     * Add the specified member having the specifeid score to the sorted set stored at key. If member
+     * is already a member of the sorted set the score is updated, and the element reinserted in the
+     * right position to ensure sorting. If key does not exist a new sorted set with the specified
+     * member as sole member is crated. If the key exists but does not hold a sorted set value an
+     * error is returned.
+     * <p>
+     * The score value can be the string representation of a double precision floating point number.
+     * <p>
+     * Time complexity O(log(N)) with N being the number of elements in the sorted set
+     *
+     * @param key
+     * @param score
+     * @param member
+     * @return Integer reply, specifically: 1 if the new element was added 0 if the element was
+     * already a member of the sorted set and the score was updated
+     */
     @Aop("redis")
     public Long zadd(byte[] key, double score, byte[] member) {
         return jedis().zadd(key, score, member);
@@ -851,6 +2782,15 @@ public class RedisService extends Jedis {
         return jedis().zadd(key, scoreMembers);
     }
 
+    /**
+     * Return the sorted set cardinality (number of elements). If the key does not exist 0 is
+     * returned, like for empty sorted sets.
+     * <p>
+     * Time complexity O(1)
+     *
+     * @param key
+     * @return the cardinality (number of elements) of the set as an integer.
+     */
     @Aop("redis")
     public Long zcard(String key) {
         return jedis().zcard(key);
@@ -866,11 +2806,34 @@ public class RedisService extends Jedis {
         return jedis().zrange(key, start, end);
     }
 
+    /**
+     * Return the score of the specified element of the sorted set at key. If the specified element
+     * does not exist in the sorted set, or the key does not exist at all, a special 'nil' value is
+     * returned.
+     * <p>
+     * <b>Time complexity:</b> O(1)
+     *
+     * @param key
+     * @param member
+     * @return the score
+     */
     @Aop("redis")
     public Double zscore(String key, String member) {
         return jedis().zscore(key, member);
     }
 
+    /**
+     * Remove the specified member from the sorted set value stored at key. If member was not a member
+     * of the set no operation is performed. If key does not not hold a set value an error is
+     * returned.
+     * <p>
+     * Time complexity O(log(N)) with N being the number of elements in the sorted set
+     *
+     * @param key
+     * @param members
+     * @return Integer reply, specifically: 1 if the new element was removed 0 if the new element was
+     * not a member of the set
+     */
     @Aop("redis")
     public Long zrem(byte[] key, byte[]... members) {
         return jedis().zrem(key, members);
@@ -881,16 +2844,124 @@ public class RedisService extends Jedis {
         return jedis().watch(keys);
     }
 
+    /**
+     * Sort a Set or a List.
+     * <p>
+     * Sort the elements contained in the List, Set, or Sorted Set value at key. By default sorting is
+     * numeric with elements being compared as double precision floating point numbers. This is the
+     * simplest form of SORT.
+     *
+     * @param key
+     * @return Assuming the Set/List at key contains a list of numbers, the return value will be the
+     * list of numbers ordered from the smallest to the biggest number.
+     * @see #sort(String, String)
+     * @see #sort(String, SortingParams)
+     * @see #sort(String, SortingParams, String)
+     */
     @Aop("redis")
     public List<String> sort(String key) {
         return jedis().sort(key);
     }
 
+    /**
+     * If member already exists in the sorted set adds the increment to its score and updates the
+     * position of the element in the sorted set accordingly. If member does not already exist in the
+     * sorted set it is added with increment as score (that is, like if the previous score was
+     * virtually zero). If key does not exist a new sorted set with the specified member as sole
+     * member is crated. If the key exists but does not hold a sorted set value an error is returned.
+     * <p>
+     * The score value can be the string representation of a double precision floating point number.
+     * It's possible to provide a negative value to perform a decrement.
+     * <p>
+     * For an introduction to sorted sets check the Introduction to Redis data types page.
+     * <p>
+     * Time complexity O(log(N)) with N being the number of elements in the sorted set
+     *
+     * @param key
+     * @param score
+     * @param member
+     * @return The new score
+     */
     @Aop("redis")
     public Double zincrby(byte[] key, double score, byte[] member) {
         return jedis().zincrby(key, score, member);
     }
 
+    /**
+     * Sort a Set or a List accordingly to the specified parameters.
+     * <p>
+     * <b>examples:</b>
+     * <p>
+     * Given are the following sets and key/values:
+     * <p>
+     * <pre>
+     * x = [1, 2, 3]
+     * y = [a, b, c]
+     *
+     * k1 = z
+     * k2 = y
+     * k3 = x
+     *
+     * w1 = 9
+     * w2 = 8
+     * w3 = 7
+     * </pre>
+     * <p>
+     * Sort Order:
+     * <p>
+     * <pre>
+     * sort(x) or sort(x, sp.asc())
+     * -&gt; [1, 2, 3]
+     *
+     * sort(x, sp.desc())
+     * -&gt; [3, 2, 1]
+     *
+     * sort(y)
+     * -&gt; [c, a, b]
+     *
+     * sort(y, sp.alpha())
+     * -&gt; [a, b, c]
+     *
+     * sort(y, sp.alpha().desc())
+     * -&gt; [c, a, b]
+     * </pre>
+     * <p>
+     * Limit (e.g. for Pagination):
+     * <p>
+     * <pre>
+     * sort(x, sp.limit(0, 2))
+     * -&gt; [1, 2]
+     *
+     * sort(y, sp.alpha().desc().limit(1, 2))
+     * -&gt; [b, a]
+     * </pre>
+     * <p>
+     * Sorting by external keys:
+     * <p>
+     * <pre>
+     * sort(x, sb.by(w*))
+     * -&gt; [3, 2, 1]
+     *
+     * sort(x, sb.by(w*).desc())
+     * -&gt; [1, 2, 3]
+     * </pre>
+     * <p>
+     * Getting external keys:
+     * <p>
+     * <pre>
+     * sort(x, sp.by(w*).get(k*))
+     * -&gt; [x, y, z]
+     *
+     * sort(x, sp.by(w*).get(#).get(k*))
+     * -&gt; [3, x, 2, y, 1, z]
+     * </pre>
+     *
+     * @param key
+     * @param sortingParameters
+     * @return a list of sorted elements.
+     * @see #sort(String)
+     * @see #sort(String, SortingParams, String)
+     */
     @Aop("redis")
     public List<String> sort(String key, SortingParams sortingParameters) {
         return jedis().sort(key, sortingParameters);
@@ -901,16 +2972,113 @@ public class RedisService extends Jedis {
         return jedis().zincrby(key, score, member, params);
     }
 
+    /**
+     * Return the rank (or index) or member in the sorted set at key, with scores being ordered from
+     * low to high.
+     * <p>
+     * When the given member does not exist in the sorted set, the special value 'nil' is returned.
+     * The returned rank (or index) of the member is 0-based for both commands.
+     * <p>
+     * <b>Time complexity:</b>
+     * <p>
+     * O(log(N))
+     *
+     * @param key
+     * @param member
+     * @return Integer reply or a nil bulk reply, specifically: the rank of the element as an integer
+     * reply if the element exists. A nil bulk reply if there is no such element.
+     * @see #zrevrank(byte[], byte[])
+     */
     @Aop("redis")
     public Long zrank(byte[] key, byte[] member) {
         return jedis().zrank(key, member);
     }
 
+    /**
+     * BLPOP (and BRPOP) is a blocking list pop primitive. You can see this commands as blocking
+     * versions of LPOP and RPOP able to block if the specified keys don't exist or contain empty
+     * lists.
+     * <p>
+     * The following is a description of the exact semantic. We describe BLPOP but the two commands
+     * are identical, the only difference is that BLPOP pops the element from the left (head) of the
+     * list, and BRPOP pops from the right (tail).
+     * <p>
+     * <b>Non blocking behavior</b>
+     * <p>
+     * When BLPOP is called, if at least one of the specified keys contain a non empty list, an
+     * element is popped from the head of the list and returned to the caller together with the name
+     * of the key (BLPOP returns a two elements array, the first element is the key, the second the
+     * popped value).
+     * <p>
+     * Keys are scanned from left to right, so for instance if you issue BLPOP list1 list2 list3 0
+     * against a dataset where list1 does not exist but list2 and list3 contain non empty lists, BLPOP
+     * guarantees to return an element from the list stored at list2 (since it is the first non empty
+     * list starting from the left).
+     * <p>
+     * <b>Blocking behavior</b>
+     * <p>
+     * If none of the specified keys exist or contain non empty lists, BLPOP blocks until some other
+     * client performs a LPUSH or an RPUSH operation against one of the lists.
+     * <p>
+     * Once new data is present on one of the lists, the client finally returns with the name of the
+     * key unblocking it and the popped value.
+     * <p>
+     * When blocking, if a non-zero timeout is specified, the client will unblock returning a nil
+     * special value if the specified amount of seconds passed without a push operation against at
+     * least one of the specified keys.
+     * <p>
+     * The timeout argument is interpreted as an integer value. A timeout of zero means instead to
+     * block forever.
+     * <p>
+     * <b>Multiple clients blocking for the same keys</b>
+     * <p>
+     * Multiple clients can block for the same key. They are put into a queue, so the first to be
+     * served will be the one that started to wait earlier, in a first-blpopping first-served fashion.
+     * <p>
+     * <b>blocking POP inside a MULTI/EXEC transaction</b>
+     * <p>
+     * BLPOP and BRPOP can be used with pipelining (sending multiple commands and reading the replies
+     * in batch), but it does not make sense to use BLPOP or BRPOP inside a MULTI/EXEC block (a Redis
+     * transaction).
+     * <p>
+     * The behavior of BLPOP inside MULTI/EXEC when the list is empty is to return a multi-bulk nil
+     * reply, exactly what happens when the timeout is reached. If you like science fiction, think at
+     * it like if inside MULTI/EXEC the time will flow at infinite speed :)
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param timeout
+     * @param keys
+     * @return BLPOP returns a two-elements array via a multi bulk reply in order to return both the
+     * unblocking key and the popped value.
+     * <p>
+     * When a non-zero timeout is specified, and the BLPOP operation timed out, the return
+     * value is a nil multi bulk reply. Most client values will return false or nil
+     * accordingly to the programming language used.
+     * @see #brpop(int, String...)
+     */
     @Aop("redis")
     public List<String> blpop(int timeout, String... keys) {
         return jedis().blpop(timeout, keys);
     }
 
+    /**
+     * Return the rank (or index) or member in the sorted set at key, with scores being ordered from
+     * high to low.
+     * <p>
+     * When the given member does not exist in the sorted set, the special value 'nil' is returned.
+     * The returned rank (or index) of the member is 0-based for both commands.
+     * <p>
+     * <b>Time complexity:</b>
+     * <p>
+     * O(log(N))
+     *
+     * @param key
+     * @param member
+     * @return Integer reply or a nil bulk reply, specifically: the rank of the element as an integer
+     * reply if the element exists. A nil bulk reply if there is no such element.
+     * @see #zrank(byte[], byte[])
+     */
     @Aop("redis")
     public Long zrevrank(byte[] key, byte[] member) {
         return jedis().zrevrank(key, member);
@@ -931,11 +3099,31 @@ public class RedisService extends Jedis {
         return jedis().zrevrangeWithScores(key, start, end);
     }
 
+    /**
+     * Return the sorted set cardinality (number of elements). If the key does not exist 0 is
+     * returned, like for empty sorted sets.
+     * <p>
+     * Time complexity O(1)
+     *
+     * @param key
+     * @return the cardinality (number of elements) of the set as an integer.
+     */
     @Aop("redis")
     public Long zcard(byte[] key) {
         return jedis().zcard(key);
     }
 
+    /**
+     * Return the score of the specified element of the sorted set at key. If the specified element
+     * does not exist in the sorted set, or the key does not exist at all, a special 'nil' value is
+     * returned.
+     * <p>
+     * <b>Time complexity:</b> O(1)
+     *
+     * @param key
+     * @param member
+     * @return the score
+     */
     @Aop("redis")
     public Double zscore(byte[] key, byte[] member) {
         return jedis().zscore(key, member);
@@ -946,6 +3134,13 @@ public class RedisService extends Jedis {
         return jedis().multi();
     }
 
+    @Deprecated
+    /**
+     * This method is deprecated due to its error prone
+     * and will be removed on next major release
+     * You can use multi() instead
+     * @see https://github.com/xetorthio/jedis/pull/498
+     */
     @Aop("redis")
     public List<Object> multi(TransactionBlock jedisTransaction) {
         return jedis().multi(jedisTransaction);
@@ -986,41 +3181,287 @@ public class RedisService extends Jedis {
         return jedis().unwatch();
     }
 
+    /**
+     * @deprecated unusable command, this command will be removed in 3.0.0.
+     */
     @Aop("redis")
     public List<String> blpop(String arg) {
         return jedis().blpop(arg);
     }
 
+    /**
+     * Sort a Set or a List.
+     * <p>
+     * Sort the elements contained in the List, Set, or Sorted Set value at key. By default sorting is
+     * numeric with elements being compared as double precision floating point numbers. This is the
+     * simplest form of SORT.
+     *
+     * @param key
+     * @return Assuming the Set/List at key contains a list of numbers, the return value will be the
+     * list of numbers ordered from the smallest to the biggest number.
+     * @see #sort(byte[], byte[])
+     * @see #sort(byte[], SortingParams)
+     * @see #sort(byte[], SortingParams, byte[])
+     */
     @Aop("redis")
     public List<byte[]> sort(byte[] key) {
         return jedis().sort(key);
     }
 
+    /**
+     * @deprecated unusable command, this command will be removed in 3.0.0.
+     */
     @Aop("redis")
     public List<String> brpop(String arg) {
         return jedis().brpop(arg);
     }
 
+    /**
+     * Sort a Set or a List accordingly to the specified parameters and store the result at dstkey.
+     *
+     * @param key
+     * @param sortingParameters
+     * @param dstkey
+     * @return The number of elements of the list at dstkey.
+     * @see #sort(String, SortingParams)
+     * @see #sort(String)
+     * @see #sort(String, String)
+     */
     @Aop("redis")
     public Long sort(String key, SortingParams sortingParameters, String dstkey) {
         return jedis().sort(key, sortingParameters, dstkey);
     }
 
+    /**
+     * Sort a Set or a List accordingly to the specified parameters.
+     * <p>
+     * <b>examples:</b>
+     * <p>
+     * Given are the following sets and key/values:
+     * <p>
+     * <pre>
+     * x = [1, 2, 3]
+     * y = [a, b, c]
+     *
+     * k1 = z
+     * k2 = y
+     * k3 = x
+     *
+     * w1 = 9
+     * w2 = 8
+     * w3 = 7
+     * </pre>
+     * <p>
+     * Sort Order:
+     * <p>
+     * <pre>
+     * sort(x) or sort(x, sp.asc())
+     * -&gt; [1, 2, 3]
+     *
+     * sort(x, sp.desc())
+     * -&gt; [3, 2, 1]
+     *
+     * sort(y)
+     * -&gt; [c, a, b]
+     *
+     * sort(y, sp.alpha())
+     * -&gt; [a, b, c]
+     *
+     * sort(y, sp.alpha().desc())
+     * -&gt; [c, a, b]
+     * </pre>
+     * <p>
+     * Limit (e.g. for Pagination):
+     * <p>
+     * <pre>
+     * sort(x, sp.limit(0, 2))
+     * -&gt; [1, 2]
+     *
+     * sort(y, sp.alpha().desc().limit(1, 2))
+     * -&gt; [b, a]
+     * </pre>
+     * <p>
+     * Sorting by external keys:
+     * <p>
+     * <pre>
+     * sort(x, sb.by(w*))
+     * -&gt; [3, 2, 1]
+     *
+     * sort(x, sb.by(w*).desc())
+     * -&gt; [1, 2, 3]
+     * </pre>
+     * <p>
+     * Getting external keys:
+     * <p>
+     * <pre>
+     * sort(x, sp.by(w*).get(k*))
+     * -&gt; [x, y, z]
+     *
+     * sort(x, sp.by(w*).get(#).get(k*))
+     * -&gt; [3, x, 2, y, 1, z]
+     * </pre>
+     *
+     * @param key
+     * @param sortingParameters
+     * @return a list of sorted elements.
+     * @see #sort(byte[])
+     * @see #sort(byte[], SortingParams, byte[])
+     */
     @Aop("redis")
     public List<byte[]> sort(byte[] key, SortingParams sortingParameters) {
         return jedis().sort(key, sortingParameters);
     }
 
+    /**
+     * Sort a Set or a List and Store the Result at dstkey.
+     * <p>
+     * Sort the elements contained in the List, Set, or Sorted Set value at key and store the result
+     * at dstkey. By default sorting is numeric with elements being compared as double precision
+     * floating point numbers. This is the simplest form of SORT.
+     *
+     * @param key
+     * @param dstkey
+     * @return The number of elements of the list at dstkey.
+     * @see #sort(String)
+     * @see #sort(String, SortingParams)
+     * @see #sort(String, SortingParams, String)
+     */
     @Aop("redis")
     public Long sort(String key, String dstkey) {
         return jedis().sort(key, dstkey);
     }
 
+    /**
+     * BLPOP (and BRPOP) is a blocking list pop primitive. You can see this commands as blocking
+     * versions of LPOP and RPOP able to block if the specified keys don't exist or contain empty
+     * lists.
+     * <p>
+     * The following is a description of the exact semantic. We describe BLPOP but the two commands
+     * are identical, the only difference is that BLPOP pops the element from the left (head) of the
+     * list, and BRPOP pops from the right (tail).
+     * <p>
+     * <b>Non blocking behavior</b>
+     * <p>
+     * When BLPOP is called, if at least one of the specified keys contain a non empty list, an
+     * element is popped from the head of the list and returned to the caller together with the name
+     * of the key (BLPOP returns a two elements array, the first element is the key, the second the
+     * popped value).
+     * <p>
+     * Keys are scanned from left to right, so for instance if you issue BLPOP list1 list2 list3 0
+     * against a dataset where list1 does not exist but list2 and list3 contain non empty lists, BLPOP
+     * guarantees to return an element from the list stored at list2 (since it is the first non empty
+     * list starting from the left).
+     * <p>
+     * <b>Blocking behavior</b>
+     * <p>
+     * If none of the specified keys exist or contain non empty lists, BLPOP blocks until some other
+     * client performs a LPUSH or an RPUSH operation against one of the lists.
+     * <p>
+     * Once new data is present on one of the lists, the client finally returns with the name of the
+     * key unblocking it and the popped value.
+     * <p>
+     * When blocking, if a non-zero timeout is specified, the client will unblock returning a nil
+     * special value if the specified amount of seconds passed without a push operation against at
+     * least one of the specified keys.
+     * <p>
+     * The timeout argument is interpreted as an integer value. A timeout of zero means instead to
+     * block forever.
+     * <p>
+     * <b>Multiple clients blocking for the same keys</b>
+     * <p>
+     * Multiple clients can block for the same key. They are put into a queue, so the first to be
+     * served will be the one that started to wait earlier, in a first-blpopping first-served fashion.
+     * <p>
+     * <b>blocking POP inside a MULTI/EXEC transaction</b>
+     * <p>
+     * BLPOP and BRPOP can be used with pipelining (sending multiple commands and reading the replies
+     * in batch), but it does not make sense to use BLPOP or BRPOP inside a MULTI/EXEC block (a Redis
+     * transaction).
+     * <p>
+     * The behavior of BLPOP inside MULTI/EXEC when the list is empty is to return a multi-bulk nil
+     * reply, exactly what happens when the timeout is reached. If you like science fiction, think at
+     * it like if inside MULTI/EXEC the time will flow at infinite speed :)
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param timeout
+     * @param keys
+     * @return BLPOP returns a two-elements array via a multi bulk reply in order to return both the
+     * unblocking key and the popped value.
+     * <p>
+     * When a non-zero timeout is specified, and the BLPOP operation timed out, the return
+     * value is a nil multi bulk reply. Most client values will return false or nil
+     * accordingly to the programming language used.
+     * @see #blpop(int, String...)
+     */
     @Aop("redis")
     public List<String> brpop(int timeout, String... keys) {
         return jedis().brpop(timeout, keys);
     }
 
+    /**
+     * BLPOP (and BRPOP) is a blocking list pop primitive. You can see this commands as blocking
+     * versions of LPOP and RPOP able to block if the specified keys don't exist or contain empty
+     * lists.
+     * <p>
+     * The following is a description of the exact semantic. We describe BLPOP but the two commands
+     * are identical, the only difference is that BLPOP pops the element from the left (head) of the
+     * list, and BRPOP pops from the right (tail).
+     * <p>
+     * <b>Non blocking behavior</b>
+     * <p>
+     * When BLPOP is called, if at least one of the specified keys contain a non empty list, an
+     * element is popped from the head of the list and returned to the caller together with the name
+     * of the key (BLPOP returns a two elements array, the first element is the key, the second the
+     * popped value).
+     * <p>
+     * Keys are scanned from left to right, so for instance if you issue BLPOP list1 list2 list3 0
+     * against a dataset where list1 does not exist but list2 and list3 contain non empty lists, BLPOP
+     * guarantees to return an element from the list stored at list2 (since it is the first non empty
+     * list starting from the left).
+     * <p>
+     * <b>Blocking behavior</b>
+     * <p>
+     * If none of the specified keys exist or contain non empty lists, BLPOP blocks until some other
+     * client performs a LPUSH or an RPUSH operation against one of the lists.
+     * <p>
+     * Once new data is present on one of the lists, the client finally returns with the name of the
+     * key unblocking it and the popped value.
+     * <p>
+     * When blocking, if a non-zero timeout is specified, the client will unblock returning a nil
+     * special value if the specified amount of seconds passed without a push operation against at
+     * least one of the specified keys.
+     * <p>
+     * The timeout argument is interpreted as an integer value. A timeout of zero means instead to
+     * block forever.
+     * <p>
+     * <b>Multiple clients blocking for the same keys</b>
+     * <p>
+     * Multiple clients can block for the same key. They are put into a queue, so the first to be
+     * served will be the one that started to wait earlier, in a first-blpopping first-served fashion.
+     * <p>
+     * <b>blocking POP inside a MULTI/EXEC transaction</b>
+     * <p>
+     * BLPOP and BRPOP can be used with pipelining (sending multiple commands and reading the replies
+     * in batch), but it does not make sense to use BLPOP or BRPOP inside a MULTI/EXEC block (a Redis
+     * transaction).
+     * <p>
+     * The behavior of BLPOP inside MULTI/EXEC when the list is empty is to return a multi-bulk nil
+     * reply, exactly what happens when the timeout is reached. If you like science fiction, think at
+     * it like if inside MULTI/EXEC the time will flow at infinite speed :)
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param timeout
+     * @param keys
+     * @return BLPOP returns a two-elements array via a multi bulk reply in order to return both the
+     * unblocking key and the popped value.
+     * <p>
+     * When a non-zero timeout is specified, and the BLPOP operation timed out, the return
+     * value is a nil multi bulk reply. Most client values will return false or nil
+     * accordingly to the programming language used.
+     * @see #brpop(int, byte[]...)
+     */
     @Aop("redis")
     public List<byte[]> blpop(int timeout, byte[]... keys) {
         return jedis().blpop(timeout, keys);
@@ -1036,21 +3477,158 @@ public class RedisService extends Jedis {
         return jedis().zcount(key, min, max);
     }
 
+    /**
+     * Return the all the elements in the sorted set at key with a score between min and max
+     * (including elements with score equal to min or max).
+     * <p>
+     * The elements having the same score are returned sorted lexicographically as ASCII strings (this
+     * follows from a property of Redis sorted sets and does not involve further computation).
+     * <p>
+     * Using the optional {@link #zrangeByScore(String, double, double, int, int) LIMIT} it's possible
+     * to get only a range of the matching elements in an SQL-alike way. Note that if offset is large
+     * the commands needs to traverse the list for offset elements and this adds up to the O(M)
+     * figure.
+     * <p>
+     * The {@link #zcount(String, double, double) ZCOUNT} command is similar to
+     * {@link #zrangeByScore(String, double, double) ZRANGEBYSCORE} but instead of returning the
+     * actual elements in the specified interval, it just returns the number of matching elements.
+     * <p>
+     * <b>Exclusive intervals and infinity</b>
+     * <p>
+     * min and max can be -inf and +inf, so that you are not required to know what's the greatest or
+     * smallest element in order to take, for instance, elements "up to a given value".
+     * <p>
+     * Also while the interval is for default closed (inclusive) it's possible to specify open
+     * intervals prefixing the score with a "(" character, so for instance:
+     * <p>
+     * {@code ZRANGEBYSCORE zset (1.3 5}
+     * <p>
+     * Will return all the values with score &gt; 1.3 and &lt;= 5, while for instance:
+     * <p>
+     * {@code ZRANGEBYSCORE zset (5 (10}
+     * <p>
+     * Will return all the values with score &gt; 5 and &lt; 10 (5 and 10 excluded).
+     * <p>
+     * <b>Time complexity:</b>
+     * <p>
+     * O(log(N))+O(M) with N being the number of elements in the sorted set and M the number of
+     * elements returned by the command, so if M is constant (for instance you always ask for the
+     * first ten elements with LIMIT) you can consider it O(log(N))
+     *
+     * @param key
+     * @param min a double or Double.MIN_VALUE for "-inf"
+     * @param max a double or Double.MAX_VALUE for "+inf"
+     * @return Multi bulk reply specifically a list of elements in the specified score range.
+     * @see #zrangeByScore(String, double, double)
+     * @see #zrangeByScore(String, double, double, int, int)
+     * @see #zrangeByScoreWithScores(String, double, double)
+     * @see #zrangeByScoreWithScores(String, String, String)
+     * @see #zrangeByScoreWithScores(String, double, double, int, int)
+     * @see #zcount(String, double, double)
+     */
     @Aop("redis")
     public Set<String> zrangeByScore(String key, double min, double max) {
         return jedis().zrangeByScore(key, min, max);
     }
 
+    /**
+     * Sort a Set or a List accordingly to the specified parameters and store the result at dstkey.
+     *
+     * @param key
+     * @param sortingParameters
+     * @param dstkey
+     * @return The number of elements of the list at dstkey.
+     * @see #sort(byte[], SortingParams)
+     * @see #sort(byte[])
+     * @see #sort(byte[], byte[])
+     */
     @Aop("redis")
     public Long sort(byte[] key, SortingParams sortingParameters, byte[] dstkey) {
         return jedis().sort(key, sortingParameters, dstkey);
     }
 
+    /**
+     * Sort a Set or a List and Store the Result at dstkey.
+     * <p>
+     * Sort the elements contained in the List, Set, or Sorted Set value at key and store the result
+     * at dstkey. By default sorting is numeric with elements being compared as double precision
+     * floating point numbers. This is the simplest form of SORT.
+     *
+     * @param key
+     * @param dstkey
+     * @return The number of elements of the list at dstkey.
+     * @see #sort(byte[])
+     * @see #sort(byte[], SortingParams)
+     * @see #sort(byte[], SortingParams, byte[])
+     */
     @Aop("redis")
     public Long sort(byte[] key, byte[] dstkey) {
         return jedis().sort(key, dstkey);
     }
 
+    /**
+     * BLPOP (and BRPOP) is a blocking list pop primitive. You can see this commands as blocking
+     * versions of LPOP and RPOP able to block if the specified keys don't exist or contain empty
+     * lists.
+     * <p>
+     * The following is a description of the exact semantic. We describe BLPOP but the two commands
+     * are identical, the only difference is that BLPOP pops the element from the left (head) of the
+     * list, and BRPOP pops from the right (tail).
+     * <p>
+     * <b>Non blocking behavior</b>
+     * <p>
+     * When BLPOP is called, if at least one of the specified keys contain a non empty list, an
+     * element is popped from the head of the list and returned to the caller together with the name
+     * of the key (BLPOP returns a two elements array, the first element is the key, the second the
+     * popped value).
+     * <p>
+     * Keys are scanned from left to right, so for instance if you issue BLPOP list1 list2 list3 0
+     * against a dataset where list1 does not exist but list2 and list3 contain non empty lists, BLPOP
+     * guarantees to return an element from the list stored at list2 (since it is the first non empty
+     * list starting from the left).
+     * <p>
+     * <b>Blocking behavior</b>
+     * <p>
+     * If none of the specified keys exist or contain non empty lists, BLPOP blocks until some other
+     * client performs a LPUSH or an RPUSH operation against one of the lists.
+     * <p>
+     * Once new data is present on one of the lists, the client finally returns with the name of the
+     * key unblocking it and the popped value.
+     * <p>
+     * When blocking, if a non-zero timeout is specified, the client will unblock returning a nil
+     * special value if the specified amount of seconds passed without a push operation against at
+     * least one of the specified keys.
+     * <p>
+     * The timeout argument is interpreted as an integer value. A timeout of zero means instead to
+     * block forever.
+     * <p>
+     * <b>Multiple clients blocking for the same keys</b>
+     * <p>
+     * Multiple clients can block for the same key. They are put into a queue, so the first to be
+     * served will be the one that started to wait earlier, in a first-blpopping first-served fashion.
+     * <p>
+     * <b>blocking POP inside a MULTI/EXEC transaction</b>
+     * <p>
+     * BLPOP and BRPOP can be used with pipelining (sending multiple commands and reading the replies
+     * in batch), but it does not make sense to use BLPOP or BRPOP inside a MULTI/EXEC block (a Redis
+     * transaction).
+     * <p>
+     * The behavior of BLPOP inside MULTI/EXEC when the list is empty is to return a multi-bulk nil
+     * reply, exactly what happens when the timeout is reached. If you like science fiction, think at
+     * it like if inside MULTI/EXEC the time will flow at infinite speed :)
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param timeout
+     * @param keys
+     * @return BLPOP returns a two-elements array via a multi bulk reply in order to return both the
+     * unblocking key and the popped value.
+     * <p>
+     * When a non-zero timeout is specified, and the BLPOP operation timed out, the return
+     * value is a nil multi bulk reply. Most client values will return false or nil
+     * accordingly to the programming language used.
+     * @see #blpop(int, byte[]...)
+     */
     @Aop("redis")
     public List<byte[]> brpop(int timeout, byte[]... keys) {
         return jedis().brpop(timeout, keys);
@@ -1061,16 +3639,70 @@ public class RedisService extends Jedis {
         return jedis().zrangeByScore(key, min, max);
     }
 
+    /**
+     * Return the all the elements in the sorted set at key with a score between min and max
+     * (including elements with score equal to min or max).
+     * <p>
+     * The elements having the same score are returned sorted lexicographically as ASCII strings (this
+     * follows from a property of Redis sorted sets and does not involve further computation).
+     * <p>
+     * Using the optional {@link #zrangeByScore(String, double, double, int, int) LIMIT} it's possible
+     * to get only a range of the matching elements in an SQL-alike way. Note that if offset is large
+     * the commands needs to traverse the list for offset elements and this adds up to the O(M)
+     * figure.
+     * <p>
+     * The {@link #zcount(String, double, double) ZCOUNT} command is similar to
+     * {@link #zrangeByScore(String, double, double) ZRANGEBYSCORE} but instead of returning the
+     * actual elements in the specified interval, it just returns the number of matching elements.
+     * <p>
+     * <b>Exclusive intervals and infinity</b>
+     * <p>
+     * min and max can be -inf and +inf, so that you are not required to know what's the greatest or
+     * smallest element in order to take, for instance, elements "up to a given value".
+     * <p>
+     * Also while the interval is for default closed (inclusive) it's possible to specify open
+     * intervals prefixing the score with a "(" character, so for instance:
+     * <p>
+     * {@code ZRANGEBYSCORE zset (1.3 5}
+     * <p>
+     * Will return all the values with score &gt; 1.3 and &lt;= 5, while for instance:
+     * <p>
+     * {@code ZRANGEBYSCORE zset (5 (10}
+     * <p>
+     * Will return all the values with score &gt; 5 and &lt; 10 (5 and 10 excluded).
+     * <p>
+     * <b>Time complexity:</b>
+     * <p>
+     * O(log(N))+O(M) with N being the number of elements in the sorted set and M the number of
+     * elements returned by the command, so if M is constant (for instance you always ask for the
+     * first ten elements with LIMIT) you can consider it O(log(N))
+     *
+     * @param key
+     * @param min
+     * @param max
+     * @return Multi bulk reply specifically a list of elements in the specified score range.
+     * @see #zrangeByScore(String, double, double)
+     * @see #zrangeByScore(String, double, double, int, int)
+     * @see #zrangeByScoreWithScores(String, double, double)
+     * @see #zrangeByScoreWithScores(String, double, double, int, int)
+     * @see #zcount(String, double, double)
+     */
     @Aop("redis")
     public Set<String> zrangeByScore(String key, double min, double max, int offset, int count) {
         return jedis().zrangeByScore(key, min, max, offset, count);
     }
 
+    /**
+     * @deprecated unusable command, this command will be removed in 3.0.0.
+     */
     @Aop("redis")
     public List<byte[]> blpop(byte[] arg) {
         return jedis().blpop(arg);
     }
 
+    /**
+     * @deprecated unusable command, this command will be removed in 3.0.0.
+     */
     @Aop("redis")
     public List<byte[]> brpop(byte[] arg) {
         return jedis().brpop(arg);
@@ -1091,16 +3723,85 @@ public class RedisService extends Jedis {
         return jedis().zrangeByScore(key, min, max, offset, count);
     }
 
+    /**
+     * Request for authentication in a password protected Redis server. A Redis server can be
+     * instructed to require a password before to allow clients to issue commands. This is done using
+     * the requirepass directive in the Redis configuration file. If the password given by the client
+     * is correct the server replies with an OK status code reply and starts accepting commands from
+     * the client. Otherwise an error is returned and the clients needs to try a new password. Note
+     * that for the high performance nature of Redis it is possible to try a lot of passwords in
+     * parallel in very short time, so make sure to generate a strong and very long password so that
+     * this attack is infeasible.
+     *
+     * @param password
+     * @return Status code reply
+     */
     @Aop("redis")
     public String auth(String password) {
         return jedis().auth(password);
     }
 
+    /**
+     * Return the all the elements in the sorted set at key with a score between min and max
+     * (including elements with score equal to min or max).
+     * <p>
+     * The elements having the same score are returned sorted lexicographically as ASCII strings (this
+     * follows from a property of Redis sorted sets and does not involve further computation).
+     * <p>
+     * Using the optional {@link #zrangeByScore(String, double, double, int, int) LIMIT} it's possible
+     * to get only a range of the matching elements in an SQL-alike way. Note that if offset is large
+     * the commands needs to traverse the list for offset elements and this adds up to the O(M)
+     * figure.
+     * <p>
+     * The {@link #zcount(String, double, double) ZCOUNT} command is similar to
+     * {@link #zrangeByScore(String, double, double) ZRANGEBYSCORE} but instead of returning the
+     * actual elements in the specified interval, it just returns the number of matching elements.
+     * <p>
+     * <b>Exclusive intervals and infinity</b>
+     * <p>
+     * min and max can be -inf and +inf, so that you are not required to know what's the greatest or
+     * smallest element in order to take, for instance, elements "up to a given value".
+     * <p>
+     * Also while the interval is for default closed (inclusive) it's possible to specify open
+     * intervals prefixing the score with a "(" character, so for instance:
+     * <p>
+     * {@code ZRANGEBYSCORE zset (1.3 5}
+     * <p>
+     * Will return all the values with score &gt; 1.3 and &lt;= 5, while for instance:
+     * <p>
+     * {@code ZRANGEBYSCORE zset (5 (10}
+     * <p>
+     * Will return all the values with score &gt; 5 and &lt; 10 (5 and 10 excluded).
+     * <p>
+     * <b>Time complexity:</b>
+     * <p>
+     * O(log(N))+O(M) with N being the number of elements in the sorted set and M the number of
+     * elements returned by the command, so if M is constant (for instance you always ask for the
+     * first ten elements with LIMIT) you can consider it O(log(N))
+     *
+     * @param key
+     * @param min
+     * @param max
+     * @return Multi bulk reply specifically a list of elements in the specified score range.
+     * @see #zrangeByScore(String, double, double)
+     * @see #zrangeByScore(String, double, double, int, int)
+     * @see #zrangeByScoreWithScores(String, double, double)
+     * @see #zrangeByScoreWithScores(String, double, double, int, int)
+     * @see #zcount(String, double, double)
+     */
     @Aop("redis")
     public Set<Tuple> zrangeByScoreWithScores(String key, double min, double max) {
         return jedis().zrangeByScoreWithScores(key, min, max);
     }
 
+    @Deprecated
+    /**
+     * This method is deprecated due to its error prone with multi
+     * and will be removed on next major release
+     * You can use pipelined() instead
+     *
+     * @see https://github.com/xetorthio/jedis/pull/498
+     */
     @Aop("redis")
     public List<Object> pipelined(PipelineBlock jedisPipeline) {
         return jedis().pipelined(jedisPipeline);
@@ -1121,6 +3822,54 @@ public class RedisService extends Jedis {
         return jedis().zcount(key, min, max);
     }
 
+    /**
+     * Return the all the elements in the sorted set at key with a score between min and max
+     * (including elements with score equal to min or max).
+     * <p>
+     * The elements having the same score are returned sorted lexicographically as ASCII strings (this
+     * follows from a property of Redis sorted sets and does not involve further computation).
+     * <p>
+     * Using the optional {@link #zrangeByScore(byte[], double, double, int, int) LIMIT} it's possible
+     * to get only a range of the matching elements in an SQL-alike way. Note that if offset is large
+     * the commands needs to traverse the list for offset elements and this adds up to the O(M)
+     * figure.
+     * <p>
+     * The {@link #zcount(byte[], double, double) ZCOUNT} command is similar to
+     * {@link #zrangeByScore(byte[], double, double) ZRANGEBYSCORE} but instead of returning the
+     * actual elements in the specified interval, it just returns the number of matching elements.
+     * <p>
+     * <b>Exclusive intervals and infinity</b>
+     * <p>
+     * min and max can be -inf and +inf, so that you are not required to know what's the greatest or
+     * smallest element in order to take, for instance, elements "up to a given value".
+     * <p>
+     * Also while the interval is for default closed (inclusive) it's possible to specify open
+     * intervals prefixing the score with a "(" character, so for instance:
+     * <p>
+     * {@code ZRANGEBYSCORE zset (1.3 5}
+     * <p>
+     * Will return all the values with score &gt; 1.3 and &lt;= 5, while for instance:
+     * <p>
+     * {@code ZRANGEBYSCORE zset (5 (10}
+     * <p>
+     * Will return all the values with score &gt; 5 and &lt; 10 (5 and 10 excluded).
+     * <p>
+     * <b>Time complexity:</b>
+     * <p>
+     * O(log(N))+O(M) with N being the number of elements in the sorted set and M the number of
+     * elements returned by the command, so if M is constant (for instance you always ask for the
+     * first ten elements with LIMIT) you can consider it O(log(N))
+     *
+     * @param key
+     * @param min
+     * @param max
+     * @return Multi bulk reply specifically a list of elements in the specified score range.
+     * @see #zrangeByScore(byte[], double, double)
+     * @see #zrangeByScore(byte[], double, double, int, int)
+     * @see #zrangeByScoreWithScores(byte[], double, double)
+     * @see #zrangeByScoreWithScores(byte[], double, double, int, int)
+     * @see #zcount(byte[], double, double)
+     */
     @Aop("redis")
     public Set<byte[]> zrangeByScore(byte[] key, double min, double max) {
         return jedis().zrangeByScore(key, min, max);
@@ -1131,6 +3880,54 @@ public class RedisService extends Jedis {
         return jedis().zrangeByScoreWithScores(key, min, max);
     }
 
+    /**
+     * Return the all the elements in the sorted set at key with a score between min and max
+     * (including elements with score equal to min or max).
+     * <p>
+     * The elements having the same score are returned sorted lexicographically as ASCII strings (this
+     * follows from a property of Redis sorted sets and does not involve further computation).
+     * <p>
+     * Using the optional {@link #zrangeByScore(String, double, double, int, int) LIMIT} it's possible
+     * to get only a range of the matching elements in an SQL-alike way. Note that if offset is large
+     * the commands needs to traverse the list for offset elements and this adds up to the O(M)
+     * figure.
+     * <p>
+     * The {@link #zcount(String, double, double) ZCOUNT} command is similar to
+     * {@link #zrangeByScore(String, double, double) ZRANGEBYSCORE} but instead of returning the
+     * actual elements in the specified interval, it just returns the number of matching elements.
+     * <p>
+     * <b>Exclusive intervals and infinity</b>
+     * <p>
+     * min and max can be -inf and +inf, so that you are not required to know what's the greatest or
+     * smallest element in order to take, for instance, elements "up to a given value".
+     * <p>
+     * Also while the interval is for default closed (inclusive) it's possible to specify open
+     * intervals prefixing the score with a "(" character, so for instance:
+     * <p>
+     * {@code ZRANGEBYSCORE zset (1.3 5}
+     * <p>
+     * Will return all the values with score &gt; 1.3 and &lt;= 5, while for instance:
+     * <p>
+     * {@code ZRANGEBYSCORE zset (5 (10}
+     * <p>
+     * Will return all the values with score &gt; 5 and &lt; 10 (5 and 10 excluded).
+     * <p>
+     * <b>Time complexity:</b>
+     * <p>
+     * O(log(N))+O(M) with N being the number of elements in the sorted set and M the number of
+     * elements returned by the command, so if M is constant (for instance you always ask for the
+     * first ten elements with LIMIT) you can consider it O(log(N))
+     *
+     * @param key
+     * @param min
+     * @param max
+     * @return Multi bulk reply specifically a list of elements in the specified score range.
+     * @see #zrangeByScore(String, double, double)
+     * @see #zrangeByScore(String, double, double, int, int)
+     * @see #zrangeByScoreWithScores(String, double, double)
+     * @see #zrangeByScoreWithScores(String, double, double, int, int)
+     * @see #zcount(String, double, double)
+     */
     @Aop("redis")
     public Set<Tuple> zrangeByScoreWithScores(String key,
                                               double min,
@@ -1145,6 +3942,53 @@ public class RedisService extends Jedis {
         return jedis().zrangeByScore(key, min, max);
     }
 
+    /**
+     * Return the all the elements in the sorted set at key with a score between min and max
+     * (including elements with score equal to min or max).
+     * <p>
+     * The elements having the same score are returned sorted lexicographically as ASCII strings (this
+     * follows from a property of Redis sorted sets and does not involve further computation).
+     * <p>
+     * Using the optional {@link #zrangeByScore(byte[], double, double, int, int) LIMIT} it's possible
+     * to get only a range of the matching elements in an SQL-alike way. Note that if offset is large
+     * the commands needs to traverse the list for offset elements and this adds up to the O(M)
+     * figure.
+     * <p>
+     * The {@link #zcount(byte[], double, double) ZCOUNT} command is similar to
+     * {@link #zrangeByScore(byte[], double, double) ZRANGEBYSCORE} but instead of returning the
+     * actual elements in the specified interval, it just returns the number of matching elements.
+     * <p>
+     * <b>Exclusive intervals and infinity</b>
+     * <p>
+     * min and max can be -inf and +inf, so that you are not required to know what's the greatest or
+     * smallest element in order to take, for instance, elements "up to a given value".
+     * <p>
+     * Also while the interval is for default closed (inclusive) it's possible to specify open
+     * intervals prefixing the score with a "(" character, so for instance:
+     * <p>
+     * {@code ZRANGEBYSCORE zset (1.3 5}
+     * <p>
+     * Will return all the values with score &gt; 1.3 and &lt;= 5, while for instance:
+     * <p>
+     * {@code ZRANGEBYSCORE zset (5 (10}
+     * <p>
+     * Will return all the values with score &gt; 5 and &lt; 10 (5 and 10 excluded).
+     * <p>
+     * <b>Time complexity:</b>
+     * <p>
+     * O(log(N))+O(M) with N being the number of elements in the sorted set and M the number of
+     * elements returned by the command, so if M is constant (for instance you always ask for the
+     * first ten elements with LIMIT) you can consider it O(log(N))
+     * @see #zrangeByScore(byte[], double, double)
+     * @see #zrangeByScore(byte[], double, double, int, int)
+     * @see #zrangeByScoreWithScores(byte[], double, double)
+     * @see #zrangeByScoreWithScores(byte[], double, double, int, int)
+     * @see #zcount(byte[], double, double)
+     * @param key
+     * @param min
+     * @param max
+     * @return Multi bulk reply specifically a list of elements in the specified score range.
+     */
     @Aop("redis")
     public Set<byte[]> zrangeByScore(byte[] key, double min, double max, int offset, int count) {
         return jedis().zrangeByScore(key, min, max, offset, count);
@@ -1179,6 +4023,54 @@ public class RedisService extends Jedis {
         return jedis().zrangeByScore(key, min, max, offset, count);
     }
 
+    /**
+     * Return the all the elements in the sorted set at key with a score between min and max
+     * (including elements with score equal to min or max).
+     * <p>
+     * The elements having the same score are returned sorted lexicographically as ASCII strings (this
+     * follows from a property of Redis sorted sets and does not involve further computation).
+     * <p>
+     * Using the optional {@link #zrangeByScore(byte[], double, double, int, int) LIMIT} it's possible
+     * to get only a range of the matching elements in an SQL-alike way. Note that if offset is large
+     * the commands needs to traverse the list for offset elements and this adds up to the O(M)
+     * figure.
+     * <p>
+     * The {@link #zcount(byte[], double, double) ZCOUNT} command is similar to
+     * {@link #zrangeByScore(byte[], double, double) ZRANGEBYSCORE} but instead of returning the
+     * actual elements in the specified interval, it just returns the number of matching elements.
+     * <p>
+     * <b>Exclusive intervals and infinity</b>
+     * <p>
+     * min and max can be -inf and +inf, so that you are not required to know what's the greatest or
+     * smallest element in order to take, for instance, elements "up to a given value".
+     * <p>
+     * Also while the interval is for default closed (inclusive) it's possible to specify open
+     * intervals prefixing the score with a "(" character, so for instance:
+     * <p>
+     * {@code ZRANGEBYSCORE zset (1.3 5}
+     * <p>
+     * Will return all the values with score &gt; 1.3 and &lt;= 5, while for instance:
+     * <p>
+     * {@code ZRANGEBYSCORE zset (5 (10}
+     * <p>
+     * Will return all the values with score &gt; 5 and &lt; 10 (5 and 10 excluded).
+     * <p>
+     * <b>Time complexity:</b>
+     * <p>
+     * O(log(N))+O(M) with N being the number of elements in the sorted set and M the number of
+     * elements returned by the command, so if M is constant (for instance you always ask for the
+     * first ten elements with LIMIT) you can consider it O(log(N))
+     *
+     * @param key
+     * @param min
+     * @param max
+     * @return Multi bulk reply specifically a list of elements in the specified score range.
+     * @see #zrangeByScore(byte[], double, double)
+     * @see #zrangeByScore(byte[], double, double, int, int)
+     * @see #zrangeByScoreWithScores(byte[], double, double)
+     * @see #zrangeByScoreWithScores(byte[], double, double, int, int)
+     * @see #zcount(byte[], double, double)
+     */
     @Aop("redis")
     public Set<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max) {
         return jedis().zrangeByScoreWithScores(key, min, max);
@@ -1217,11 +4109,35 @@ public class RedisService extends Jedis {
         return jedis().zrevrangeByScoreWithScores(key, max, min);
     }
 
+    /**
+     * Remove all elements in the sorted set at key with rank between start and end. Start and end are
+     * 0-based with rank 0 being the element with the lowest score. Both start and end can be negative
+     * numbers, where they indicate offsets starting at the element with the highest rank. For
+     * example: -1 is the element with the highest score, -2 the element with the second highest score
+     * and so forth.
+     * <p>
+     * <b>Time complexity:</b> O(log(N))+O(M) with N being the number of elements in the sorted set
+     * and M the number of elements removed by the operation
+     */
     @Aop("redis")
     public Long zremrangeByRank(String key, long start, long end) {
         return jedis().zremrangeByRank(key, start, end);
     }
 
+    /**
+     * Remove all the elements in the sorted set at key with a score between min and max (including
+     * elements with score equal to min or max).
+     * <p>
+     * <b>Time complexity:</b>
+     * <p>
+     * O(log(N))+O(M) with N being the number of elements in the sorted set and M the number of
+     * elements removed by the operation
+     *
+     * @param key
+     * @param start
+     * @param end
+     * @return Integer reply, specifically the number of elements removed.
+     */
     @Aop("redis")
     public Long zremrangeByScore(String key, double start, double end) {
         return jedis().zremrangeByScore(key, start, end);
@@ -1232,6 +4148,54 @@ public class RedisService extends Jedis {
         return jedis().zrangeByScoreWithScores(key, min, max);
     }
 
+    /**
+     * Return the all the elements in the sorted set at key with a score between min and max
+     * (including elements with score equal to min or max).
+     * <p>
+     * The elements having the same score are returned sorted lexicographically as ASCII strings (this
+     * follows from a property of Redis sorted sets and does not involve further computation).
+     * <p>
+     * Using the optional {@link #zrangeByScore(byte[], double, double, int, int) LIMIT} it's possible
+     * to get only a range of the matching elements in an SQL-alike way. Note that if offset is large
+     * the commands needs to traverse the list for offset elements and this adds up to the O(M)
+     * figure.
+     * <p>
+     * The {@link #zcount(byte[], double, double) ZCOUNT} command is similar to
+     * {@link #zrangeByScore(byte[], double, double) ZRANGEBYSCORE} but instead of returning the
+     * actual elements in the specified interval, it just returns the number of matching elements.
+     * <p>
+     * <b>Exclusive intervals and infinity</b>
+     * <p>
+     * min and max can be -inf and +inf, so that you are not required to know what's the greatest or
+     * smallest element in order to take, for instance, elements "up to a given value".
+     * <p>
+     * Also while the interval is for default closed (inclusive) it's possible to specify open
+     * intervals prefixing the score with a "(" character, so for instance:
+     * <p>
+     * {@code ZRANGEBYSCORE zset (1.3 5}
+     * <p>
+     * Will return all the values with score &gt; 1.3 and &lt;= 5, while for instance:
+     * <p>
+     * {@code ZRANGEBYSCORE zset (5 (10}
+     * <p>
+     * Will return all the values with score &gt; 5 and &lt; 10 (5 and 10 excluded).
+     * <p>
+     * <b>Time complexity:</b>
+     * <p>
+     * O(log(N))+O(M) with N being the number of elements in the sorted set and M the number of
+     * elements returned by the command, so if M is constant (for instance you always ask for the
+     * first ten elements with LIMIT) you can consider it O(log(N))
+     *
+     * @param key
+     * @param min
+     * @param max
+     * @return Multi bulk reply specifically a list of elements in the specified score range.
+     * @see #zrangeByScore(byte[], double, double)
+     * @see #zrangeByScore(byte[], double, double, int, int)
+     * @see #zrangeByScoreWithScores(byte[], double, double)
+     * @see #zrangeByScoreWithScores(byte[], double, double, int, int)
+     * @see #zcount(byte[], double, double)
+     */
     @Aop("redis")
     public Set<Tuple> zrangeByScoreWithScores(byte[] key,
                                               double min,
@@ -1246,11 +4210,74 @@ public class RedisService extends Jedis {
         return jedis().zremrangeByScore(key, start, end);
     }
 
+    /**
+     * Creates a union or intersection of N sorted sets given by keys k1 through kN, and stores it at
+     * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
+     * and the other (optional) arguments.
+     * <p>
+     * As the terms imply, the {@link #zinterstore(String, String...) ZINTERSTORE} command requires an
+     * element to be present in each of the given inputs to be inserted in the result. The
+     * {@link #zunionstore(String, String...) ZUNIONSTORE} command inserts all elements across all
+     * inputs.
+     * <p>
+     * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
+     * that the score of each element in the sorted set is first multiplied by this weight before
+     * being passed to the aggregation. When this option is not given, all weights default to 1.
+     * <p>
+     * With the AGGREGATE option, it's possible to specify how the results of the union or
+     * intersection are aggregated. This option defaults to SUM, where the score of an element is
+     * summed across the inputs where it exists. When this option is set to be either MIN or MAX, the
+     * resulting set will contain the minimum or maximum score of an element across the inputs where
+     * it exists.
+     * <p>
+     * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the sizes of the input
+     * sorted sets, and M being the number of elements in the resulting sorted set
+     *
+     * @param dstkey
+     * @param sets
+     * @return Integer reply, specifically the number of elements in the sorted set at dstkey
+     * @see #zunionstore(String, String...)
+     * @see #zunionstore(String, ZParams, String...)
+     * @see #zinterstore(String, String...)
+     * @see #zinterstore(String, ZParams, String...)
+     */
     @Aop("redis")
     public Long zunionstore(String dstkey, String... sets) {
         return jedis().zunionstore(dstkey, sets);
     }
 
+    /**
+     * Creates a union or intersection of N sorted sets given by keys k1 through kN, and stores it at
+     * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
+     * and the other (optional) arguments.
+     * <p>
+     * As the terms imply, the {@link #zinterstore(String, String...) ZINTERSTORE} command requires an
+     * element to be present in each of the given inputs to be inserted in the result. The
+     * {@link #zunionstore(String, String...) ZUNIONSTORE} command inserts all elements across all
+     * inputs.
+     * <p>
+     * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
+     * that the score of each element in the sorted set is first multiplied by this weight before
+     * being passed to the aggregation. When this option is not given, all weights default to 1.
+     * <p>
+     * With the AGGREGATE option, it's possible to specify how the results of the union or
+     * intersection are aggregated. This option defaults to SUM, where the score of an element is
+     * summed across the inputs where it exists. When this option is set to be either MIN or MAX, the
+     * resulting set will contain the minimum or maximum score of an element across the inputs where
+     * it exists.
+     * <p>
+     * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the sizes of the input
+     * sorted sets, and M being the number of elements in the resulting sorted set
+     *
+     * @param dstkey
+     * @param sets
+     * @param params
+     * @return Integer reply, specifically the number of elements in the sorted set at dstkey
+     * @see #zunionstore(String, String...)
+     * @see #zunionstore(String, ZParams, String...)
+     * @see #zinterstore(String, String...)
+     * @see #zinterstore(String, ZParams, String...)
+     */
     @Aop("redis")
     public Long zunionstore(String dstkey, ZParams params, String... sets) {
         return jedis().zunionstore(dstkey, params, sets);
@@ -1285,6 +4312,37 @@ public class RedisService extends Jedis {
         return jedis().zrevrangeByScore(key, max, min, offset, count);
     }
 
+    /**
+     * Creates a union or intersection of N sorted sets given by keys k1 through kN, and stores it at
+     * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
+     * and the other (optional) arguments.
+     * <p>
+     * As the terms imply, the {@link #zinterstore(String, String...) ZINTERSTORE} command requires an
+     * element to be present in each of the given inputs to be inserted in the result. The
+     * {@link #zunionstore(String, String...) ZUNIONSTORE} command inserts all elements across all
+     * inputs.
+     * <p>
+     * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
+     * that the score of each element in the sorted set is first multiplied by this weight before
+     * being passed to the aggregation. When this option is not given, all weights default to 1.
+     * <p>
+     * With the AGGREGATE option, it's possible to specify how the results of the union or
+     * intersection are aggregated. This option defaults to SUM, where the score of an element is
+     * summed across the inputs where it exists. When this option is set to be either MIN or MAX, the
+     * resulting set will contain the minimum or maximum score of an element across the inputs where
+     * it exists.
+     * <p>
+     * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the sizes of the input
+     * sorted sets, and M being the number of elements in the resulting sorted set
+     *
+     * @param dstkey
+     * @param sets
+     * @return Integer reply, specifically the number of elements in the sorted set at dstkey
+     * @see #zunionstore(String, String...)
+     * @see #zunionstore(String, ZParams, String...)
+     * @see #zinterstore(String, String...)
+     * @see #zinterstore(String, ZParams, String...)
+     */
     @Aop("redis")
     public Long zinterstore(String dstkey, String... sets) {
         return jedis().zinterstore(dstkey, sets);
@@ -1318,16 +4376,72 @@ public class RedisService extends Jedis {
         return jedis().zrevrangeByScoreWithScores(key, max, min, offset, count);
     }
 
+    /**
+     * Remove all elements in the sorted set at key with rank between start and end. Start and end are
+     * 0-based with rank 0 being the element with the lowest score. Both start and end can be negative
+     * numbers, where they indicate offsets starting at the element with the highest rank. For
+     * example: -1 is the element with the highest score, -2 the element with the second highest score
+     * and so forth.
+     * <p>
+     * <b>Time complexity:</b> O(log(N))+O(M) with N being the number of elements in the sorted set
+     * and M the number of elements removed by the operation
+     */
     @Aop("redis")
     public Long zremrangeByRank(byte[] key, long start, long end) {
         return jedis().zremrangeByRank(key, start, end);
     }
 
+    /**
+     * Remove all the elements in the sorted set at key with a score between min and max (including
+     * elements with score equal to min or max).
+     * <p>
+     * <b>Time complexity:</b>
+     * <p>
+     * O(log(N))+O(M) with N being the number of elements in the sorted set and M the number of
+     * elements removed by the operation
+     *
+     * @param key
+     * @param start
+     * @param end
+     * @return Integer reply, specifically the number of elements removed.
+     */
     @Aop("redis")
     public Long zremrangeByScore(byte[] key, double start, double end) {
         return jedis().zremrangeByScore(key, start, end);
     }
 
+    /**
+     * Creates a union or intersection of N sorted sets given by keys k1 through kN, and stores it at
+     * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
+     * and the other (optional) arguments.
+     * <p>
+     * As the terms imply, the {@link #zinterstore(String, String...) ZINTERSTORE} command requires an
+     * element to be present in each of the given inputs to be inserted in the result. The
+     * {@link #zunionstore(String, String...) ZUNIONSTORE} command inserts all elements across all
+     * inputs.
+     * <p>
+     * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
+     * that the score of each element in the sorted set is first multiplied by this weight before
+     * being passed to the aggregation. When this option is not given, all weights default to 1.
+     * <p>
+     * With the AGGREGATE option, it's possible to specify how the results of the union or
+     * intersection are aggregated. This option defaults to SUM, where the score of an element is
+     * summed across the inputs where it exists. When this option is set to be either MIN or MAX, the
+     * resulting set will contain the minimum or maximum score of an element across the inputs where
+     * it exists.
+     * <p>
+     * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the sizes of the input
+     * sorted sets, and M being the number of elements in the resulting sorted set
+     *
+     * @param dstkey
+     * @param sets
+     * @param params
+     * @return Integer reply, specifically the number of elements in the sorted set at dstkey
+     * @see #zunionstore(String, String...)
+     * @see #zunionstore(String, ZParams, String...)
+     * @see #zinterstore(String, String...)
+     * @see #zinterstore(String, ZParams, String...)
+     */
     @Aop("redis")
     public Long zinterstore(String dstkey, ZParams params, String... sets) {
         return jedis().zinterstore(dstkey, params, sets);
@@ -1338,6 +4452,36 @@ public class RedisService extends Jedis {
         return jedis().zremrangeByScore(key, start, end);
     }
 
+    /**
+     * Creates a union or intersection of N sorted sets given by keys k1 through kN, and stores it at
+     * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
+     * and the other (optional) arguments.
+     * <p>
+     * As the terms imply, the {@link #zinterstore(byte[], byte[]...)} ZINTERSTORE} command requires
+     * an element to be present in each of the given inputs to be inserted in the result. The {@link
+     * #zunionstore(byte[], byte[]...)} command inserts all elements across all inputs.
+     * <p>
+     * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
+     * that the score of each element in the sorted set is first multiplied by this weight before
+     * being passed to the aggregation. When this option is not given, all weights default to 1.
+     * <p>
+     * With the AGGREGATE option, it's possible to specify how the results of the union or
+     * intersection are aggregated. This option defaults to SUM, where the score of an element is
+     * summed across the inputs where it exists. When this option is set to be either MIN or MAX, the
+     * resulting set will contain the minimum or maximum score of an element across the inputs where
+     * it exists.
+     * <p>
+     * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the sizes of the input
+     * sorted sets, and M being the number of elements in the resulting sorted set
+     *
+     * @param dstkey
+     * @param sets
+     * @return Integer reply, specifically the number of elements in the sorted set at dstkey
+     * @see #zunionstore(byte[], byte[]...)
+     * @see #zunionstore(byte[], ZParams, byte[]...)
+     * @see #zinterstore(byte[], byte[]...)
+     * @see #zinterstore(byte[], ZParams, byte[]...)
+     */
     @Aop("redis")
     public Long zunionstore(byte[] dstkey, byte[]... sets) {
         return jedis().zunionstore(dstkey, sets);
@@ -1358,6 +4502,37 @@ public class RedisService extends Jedis {
         return jedis().zrangeByLex(key, min, max, offset, count);
     }
 
+    /**
+     * Creates a union or intersection of N sorted sets given by keys k1 through kN, and stores it at
+     * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
+     * and the other (optional) arguments.
+     * <p>
+     * As the terms imply, the {@link #zinterstore(byte[], byte[]...) ZINTERSTORE} command requires an
+     * element to be present in each of the given inputs to be inserted in the result. The {@link
+     * #zunionstore(byte[], byte[]...) ZUNIONSTORE} command inserts all elements across all inputs.
+     * <p>
+     * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
+     * that the score of each element in the sorted set is first multiplied by this weight before
+     * being passed to the aggregation. When this option is not given, all weights default to 1.
+     * <p>
+     * With the AGGREGATE option, it's possible to specify how the results of the union or
+     * intersection are aggregated. This option defaults to SUM, where the score of an element is
+     * summed across the inputs where it exists. When this option is set to be either MIN or MAX, the
+     * resulting set will contain the minimum or maximum score of an element across the inputs where
+     * it exists.
+     * <p>
+     * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the sizes of the input
+     * sorted sets, and M being the number of elements in the resulting sorted set
+     *
+     * @param dstkey
+     * @param sets
+     * @param params
+     * @return Integer reply, specifically the number of elements in the sorted set at dstkey
+     * @see #zunionstore(byte[], byte[]...)
+     * @see #zunionstore(byte[], ZParams, byte[]...)
+     * @see #zinterstore(byte[], byte[]...)
+     * @see #zinterstore(byte[], ZParams, byte[]...)
+     */
     @Aop("redis")
     public Long zunionstore(byte[] dstkey, ZParams params, byte[]... sets) {
         return jedis().zunionstore(dstkey, params, sets);
@@ -1388,6 +4563,15 @@ public class RedisService extends Jedis {
         return jedis().lpushx(key, string);
     }
 
+    /**
+     * Undo a {@link #expire(String, int) expire} at turning the expire key into a normal key.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @return Integer reply, specifically: 1: the key is now persist. 0: the key is not persist (only
+     * happens when key not set).
+     */
     @Aop("redis")
     public Long persist(String key) {
         return jedis().persist(key);
@@ -1403,6 +4587,36 @@ public class RedisService extends Jedis {
         return jedis().echo(string);
     }
 
+    /**
+     * Creates a union or intersection of N sorted sets given by keys k1 through kN, and stores it at
+     * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
+     * and the other (optional) arguments.
+     * <p>
+     * As the terms imply, the {@link #zinterstore(byte[], byte[]...) ZINTERSTORE} command requires an
+     * element to be present in each of the given inputs to be inserted in the result. The {@link
+     * #zunionstore(byte[], byte[]...) ZUNIONSTORE} command inserts all elements across all inputs.
+     * <p>
+     * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
+     * that the score of each element in the sorted set is first multiplied by this weight before
+     * being passed to the aggregation. When this option is not given, all weights default to 1.
+     * <p>
+     * With the AGGREGATE option, it's possible to specify how the results of the union or
+     * intersection are aggregated. This option defaults to SUM, where the score of an element is
+     * summed across the inputs where it exists. When this option is set to be either MIN or MAX, the
+     * resulting set will contain the minimum or maximum score of an element across the inputs where
+     * it exists.
+     * <p>
+     * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the sizes of the input
+     * sorted sets, and M being the number of elements in the resulting sorted set
+     *
+     * @param dstkey
+     * @param sets
+     * @return Integer reply, specifically the number of elements in the sorted set at dstkey
+     * @see #zunionstore(byte[], byte[]...)
+     * @see #zunionstore(byte[], ZParams, byte[]...)
+     * @see #zinterstore(byte[], byte[]...)
+     * @see #zinterstore(byte[], ZParams, byte[]...)
+     */
     @Aop("redis")
     public Long zinterstore(byte[] dstkey, byte[]... sets) {
         return jedis().zinterstore(dstkey, sets);
@@ -1413,11 +4627,27 @@ public class RedisService extends Jedis {
         return jedis().linsert(key, where, pivot, value);
     }
 
+    /**
+     * Pop a value from a list, push it to another list and return it; or block until one is available
+     *
+     * @param source
+     * @param destination
+     * @param timeout
+     * @return the element
+     */
     @Aop("redis")
     public String brpoplpush(String source, String destination, int timeout) {
         return jedis().brpoplpush(source, destination, timeout);
     }
 
+    /**
+     * Sets or clears the bit at offset in the string value stored at key
+     *
+     * @param key
+     * @param offset
+     * @param value
+     * @return
+     */
     @Aop("redis")
     public Boolean setbit(String key, long offset, boolean value) {
         return jedis().setbit(key, offset, value);
@@ -1428,6 +4658,13 @@ public class RedisService extends Jedis {
         return jedis().setbit(key, offset, value);
     }
 
+    /**
+     * Returns the bit value at offset in the string value stored at key
+     *
+     * @param key
+     * @param offset
+     * @return
+     */
     @Aop("redis")
     public Boolean getbit(String key, long offset) {
         return jedis().getbit(key, offset);
@@ -1453,16 +4690,112 @@ public class RedisService extends Jedis {
         return jedis().bitpos(key, value, params);
     }
 
+    /**
+     * Creates a union or intersection of N sorted sets given by keys k1 through kN, and stores it at
+     * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
+     * and the other (optional) arguments.
+     * <p>
+     * As the terms imply, the {@link #zinterstore(byte[], byte[]...) ZINTERSTORE} command requires an
+     * element to be present in each of the given inputs to be inserted in the result. The {@link
+     * #zunionstore(byte[], byte[]...) ZUNIONSTORE} command inserts all elements across all inputs.
+     * <p>
+     * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
+     * that the score of each element in the sorted set is first multiplied by this weight before
+     * being passed to the aggregation. When this option is not given, all weights default to 1.
+     * <p>
+     * With the AGGREGATE option, it's possible to specify how the results of the union or
+     * intersection are aggregated. This option defaults to SUM, where the score of an element is
+     * summed across the inputs where it exists. When this option is set to be either MIN or MAX, the
+     * resulting set will contain the minimum or maximum score of an element across the inputs where
+     * it exists.
+     * <p>
+     * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the sizes of the input
+     * sorted sets, and M being the number of elements in the resulting sorted set
+     *
+     * @param dstkey
+     * @param sets
+     * @param params
+     * @return Integer reply, specifically the number of elements in the sorted set at dstkey
+     * @see #zunionstore(byte[], byte[]...)
+     * @see #zunionstore(byte[], ZParams, byte[]...)
+     * @see #zinterstore(byte[], byte[]...)
+     * @see #zinterstore(byte[], ZParams, byte[]...)
+     */
     @Aop("redis")
     public Long zinterstore(byte[] dstkey, ZParams params, byte[]... sets) {
         return jedis().zinterstore(dstkey, params, sets);
     }
 
+    /**
+     * Retrieve the configuration of a running Redis server. Not all the configuration parameters are
+     * supported.
+     * <p>
+     * CONFIG GET returns the current configuration parameters. This sub command only accepts a single
+     * argument, that is glob style pattern. All the configuration parameters matching this parameter
+     * are reported as a list of key-value pairs.
+     * <p>
+     * <b>Example:</b>
+     * <p>
+     * <pre>
+     * $ redis-cli config get '*'
+     * 1. "dbfilename"
+     * 2. "dump.rdb"
+     * 3. "requirepass"
+     * 4. (nil)
+     * 5. "masterauth"
+     * 6. (nil)
+     * 7. "maxmemory"
+     * 8. "0\n"
+     * 9. "appendfsync"
+     * 10. "everysec"
+     * 11. "save"
+     * 12. "3600 1 300 100 60 10000"
+     *
+     * $ redis-cli config get 'm*'
+     * 1. "masterauth"
+     * 2. (nil)
+     * 3. "maxmemory"
+     * 4. "0\n"
+     * </pre>
+     *
+     * @param pattern
+     * @return Bulk reply.
+     */
     @Aop("redis")
     public List<String> configGet(String pattern) {
         return jedis().configGet(pattern);
     }
 
+    /**
+     * Alter the configuration of a running Redis server. Not all the configuration parameters are
+     * supported.
+     * <p>
+     * The list of configuration parameters supported by CONFIG SET can be obtained issuing a
+     * {@link #configGet(String) CONFIG GET *} command.
+     * <p>
+     * The configuration set using CONFIG SET is immediately loaded by the Redis server that will
+     * start acting as specified starting from the next command.
+     * <p>
+     * <b>Parameters value format</b>
+     * <p>
+     * The value of the configuration parameter is the same as the one of the same parameter in the
+     * Redis configuration file, with the following exceptions:
+     * <p>
+     * <ul>
+     * <li>The save paramter is a list of space-separated integers. Every pair of integers specify the
+     * time and number of changes limit to trigger a save. For instance the command CONFIG SET save
+     * "3600 10 60 10000" will configure the server to issue a background saving of the RDB file every
+     * 3600 seconds if there are at least 10 changes in the dataset, and every 60 seconds if there are
+     * at least 10000 changes. To completely disable automatic snapshots just set the parameter as an
+     * empty string.
+     * <li>All the integer parameters representing memory are returned and accepted only using bytes
+     * as unit.
+     * </ul>
+     *
+     * @param parameter
+     * @param value
+     * @return Status code reply
+     */
     @Aop("redis")
     public String configSet(String parameter, String value) {
         return jedis().configSet(parameter, value);
@@ -1518,6 +4851,20 @@ public class RedisService extends Jedis {
         jedis().psubscribe(jedisPubSub, patterns);
     }
 
+    /**
+     * Synchronously save the DB on disk.
+     * <p>
+     * Save the whole dataset on disk (this means that all the databases are saved, as well as keys
+     * with an EXPIRE set (the expire is preserved). The server hangs while the saving is not
+     * completed, no connection is served in the meanwhile. An OK code is returned when the DB was
+     * fully stored in disk.
+     * <p>
+     * The background variant of this command is {@link #bgsave() BGSAVE} that is able to perform the
+     * saving in the background while the server continues serving other clients.
+     * <p>
+     *
+     * @return Status code reply
+     */
     @Aop("redis")
     public String save() {
         return jedis().save();
@@ -1533,6 +4880,15 @@ public class RedisService extends Jedis {
         return jedis().eval(script);
     }
 
+    /**
+     * Asynchronously save the DB on disk.
+     * <p>
+     * Save the DB in background. The OK code is immediately returned. Redis forks, the parent
+     * continues to server the clients, the child saves the DB on disk then exit. A client my be able
+     * to check if the operation succeeded using the LASTSAVE command.
+     *
+     * @return Status code reply
+     */
     @Aop("redis")
     public String bgsave() {
         return jedis().bgsave();
@@ -1543,6 +4899,21 @@ public class RedisService extends Jedis {
         return jedis().evalsha(script);
     }
 
+    /**
+     * Rewrite the append only file in background when it gets too big. Please for detailed
+     * information about the Redis Append Only File check the <a
+     * href="http://code.google.com/p/redis/wiki/AppendOnlyFileHowto">Append Only File Howto</a>.
+     * <p>
+     * BGREWRITEAOF rewrites the Append Only File in background when it gets too big. The Redis Append
+     * Only File is a Journal, so every operation modifying the dataset is logged in the Append Only
+     * File (and replayed at startup). This means that the Append Only File always grows. In order to
+     * rebuild its content the BGREWRITEAOF creates a new version of the append only file starting
+     * directly form the dataset in memory in order to guarantee the generation of the minimal number
+     * of commands needed to rebuild the database.
+     * <p>
+     *
+     * @return Status code reply
+     */
     @Aop("redis")
     public String bgrewriteaof() {
         return jedis().bgrewriteaof();
@@ -1573,6 +4944,15 @@ public class RedisService extends Jedis {
         return jedis().scriptLoad(script);
     }
 
+    /**
+     * Return the UNIX time stamp of the last successfully saving of the dataset on disk.
+     * <p>
+     * Return the UNIX TIME of the last DB save executed with success. A client may check if a
+     * {@link #bgsave() BGSAVE} command succeeded reading the LASTSAVE value, then issuing a BGSAVE
+     * command and checking at regular intervals every N seconds if LASTSAVE changed.
+     *
+     * @return Integer reply, specifically an UNIX time stamp.
+     */
     @Aop("redis")
     public Long lastsave() {
         return jedis().lastsave();
@@ -1598,6 +4978,17 @@ public class RedisService extends Jedis {
         return jedis().objectEncoding(string);
     }
 
+    /**
+     * Synchronously save the DB on disk, then shutdown the server.
+     * <p>
+     * Stop all the clients, save the DB, then quit the server. This commands makes sure that the DB
+     * is switched off without the lost of any data. This is not guaranteed if the client uses simply
+     * {@link #save() SAVE} and then {@link #quit() QUIT} because other clients may alter the DB data
+     * between the two commands.
+     *
+     * @return Status code reply on error. On success nothing is returned since the server quits and
+     * the connection is closed.
+     */
     @Aop("redis")
     public String shutdown() {
         return jedis().shutdown();
@@ -1623,16 +5014,95 @@ public class RedisService extends Jedis {
         return jedis().bitop(op, destKey, srcKeys);
     }
 
+    /**
+     * <pre>
+     * redis 127.0.0.1:26381&gt; sentinel masters
+     * 1)  1) "name"
+     *     2) "mymaster"
+     *     3) "ip"
+     *     4) "127.0.0.1"
+     *     5) "port"
+     *     6) "6379"
+     *     7) "runid"
+     *     8) "93d4d4e6e9c06d0eea36e27f31924ac26576081d"
+     *     9) "flags"
+     *    10) "master"
+     *    11) "pending-commands"
+     *    12) "0"
+     *    13) "last-ok-ping-reply"
+     *    14) "423"
+     *    15) "last-ping-reply"
+     *    16) "423"
+     *    17) "info-refresh"
+     *    18) "6107"
+     *    19) "num-slaves"
+     *    20) "1"
+     *    21) "num-other-sentinels"
+     *    22) "2"
+     *    23) "quorum"
+     *    24) "2"
+     *
+     * </pre>
+     *
+     * @return
+     */
     @Aop("redis")
     public List<Map<String, String>> sentinelMasters() {
         return jedis().sentinelMasters();
     }
 
+    /**
+     * Provide information and statistics about the server.
+     * <p>
+     * The info command returns different information and statistics about the server in an format
+     * that's simple to parse by computers and easy to read by humans.
+     * <p>
+     * <b>Format of the returned String:</b>
+     * <p>
+     * All the fields are in the form field:value
+     * <p>
+     * <pre>
+     * edis_version:0.07
+     * connected_clients:1
+     * connected_slaves:0
+     * used_memory:3187
+     * changes_since_last_save:0
+     * last_save_time:1237655729
+     * total_connections_received:1
+     * total_commands_processed:1
+     * uptime_in_seconds:25
+     * uptime_in_days:0
+     * </pre>
+     * <p>
+     * <b>Notes</b>
+     * <p>
+     * used_memory is returned in bytes, and is the total number of bytes allocated by the program
+     * using malloc.
+     * <p>
+     * uptime_in_days is redundant since the uptime in seconds contains already the full uptime
+     * information, this field is only mainly present for humans.
+     * <p>
+     * changes_since_last_save does not refer to the number of key changes, but to the number of
+     * operations that produced some kind of change in the dataset.
+     * <p>
+     *
+     * @return Bulk reply
+     */
     @Aop("redis")
     public String info() {
         return jedis().info();
     }
 
+    /**
+     * <pre>
+     * redis 127.0.0.1:26381&gt; sentinel get-master-addr-by-name mymaster
+     * 1) "127.0.0.1"
+     * 2) "6379"
+     * </pre>
+     *
+     * @param masterName
+     * @return two elements list of strings : host and port.
+     */
     @Aop("redis")
     public List<String> sentinelGetMasterAddrByName(String masterName) {
         return jedis().sentinelGetMasterAddrByName(masterName);
@@ -1643,21 +5113,97 @@ public class RedisService extends Jedis {
         return jedis().info(section);
     }
 
+    /**
+     * <pre>
+     * redis 127.0.0.1:26381&gt; sentinel reset mymaster
+     * (integer) 1
+     * </pre>
+     *
+     * @param pattern
+     * @return
+     */
     @Aop("redis")
     public Long sentinelReset(String pattern) {
         return jedis().sentinelReset(pattern);
     }
 
+    /**
+     * Dump all the received requests in real time.
+     * <p>
+     * MONITOR is a debugging command that outputs the whole sequence of commands received by the
+     * Redis server. is very handy in order to understand what is happening into the database. This
+     * command is used directly via telnet.
+     *
+     * @param jedisMonitor
+     */
     @Aop("redis")
     public void monitor(JedisMonitor jedisMonitor) {
         jedis().monitor(jedisMonitor);
     }
 
+    /**
+     * <pre>
+     * redis 127.0.0.1:26381&gt; sentinel slaves mymaster
+     * 1)  1) "name"
+     *     2) "127.0.0.1:6380"
+     *     3) "ip"
+     *     4) "127.0.0.1"
+     *     5) "port"
+     *     6) "6380"
+     *     7) "runid"
+     *     8) "d7f6c0ca7572df9d2f33713df0dbf8c72da7c039"
+     *     9) "flags"
+     *    10) "slave"
+     *    11) "pending-commands"
+     *    12) "0"
+     *    13) "last-ok-ping-reply"
+     *    14) "47"
+     *    15) "last-ping-reply"
+     *    16) "47"
+     *    17) "info-refresh"
+     *    18) "657"
+     *    19) "master-link-down-time"
+     *    20) "0"
+     *    21) "master-link-status"
+     *    22) "ok"
+     *    23) "master-host"
+     *    24) "localhost"
+     *    25) "master-port"
+     *    26) "6379"
+     *    27) "slave-priority"
+     *    28) "100"
+     * </pre>
+     *
+     * @param masterName
+     * @return
+     */
     @Aop("redis")
     public List<Map<String, String>> sentinelSlaves(String masterName) {
         return jedis().sentinelSlaves(masterName);
     }
 
+    /**
+     * Change the replication settings.
+     * <p>
+     * The SLAVEOF command can change the replication settings of a slave on the fly. If a Redis
+     * server is arleady acting as slave, the command SLAVEOF NO ONE will turn off the replicaiton
+     * turning the Redis server into a MASTER. In the proper form SLAVEOF hostname port will make the
+     * server a slave of the specific server listening at the specified hostname and port.
+     * <p>
+     * If a server is already a slave of some master, SLAVEOF hostname port will stop the replication
+     * against the old server and start the synchrnonization against the new one discarding the old
+     * dataset.
+     * <p>
+     * The form SLAVEOF no one will stop replication turning the server into a MASTER but will not
+     * discard the replication. So if the old master stop working it is possible to turn the slave
+     * into a master and set the application to use the new master in read/write. Later when the other
+     * Redis server will be fixed it can be configured in order to work as slave.
+     * <p>
+     *
+     * @param host
+     * @param port
+     * @return Status code reply
+     */
     @Aop("redis")
     public String slaveof(String host, int port) {
         return jedis().slaveof(host, port);
@@ -1678,6 +5224,41 @@ public class RedisService extends Jedis {
         return jedis().slaveofNoOne();
     }
 
+    /**
+     * Retrieve the configuration of a running Redis server. Not all the configuration parameters are
+     * supported.
+     * <p>
+     * CONFIG GET returns the current configuration parameters. This sub command only accepts a single
+     * argument, that is glob style pattern. All the configuration parameters matching this parameter
+     * are reported as a list of key-value pairs.
+     * <p>
+     * <b>Example:</b>
+     * <p>
+     * <pre>
+     * $ redis-cli config get '*'
+     * 1. "dbfilename"
+     * 2. "dump.rdb"
+     * 3. "requirepass"
+     * 4. (nil)
+     * 5. "masterauth"
+     * 6. (nil)
+     * 7. "maxmemory"
+     * 8. "0\n"
+     * 9. "appendfsync"
+     * 10. "everysec"
+     * 11. "save"
+     * 12. "3600 1 300 100 60 10000"
+     *
+     * $ redis-cli config get 'm*'
+     * 1. "masterauth"
+     * 2. (nil)
+     * 3. "maxmemory"
+     * 4. "0\n"
+     * </pre>
+     *
+     * @param pattern
+     * @return Bulk reply.
+     */
     @Aop("redis")
     public List<byte[]> configGet(byte[] pattern) {
         return jedis().configGet(pattern);
@@ -1703,6 +5284,11 @@ public class RedisService extends Jedis {
         return jedis().restore(key, ttl, serializedValue);
     }
 
+    /**
+     * Reset the stats returned by INFO
+     *
+     * @return
+     */
     @Aop("redis")
     public String configResetStat() {
         return jedis().configResetStat();
@@ -1713,6 +5299,36 @@ public class RedisService extends Jedis {
         return jedis().pexpire(key, milliseconds);
     }
 
+    /**
+     * Alter the configuration of a running Redis server. Not all the configuration parameters are
+     * supported.
+     * <p>
+     * The list of configuration parameters supported by CONFIG SET can be obtained issuing a
+     * {@link #configGet(byte[]) CONFIG GET *} command.
+     * <p>
+     * The configuration set using CONFIG SET is immediately loaded by the Redis server that will
+     * start acting as specified starting from the next command.
+     * <p>
+     * <b>Parameters value format</b>
+     * <p>
+     * The value of the configuration parameter is the same as the one of the same parameter in the
+     * Redis configuration file, with the following exceptions:
+     * <p>
+     * <ul>
+     * <li>The save paramter is a list of space-separated integers. Every pair of integers specify the
+     * time and number of changes limit to trigger a save. For instance the command CONFIG SET save
+     * "3600 10 60 10000" will configure the server to issue a background saving of the RDB file every
+     * 3600 seconds if there are at least 10 changes in the dataset, and every 60 seconds if there are
+     * at least 10000 changes. To completely disable automatic snapshots just set the parameter as an
+     * empty string.
+     * <li>All the integer parameters representing memory are returned and accepted only using bytes
+     * as unit.
+     * </ul>
+     *
+     * @param parameter
+     * @param value
+     * @return Status code reply
+     */
     @Aop("redis")
     public byte[] configSet(byte[] parameter, byte[] value) {
         return jedis().configSet(parameter, value);
@@ -1738,6 +5354,15 @@ public class RedisService extends Jedis {
         return jedis().psetex(key, milliseconds, value);
     }
 
+    /**
+     * PSETEX works exactly like {@link #setex(String, int, String)} with the sole difference that the
+     * expire time is specified in milliseconds instead of seconds. Time complexity: O(1)
+     *
+     * @param key
+     * @param milliseconds
+     * @param value
+     * @return Status code reply
+     */
     @Aop("redis")
     public String psetex(String key, long milliseconds, String value) {
         return jedis().psetex(key, milliseconds, value);
@@ -1783,6 +5408,15 @@ public class RedisService extends Jedis {
         return jedis().clientSetname(name);
     }
 
+    /**
+     * Undo a {@link #expire(byte[], int) expire} at turning the expire key into a normal key.
+     * <p>
+     * Time complexity: O(1)
+     *
+     * @param key
+     * @return Integer reply, specifically: 1: the key is now persist. 0: the key is not persist (only
+     * happens when key not set).
+     */
     @Aop("redis")
     public Long persist(byte[] key) {
         return jedis().persist(key);
@@ -1793,6 +5427,12 @@ public class RedisService extends Jedis {
         return jedis().migrate(host, port, key, destinationDb, timeout);
     }
 
+    @Deprecated
+    /**
+     * This method is deprecated due to bug (scan cursor should be unsigned long)
+     * And will be removed on next major release
+     * @see https://github.com/xetorthio/jedis/issues/531
+     */
     @Aop("redis")
     public ScanResult<String> scan(int cursor) {
         return jedis().scan(cursor);
@@ -1808,6 +5448,12 @@ public class RedisService extends Jedis {
         return jedis().echo(string);
     }
 
+    @Deprecated
+    /**
+     * This method is deprecated due to bug (scan cursor should be unsigned long)
+     * And will be removed on next major release
+     * @see https://github.com/xetorthio/jedis/issues/531
+     */
     @Aop("redis")
     public ScanResult<String> scan(int cursor, ScanParams params) {
         return jedis().scan(cursor, params);
@@ -1828,21 +5474,49 @@ public class RedisService extends Jedis {
         return jedis().getClient();
     }
 
+    /**
+     * Pop a value from a list, push it to another list and return it; or block until one is available
+     *
+     * @param source
+     * @param destination
+     * @param timeout
+     * @return the element
+     */
     @Aop("redis")
     public byte[] brpoplpush(byte[] source, byte[] destination, int timeout) {
         return jedis().brpoplpush(source, destination, timeout);
     }
 
+    @Deprecated
+    /**
+     * This method is deprecated due to bug (scan cursor should be unsigned long)
+     * And will be removed on next major release
+     * @see https://github.com/xetorthio/jedis/issues/531
+     */
     @Aop("redis")
     public ScanResult<Entry<String, String>> hscan(String key, int cursor) {
         return jedis().hscan(key, cursor);
     }
 
+    /**
+     * Sets or clears the bit at offset in the string value stored at key
+     *
+     * @param key
+     * @param offset
+     * @param value
+     * @return
+     */
     @Aop("redis")
     public Boolean setbit(byte[] key, long offset, boolean value) {
         return jedis().setbit(key, offset, value);
     }
 
+    @Deprecated
+    /**
+     * This method is deprecated due to bug (scan cursor should be unsigned long)
+     * And will be removed on next major release
+     * @see https://github.com/xetorthio/jedis/issues/531
+     */
     @Aop("redis")
     public ScanResult<Entry<String, String>> hscan(String key, int cursor, ScanParams params) {
         return jedis().hscan(key, cursor, params);
@@ -1853,6 +5527,13 @@ public class RedisService extends Jedis {
         return jedis().setbit(key, offset, value);
     }
 
+    /**
+     * Returns the bit value at offset in the string value stored at key
+     *
+     * @param key
+     * @param offset
+     * @return
+     */
     @Aop("redis")
     public Boolean getbit(byte[] key, long offset) {
         return jedis().getbit(key, offset);
@@ -1878,6 +5559,12 @@ public class RedisService extends Jedis {
         return jedis().getrange(key, startOffset, endOffset);
     }
 
+    @Deprecated
+    /**
+     * This method is deprecated due to bug (scan cursor should be unsigned long)
+     * And will be removed on next major release
+     * @see https://github.com/xetorthio/jedis/issues/531
+     */
     @Aop("redis")
     public ScanResult<String> sscan(String key, int cursor) {
         return jedis().sscan(key, cursor);
@@ -1893,6 +5580,12 @@ public class RedisService extends Jedis {
         jedis().subscribe(jedisPubSub, channels);
     }
 
+    @Deprecated
+    /**
+     * This method is deprecated due to bug (scan cursor should be unsigned long)
+     * And will be removed on next major release
+     * @see https://github.com/xetorthio/jedis/issues/531
+     */
     @Aop("redis")
     public ScanResult<String> sscan(String key, int cursor, ScanParams params) {
         return jedis().sscan(key, cursor, params);
@@ -1908,16 +5601,34 @@ public class RedisService extends Jedis {
         return jedis().getDB();
     }
 
+    /**
+     * Evaluates scripts using the Lua interpreter built into Redis starting from version 2.6.0.
+     * <p>
+     *
+     * @return Script result
+     */
     @Aop("redis")
     public Object eval(byte[] script, List<byte[]> keys, List<byte[]> args) {
         return jedis().eval(script, keys, args);
     }
 
+    @Deprecated
+    /**
+     * This method is deprecated due to bug (scan cursor should be unsigned long)
+     * And will be removed on next major release
+     * @see https://github.com/xetorthio/jedis/issues/531
+     */
     @Aop("redis")
     public ScanResult<Tuple> zscan(String key, int cursor) {
         return jedis().zscan(key, cursor);
     }
 
+    @Deprecated
+    /**
+     * This method is deprecated due to bug (scan cursor should be unsigned long)
+     * And will be removed on next major release
+     * @see https://github.com/xetorthio/jedis/issues/531
+     */
     @Aop("redis")
     public ScanResult<Tuple> zscan(String key, int cursor, ScanParams params) {
         return jedis().zscan(key, cursor, params);
@@ -2108,6 +5819,15 @@ public class RedisService extends Jedis {
         return jedis().clusterNodes();
     }
 
+    /**
+     * PSETEX works exactly like {@link #setex(byte[], int, byte[])} with the sole difference that the
+     * expire time is specified in milliseconds instead of seconds. Time complexity: O(1)
+     *
+     * @param key
+     * @param milliseconds
+     * @param value
+     * @return Status code reply
+     */
     @Aop("redis")
     public String psetex(byte[] key, long milliseconds, byte[] value) {
         return jedis().psetex(key, milliseconds, value);
@@ -2208,6 +5928,11 @@ public class RedisService extends Jedis {
         return jedis().clusterSetSlotStable(slot);
     }
 
+    /**
+     * Syncrhonous replication of Redis as described here: http://antirez.com/news/66 Since Java
+     * Object class has implemented "wait" method, we cannot use it, so I had to change the name of
+     * the method. Sorry :S
+     */
     @Aop("redis")
     public Long waitReplicas(int replicas, long timeout) {
         return jedis().waitReplicas(replicas, timeout);
