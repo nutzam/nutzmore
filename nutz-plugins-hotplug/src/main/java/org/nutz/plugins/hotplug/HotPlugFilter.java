@@ -29,7 +29,7 @@ public class HotPlugFilter implements Filter {
     protected String prefix;
 
     public void init(FilterConfig filterConfig) throws ServletException {
-        prefix = "/asserts/";
+        prefix = "/assets/";
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)

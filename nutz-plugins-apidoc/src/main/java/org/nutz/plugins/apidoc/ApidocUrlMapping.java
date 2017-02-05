@@ -59,7 +59,7 @@ public class ApidocUrlMapping extends UrlMappingImpl {
 	/**
 	 * 按类(或组?)分类排好的列表
 	 */
-	protected LinkedHashMap<String, ExpClass> infos = new LinkedHashMap<>();
+	protected static LinkedHashMap<String, ExpClass> infos = new LinkedHashMap<>();
 
 	protected NutMap projectInfo;
 
