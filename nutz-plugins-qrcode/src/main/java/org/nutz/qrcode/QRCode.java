@@ -15,6 +15,8 @@ import java.nio.charset.Charset;
 
 import javax.imageio.ImageIO;
 
+import org.nutz.img.Images;
+
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.ChecksumException;
@@ -134,7 +136,11 @@ public final class QRCode {
         if (null == appendFile || appendFile.length() == 0) {
             return toFile(new File(qrcodeFile));
         }
-        return toFile(new File(qrcodeFile), new File(appendFile));
+        return toFile(new File(qrcodeFile), Images.read(new File(appendFile)));
+    }
+
+    public QRCode toFile(File qrcodeFile, File appendFile) {
+        return toFile(qrcodeFile, Images.read(appendFile));
     }
 
     /**
@@ -147,15 +153,15 @@ public final class QRCode {
      *
      * @return QRCode 处理器
      */
-    public QRCode toFile(File qrcodeFile, File appendFile) {
+    public QRCode toFile(File qrcodeFile, BufferedImage appendFile) {
         try {
             if (!qrcodeFile.exists()) {
                 qrcodeFile.getParentFile().mkdirs();
                 qrcodeFile.createNewFile();
             }
 
-            if (null != appendFile && appendFile.isFile() && appendFile.length() != 0) {
-                appendImage(ImageIO.read(appendFile));
+            if (null != appendFile) {
+                appendImage(appendFile);
             }
 
             if (!ImageIO.write(this.qrcodeImage, getSuffixName(qrcodeFile), qrcodeFile)) {
@@ -173,20 +179,29 @@ public final class QRCode {
         appendImage(this.qrcodeImage, appendImage, this.format);
     }
 
-    private static void appendImage(BufferedImage qrcodeImage, BufferedImage appendImage, QRCodeFormat format) {
+    private static void appendImage(BufferedImage qrcodeImage,
+                                    BufferedImage appendImage,
+                                    QRCodeFormat format) {
         int baseWidth = qrcodeImage.getWidth();
         int baseHeight = qrcodeImage.getHeight();
 
         // 计算 icon 的最大边长
         // 公式为 二维码面积*错误修正等级*0.4 的开方
-        int maxWidth = (int) Math.sqrt(baseWidth * baseHeight * format.getErrorCorrectionLevelValue() * 0.4);
+        int maxWidth = (int) Math.sqrt(baseWidth
+                                       * baseHeight
+                                       * format.getErrorCorrectionLevelValue()
+                                       * 0.4);
         int maxHeight = maxWidth;
 
         // 获取 icon 的实际边长
-        int roundRectWidth = (maxWidth < appendImage.getWidth()) ? maxWidth : appendImage.getWidth();
-        int roundRectHeight = (maxHeight < appendImage.getHeight()) ? maxHeight : appendImage.getHeight();
+        int roundRectWidth = (maxWidth < appendImage.getWidth()) ? maxWidth
+                                                                 : appendImage.getWidth();
+        int roundRectHeight = (maxHeight < appendImage.getHeight()) ? maxHeight
+                                                                    : appendImage.getHeight();
 
-        BufferedImage roundRect = new BufferedImage(roundRectWidth, roundRectHeight, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage roundRect = new BufferedImage(roundRectWidth,
+                                                    roundRectHeight,
+                                                    BufferedImage.TYPE_INT_ARGB);
 
         Graphics2D g2 = roundRect.createGraphics();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -198,7 +213,10 @@ public final class QRCode {
 
         Graphics gc = qrcodeImage.getGraphics();
         gc.setColor(format.getBackGroundColor());
-        gc.drawImage(roundRect, (baseWidth - roundRectWidth) / 2, (baseHeight - roundRectHeight) / 2, null);
+        gc.drawImage(roundRect,
+                     (baseWidth - roundRectWidth) / 2,
+                     (baseHeight - roundRectHeight) / 2,
+                     null);
         gc.dispose();
     }
 
@@ -251,20 +269,9 @@ public final class QRCode {
                 image.setRGB(x, y, matrix.get(x, y) ? fgColor : bgColor);
             }
         }
-
-        File appendFile = format.getIcon();
-        if (null != appendFile && appendFile.isFile() && appendFile.length() != 0) {
-            BufferedImage appendImage = null;
-            try {
-                appendImage = ImageIO.read(appendFile);
-            }
-            catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-            appendImage(image, appendImage, format);
+        if (null != format.getIcon()) {
+            appendImage(image, format.getIcon(), format);
         }
-
         return image;
     }
 

@@ -1,8 +1,11 @@
 package org.nutz.qrcode;
 
 import java.awt.Color;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Hashtable;
+
+import org.nutz.img.Images;
 
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
@@ -42,7 +45,7 @@ public class QRCodeFormat {
     private Hashtable<EncodeHintType, Object> hints;
 
     /** 需要添加的图片 */
-    private File icon;
+    private BufferedImage icon;
 
     /**
      * 创建一个带有默认值的 QRCode 生成器的格式。默认值如下
@@ -319,8 +322,13 @@ public class QRCodeFormat {
      * 
      * @return 添加的图片
      */
-    public File getIcon() {
+    protected BufferedImage getIcon() {
         return icon;
+    }
+
+    public QRCodeFormat setIcon(BufferedImage icon) {
+        this.icon = icon;
+        return this;
     }
 
     /**
@@ -332,7 +340,7 @@ public class QRCodeFormat {
      * @return QRCode生成器的格式
      */
     public QRCodeFormat setIcon(File icon) {
-        this.icon = icon;
+        this.icon = Images.read(icon);
         return this;
     }
 
