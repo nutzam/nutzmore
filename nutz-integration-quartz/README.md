@@ -35,7 +35,15 @@ Nutz集成Quartz的插件
 在Module或Service中引用Scheduler
 -----------------------------------------------
 
+Quartz的核心类Scheduler, 得到它,你几乎可以操作Quartz的一切
+
+	// 注入的方式
+	
 	@Inject Scheduler scheduler;
+	
+	// 或主动获取的方式
+	
+	Scheduler scheduler = ioc.get(Scheduler.class);
 	
 	
 任务加载类NutQuartzCronJobFactory(可选的)
@@ -56,7 +64,7 @@ Nutz集成Quartz的插件
 	cron.pkgs=net.wendal.nutzbook.quartz.job
 	
 
-详细用法请参考nutzbook中的相关描述
+详细用法可以参考nutzbook中的相关描述
 
 示例conf bean定义
 -----------------------
