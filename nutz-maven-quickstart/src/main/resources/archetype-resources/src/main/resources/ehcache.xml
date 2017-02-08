@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="ehcache.xsd" updateCheck="false"
+	monitoring="autodetect" dynamicConfig="true" name="nutzbook">
+	<!-- <diskStore path="java.io.tmpdir/shiro-ehcache"/> -->
+	<diskStore path="ehcache.disk.store.dir/yvr_cache" />
+	
+	<cache name="shiro-activeSessionCache"
+       maxElementsInMemory="10000"
+       overflowToDisk="false"
+       eternal="true"
+       timeToLiveSeconds="0"
+       timeToIdleSeconds="0"
+       diskPersistent="false"
+       diskExpiryThreadIntervalSeconds="600"/>
+       
+	<defaultCache maxElementsInMemory="10000" eternal="false"
+		timeToIdleSeconds="86400" timeToLiveSeconds="86400" overflowToDisk="false"
+		diskPersistent="false" diskExpiryThreadIntervalSeconds="120"
+		statistics="false" />
+	
+	<cache name="markdown" maxEntriesLocalHeap="1000"
+		maxEntriesLocalDisk="1000000" overflowToDisk="true" diskPersistent="true"
+		diskSpoolBufferSizeMB="20" timeToIdleSeconds="0" timeToLiveSeconds="0"
+		memoryStoreEvictionPolicy="LFU"
+		eternal="true">
+	</cache>
+</ehcache>
