@@ -121,5 +121,9 @@ var ioc = {
 };
 ```
 
+Quartz Cron表达式简介
+============================================
+
+请参考 http://www.blogjava.net/javagrass/archive/2011/07/12/354134.html
 	
 	
