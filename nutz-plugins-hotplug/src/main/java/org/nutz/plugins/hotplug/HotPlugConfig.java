@@ -38,9 +38,6 @@ public class HotPlugConfig extends NutMap {
     public String getMain() {
         return getString("main");
     }
-    public String getSetup() {
-        return getString("setup");
-    }
     public UrlMapping getUrlMapping() {
         return urlMapping;
     }

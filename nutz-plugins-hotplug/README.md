@@ -1,7 +1,7 @@
-Nutz 热插拔
+Nutz 热插拔与模块化
 ==================================
 
-简介(可用性:开发中)
+简介(可用性:试用)
 ==================================
 
 定义一套基础架构,实现可插拔系统
@@ -15,29 +15,46 @@ nutzcn,nutzwk,nutz-onekey,rkcms, 都定义了一套自己的模式, 即package�
 
 还有一个动机是这个帖子[求开发组，开发一个nutz的osgi插件](https://nutz.cn/yvr/t/23ogp0e7lqi4vrpnlsgqqt2bhd)
 
-诚然,实现osgi的意义,我个人觉得真的不大,太复杂,约束得太死.
+实现osgi的意义,我个人觉得真的不大,太复杂,约束得太死.
 
 所以,我尝试定义了nutz-plugins-hotplug,它比nutz框架的约束高不少,但比osgi低很多.
 
 另外, 很重要的一点,就需要做的是, 开发时可一起调试(放在一个项目里或maven多模块),部署时可以按需加载(裸核心+插件jar)
+
+名称约定
+==================================
+
+MainModule 指项目的MainModule类,通常放在webapp模块内,是写在web.xml中的类名
+MainSetup 指项目的Setup实现类,需要调用hotplug的初始化代码.
+XXXMainModule 子模块的MainModule类
+XXXMainSetup 子模块的Setup类
+assets 静态资源文件存放目录,通常是js/css/png/jpg等供浏览器访问的文件
+templates 模板文件目录
+模块/插件 两个比较混淆的概念,在本文章中基本上是一个东西
 
 要实现的功能
 ====================================
 
 * [x]支持@IocBean, 实现动态添加Ioc对象
 * [x]支持@At, 实现动态添加入口方法
-* []支持@SetupBy. 当前是在hotplug.XXX.json里面声明setup
+* [X]支持@SetupBy
+* [X]支持IocBy
 * []支持@Localization, 国际化的字符串
 * []插件间的类引用,已完成,未详细测试
-* []动态后台菜单
 * []Junit支持
 
-裸核心
+### 整个项目会分成几个部分
+
+* 核心模块core 各种业务无关的代码,公用代码,基础代码
+* web模块webapp 整合各种模块,总得有个东西启动http服务哦
+* 插件模块 各种业务模块,依赖core. 开发时被web模块引用, 部署时可能以插件,也可能直接集成在war中
+
+核心模块
 ====================================
 
-是什么是裸核心, 它只提供了基础服务,与具体业务无关的服务, 例如权限(shiro),模板引擎(beetl/freemarker等),SQL/NoSQL支持,计划任务(Quartz)
+什么是核心模块, 它只提供了基础服务,与具体业务无关的服务, 例如权限(shiro),模板引擎(beetl/freemarker等),SQL/NoSQL支持,计划任务(Quartz)
 
-它是一个maven工程,它应该足够强壮. 它有一个参考实现, nutzcn 3.x的源码
+它有一个参考实现, 它在[nutzcn(nutz-book-project) 3.x的源码](https://github.com/wendal/nutz-book-project/tree/v3.x)
 
 ```
 src
@@ -83,32 +100,19 @@ src
 				- web.xml
 ```
 
-### 为了实现开发器的联调, MainModule必须标注以下注解
-
-```java
-@LoadingBy(HotPlug.class)
-```
-
-### 且MainSetup类必须带下面的代码
-
-```java
-public void init(NutConfig nc) {
-	// 初始化其他插件
-	nc.getIoc().get(HotPlug.class).setupInit();
-}
-
-public void destroy(NutConfig nc) {
-	// 销毁插件
-	nc.getIoc().get(HotPlug.class).setupDestroy();
-	
-	// 其他代码
-}
-```
-
 插件的源码项目结构
 ==============================
 
-yvr插件的项目结构如下, 可以与裸核心放在一个项目中. 插件的名称是yvr,所以下面的名称是有要求的
+yvr插件的项目结构如下, 推荐使用maven子模块的方式, 但也支持与核心模块放在一个项目中. 
+
+* 它必须有自己MainModule, 部分注解是支持的,命名为XXXMainModule
+* 通常,它有自己的MainSetup类, 命名为XXXMainSetup
+* 通常,它有自己的bean/module/service包
+* 它必须有一个hotplug.xxx.json文件,用于描述这个差距,我在考虑是否应该做成注解
+* 它可以有一个assets目录,用于存放js/css等文件
+* 它可以有一个templates目录,用于存放页面模板
+* 它通常只依赖核心模块
+* webapp模块也是一个模块,只是比较特别的模块,不需要遵循插件的规则, 它需要把各种插件启动起来
 
 ```
 src
@@ -128,32 +132,21 @@ src
 							- module
 								- YvrModule.java
 								- YvrApiModule.java
-							- job
-								- YvrCheckJob.jav
-		- hotplug
-			- hotplug.yvr.json
-		- assets
-			- yvr
-				- js
-				- css
-				- font
-		- templates
-			- yvr
-				- layout.html
-				- index.html
-				- user
+		- resources
+			- hotplug
+				- hotplug.yvr.json
+			- assets
+				- yvr
+					- js
+					- css
+					- font
+			- templates
+				- yvr
+					- layout.html
 					- index.html
+					- user
+						- index.html
 ```
-
-相关文件的含义
-
-* YvrMainModule 一个空类,属于占位符. 必选,但并不需要标注注解,同时也不需要标注.
-* hotplug.yvr.json 插件描述文件,必选, 后面会有详细描述.
-* YvrMainSetup 插件的初始化类. 必选,在插件初始化和销毁之前会调用,跟MainSetup一样
-* bean/service/module Pojo类/Service类/Module类所在package,这三个package的命名不严格要求
-* job 定时任务类的package,暂时约定
-* assets/yvr 插件所需要的静态资源文件目录,可选
-* templates/yvr 模板文件的目录,可选
 
 插件jar的结构
 ====================================================
@@ -194,23 +187,49 @@ hotplug.XXX.json文件的格式要求
     /**
      * 插件的唯一命名,必须有
      */
-    protected String name;
+    name : "yvr"
     
     /**
-     * 版本号,当前仅供描述用,可选
+     * 版本号,必须有
      */
-    protected String version;
+    version : "3.0.1",
     
     /**
-     * 插件必须有自己的顶层package,必须有
+     * 插件必须有自己的顶层package,必须有,但并不强制要求所有类都在该package下
      */
-    protected String base;
+    base : "net.wendal.nutzbook.yvr"
     /**
      * 插件自身的MainModule,属性可以,默认是插件名字+MainModule
      */
-    protected String main;
-    /**
-     * 插件的Setup实现类,属性可以,默认是插件名字+MainSetup
-     */
-    protected String setup;
+    main : "net.wendal.nutzbook.yvr.YvrMainModule";
+```
+
+web模块的核心配置
+=============================================
+
+通常指webapp模块,用于启动web服务的项目,它不需要遵循插件规范,因为是它来启动整个插件体系
+
+
+### MainModule标注以下注解
+
+```java
+@LoadingBy(HotPlug.class)   // 改变加载行为
+@Modules(scanPackage=false) // 禁用自定义扫码
+@SetupBy(MainSetup.class) // 加载下一个小节的MainSetup类
+```
+
+### MainSetup类带下面的代码
+
+```java
+public void init(NutConfig nc) {
+	// 初始化插件系统
+	nc.getIoc().get(HotPlug.class).setupInit();
+}
+
+public void destroy(NutConfig nc) {
+	// 销毁插件系统
+	nc.getIoc().get(HotPlug.class).setupDestroy();
+	
+	// 其他代码
+}
 ```

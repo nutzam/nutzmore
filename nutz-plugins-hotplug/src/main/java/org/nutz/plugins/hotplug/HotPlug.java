@@ -34,6 +34,8 @@ import org.nutz.mvc.NutConfig;
 import org.nutz.mvc.Setup;
 import org.nutz.mvc.UrlMapping;
 import org.nutz.mvc.ViewMaker;
+import org.nutz.mvc.annotation.IocBy;
+import org.nutz.mvc.annotation.SetupBy;
 import org.nutz.mvc.impl.NutLoading;
 import org.nutz.resource.NutResource;
 import org.nutz.resource.Scans;
@@ -291,21 +293,26 @@ public class HotPlug extends NutLoading {
         }
         Class<?> klass = hc.getClassLoader().loadClass(mainClass);
         // 加载旗下的@IocBean
-        hc.iocLoader = new AnnotationIocLoader(hc.getBase());
+        IocBy iocBy = klass.getAnnotation(IocBy.class);
+        if (iocBy == null)
+            hc.iocLoader = new AnnotationIocLoader(hc.getBase());
+        else
+            hc.iocLoader = new ComboIocLoader(iocBy.args());
         // 放入NutIoc的Ioc加载器列表,开始影响"Ioc子系统", 恩, 一般情况下很好.
         comboIocLoader_iocLoaders.add(hc.iocLoader);
         // 生成插件的URL映射, 即@At的配置
         UrlMapping um = evalUrlMapping(config, klass, ioc);
-        if (Strings.isBlank(hc.getSetup())) {
-            hc.put("setup", hc.getBase() + "." + Strings.upperFirst(hc.getName()) + "MainSetup");
+        // 看看有无setupby
+        SetupBy setupBy = klass.getAnnotation(SetupBy.class);
+        if (setupBy != null) {
+            setupInit(setupBy.value());
+        } else {
+            try {
+                Class<?> setupClass = hc.getClassLoader().loadClass(hc.getBase() + "." + Strings.upperFirst(hc.getName()) + "MainSetup");
+                setupInit(setupClass);
+            } catch (ClassNotFoundException e) {
+            }
         }
-        Class<?> setupClass = null;
-        try {
-            setupClass = hc.getClassLoader().loadClass(hc.getSetup());
-        } catch (ClassNotFoundException e) {
-        }
-        if (setupClass != null)
-            setupInit(setupClass);
         // 赋值给hc,然后让ump添加映射表, 正式对外服务的开始, 插件相关的URL可以访问了
         hc.urlMapping = um;
     }
