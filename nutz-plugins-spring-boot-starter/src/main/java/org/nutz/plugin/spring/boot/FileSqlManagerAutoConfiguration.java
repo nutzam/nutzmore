@@ -35,7 +35,8 @@ public class FileSqlManagerAutoConfiguration implements ServletContextAware {
 
 	@PostConstruct
 	public void init() {// 初始化一下nutz的扫描
-		Scans.me().init(servletContext);
+	    if (servletContext != null)
+	        Scans.me().init(servletContext);
 	}
 
 	@Bean
