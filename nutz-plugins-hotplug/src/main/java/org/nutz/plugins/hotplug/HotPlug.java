@@ -1,6 +1,7 @@
 package org.nutz.plugins.hotplug;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -25,9 +26,12 @@ import org.nutz.ioc.loader.annotation.AnnotationIocLoader;
 import org.nutz.ioc.loader.annotation.IocBean;
 import org.nutz.ioc.loader.combo.ComboIocLoader;
 import org.nutz.json.Json;
+import org.nutz.lang.Lang;
 import org.nutz.lang.Mirror;
 import org.nutz.lang.Streams;
 import org.nutz.lang.Strings;
+import org.nutz.lang.util.Disks;
+import org.nutz.lang.util.FileVisitor;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.mvc.NutConfig;
@@ -153,6 +157,8 @@ public class HotPlug extends NutLoading {
             if (name.startsWith("hotplug/hotplug.") && name.endsWith(".json"))  {
                 String j = new String(Streams.readBytes(zf.getInputStream(ze)));
                 hc = Json.fromJson(HotPlugConfig.class, j);
+                hc.put("origin", "file");
+                hc.put("origin_path", f.getAbsolutePath());
             }
             else if (name.startsWith("asserts/")) {
                 asserts.put(name.substring("asserts/".length()), Streams.readBytes(zf.getInputStream(ze)));
@@ -163,10 +169,8 @@ public class HotPlug extends NutLoading {
         zf.close();
         hc.asserts = asserts;
         hc.tmpls = tmpls;
-        // 解析完成, 开始影响现有系统. TODO 下面的代码应该用try-catch整体包起来
+        // 解析完成, 开始影响现有系统.
         // -----------------------------------------------------
-
-        
         
         
         // 先保存当前的类加载器
@@ -250,6 +254,7 @@ public class HotPlug extends NutLoading {
                     core = hc;
                 else
                     hclist.add(hc);
+                hc.put("origin", "embed");
             }
             catch (Exception e) {
                 throw new RuntimeException(e);
@@ -264,6 +269,7 @@ public class HotPlug extends NutLoading {
         if (core != null)
             hclist.add(0, core);
         
+        // 加载内置插件
         for (HotPlugConfig hc : hclist) {
             hc.classLoader = getClass().getClassLoader();
             hc.asserts = new HashMap<String, byte[]>();
@@ -276,6 +282,17 @@ public class HotPlug extends NutLoading {
             catch (Exception e) {
                 log.error("fail at hotplug name=" + hc.getName());
                 throw new RuntimeException(e);
+            }
+        }
+        // 加载外部插件
+        for (File f : getHotPlugJarList(false)) {
+            log.debugf("hotplug from dir path=", f.getAbsolutePath());
+            try {
+                add(f);
+            }
+            catch (Exception e) {
+                log.error("load hotplug fail!!! path=" + f.getAbsolutePath());
+                throw Lang.wrapThrow(e);
             }
         }
     }
@@ -350,5 +367,71 @@ public class HotPlug extends NutLoading {
     
     public static Properties getHpconf() {
         return hpconf;
+    }
+    
+    public static List<File> getHotPlugJarList(final boolean getAll) {
+        final List<File> list = new ArrayList<File>();
+
+        String hcdir = hpconf.getProperty("hotplug.localdir", "/var/lib/hotplug");
+        File f = new File(Disks.normalize(hcdir));
+        log.debug("check hotplug.localdir : " + f.getAbsolutePath());
+        if (f.exists() && f.isDirectory()) {
+            Disks.visitFile(f, new FileVisitor() {
+                public void visit(File file) {
+                    if (file.isDirectory())
+                        return;
+                    HotPlugConfig hc = check(file);
+                    if (hc == null) {
+                        log.debug("not hotplug : "+ file.getAbsolutePath());
+                        return;
+                    }
+                    if (new File(file.getParentFile(), file.getName() + ".disabled").exists()) {
+                        if (getAll)
+                            hc.put("disabled", true);
+                        else
+                            return; // 跳过
+                    }
+                    if (log.isDebugEnabled())
+                        log.debugf("found hotplug name=%s version=%s disable=%s", hc.getName(), hc.getString("version"), hc.get("disable", false));
+                    list.add(file);
+                }
+            }, new FileFilter() {
+                public boolean accept(File f) {
+                    if (f.isDirectory())
+                        return true;
+                    return f.getName().endsWith(".jar");
+                }
+            });
+        }
+        return list;
+    }
+    
+    public static HotPlugConfig check(File f) {
+        try {
+            ZipFile zf = new ZipFile(f);
+            Enumeration<ZipEntry> en = (Enumeration<ZipEntry>) zf.entries();
+            HotPlugConfig hc = null;
+            try {
+                while (en.hasMoreElements()) {
+                    ZipEntry ze = en.nextElement();
+                    String name = ze.getName();
+                    if (name.endsWith("/"))
+                        continue;
+                    if (name.startsWith("hotplug/hotplug.") && name.endsWith(".json")) {
+                        String j = new String(Streams.readBytes(zf.getInputStream(ze)));
+                        hc = Json.fromJson(HotPlugConfig.class, j);
+                        return hc;
+                    }
+                } 
+            }
+            finally {
+                zf.close();
+            }
+        }
+        catch (Exception e) {
+            log.debug("bad hotplug file="+f.getAbsolutePath(), e);
+            return null;
+        }
+        return null;
     }
 }
