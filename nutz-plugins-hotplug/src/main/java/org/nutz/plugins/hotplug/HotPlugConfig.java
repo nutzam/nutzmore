@@ -28,15 +28,30 @@ public class HotPlugConfig extends NutMap {
     protected HashMap<String, String> tmpls;
     
     protected ClassLoader classLoader;
-    
+
     public String getName() {
         return getString("name");
+    }
+    public String getVersion() {
+        return getString("version", "1.0.0");
     }
     public String getBase() {
         return getString("base");
     }
     public String getMain() {
         return getString("main");
+    }
+    public boolean isEnable() {
+        return  getBoolean("enable", false);
+    }
+    public String getOrigin() {
+        return getString("origin");
+    }
+    public String getOriginPath() {
+        return getString("origin_path");
+    }
+    public String getSha1() {
+        return getString("sha1");
     }
     public UrlMapping getUrlMapping() {
         return urlMapping;
