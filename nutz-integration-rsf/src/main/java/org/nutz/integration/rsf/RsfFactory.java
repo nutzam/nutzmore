@@ -7,6 +7,7 @@ import org.nutz.resource.Scans;
 
 import net.hasor.core.AppContext;
 import net.hasor.core.Hasor;
+import net.hasor.core.Provider;
 import net.hasor.rsf.RsfApiBinder;
 import net.hasor.rsf.RsfClient;
 import net.hasor.rsf.RsfModule;
@@ -44,11 +45,16 @@ public class RsfFactory extends RsfModule {
     @Override
     public void loadModule(RsfApiBinder apiBinder) throws Throwable {
         for (String pkg : Strings.splitIgnoreBlank(packages)) {
-            for (Class klass : Scans.me().scanPackage(pkg)) {
+            for (final Class klass : Scans.me().scanPackage(pkg)) {
                 RsfService service = (RsfService) klass.getAnnotation(RsfService.class);
                 if (service != null) {
                     if ("server".equals(mode)) {
-                        apiBinder.rsfService(klass).toInstance(ioc.get(klass)).register();
+                        apiBinder.rsfService(klass).toProvider(new Provider<Object>() {
+                            @Override
+                            public Object get() {
+                                return ioc.get(klass);
+                            }
+                        }).register();
                     }
                     else {
                         apiBinder.rsfService(klass).register();
@@ -70,18 +76,6 @@ public class RsfFactory extends RsfModule {
         if (packages == null)
             packages = Mvcs.ctx().getDefaultNutConfig().getMainModule().getPackage().getName();
         this.packages = packages;
-    }
-    
-    public void setMode(String mode) {
-        this.mode = mode;
-    }
-    
-    public void setIoc(Ioc ioc) {
-        this.ioc = ioc;
-    }
-    
-    public void setMain(String main) {
-        this.main = main;
     }
     
 }
