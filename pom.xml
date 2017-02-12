@@ -134,6 +134,7 @@
         <module>nutz-plugins-cache</module>
         <module>nutz-plugins-hotplug</module>
         <module>nutz-plugins-daomapping</module>
+        <module>nutz-integration-rsf</module>
 	</modules>
 	<distributionManagement>
 		<snapshotRepository>
