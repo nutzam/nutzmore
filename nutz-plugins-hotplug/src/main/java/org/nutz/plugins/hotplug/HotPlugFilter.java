@@ -47,7 +47,7 @@ public class HotPlugFilter implements Filter {
                 resp.getOutputStream().write(Files.readBytes(f));
                 return;
             }
-            for (Entry<String, HotPlugConfig> en : HotPlug.plugins.entrySet()) {
+            for (Entry<String, HotPlugConfig> en : HotPlug.getActiveHotPlug().entrySet()) {
                 // String key = en.getKey();
                 Map<String, byte[]> asserts = en.getValue().asserts;
                 if (asserts.isEmpty())

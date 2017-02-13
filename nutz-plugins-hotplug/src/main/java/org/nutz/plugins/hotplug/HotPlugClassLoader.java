@@ -22,7 +22,7 @@ public class HotPlugClassLoader extends ClassLoader {
         }
         lock.set(this);
         try {
-            for (HotPlugConfig hc : HotPlug.plugins.values()) {
+            for (HotPlugConfig hc : HotPlug.getActiveHotPlug().values()) {
                 try {
                     return hc.classLoader.loadClass(name);
                 }

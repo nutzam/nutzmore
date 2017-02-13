@@ -71,6 +71,7 @@ public class HotPlug extends NutLoading {
         if (ins != null) {
             hpconf.load(ins);
         }
+        Scans.me().addResourceLocation(new HotplugResourceLocation());
     }
 
     /**
@@ -96,7 +97,7 @@ public class HotPlug extends NutLoading {
     /**
      * 插件列表,为了方便,这里直接用静态属性了
      */
-    public static Map<String, HotPlugConfig> plugins = new LinkedHashMap<String, HotPlugConfig>();
+    protected static Map<String, HotPlugConfig> _plugins = new LinkedHashMap<String, HotPlugConfig>();
     
     /**
      * 主项目的@Ok/@Fail处理类,新增插件时需要用到.
@@ -146,6 +147,12 @@ public class HotPlug extends NutLoading {
     public HotPlugConfig enable(File f, HotPlugConfig hc) throws Exception {
         if (hc == null)
             hc = checkHotplugFile(f);
+        try {
+            if (HotPlug._plugins.containsKey(hc.getName()))
+                disable(hc.getName());
+        } catch (Exception e) {
+            log.info("something happen when remove old hotplug", e);
+        }
         // 首先,我们需要解析这个jar. Jar文件也是Zip. 解析完成前,还不会影响到现有系统的运行
         ZipFile zf = new ZipFile(f);
         Enumeration<ZipEntry> en = (Enumeration<ZipEntry>) zf.entries();
@@ -178,11 +185,11 @@ public class HotPlug extends NutLoading {
             hc.classLoader = classLoader;
             
             // 放入插件列表, 因为tmpls已经生效,所以会影响beetl的模板加载系统(其实嘛,一点问题没有...)
-            plugins.put(hc.getName(), hc);
+            _plugins.put(hc.getName(), hc);
             // 将其设置为线程上下文的ClassLoader, 这样才能是下面的资源扫描和类扫描生效
             Thread.currentThread().setContextClassLoader(classLoader);
             // 添加资源扫描路径,为下面的类扫描打下基础, 这里开始影响"资源扫描子系统",其实也是没一点问题...
-            Scans.me().addResourceLocation(new JarResourceLocation(f.getAbsolutePath()));
+            hc.resourceLocation = new JarResourceLocation(f.getAbsolutePath());
             
             abc(hc);
             new File(f.getParent(), f.getName() + ".enable").createNewFile();
@@ -198,7 +205,7 @@ public class HotPlug extends NutLoading {
     }
     
     public void disable(String key) {
-        HotPlugConfig hc = plugins.get(key);
+        HotPlugConfig hc = _plugins.get(key);
         if (hc == null) {
             return;
         }
@@ -210,7 +217,14 @@ public class HotPlug extends NutLoading {
         }
         // 移除URL映射, 对外服务停止.
         // 移除出插件列表, 同时移除静态资源和URL映射. 
-        plugins.remove(key);
+        _plugins.remove(key);
+        if ("file".equals(hc.getOrigin()) && hc.classLoader != null && hc.getClassLoader() instanceof URLClassLoader) {
+            try {
+                ((URLClassLoader)hc.classLoader).close();
+            } catch (Throwable e) {
+                log.warn("something happen when close UrlClassLoader", e);
+            }
+        }
         // 如果存在iocLoader,清理一下. 为空的可能性,只有初始化过程中抛出异常,但,还没写呢...
         if (hc.iocLoader != null) {
             // 变量所持有的ioc bean,逐一销毁
@@ -269,7 +283,7 @@ public class HotPlug extends NutLoading {
             hc.classLoader = getClass().getClassLoader();
             hc.asserts = new HashMap<String, byte[]>();
             hc.tmpls = new HashMap<String, String>();
-            plugins.put(hc.getName(), hc);
+            _plugins.put(hc.getName(), hc);
             log.debug("init hotplug name=" + hc.getName());
             try {
                 abc(hc);
@@ -461,5 +475,9 @@ public class HotPlug extends NutLoading {
         Files.createFileIfNoExists(new File(dst));
         Files.copy(f, new File(dst));
         return true;
+    }
+    
+    public static Map<String, HotPlugConfig> getActiveHotPlug() {
+        return new LinkedHashMap<String, HotPlugConfig>(_plugins);
     }
 }

@@ -40,7 +40,7 @@ public class HotPlugResourceLoader extends WebAppResourceLoader {
         if (f != null)
             return new FileResource(f, key, this);
         // 从插件里面找找呗
-        for (HotPlugConfig hc : HotPlug.plugins.values()) {
+        for (HotPlugConfig hc : HotPlug.getActiveHotPlug().values()) {
             String tmpl = hc.getTmpls().get(tmp);
             if (tmpl != null) {
                 return new StringTemplateResource(tmpl, this);

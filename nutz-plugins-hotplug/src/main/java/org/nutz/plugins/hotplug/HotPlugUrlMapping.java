@@ -29,7 +29,7 @@ public class HotPlugUrlMapping implements UrlMapping {
 
     public ActionInvoker get(ActionContext ac) {
         // 遍历插件,看看有无合适的映射
-        for (Entry<String, HotPlugConfig> en : HotPlug.plugins.entrySet()) {
+        for (Entry<String, HotPlugConfig> en : HotPlug.getActiveHotPlug().entrySet()) {
             String key = en.getKey();
             UrlMapping mapping = en.getValue().urlMapping;
             if (mapping != null) {

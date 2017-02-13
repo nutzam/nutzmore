@@ -5,6 +5,7 @@ import java.util.HashMap;
 import org.nutz.ioc.IocLoader;
 import org.nutz.lang.util.NutMap;
 import org.nutz.mvc.UrlMapping;
+import org.nutz.resource.impl.ResourceLocation;
 
 public class HotPlugConfig extends NutMap {
 
@@ -28,6 +29,8 @@ public class HotPlugConfig extends NutMap {
     protected HashMap<String, String> tmpls;
     
     protected ClassLoader classLoader;
+    
+    protected ResourceLocation resourceLocation;
 
     public String getName() {
         return getString("name");
@@ -82,5 +85,12 @@ public class HotPlugConfig extends NutMap {
     }
     public void setClassLoader(ClassLoader classLoader) {
         this.classLoader = classLoader;
+    }
+    
+    public ResourceLocation getResourceLocation() {
+        return resourceLocation;
+    }
+    public void setResourceLocation(ResourceLocation resourceLocation) {
+        this.resourceLocation = resourceLocation;
     }
 }
