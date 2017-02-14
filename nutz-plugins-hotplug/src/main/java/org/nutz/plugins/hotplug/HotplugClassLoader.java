@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
 
-public class HotPlugClassLoader extends ClassLoader {
+public class HotplugClassLoader extends ClassLoader {
     
     protected ThreadLocal<Object> lock = new ThreadLocal<Object>();
 
-    public HotPlugClassLoader(ClassLoader parent) {
+    public HotplugClassLoader(ClassLoader parent) {
         super(parent);
     }
 
@@ -22,7 +22,7 @@ public class HotPlugClassLoader extends ClassLoader {
         }
         lock.set(this);
         try {
-            for (HotPlugConfig hc : HotPlug.getActiveHotPlug().values()) {
+            for (HotplugConfig hc : Hotplug.getActiveHotPlugList()) {
                 try {
                     return hc.classLoader.loadClass(name);
                 }

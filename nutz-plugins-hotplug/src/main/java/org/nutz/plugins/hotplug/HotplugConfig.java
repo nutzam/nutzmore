@@ -7,7 +7,7 @@ import org.nutz.lang.util.NutMap;
 import org.nutz.mvc.UrlMapping;
 import org.nutz.resource.impl.ResourceLocation;
 
-public class HotPlugConfig extends NutMap {
+public class HotplugConfig extends NutMap {
 
     private static final long serialVersionUID = 1L;
     

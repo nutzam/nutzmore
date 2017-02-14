@@ -13,7 +13,7 @@ public class HotplugResourceLocation extends ResourceLocation {
     }
 
     public void scan(String base, Pattern pattern, List<NutResource> list) {
-        for (HotPlugConfig hc : HotPlug.getActiveHotPlug().values()) {
+        for (HotplugConfig hc : Hotplug.getActiveHotPlugList()) {
             ResourceLocation rc = hc.getResourceLocation();
             if (rc == null)
                 continue;

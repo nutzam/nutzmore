@@ -39,8 +39,8 @@ templates 模板文件目录
 * [x]支持@At, 实现动态添加入口方法
 * [X]支持@SetupBy
 * [X]支持IocBy
+* [X]插件间的类引用
 * []支持@Localization, 国际化的字符串
-* []插件间的类引用,已完成,未详细测试
 * []Junit支持
 
 ### 整个项目会分成几个部分
@@ -214,7 +214,7 @@ web模块的核心配置
 
 ```java
 @LoadingBy(HotPlug.class)   // 改变加载行为
-@Modules(scanPackage=false) // 禁用自定义扫码
+@Modules(scanPackage=false) // 禁用自动扫描
 @SetupBy(MainSetup.class) // 加载下一个小节的MainSetup类
 ```
 
@@ -223,12 +223,12 @@ web模块的核心配置
 ```java
 public void init(NutConfig nc) {
 	// 初始化插件系统
-	nc.getIoc().get(HotPlug.class).setupInit();
+	nc.getIoc().get(Hotplug.class).setupInit();
 }
 
 public void destroy(NutConfig nc) {
 	// 销毁插件系统
-	nc.getIoc().get(HotPlug.class).setupDestroy();
+	nc.getIoc().get(Hotplug.class).setupDestroy();
 	
 	// 其他代码
 }

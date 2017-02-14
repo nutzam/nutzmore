@@ -13,22 +13,22 @@ import org.beetl.core.resource.WebAppResourceLoader;
 import org.nutz.lang.Encoding;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
-import org.nutz.plugins.hotplug.HotPlug;
-import org.nutz.plugins.hotplug.HotPlugConfig;
+import org.nutz.plugins.hotplug.Hotplug;
+import org.nutz.plugins.hotplug.HotplugConfig;
 
-public class HotPlugResourceLoader extends WebAppResourceLoader {
+public class HotplugResourceLoader extends WebAppResourceLoader {
 
     private static final Log log = Logs.get();
 
-    public HotPlugResourceLoader() {
+    public HotplugResourceLoader() {
         super();
     }
 
-    public HotPlugResourceLoader(String root, String charset) {
+    public HotplugResourceLoader(String root, String charset) {
         super(root, charset);
     }
 
-    public HotPlugResourceLoader(String root) {
+    public HotplugResourceLoader(String root) {
         super(root);
     }
 
@@ -36,11 +36,11 @@ public class HotPlugResourceLoader extends WebAppResourceLoader {
         String tmp = key;
         if (tmp.startsWith("/"))
             tmp = tmp.substring(1);
-        File f = HotPlug.find("templates/"+tmp);
+        File f = Hotplug.find("templates/"+tmp);
         if (f != null)
             return new FileResource(f, key, this);
         // 从插件里面找找呗
-        for (HotPlugConfig hc : HotPlug.getActiveHotPlug().values()) {
+        for (HotplugConfig hc : Hotplug.getActiveHotPlugList()) {
             String tmpl = hc.getTmpls().get(tmp);
             if (tmpl != null) {
                 return new StringTemplateResource(tmpl, this);

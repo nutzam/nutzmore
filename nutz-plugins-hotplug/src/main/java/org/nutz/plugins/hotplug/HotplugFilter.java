@@ -24,7 +24,7 @@ import org.nutz.lang.Files;
 import org.nutz.lang.Streams;
 import org.nutz.lang.Strings;
 
-public class HotPlugFilter implements Filter {
+public class HotplugFilter implements Filter {
 
     protected String prefix;
 
@@ -41,13 +41,13 @@ public class HotPlugFilter implements Filter {
             path = req.getServletPath();
         if (path.startsWith(prefix)) {
             String tmp = path.substring(1);
-            File f = HotPlug.find(tmp);
+            File f = Hotplug.find(tmp);
             if (f != null) {
                 setContentType(path, resp);
                 resp.getOutputStream().write(Files.readBytes(f));
                 return;
             }
-            for (Entry<String, HotPlugConfig> en : HotPlug.getActiveHotPlug().entrySet()) {
+            for (Entry<String, HotplugConfig> en : Hotplug.getActiveHotPlug().entrySet()) {
                 // String key = en.getKey();
                 Map<String, byte[]> asserts = en.getValue().asserts;
                 if (asserts.isEmpty())
@@ -68,7 +68,7 @@ public class HotPlugFilter implements Filter {
     protected static final Map<String, String> contentTypeMap = new HashMap<String, String>();
 
     static {
-        InputStream ins = HotPlug.class.getResourceAsStream("mime.types");
+        InputStream ins = Hotplug.class.getResourceAsStream("mime.types");
         Reader reader = new InputStreamReader(ins, Encoding.CHARSET_UTF8);
         Streams.eachLine(reader, new Each<String>() {
             public void invoke(int index, String line, int count) {

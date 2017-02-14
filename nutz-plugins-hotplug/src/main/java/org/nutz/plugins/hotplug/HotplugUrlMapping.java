@@ -13,13 +13,13 @@ import org.nutz.mvc.NutConfig;
 import org.nutz.mvc.UrlMapping;
 import org.nutz.mvc.impl.ActionInvoker;
 
-public class HotPlugUrlMapping implements UrlMapping {
+public class HotplugUrlMapping implements UrlMapping {
     
     private static final Log log = Logs.get();
     
     protected UrlMapping main;
     
-    public HotPlugUrlMapping(UrlMapping main, ServletContext sc) {
+    public HotplugUrlMapping(UrlMapping main, ServletContext sc) {
         this.main = main;
     }
 
@@ -29,7 +29,7 @@ public class HotPlugUrlMapping implements UrlMapping {
 
     public ActionInvoker get(ActionContext ac) {
         // 遍历插件,看看有无合适的映射
-        for (Entry<String, HotPlugConfig> en : HotPlug.getActiveHotPlug().entrySet()) {
+        for (Entry<String, HotplugConfig> en : Hotplug.getActiveHotPlug().entrySet()) {
             String key = en.getKey();
             UrlMapping mapping = en.getValue().urlMapping;
             if (mapping != null) {

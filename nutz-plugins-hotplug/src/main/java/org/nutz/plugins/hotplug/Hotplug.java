@@ -18,7 +18,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import org.nutz.ioc.Ioc;
-import org.nutz.ioc.IocLoader;
 import org.nutz.ioc.ObjectProxy;
 import org.nutz.ioc.impl.NutIoc;
 import org.nutz.ioc.impl.ScopeContext;
@@ -35,6 +34,7 @@ import org.nutz.lang.util.Disks;
 import org.nutz.lang.util.FileVisitor;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
+import org.nutz.mvc.Mvcs;
 import org.nutz.mvc.NutConfig;
 import org.nutz.mvc.Setup;
 import org.nutz.mvc.UrlMapping;
@@ -42,6 +42,7 @@ import org.nutz.mvc.ViewMaker;
 import org.nutz.mvc.annotation.IocBy;
 import org.nutz.mvc.annotation.SetupBy;
 import org.nutz.mvc.impl.NutLoading;
+import org.nutz.mvc.impl.ServletValueProxyMaker;
 import org.nutz.resource.NutResource;
 import org.nutz.resource.Scans;
 import org.nutz.resource.impl.JarResourceLocation;
@@ -57,16 +58,16 @@ import org.nutz.resource.impl.JarResourceLocation;
  *
  */
 @SuppressWarnings("unchecked")
-public class HotPlug extends NutLoading {
+public class Hotplug extends NutLoading {
     
     private static final Log log = Logs.get();
     
     protected static Properties hpconf = new Properties();
     
-    protected HotPlugClassLoader hpcl;
+    protected HotplugClassLoader hpcl;
     
-    public HotPlug() throws IOException {
-        hpcl = new HotPlugClassLoader(Thread.currentThread().getContextClassLoader());
+    public Hotplug() throws IOException {
+        hpcl = new HotplugClassLoader(Thread.currentThread().getContextClassLoader());
         InputStream ins = getClass().getClassLoader().getResourceAsStream("/hotplug.properties");
         if (ins != null) {
             hpconf.load(ins);
@@ -81,7 +82,6 @@ public class HotPlug extends NutLoading {
     //-----------------------------------------------------
     // 为了动态增减ioc内的对象,需要hack一下NutIoc内的私有属性
     protected ScopeContext scopeContext;
-    protected List<IocLoader> comboIocLoader_iocLoaders;
     //-----------------------------------------------------
     
     /**
@@ -92,12 +92,12 @@ public class HotPlug extends NutLoading {
     /**
      * 代理原有的映射关系,优先使用插件的映射关系
      */
-    protected HotPlugUrlMapping ump;
+    protected HotplugUrlMapping ump;
     
     /**
      * 插件列表,为了方便,这里直接用静态属性了
      */
-    protected static Map<String, HotPlugConfig> _plugins = new LinkedHashMap<String, HotPlugConfig>();
+    protected static Map<String, HotplugConfig> _plugins = new LinkedHashMap<String, HotplugConfig>();
     
     /**
      * 主项目的@Ok/@Fail处理类,新增插件时需要用到.
@@ -108,27 +108,34 @@ public class HotPlug extends NutLoading {
     public UrlMapping load(NutConfig config) {
         this.config = config; // 保存起来,后面会用到
         UrlMapping um = super.load(config);
-        ump = new HotPlugUrlMapping(um, config.getServletContext()); // 代理之
+        ump = new HotplugUrlMapping(um, config.getServletContext()); // 代理之
         return ump;
     }
     
     protected Ioc createIoc(NutConfig config, Class<?> mainModule) throws Exception {
-        ioc = super.createIoc(config, mainModule);
-        if (ioc == null)
+        NutIoc ioc = null;
+        IocBy ib = mainModule.getAnnotation(IocBy.class);
+        if (ib == null)
             throw new RuntimeException("Ioc is needed!");
-        if (!(ioc instanceof NutIoc)) {
-            throw new RuntimeException("only NutIoc is supported");
+        List<String> argList = new ArrayList<String>();
+        String[] args = ib.args();
+        for (String arg : args) {
+            argList.add(arg);
         }
+        if (!argList.contains("*hotplug"))
+            argList.add("*hotplug");
+        args = argList.toArray(new String[argList.size()]);
+        if (log.isDebugEnabled())
+            log.debugf("@IocBy(type=%s, args=%s,init=%s)",
+                           ComboIocLoader.class,
+                           Json.toJson(args),
+                           Json.toJson(ib.init()));
+        scopeContext = new ScopeContext("app");
+        ioc = new NutIoc(new ComboIocLoader(args), scopeContext, "app");
+        ioc.addValueProxyMaker(new ServletValueProxyMaker(config.getServletContext()));
         // 将自身放入ioc容器, 这样就能通过主项目的入口方法调用本类的方法
-        ((NutIoc)ioc).getIocContext().save("app", "hotPlug", new ObjectProxy(this));
-        //-------------------------------------------------------------
-        // 以下是hack一下NutIoc内部属性的代码
-        Mirror<NutIoc> mirror = Mirror.me(NutIoc.class);
-        // 取出Ioc上下文,目的是卸载插件时,把相关的ioc bean移除掉
-        scopeContext = (ScopeContext)mirror.getValue(ioc, "context");
-        // ioc loader列表页需要改一下, 新增插件和卸载插件,都直接去操作它的内部列表好了
-        ComboIocLoader comboIocLoader = (ComboIocLoader) mirror.getValue(ioc, "loader");
-        comboIocLoader_iocLoaders = (List<IocLoader>) Mirror.me(comboIocLoader).getValue(comboIocLoader, "iocLoaders");
+        ((NutIoc)ioc).getIocContext().save("app", "hotplug", new ObjectProxy(this));
+        Mvcs.setIoc(ioc);
         return ioc;
     }
     
@@ -144,11 +151,11 @@ public class HotPlug extends NutLoading {
      * @return 插件信息
      * @throws Exception
      */
-    public HotPlugConfig enable(File f, HotPlugConfig hc) throws Exception {
+    public HotplugConfig enable(File f, HotplugConfig hc) throws Exception {
         if (hc == null)
             hc = checkHotplugFile(f);
         try {
-            if (HotPlug._plugins.containsKey(hc.getName()))
+            if (Hotplug._plugins.containsKey(hc.getName()))
                 disable(hc.getName());
         } catch (Exception e) {
             log.info("something happen when remove old hotplug", e);
@@ -205,7 +212,7 @@ public class HotPlug extends NutLoading {
     }
     
     public void disable(String key) {
-        HotPlugConfig hc = _plugins.get(key);
+        HotplugConfig hc = _plugins.get(key);
         if (hc == null) {
             return;
         }
@@ -243,8 +250,6 @@ public class HotPlug extends NutLoading {
             for (String beanName : hc.iocLoader.getName()) {
                 scopeContext.remove("app", beanName);
             }
-            // 移除加载器
-            comboIocLoader_iocLoaders.remove(hc.iocLoader);
         }
     }
     
@@ -262,11 +267,11 @@ public class HotPlug extends NutLoading {
     
     public void setupInit() {
         List<NutResource> list = Scans.me().scan("hotplug/", ".+.(js|json)$");
-        List<HotPlugConfig> hclist = new ArrayList<HotPlugConfig>();
+        List<HotplugConfig> hclist = new ArrayList<HotplugConfig>();
         for (NutResource nr : list) {
             log.debug("Check " + nr.getName());
             try {
-                HotPlugConfig hc = Json.fromJson(HotPlugConfig.class, nr.getReader());
+                HotplugConfig hc = Json.fromJson(HotplugConfig.class, nr.getReader());
                 log.debugf("Found name=%s base=%s", hc.getName(), hc.getBase());hclist.add(hc);
                 hc.put("origin", "embed");
             }
@@ -278,7 +283,7 @@ public class HotPlug extends NutLoading {
         sort(hclist);
         
         // 加载内置插件
-        for (HotPlugConfig hc : hclist) {
+        for (HotplugConfig hc : hclist) {
             hc.put("enable", true);
             hc.classLoader = getClass().getClassLoader();
             hc.asserts = new HashMap<String, byte[]>();
@@ -296,7 +301,7 @@ public class HotPlug extends NutLoading {
         hclist = getHotPlugJarList(false);
         sort(hclist);
         // 加载外部插件
-        for (HotPlugConfig hc : hclist) {
+        for (HotplugConfig hc : hclist) {
             log.infof("hotplug name=%s version=%s enable=%s", hc.getName(), hc.getVersion(), hc.isEnable());
             if (!hc.isEnable()) {
                 continue;
@@ -313,9 +318,9 @@ public class HotPlug extends NutLoading {
         }
     }
     
-    public void sort(List<HotPlugConfig> hclist) {
-        hclist.sort(new Comparator<HotPlugConfig>() {
-            public int compare(HotPlugConfig prev, HotPlugConfig next) {
+    public void sort(List<HotplugConfig> hclist) {
+        hclist.sort(new Comparator<HotplugConfig>() {
+            public int compare(HotplugConfig prev, HotplugConfig next) {
                 if (prev.getName().equals(next.getName()))
                     return 0;
                 if ("core".equals(prev.getName()))
@@ -333,20 +338,19 @@ public class HotPlug extends NutLoading {
         }
     }
     
-    public void abc(HotPlugConfig hc) throws Exception {
+    public void abc(HotplugConfig hc) throws Exception {
         String mainClass = hc.getMain();
         if (Strings.isBlank(mainClass)) {
             mainClass = hc.getBase() + "." + Strings.upperFirst(hc.getName()) + "MainModule";
         }
         Class<?> klass = hc.getClassLoader().loadClass(mainClass);
+        // 放入NutIoc的Ioc加载器列表,开始影响"Ioc子系统", 恩, 一般情况下很好.
         // 加载旗下的@IocBean
         IocBy iocBy = klass.getAnnotation(IocBy.class);
         if (iocBy == null)
             hc.iocLoader = new AnnotationIocLoader(hc.getBase());
         else
             hc.iocLoader = new ComboIocLoader(iocBy.args());
-        // 放入NutIoc的Ioc加载器列表,开始影响"Ioc子系统", 恩, 一般情况下很好.
-        comboIocLoader_iocLoaders.add(hc.iocLoader);
         // 生成插件的URL映射, 即@At的配置
         UrlMapping um = evalUrlMapping(config, klass, ioc);
         // 看看有无setupby
@@ -403,8 +407,8 @@ public class HotPlug extends NutLoading {
         return hpconf.getProperty("hotplug.localdir", "/var/lib/hotplug");
     }
     
-    public static List<HotPlugConfig> getHotPlugJarList(final boolean getAll) {
-        final List<HotPlugConfig> list = new ArrayList<HotPlugConfig>();
+    public static List<HotplugConfig> getHotPlugJarList(final boolean getAll) {
+        final List<HotplugConfig> list = new ArrayList<HotplugConfig>();
 
         String hcdir = getLibPath();
         File f = new File(Disks.normalize(hcdir));
@@ -414,7 +418,7 @@ public class HotPlug extends NutLoading {
                 public void visit(File file) {
                     if (file.isDirectory())
                         return;
-                    HotPlugConfig hc = checkHotplugFile(file);
+                    HotplugConfig hc = checkHotplugFile(file);
                     if (hc == null) {
                         log.debug("not hotplug : "+ file.getAbsolutePath());
                         return;
@@ -434,11 +438,11 @@ public class HotPlug extends NutLoading {
         return list;
     }
     
-    public static HotPlugConfig checkHotplugFile(File f) {
+    public static HotplugConfig checkHotplugFile(File f) {
         try {
             ZipFile zf = new ZipFile(f);
             Enumeration<ZipEntry> en = (Enumeration<ZipEntry>) zf.entries();
-            HotPlugConfig hc = null;
+            HotplugConfig hc = null;
             try {
                 while (en.hasMoreElements()) {
                     ZipEntry ze = en.nextElement();
@@ -447,7 +451,7 @@ public class HotPlug extends NutLoading {
                         continue;
                     if (name.startsWith("hotplug/hotplug.") && name.endsWith(".json")) {
                         String j = new String(Streams.readBytes(zf.getInputStream(ze)));
-                        hc = Json.fromJson(HotPlugConfig.class, j);
+                        hc = Json.fromJson(HotplugConfig.class, j);
                         hc.put("origin", "file");
                         hc.put("origin_path", f.getAbsolutePath());
                         hc.put("sha1", Lang.sha1(f));
@@ -468,7 +472,7 @@ public class HotPlug extends NutLoading {
     }
     
     public boolean add(File f) {
-        HotPlugConfig hc = checkHotplugFile(f);
+        HotplugConfig hc = checkHotplugFile(f);
         if (hc == null)
             return false;
         String dst = String.format("%s/%s-%s.jar", getLibPath(), hc.getName(), hc.getVersion());
@@ -477,7 +481,11 @@ public class HotPlug extends NutLoading {
         return true;
     }
     
-    public static Map<String, HotPlugConfig> getActiveHotPlug() {
-        return new LinkedHashMap<String, HotPlugConfig>(_plugins);
+    public static Map<String, HotplugConfig> getActiveHotPlug() {
+        return new LinkedHashMap<String, HotplugConfig>(_plugins);
+    }
+    
+    public static List<HotplugConfig> getActiveHotPlugList() {
+        return new ArrayList<HotplugConfig>(_plugins.values());
     }
 }
