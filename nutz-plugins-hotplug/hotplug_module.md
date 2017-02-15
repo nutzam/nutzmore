@@ -45,7 +45,7 @@ src
 ==================================
 
 * 必须: 插件自己MainModule, 部分注解是支持的,命名为XXXMainModule
-* 必须: 一个hotplug.xxx.json文件,用于描述这个差距
+* 必须: 一个hotplug.xxx.json文件,用于描述这个插件的信息,具体定义看下一个小节
 * 推荐: Setup实现类, 命名为XXXMainSetup,通过XXXMainModule的@SetupBy注解引用
 * 可选: bean/module/service包
 * 可选: assets目录,用于存放js/css等文件
