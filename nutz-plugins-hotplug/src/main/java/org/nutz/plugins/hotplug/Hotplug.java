@@ -306,8 +306,8 @@ public class Hotplug extends NutLoading {
             if (!hc.isEnable()) {
                 continue;
             }
-            String path = hc.getString("origin_path");
-            log.debugf("hotplug from dir path=", path);
+            String path = hc.getOriginPath();
+            log.debugf("hotplug from dir path=%s", path);
             try {
                 enable(new File(path), hc);
             }
