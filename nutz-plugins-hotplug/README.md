@@ -25,19 +25,20 @@ nutzcn,nutzwk,nutz-onekey,rkcms, 都定义了一套自己的模式, 即package�
 要实现的功能
 ====================================
 
-* [x]支持@IocBean, 实现动态添加Ioc对象
-* [x]支持@At, 实现动态添加入口方法
-* [X]支持@SetupBy
-* [X]支持IocBy
-* [X]插件间的类引用
-* []支持@Localization, 国际化的字符串
-* []Junit支持
+
+[x]支持子模块的@IocBean, 实现动态添加Ioc对象
+[x]支持子模块的@At, 实现动态添加入口方法
+[x]支持子模块的@SetupBy
+[x]支持子模块的IocBy
+[x]支持插件间的类引用
+[]支持子模块的@Localization, 国际化的字符串
+[]Junit支持
 
 什么是插件,什么是模块
 ===================================
 
-模块,指的是maven的一个module
-插件,指符合hotplug插件规范的模块
+* 模块,指的是maven的一个module
+* 插件,指符合hotplug插件规范的模块
 
 一个完整的hotplug项目包含什么
 ==================================
