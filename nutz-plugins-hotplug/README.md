@@ -31,8 +31,8 @@ nutzcn,nutzwk,nutz-onekey,rkcms, 都定义了一套自己的模式, 即package�
 - [x] 支持子模块的@SetupBy
 - [x] 支持子模块的IocBy
 - [x] 支持插件间的类引用
-- [] 支持子模块的@Localization, 国际化的字符串
-- [] Junit支持
+- [ ] 支持子模块的@Localization, 国际化的字符串
+- [ ] Junit支持
 
 什么是插件,什么是模块
 ===================================
