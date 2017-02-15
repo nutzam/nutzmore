@@ -171,9 +171,9 @@ public class Hotplug extends NutLoading {
             if (name.endsWith("/"))
                 continue;
             // 解析资源文件
-            if (name.startsWith("asserts/")) {
-                asserts.put(name.substring("asserts/".length()), Streams.readBytes(zf.getInputStream(ze)));
-            } else if (name.startsWith("/")) {
+            if (name.startsWith("assets/")) {
+                asserts.put(name.substring("assets/".length()), Streams.readBytes(zf.getInputStream(ze)));
+            } else if (name.startsWith("templates/")) {
                 tmpls.put(name.substring("templates/".length()), new String(Streams.readBytes(zf.getInputStream(ze))));
             }
         }
