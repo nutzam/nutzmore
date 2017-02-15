@@ -47,6 +47,24 @@ public class HotplugFilter implements Filter {
                 resp.getOutputStream().write(Files.readBytes(f));
                 return;
             }
+            for (HotplugConfig hc : Hotplug.getActiveHotPlugList()) {
+                // String key = en.getKey();
+                Map<String, byte[]> asserts = hc.asserts;
+                byte[] buf = asserts.get(tmp);
+                if (buf == null) {
+                    InputStream ins = hc.classLoader.getResourceAsStream(tmp);
+                    if (ins != null) {
+                        setContentType(path, resp);
+                        Streams.writeAndClose(resp.getOutputStream(), ins);
+                        return;
+                    }
+                }
+                if (buf != null) {
+                    setContentType(path, resp);
+                    resp.getOutputStream().write(buf);
+                    return;
+                }
+            }
             for (Entry<String, HotplugConfig> en : Hotplug.getActiveHotPlug().entrySet()) {
                 // String key = en.getKey();
                 Map<String, byte[]> asserts = en.getValue().asserts;
