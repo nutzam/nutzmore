@@ -12,7 +12,6 @@ import java.util.List;
 import org.beetl.core.Resource;
 import org.beetl.core.resource.FileResource;
 import org.beetl.core.resource.WebAppResourceLoader;
-import org.nutz.json.Json;
 import org.nutz.lang.Encoding;
 import org.nutz.lang.Strings;
 import org.nutz.log.Log;

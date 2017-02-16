@@ -223,15 +223,8 @@ public class Hotplug extends NutLoading {
             }
         }
         // 移除URL映射, 对外服务停止.
-        // 移除出插件列表, 同时移除静态资源和URL映射. 
-        _plugins.remove(key);
-        if ("file".equals(hc.getOrigin()) && hc.classLoader != null && hc.getClassLoader() instanceof URLClassLoader) {
-            try {
-                ((URLClassLoader)hc.classLoader).close();
-            } catch (Throwable e) {
-                log.warn("something happen when close UrlClassLoader", e);
-            }
-        }
+        // 移除出插件列表, 同时移除静态资源和URL映射.
+        hc.urlMapping = null;
         // 如果存在iocLoader,清理一下. 为空的可能性,只有初始化过程中抛出异常,但,还没写呢...
         if (hc.iocLoader != null) {
             // 变量所持有的ioc bean,逐一销毁
@@ -251,6 +244,14 @@ public class Hotplug extends NutLoading {
                 scopeContext.remove("app", beanName);
             }
         }
+        if ("file".equals(hc.getOrigin()) && hc.classLoader != null && hc.getClassLoader() instanceof URLClassLoader) {
+            try {
+                ((URLClassLoader)hc.classLoader).close();
+            } catch (Throwable e) {
+                log.warn("something happen when close UrlClassLoader", e);
+            }
+        }
+        _plugins.remove(key);
     }
     
     protected List<Setup> setups = new ArrayList<Setup>();
