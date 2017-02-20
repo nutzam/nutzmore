@@ -1,11 +1,11 @@
 package org.nutz.rsf.test;
-import net.hasor.core.AppContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.nutz.ioc.Ioc;
 import org.nutz.ioc.impl.NutIoc;
 import org.nutz.ioc.loader.combo.ComboIocLoader;
+import org.nutz.rsf.test.provider.EchoService;
 /**
  *
  */
@@ -13,7 +13,7 @@ public class RpcTest {
     private Ioc ioc;
     @Before
     public void before() throws ClassNotFoundException {
-        ioc = new NutIoc(new ComboIocLoader("*js", "ioc/", "*hasor"));
+        ioc = new NutIoc(new ComboIocLoader("*hasor", "rsf.properties"));
     }
     @After
     public void after() {
@@ -22,12 +22,10 @@ public class RpcTest {
         }
     }
     @Test
-    public void testGetState() {
-        AppContext appContext = ioc.get(AppContext.class);
+    public void testGetState() throws InterruptedException {
+        EchoService echoService = ioc.get(EchoService.class);
+        String sayHello = echoService.sayHello("hello word");
+        System.out.println(sayHello);
         //
-        //        0 = "org.nutz.integration.hasor.HasorAopConfigure"
-        //        1 = "org.nutz.integration.hasor.HasorIocLoader"
-        //        2 = "org.nutz.plugins.hasor.HasorIocLoader"
-        //        3 = "org.nutz.plugins.hasor.HasorAopConfigure"
     }
 }

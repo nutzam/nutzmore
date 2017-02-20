@@ -20,7 +20,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 /**
  * 宣布这个类是一个 Hasor 扩展接口
- * @version : 2014年11月12日
+ * @version : 2017年02月20日
  * @author 赵永春(zyc@hasor.net)
  */
 @Target(ElementType.TYPE)
