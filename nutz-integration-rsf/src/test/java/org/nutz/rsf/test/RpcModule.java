@@ -14,7 +14,7 @@ public class RpcModule extends NutzRsfModule {
         //
         apiBinder.bindType(EchoService.class).toProvider(apiBinder.converToProvider(//
                 apiBinder.rsfService(EchoService.class)     // 声明服务接口
-                        .toInstance(new EchoServiceImpl())  // 绑定服务实现类(使用 Hasor bean 容器)
+                        .to(EchoServiceImpl.class)          // 绑定服务实现类(使用 Hasor bean 容器)
                         .register()                         // 发布服务
         ));
         //
