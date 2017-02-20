@@ -1,5 +1,5 @@
 var ioc = {
-    hasorIocLoader: {
+    hasor: {
         type: "org.nutz.integration.hasor.HasorIocLoader",
         fields: {
             ioc: {refer: "$ioc"}
@@ -11,6 +11,6 @@ var ioc = {
     },
     appContext: {
         type: "net.hasor.core.AppContext",
-        factory: "$hasorIocLoader#getAppContext"
+        factory: "$hasor#getAppContext"
     }
 };

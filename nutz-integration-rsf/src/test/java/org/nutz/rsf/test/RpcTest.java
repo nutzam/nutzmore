@@ -1,4 +1,5 @@
 package org.nutz.rsf.test;
+import net.hasor.core.AppContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,6 +24,9 @@ public class RpcTest {
     }
     @Test
     public void testGetState() throws InterruptedException {
+        // .必须先通过下面这个代码启动 Hasor
+        AppContext appContext = ioc.get(AppContext.class);
+        //
         EchoService echoService = ioc.get(EchoService.class);
         String sayHello = echoService.sayHello("hello word");
         System.out.println(sayHello);
