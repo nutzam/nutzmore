@@ -1,10 +1,9 @@
-package org.nutz.rsf.test;
+package net.example.rsf.provider;
 import net.hasor.core.Provider;
 import net.hasor.rsf.RsfApiBinder;
 import org.nutz.integration.hasor.Configuration;
 import org.nutz.integration.hasor.NutzRsfModule;
 import org.nutz.rsf.test.provider.EchoService;
-import org.nutz.rsf.test.provider.EchoServiceImpl;
 //
 //
 @Configuration

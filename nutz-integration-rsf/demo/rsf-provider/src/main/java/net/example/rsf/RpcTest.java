@@ -1,4 +1,4 @@
-package org.nutz.rsf.test;
+package net.example.rsf.provider;
 import net.hasor.core.AppContext;
 import org.junit.After;
 import org.junit.Before;

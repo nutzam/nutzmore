@@ -13,12 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.nutz.rsf.test.provider;
+package net.example.domain.consumer;
+import net.hasor.rsf.RsfMessage;
+import net.hasor.rsf.RsfResult;
 /**
- * 服务接口
+ * 消息接口
  * @version : 2015年11月27日
  * @author 赵永春(zyc@hasor.net)
  */
-public interface EchoService {
-    public String sayHello(String echo) throws InterruptedException;
+@RsfMessage
+public interface MessageService {
+    public RsfResult sayHello(String echo) throws InterruptedException;
 }
