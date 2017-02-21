@@ -112,6 +112,8 @@
 		<module>nutz-integration-zbus</module>
 		<module>nutz-integration-hessian</module>
         <module>nutz-integration-jedis</module>
+        <module>nutz-integration-hasor</module>
+		
 		<module>nutz-plugins-validation</module>
 		<module>nutz-plugins-views</module>
 		<module>nutz-plugins-multiview</module>
@@ -123,7 +125,6 @@
 		<module>nutz-plugins-secken</module>
 		<module>nutz-plugins-jsonrpc</module>
 		<module>nutz-plugins-sigar</module>
-		
 		<module>nutz-plugins-mock</module>
 		<module>nutz-plugins-qrcode</module>
         <module>nutz-plugins-nop</module>
@@ -134,7 +135,6 @@
         <module>nutz-plugins-cache</module>
         <module>nutz-plugins-hotplug</module>
         <module>nutz-plugins-daomapping</module>
-        <module>nutz-integration-rsf</module>
 	</modules>
 	<distributionManagement>
 		<snapshotRepository>
