@@ -13,19 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.example.rsf.provider;
-import net.example.domain.consumer.MessageService;
-import net.hasor.rsf.RsfResult;
+package net.example.nutz.provider;
+import net.example.domain.consumer.EchoService;
 /**
  * 服务实现
- * @version : 2016年11月07日
+ * @version : 2017年02月21日
  * @author 赵永春(zyc@hasor.net)
  */
-public class MessageServiceImpl implements MessageService {
+public class EchoServiceImpl implements EchoService {
     @Override
-    public RsfResult sayHello(String echo) throws InterruptedException {
+    public String sayHello(String echo) throws InterruptedException {
         Thread.sleep(100);
         System.out.println("server : " + echo);
-        return null;
+        return "you say " + echo;
     }
 }

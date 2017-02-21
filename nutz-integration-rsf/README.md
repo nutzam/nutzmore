@@ -1,7 +1,7 @@
 nutz-plugins-slog
 ==================================
 
-简介(可用性:开发中)
+简介(可用性:已完成)
 ==================================
 
 ## Nutz 整合 Hasor 之后 Nutz 哪些方面会有显著提升？
@@ -42,22 +42,19 @@ MainModule的IocBy启用该插件
 
 ```java
 @Configuration
-public class RpcModule extends NutzRsfModule {
+public class RpcModule extends NutzModule {
     @Override
-    public void loadModule(RsfApiBinder apiBinder) throws Throwable {
+    public void loadModule(ApiBinder apiBinder) throws Throwable {
+        RsfApiBinder rsfApiBinder = apiBinder.tryCast(RsfApiBinder.class);
         //
-        apiBinder.bindType(EchoService.class).toProvider(apiBinder.converToProvider(//
-                apiBinder.rsfService(EchoService.class)     // 声明服务接口
-                        .to(EchoServiceImpl.class)          // 绑定服务实现类(使用 Hasor bean 容器)
-                        .register()                         // 发布服务
-        ));
-        // or
-        Provider<EchoService> nutzBean = nutzBean(apiBinder, EchoService.class);
-        apiBinder.bindType(EchoService.class).toProvider(apiBinder.converToProvider(//
-                apiBinder.rsfService(EchoService.class)     // 声明服务接口
-                        .toProvider(nutzBean)               // 绑定服务实现类(使用 nutz Bean 容器)
-                        .register()                         // 发布服务
-        ));
+        // 服务订阅
+        rsfApiBinder.bindType(EchoService.class).toProvider(rsfApiBinder.converToProvider(  // 发布服务到 Hasor 容器中
+                        rsfApiBinder.rsfService(EchoService.class).register()               // 注册消费者
+                ));
+        // 服务发布
+        rsfApiBinder.rsfService(EchoService.class)                  // 声明服务接口
+            .toProvider(nutzBean(rsfApiBinder, EchoService.class))  // 使用 nutz Bean 中的Bean 作为实现类
+            .register();                                            // 发布服务
     }
 }
 ```
