@@ -1,10 +1,32 @@
 nutz-plugins-slog
 ==================================
 
-简介(可用性:试用)
+简介(可用性:开发中)
 ==================================
 
-注解式系统日志
+## Nutz 整合 Hasor 之后 Nutz 哪些方面会有显著提升？
+
+多语言RPC
+1. 搭配 RSF 框架之后，Hasor 可以为 Nutz 提供部署完善的RPC服务的能力。
+2. RSF 支持 Hprose 框架协议，您可以通过 Hprose 多语言RPC，为 Nutz 异构技术架构提供支持。
+```
+<dependency>
+    <groupId>net.hasor</groupId>
+    <artifactId>hasor-rsf</artifactId>
+    <version>1.3.0</version>
+</dependency>
+```
+
+分布式服务
+1. RSF 对于服务提供了丰富的控制力，例如：多机房、异地调用、流控、服务路由。
+2. 通过 RSF 注册中心可以集中管理您所有RPC服务的：订阅、发布。
+```
+<dependency>
+    <groupId>net.hasor</groupId>
+    <artifactId>hasor-registry</artifactId>
+    <version>1.3.0</version>
+</dependency>
+```
 
 用法
 ==================================
@@ -12,61 +34,46 @@ nutz-plugins-slog
 MainModule的IocBy启用该插件
 
 ```java
-@IocBy(args={
-	"*js", "ioc/",
-	"*anno", "net.wendal.nutzbook",
-	"*async", // 建议一起启用,否则@SLog(async=true)不会生效
-	"*slog" // 启用即可
-})
+@IocBy(args={"*hasor"})
+@IocBy(args={"*hasor","...","...","..."}) // ... 为属性文件或配置文件位置，支持多组
 ```
 
-需要日志记录的方法
+使用Hasor or RSF 的入口
 
 ```java
-@Slog(tag="新增yongh", after="用户id=${re.id}")
-public User add(User user) {
-    return dao.insert(user);
+@Configuration
+public class RpcModule extends NutzRsfModule {
+    @Override
+    public void loadModule(RsfApiBinder apiBinder) throws Throwable {
+        //
+        apiBinder.bindType(EchoService.class).toProvider(apiBinder.converToProvider(//
+                apiBinder.rsfService(EchoService.class)     // 声明服务接口
+                        .to(EchoServiceImpl.class)          // 绑定服务实现类(使用 Hasor bean 容器)
+                        .register()                         // 发布服务
+        ));
+        // or
+        Provider<EchoService> nutzBean = nutzBean(apiBinder, EchoService.class);
+        apiBinder.bindType(EchoService.class).toProvider(apiBinder.converToProvider(//
+                apiBinder.rsfService(EchoService.class)     // 声明服务接口
+                        .toProvider(nutzBean)               // 绑定服务实现类(使用 nutz Bean 容器)
+                        .register()                         // 发布服务
+        ));
+    }
 }
 ```
 
-@Slog注解详解
+@Configuration注解
 ======================================
 
-* tag 标识符
-* before/after/error 分别代表日志记录的时机. 方法执行前,执行后,抛出异常时
-* async 是否异步记录,默认为真,依赖于"*async"是否启用
+* 
 
-可用变量
 
-* args 方法参数
-* re 方法返回值,仅 after时可用
-* e 异常对象,仅error时可用
-* req 请求对象,仅mvc请求作用域内可用
-* resp 响应对象,仅mvc请求作用域内可用
-* 方法参数 依赖ecj或jdk8的-paramters编译选项.
+NutzRsfModule类
+======================================
 
-扩展与自定义
+* 
+
+高级扩展
 =======================================
 
-### 自定义获取用户id的方法
-
-
-```java
-    SlogService.GET_USER_ID = new Callable<Object>() {
-        public String call() throws Exception {
-            return 你的用户标示; // 默认走shiro的登录信息.
-        };
-    };
-```
-
-### 扩展SlogService
-
-通过继承SlogService,并定于为同名bean(slogService),可覆盖默认实现.
-
-```java
-@IocBean(name="slogService", fields={"dao"})
-public class MySlogService extends SlogService {
-
-}
-```
-
+* 参见 Hasor 系列框架。

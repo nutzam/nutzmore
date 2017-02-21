@@ -19,10 +19,7 @@ import net.hasor.core.utils.IOUtils;
 import net.hasor.core.utils.ResourcesUtils;
 import net.hasor.core.utils.StringUtils;
 import org.nutz.ioc.Ioc;
-import org.nutz.ioc.IocLoading;
-import org.nutz.ioc.ObjectLoadException;
 import org.nutz.ioc.loader.json.JsonLoader;
-import org.nutz.ioc.meta.IocObject;
 import org.nutz.lang.Strings;
 import org.nutz.lang.util.NutMap;
 import org.nutz.log.Log;
@@ -52,18 +49,6 @@ public class HasorIocLoader extends JsonLoader implements LifeModule {
     public HasorIocLoader(String[] args) {
         super(NUTZ_HASOR_JS);
         this.args = args;
-    }
-    @Override
-    public String[] getName() {
-        return super.getName();
-    }
-    @Override
-    public boolean has(String name) {
-        return super.has(name);
-    }
-    @Override
-    public IocObject load(IocLoading loading, String name) throws ObjectLoadException {
-        return super.load(loading, name);
     }
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Create Hasor
     //

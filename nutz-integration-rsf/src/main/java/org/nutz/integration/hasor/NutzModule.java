@@ -16,18 +16,18 @@
 package org.nutz.integration.hasor;
 import net.hasor.core.ApiBinder;
 import net.hasor.core.BindInfo;
+import net.hasor.core.Module;
 import net.hasor.core.Provider;
 import net.hasor.core.info.AbstractBindInfoProviderAdapter;
-import net.hasor.rsf.RsfModule;
 import org.nutz.ioc.Ioc;
 
 import java.util.List;
 /**
- * Nutz 版的 Module
+ * Nutz 版的 Module ，让开发者可以在 Hasor 的体系内访问到 Nutz 的 IoC 容器
  * @version : 2017年02月20日
  * @author 赵永春(zyc@hasor.net)
  */
-public abstract class NutzRsfModule extends RsfModule {
+public abstract class NutzModule implements Module {
     protected <T> Provider<T> nutzBean(ApiBinder apiBinder, final Class<T> beanType) {
         List<BindInfo<Ioc>> list = apiBinder.findBindingRegister(Ioc.class);
         BindInfo<Ioc> iocBindInfo = list.get(0);
