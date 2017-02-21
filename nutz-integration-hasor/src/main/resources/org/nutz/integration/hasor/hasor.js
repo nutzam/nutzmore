@@ -1,6 +1,7 @@
 var ioc = {
     hasor: {
-        type: "org.nutz.integration.hasor.HasorIocLoader",
+        type: "org.nutz.integration.hasor.HasorFactoryIocLoader",
+        args : [{refer:"conf"}],
         fields: {
             ioc: {refer: "$ioc"}
         },

@@ -24,8 +24,9 @@ import org.nutz.ioc.loader.combo.ComboIocLoader;
  * @author 赵永春(zyc@hasor.net)
  */
 public class ProviderClient {
+    
     public static void main(String[] args) throws Throwable {
-        Ioc ioc = new NutIoc(new ComboIocLoader("*hasor", "provider-config.xml"));
+        Ioc ioc = new NutIoc(new ComboIocLoader("*js","ioc/", "*hasor"));
         //
         // .启动 Hasor
         ioc.get(AppContext.class);

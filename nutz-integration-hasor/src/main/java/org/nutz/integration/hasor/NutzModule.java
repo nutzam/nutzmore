@@ -31,7 +31,7 @@ public abstract class NutzModule implements Module {
     protected <T> Provider<T> nutzBean(ApiBinder apiBinder, final Class<T> beanType) {
         List<BindInfo<Ioc>> list = apiBinder.findBindingRegister(Ioc.class);
         BindInfo<Ioc> iocBindInfo = list.get(0);
-        final Ioc ioc = (Ioc) ((AbstractBindInfoProviderAdapter) iocBindInfo).getCustomerProvider().get();
+        final Ioc ioc = (Ioc) ((AbstractBindInfoProviderAdapter<Ioc>) iocBindInfo).getCustomerProvider().get();
         return new Provider<T>() {
             @Override
             public T get() {
@@ -42,7 +42,7 @@ public abstract class NutzModule implements Module {
     protected <T> Provider<T> nutzBean(ApiBinder apiBinder, final Class<T> beanType, final String name) {
         List<BindInfo<Ioc>> list = apiBinder.findBindingRegister(Ioc.class);
         BindInfo<Ioc> iocBindInfo = list.get(0);
-        final Ioc ioc = (Ioc) ((AbstractBindInfoProviderAdapter) iocBindInfo).getCustomerProvider().get();
+        final Ioc ioc = (Ioc) ((AbstractBindInfoProviderAdapter<Ioc>) iocBindInfo).getCustomerProvider().get();
         return new Provider<T>() {
             @Override
             public T get() {

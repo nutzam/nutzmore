@@ -18,14 +18,15 @@ import net.example.domain.consumer.EchoService;
 import net.example.domain.consumer.MessageService;
 import net.hasor.core.ApiBinder;
 import net.hasor.rsf.RsfApiBinder;
-import org.nutz.integration.hasor.Configuration;
+
 import org.nutz.integration.hasor.NutzModule;
+import org.nutz.integration.hasor.annotation.HasorConfigurationation;
 /**
  * Nutz Module ，发布 RPC 服务
  * @version : 2017年02月21日
  * @author 赵永春(zyc@hasor.net)
  */
-@Configuration
+@HasorConfiguration
 public class RpcModule extends NutzModule {
     @Override
     public void loadModule(ApiBinder apiBinder) throws Throwable {

@@ -18,11 +18,12 @@ import net.example.domain.consumer.EchoService;
 import net.example.domain.consumer.MessageService;
 import net.hasor.core.ApiBinder;
 import net.hasor.rsf.RsfApiBinder;
-import org.nutz.integration.hasor.Configuration;
+
 import org.nutz.integration.hasor.NutzModule;
+import org.nutz.integration.hasor.annotation.HasorConfigurationation;
 //
 //
-@Configuration
+@HasorConfiguration
 public class RpcModule extends NutzModule {
     @Override
     public void loadModule(ApiBinder apiBinder) throws Throwable {

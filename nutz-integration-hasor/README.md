@@ -1,14 +1,17 @@
 nutz-plugins-slog
 ==================================
 
-简介(可用性:已完成)
+简介(可用性:试用)
 ==================================
+
+Nutz 深度整合 Hasor/rsf
 
 ## Nutz 整合 Hasor 之后 Nutz 哪些方面会有显著提升？
 
 多语言RPC
 1. 搭配 RSF 框架之后，Hasor 可以为 Nutz 提供部署完善的RPC服务的能力。
 2. RSF 支持 Hprose 框架协议，您可以通过 Hprose 多语言RPC，为 Nutz 异构技术架构提供支持。
+
 ```
 <dependency>
     <groupId>net.hasor</groupId>
@@ -31,11 +34,25 @@ nutz-plugins-slog
 用法
 ==================================
 
-MainModule的IocBy启用该插件
+本插件通过Ioc容器进行加载,符合nutz标准的插件结构,所以可以直接写入
 
 ```java
-@IocBy(args={"*hasor"})
-@IocBy(args={"*hasor","...","...","..."}) // ... 为属性文件或配置文件位置，支持多组
+@IocBy(args={
+	"*js", "ioc",
+	"*anno", "net.wendal.nutzbook",
+	"*hasor"})
+```
+
+与其他插件类似, 本插件也依赖名为conf的bean, 引用hasor开头的属性值
+
+```
+# 消费者
+hasor.config=customer-config.xml
+# 提供者
+hasor.config=provider-config.xml
+
+# 其余以hasor开头的属性,将作为hasor的环境变量,注入到hasor中
+hasor.xxx.xxx=xxxx
 ```
 
 使用Hasor or RSF 的入口
