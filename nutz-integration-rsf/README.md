@@ -62,15 +62,17 @@ public class RpcModule extends NutzModule {
 @Configuration注解
 ======================================
 
-* 
+* 用于让 Nutz 可以启动时发现 Hasor 的 Module。
+* 您也可以通过 Hasor 的配置文件配置 Hasor Module。
 
-
-NutzRsfModule类
+NutzModule类
 ======================================
 
-* 
+* Nutz 集成专门定制的 Hasor Module，通过该类提供的 nutzBean 方法，可以在 Hasor 的范围内拿到 Nutz 的 Bean。
+* 拿到的 Nutz Bean 是延迟加载的。
 
 高级扩展
 =======================================
 
 * 参见 Hasor 系列框架。
+* http://www.hasor.net

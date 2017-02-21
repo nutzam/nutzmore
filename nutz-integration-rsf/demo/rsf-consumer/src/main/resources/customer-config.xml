@@ -2,6 +2,9 @@
 <config xmlns="http://project.hasor.net/hasor/schema/main">
     <hasor.environmentVar>
 
+        <!-- 包扫描范围，例如：net.*,org.*,com.* -->
+        <HASOR_LOAD_PACKAGES>net.example.nutz.*</HASOR_LOAD_PACKAGES>
+
         <!-- 注册中心地址 -->
         <RSF_CENTER_SERVERS>rsf://127.0.0.1:2181/default</RSF_CENTER_SERVERS>
         <!-- 注册中心工作模式 -->
