@@ -14,6 +14,7 @@ import java.util.concurrent.Executors;
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocketFactory;
 
+import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.lang.Mirror;
 import org.nutz.lang.Streams;
 import org.nutz.lang.Strings;
@@ -59,17 +60,17 @@ public class NgrokClient implements Runnable {
     /**
      * tcp隧道的外网端口号. http/https时无效
      */
-    public int remotePort;
+    public int remote_port;
     
     /**
      * Http/Https协议时的简单鉴权,通常不需要
      */
-    public String httpAuth = "";
+    public String http_auth = "";
     
     /**
      * Http/Https协议时的CNAME,通常不需要
      */
-    public String hostName = "";
+    public String hostname = "";
     
     /**
      * 指定子域名, 通过不支持
@@ -90,11 +91,16 @@ public class NgrokClient implements Runnable {
     /**
      * 0代表ready,1代表运行中,2代表异常退出,3代表已关闭
      */
-    protected int status = 0;
+    public int status = 0;
+    
+    /**
+     * 最后出现的信息
+     */
+    public String error;
     /**
      * 请求id与映射地址的响应
      */
-    protected Map<String, NgrokMsg> reqIdMap = new HashMap<String, NgrokMsg>();
+    public Map<String, NgrokMsg> reqIdMap = new HashMap<String, NgrokMsg>();
     /**
      * 线程池
      */
@@ -132,6 +138,7 @@ public class NgrokClient implements Runnable {
             String error = authResp.getString("Error");
             if (!Strings.isBlank(error)) { // 发现错误, 只能退出了
                 log.error("auth fail : " + error);
+                this.error = "auth fail : " + error;
                 return;
             }
             id = authResp.getString("ClientId");
@@ -139,9 +146,9 @@ public class NgrokClient implements Runnable {
             String reqId = R.UU32();
             for (String prot : protocol.split("[\\+]")) {
                 if (prot.startsWith("http"))
-                    NgrokAgent.writeMsg(ctlOut, NgrokMsg.reqTunnel(reqId, hostName, prot, subdomain, httpAuth, 0));
+                    NgrokAgent.writeMsg(ctlOut, NgrokMsg.reqTunnel(reqId, hostname, prot, subdomain, http_auth, 0));
                 else if (prot.startsWith("tcp")) 
-                    NgrokAgent.writeMsg(ctlOut, NgrokMsg.reqTunnel(reqId, "", prot, "", "", remotePort));
+                    NgrokAgent.writeMsg(ctlOut, NgrokMsg.reqTunnel(reqId, "", prot, "", "", remote_port));
                 else
                     log.warn("unkown protocol=" + prot);
             }
@@ -159,7 +166,10 @@ public class NgrokClient implements Runnable {
                             break;
                         }
                         catch (IOException e) {
-                            log.debug("Contrl Conntion close?", e);
+                            if (status == 1)
+                                log.debug("heartbeat exit. Contrl Conntion close?", e);
+                            else
+                                log.debug("heartbeat exit.");
                             break;
                         }
                     }
@@ -171,7 +181,8 @@ public class NgrokClient implements Runnable {
             log.debug("something happen", e);
         } finally {
             Streams.safeClose(ctlSocket);
-            status = 2;
+            if (status == 1)
+                status = 2;
         }
     }
 
@@ -200,7 +211,9 @@ public class NgrokClient implements Runnable {
                         log.debugf("ReqId=%s URL=%s", msg.getString("ReqId"), msg.getString("Url"));
                     } else {
                         log.error("ReqTunnel Failed!!! Exit!!" + msg.getString("Error"));
-                        status = 2;
+                        this.error = "ReqTunnel fail : " + msg.getString("Error");
+                        if (status == 1)
+                            status = 2;
                     }
                 }
                 // 服务器对心跳线程ping的回应,可以忽略
@@ -211,7 +224,10 @@ public class NgrokClient implements Runnable {
                 }
             }
             catch (IOException e) {
-                log.debug("bad io", e);
+                if (status == 1)
+                    log.debug("io error, main contrl connection break", e);
+                else
+                    log.debug("main contrl connection close.");
                 break;
             }
         }
@@ -236,6 +252,7 @@ public class NgrokClient implements Runnable {
      */
     public void stop() {
         status = 3;
+        Streams.safeClose(ctlSocket); // 强制关闭控制链接,这样就触发其他链接全部被服务器中断,然后所有线程得以退出
         if (executorService != null) {
             executorService.shutdownNow();
             executorService = null;
@@ -289,7 +306,10 @@ public class NgrokClient implements Runnable {
                         executorService.invokeAny(Arrays.asList(srv2loc, loc2srv));
                     }
                     catch (Exception e) {
-                        log.debug("something happen", e);
+                        if (status == 1)
+                            log.debug("something happen", e);
+                        else
+                            log.debug("proxy conn exit ...");
                     }
                     finally {
                         Streams.safeClose(locSocket);
@@ -311,6 +331,25 @@ public class NgrokClient implements Runnable {
         finally {
             Streams.safeClose(toSrv);
         }
+    }
+    
+    public static NgrokClient make(PropertiesProxy conf, String prefix) {
+        NgrokClient client = new NgrokClient();
+        Mirror<NgrokClient> mirror = Mirror.me(NgrokClient.class);
+        for (String key : conf.keys()) {
+            if (!key.startsWith(prefix) || key.equals(prefix + "auto_start")) {
+                continue;
+            }
+            String value = conf.get(key);
+            if (Strings.isBlank(key))
+                continue;
+            try {
+                mirror.setValue(client, key.substring(prefix.length()), value);
+            } catch (Exception e) {
+                log.warnf("bad ngrok.client configure k=%s v=%s", key, value, e);
+            }
+        }
+        return client;
     }
 
     public static void main(String[] args) {
