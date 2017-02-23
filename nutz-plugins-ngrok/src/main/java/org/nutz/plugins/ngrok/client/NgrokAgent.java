@@ -23,7 +23,7 @@ public class NgrokAgent {
         synchronized (out) {
             NutMap map = new NutMap("Type", msg.remove("Type")).setv("Payload", msg);
             String cnt = Json.toJson(map, JsonFormat.tidy().setQuoteName(true));
-            if (log.isDebugEnabled())
+            if (log.isDebugEnabled() && !"Ping".equals(map.get("Type")))
                 log.debug("write msg = " + cnt);
             byte[] buf = cnt.getBytes(Encoding.CHARSET_UTF8);
             int len = buf.length;
@@ -42,14 +42,14 @@ public class NgrokAgent {
         byte[] buf = new byte[len];
         dis.readFully(buf);
         String cnt = new String(buf, Encoding.CHARSET_UTF8);
-        if (log.isDebugEnabled())
-            log.debug("read msg = " + cnt);
         NutMap map = Json.fromJson(NutMap.class, cnt);
         NgrokMsg msg = new NgrokMsg();
         msg.setv("Type", map.getString("Type"));
         Map<String, Object> payload = map.getAs("Payload", Map.class);
         if (payload == null)
             payload = new HashMap<String, Object>();
+        if (log.isDebugEnabled() && !"Pong".equals(msg.get("Type")))
+            log.debug("read msg = " + cnt);
         msg.putAll(payload);
         return msg;
     }
