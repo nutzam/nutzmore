@@ -17,7 +17,7 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz-plugins-spring-boot-starter</artifactId>
-			<version>1.r.61-SNAPSHOT</version>
+			<version>1.r.60.r3</version>
 		</dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>

@@ -4,12 +4,12 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.r.61-SNAPSHOT</version>
+		<version>1.r.60.r3</version>
 	</parent>
 	<artifactId>nutzmore-aggregate</artifactId>
 	<properties>
 		<bundle-symbolic-name>${project.groupId}.${project.artifactId}</bundle-symbolic-name>
-		<nutz.version>1.r.61-SNAPSHOT</nutz.version>
+		<nutz.version>1.r.60.r3</nutz.version>
 		<uber-jar>${project.build.directory}/${project.artifactId}-${project.version}-uber.jar</uber-jar>
 		<gen-resources-dir>${project.build.directory}/gen-resources</gen-resources-dir>
 	</properties>
