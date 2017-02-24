@@ -13,6 +13,9 @@
 		<system>Github Issue</system>
 		<url>http://github.com/nutzam/nutzmore/issues</url>
 	</issueManagement>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
 	<licenses>
 		<license>
 			<name>The Apache Software License, Version 2.0</name>
