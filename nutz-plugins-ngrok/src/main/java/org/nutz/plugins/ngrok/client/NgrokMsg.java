@@ -64,7 +64,6 @@ public class NgrokMsg extends NutMap {
     public static NgrokMsg ping() {
         NgrokMsg msg = new NgrokMsg();
         msg.put("Type", "Ping");
-        msg.put("Time", System.currentTimeMillis());
         return msg;
     }
 

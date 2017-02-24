@@ -48,9 +48,9 @@ public class NgrokClient implements Runnable {
      */
     public String auth_token;
     /**
-     * 缓存区大小,默认16kb
+     * 缓存区大小,默认64kb
      */
-    public int bufSize = 16*1024;
+    public int bufSize = 64*1024;
     
     /**
      * 隧道协议, 默认是http, 如需设置多个,用加号连起来, 例如 http+https+tcp
@@ -126,6 +126,7 @@ public class NgrokClient implements Runnable {
     public void run() {
         try {
             status = 1;
+            reqIdMap.clear();
             // 建一个通往服务器的控制Socket
             ctlSocket = newSocket2Server();
             ctlIn = ctlSocket.getInputStream();
@@ -252,6 +253,7 @@ public class NgrokClient implements Runnable {
      */
     public void stop() {
         status = 3;
+        reqIdMap.clear();
         Streams.safeClose(ctlSocket); // 强制关闭控制链接,这样就触发其他链接全部被服务器中断,然后所有线程得以退出
         if (executorService != null) {
             executorService.shutdownNow();
@@ -303,7 +305,9 @@ public class NgrokClient implements Runnable {
                                                                           srvOut,
                                                                           bufSize);
                         // 等待其中任意一个管道的关闭
-                        executorService.invokeAny(Arrays.asList(srv2loc, loc2srv));
+                        String exitFirst = executorService.invokeAny(Arrays.asList(srv2loc, loc2srv));
+                        if (log.isDebugEnabled())
+                            log.debug("proxy conn exit first at " + exitFirst);
                     }
                     catch (Exception e) {
                         if (status == 1)
@@ -326,7 +330,10 @@ public class NgrokClient implements Runnable {
             }
         }
         catch (IOException e) {
-            log.debug("something happen", e);
+            if (status == 1)
+                log.debug("something happen. proxy conn is lose", e);
+            else
+                log.debug("proxy conn is closed");
         }
         finally {
             Streams.safeClose(toSrv);
