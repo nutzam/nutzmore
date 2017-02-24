@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.r.61-SNAPSHOT</version>
+		<version>1.r.60.r3</version>
 	</parent>
 	<artifactId>nutz-integration-json4excel</artifactId>
 	<name>nutz-integration-json4excel</name>
@@ -52,11 +52,6 @@
 			<version>1.2.17</version>
 			<optional>true</optional>
 			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.nutz</groupId>
-			<artifactId>nutz</artifactId>
-			<version>1.r.61-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.poi</groupId>
