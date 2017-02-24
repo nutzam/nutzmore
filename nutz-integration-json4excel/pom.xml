@@ -37,7 +37,7 @@
 	</scm>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<poi.version>3.13</poi.version>
+		<poi.version>3.14</poi.version>
 	</properties>
 	<dependencies>
 		<dependency>
