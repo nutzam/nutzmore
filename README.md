@@ -13,18 +13,7 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>填nutz插件名</artifactId>
-			<version>1.r.60.r2</version>
-		</dependency>
-```
-
-或者直接上聚合jar, 包含大部分常用插件和第三方集成
-
-```xml
-
-		<dependency>
-			<groupId>org.nutz</groupId>
-			<artifactId>nutzmore-aggregate</artifactId>
-			<version>1.r.60.r2</version>
+			<version>1.r.60.r3</version>
 		</dependency>
 ```
 
@@ -66,6 +55,7 @@ https://jfrog.nutz.cn/artifactory/snapshots/org/nutz/
 | [nutz-integration-jedis](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-jedis) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-jedis/badge.svg) | 深度集成jedis | 试用 |
 | [nutz-integration-jsch](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-jsch) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-jsch/badge.svg) | 简单演示jsch的端口映射 | 试用 |
 | [nutz-integration-jsf](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-jsf) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-jsf/badge.svg) | 提供JSF集成所需要的EL解析器 | 试用 |
+| [nutz-integration-json4excel](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-json4excel) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-json4excel/badge.svg) | 待编写 | 开发中 |
 | [nutz-integration-jsr303](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-jsr303) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-jsr303/badge.svg) | 深度集成jsr303的校验机制 | 试用 |
 | [nutz-integration-quartz](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-quartz) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-quartz/badge.svg) | 集成Quartz(计划任务/定时任务)的不二选择 | **生产** |
 | [nutz-integration-shiro](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-shiro) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-shiro/badge.svg) | 集成Shiro的登陆,鉴权,和Session机制 | **生产** |
