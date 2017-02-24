@@ -20,7 +20,7 @@ import net.hasor.core.ApiBinder;
 import net.hasor.rsf.RsfApiBinder;
 
 import org.nutz.integration.hasor.NutzModule;
-import org.nutz.integration.hasor.annotation.HasorConfigurationation;
+import org.nutz.integration.hasor.annotation.HasorConfiguration;
 //
 //
 @HasorConfiguration

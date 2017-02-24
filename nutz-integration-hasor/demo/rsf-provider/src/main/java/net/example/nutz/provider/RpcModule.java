@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 package net.example.nutz.provider;
+import org.nutz.integration.hasor.NutzModule;
+import org.nutz.integration.hasor.annotation.HasorConfiguration;
+
 import net.example.domain.consumer.EchoService;
 import net.example.domain.consumer.MessageService;
 import net.hasor.core.ApiBinder;
 import net.hasor.rsf.RsfApiBinder;
-
-import org.nutz.integration.hasor.NutzModule;
-import org.nutz.integration.hasor.annotation.HasorConfigurationation;
 /**
  * Nutz Module ，发布 RPC 服务
  * @version : 2017年02月21日

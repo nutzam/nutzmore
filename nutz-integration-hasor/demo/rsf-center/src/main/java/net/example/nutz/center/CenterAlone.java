@@ -1,3 +1,4 @@
+package net.example.nutz.center;
 /*
  * Copyright 2008-2009 the original author or authors.
  *
@@ -22,7 +23,7 @@ import java.io.IOException;
  * @version : 2015年8月13日
  * @author 赵永春(zyc@hasor.net)
  */
-public class CenterServerAlone {
+public class CenterAlone {
     protected Logger logger = LoggerFactory.getLogger(getClass());
     public static void main(String[] args) throws IOException {
         Hasor.createAppContext("center-alone.xml");

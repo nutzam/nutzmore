@@ -12,6 +12,7 @@
         <module>rsf-consumer</module>
         <module>rsf-provider</module>
         <module>rpc-domain</module>
+        <module>rsf-center</module>
     </modules>
 
     <!-- 构建描述 -->
