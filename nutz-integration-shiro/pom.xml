@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.r.60.r3</version>
+		<version>1.r.61-SNAPSHOT</version>
 	</parent>
 	<artifactId>nutz-integration-shiro</artifactId>
 	<name>nutz-integration-shiro</name>	
@@ -88,7 +88,7 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz-plugins-cache</artifactId>
-			<version>1.r.60.r3</version>
+			<version>1.r.61-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 	<build>
