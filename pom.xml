@@ -135,6 +135,7 @@
         <module>nutz-plugins-cache</module>
         <module>nutz-plugins-hotplug</module>
         <module>nutz-plugins-daomapping</module>
+        <module>nutz-plugins-ngrok</module>
 	</modules>
 	<distributionManagement>
 		<snapshotRepository>
