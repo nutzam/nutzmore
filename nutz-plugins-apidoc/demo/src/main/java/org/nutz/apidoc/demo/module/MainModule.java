@@ -18,7 +18,7 @@ import org.nutz.plugins.apidoc.annotation.Document;
 @IocBy(type = ComboIocProvider.class, args = { "*anno", "org.nutz.apidoc", "*async" })
 @Ok("json")
 @UrlMappingBy(ApidocUrlMapping.class)
-@Document(name="测试",description="scadcew",author="Kerbores",email="kerbores@gmail.com",homePage="http://www.baidu.com")
+@Document(name="测试",description="scadcew",author="Kerbores",email="kerbores@gmail.com",homePage="http://www.baidu.com",copyRight="️ &copy; 2017 Kerbores All Right XXX")
 @Api(author="kkk",name="KKK",match=ApiMatchMode.ALL)
 public class MainModule {
 
