@@ -11,6 +11,8 @@ target/
 .settings/
 .classpath
 .project/
+.factorypath
+.apt_generated
 
 .idea
 *.iml
