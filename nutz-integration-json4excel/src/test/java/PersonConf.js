@@ -12,5 +12,9 @@
       "fieldName" :"birthday",
       "columnIndex" :2,
       "columnName" :"birthday"
+   }, {
+      "fieldName" :"income",
+      "columnIndex" :3,
+      "columnName" :"收入"
    }]
 }

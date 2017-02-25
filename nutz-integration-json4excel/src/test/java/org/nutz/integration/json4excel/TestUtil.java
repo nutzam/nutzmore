@@ -13,7 +13,7 @@ import java.util.List;
 import org.nutz.integration.json4excel.bean.Person;
 import org.nutz.lang.Streams;
 
-public class TestUtil {
+public abstract class TestUtil {
 
     public static final String TMPDIR = System.getProperty("java.io.tmpdir");
 
@@ -40,6 +40,7 @@ public class TestUtil {
             p.setName("pw");
             p.setAge(28);
             p.setBirthday(DBF("1986-08-26"));
+            p.setIncome(199.23321);
             plist.add(p);
         }
         if (num >= 2) {
@@ -47,6 +48,7 @@ public class TestUtil {
             p.setName("zozoh");
             p.setAge(37);
             p.setBirthday(DBF("1979-09-21"));
+            p.setIncome(3888.98325);
             plist.add(p);
         }
         if (num >= 3) {
@@ -54,6 +56,7 @@ public class TestUtil {
             p.setName("wendal");
             p.setAge(29);
             p.setBirthday(DBF("1985-10-01"));
+            p.setIncome(348823.29223);
             plist.add(p);
         }
 
@@ -62,23 +65,35 @@ public class TestUtil {
 
     public static void _test_excel_(File ef, int dn) {
         List<Person> plist = J4E.fromExcel(Streams.fileIn(ef), Person.class, null);
-        if (dn >= 1) {
-            Person p = plist.get(0);
+        if (dn > 0) {
+            _test_person(plist.get(0), 0);
+        }
+        if (dn > 1) {
+            _test_person(plist.get(1), 1);
+        }
+        if (dn > 2) {
+            _test_person(plist.get(2), 2);
+        }
+    }
+
+    public static void _test_person(Person p, int dn) {
+        if (dn == 0) {
             assertTrue("pw".equals(p.getName()));
             assertEquals(28, p.getAge());
             assertTrue("1986-08-26".equals(FD(p.getBirthday())));
+            assertEquals(199.23321, p.getIncome(), 0);
         }
-        if (dn >= 2) {
-            Person p = plist.get(1);
+        if (dn == 1) {
             assertTrue("zozoh".equals(p.getName()));
             assertEquals(37, p.getAge());
             assertTrue("1979-09-21".equals(FD(p.getBirthday())));
+            assertEquals(3888.98325, p.getIncome(), 0);
         }
-        if (dn >= 3) {
-            Person p = plist.get(2);
+        if (dn == 2) {
             assertTrue("wendal".equals(p.getName()));
             assertEquals(29, p.getAge());
             assertTrue("1985-10-01".equals(FD(p.getBirthday())));
+            assertEquals(348823.29223, p.getIncome(), 0);
         }
     }
 }

@@ -33,7 +33,8 @@ public class J4EConfTest {
 
     public void _test_(J4EConf jc) {
         assertTrue(jc.getSheetName().equals("人员"));
-        assertEquals(jc.getColumns().size(), 3);
+        assertEquals(jc.getColumns().size(), 4);
+
         // 检查column
         J4EColumn jc1 = jc.getColumns().get(0);
         assertTrue(jc1.getFieldName().equals("name"));
@@ -46,5 +47,9 @@ public class J4EConfTest {
         J4EColumn jc3 = jc.getColumns().get(2);
         assertTrue(jc3.getFieldName().equals("birthday"));
         assertTrue(jc3.getColumnName().equals("birthday"));
+
+        J4EColumn jc4 = jc.getColumns().get(3);
+        assertTrue(jc4.getFieldName().equals("income"));
+        assertTrue(jc4.getColumnName().equals("收入"));
     }
 }
