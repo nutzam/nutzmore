@@ -79,8 +79,9 @@ J4E.toExcel(Files.createFileIfNoExists2("~/人员.xls"), people, null);
    
 ```
 看看生成的文件
+![14880377328027](media/14880377328027.jpg)
 
-![](/media/14880377328027.jpg)
+
 接着我们再测试下导入，就把刚刚导出的数据直接再写回数据库看看
 
 ```java
@@ -89,14 +90,14 @@ J4E.toExcel(Files.createFileIfNoExists2("~/人员.xls"), people, null);
 InputStream in = Files.findFileAsStream(Disks.absolute("~/人员.xls"));
 List<Person> people = J4E.fromExcel(in, Person.class, null);
 
-// 第二部，插入数据到数据库
+// 第二步，插入数据到数据库
 dao.clear(Person.class); 
 dao.insert(people);
 
 ```
 看看数据库里
 
-![](/media/14880385199204.jpg)
+![14880385199204](media/14880385199204.jpg)
 
 
 是不是很简单
