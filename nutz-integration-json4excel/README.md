@@ -70,10 +70,13 @@ public class Person {
 接下来就是导出操作了, 下面的数据库相关操作都以nutz为准，不太熟的可以看下[官网文档](https://nutzam.com/core/dao/hello.html)
 
 ```java
+
 // 第一步，查询数据得到一个数据集合
-List<Person> people = dao.query(Person.class, null);   
+List<Person> people = dao.query(Person.class, null);  
+ 
 // 第二步，使用j4e将数据输出到指定文件或输出流中
-J4E.toExcel(Files.createFileIfNoExists2("~/人员.xls"), people, null);     
+J4E.toExcel(Files.createFileIfNoExists2("~/人员.xls"), people, null);  
+   
 ```
 看看生成的文件
 
@@ -81,12 +84,15 @@ J4E.toExcel(Files.createFileIfNoExists2("~/人员.xls"), people, null);
 接着我们再测试下导入，就把刚刚导出的数据直接再写回数据库看看
 
 ```java
+
 // 第一步，使用j4e解析excel文件获得数据集合
 InputStream in = Files.findFileAsStream(Disks.absolute("~/人员.xls"));
 List<Person> people = J4E.fromExcel(in, Person.class, null);
+
 // 第二部，插入数据到数据库
 dao.clear(Person.class); 
 dao.insert(people);
+
 ```
 看看数据库里
 
