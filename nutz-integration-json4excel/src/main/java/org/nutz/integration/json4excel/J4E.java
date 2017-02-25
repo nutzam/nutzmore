@@ -16,6 +16,7 @@ import java.util.Map;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -128,7 +129,7 @@ public class J4E {
             Field jfield = jcol.getField();
             if (null != jfield) {
                 Cell c = rhead.createCell(cindex++);
-                c.setCellType(Cell.CELL_TYPE_STRING);
+                c.setCellType(CellType.STRING);
                 c.setCellValue(Strings.isBlank(jcol.getColumnName()) ? jcol.getFieldName()
                                                                      : jcol.getColumnName());
             }
@@ -144,7 +145,7 @@ public class J4E {
                 Field jfield = jcol.getField();
                 if (null != jfield) {
                     Cell c = row.createCell(cindex++);
-                    c.setCellType(Cell.CELL_TYPE_STRING);
+                    c.setCellType(CellType.STRING);
                     Object dfv = mc.getValue(dval, jfield);
                     c.setCellValue(dfv != null ? Castors.me().castTo(dfv, String.class) : "");
                 }
@@ -328,9 +329,10 @@ public class J4E {
             colType = J4EColumnType.STRING;
         }
         try {
-            int cType = c.getCellType();
+            @SuppressWarnings({ "deprecation" })//4.2之后将可直接调用c.getCellType返回枚举
+			CellType cType = c.getCellTypeEnum();
             switch (cType) {
-            case Cell.CELL_TYPE_NUMERIC: // 数字
+            case NUMERIC: // 数字
                 if (DateUtil.isCellDateFormatted(c)) {
                     return Times.sDT(c.getDateCellValue());
                 }
@@ -347,7 +349,7 @@ public class J4E {
                     throw new RuntimeException("WTF, CELL_TYPE_NUMERIC is what!");
                 }
                 // 按照字符拿
-            case Cell.CELL_TYPE_STRING: // 字符串
+            case STRING: // 字符串
                 String strResult = Strings.trim(c.getStringCellValue());
                 if (!Strings.isBlank(strResult) && jcol != null) {
                     // 日期转换
@@ -378,9 +380,9 @@ public class J4E {
                     }
                 }
                 return strResult;
-            case Cell.CELL_TYPE_BOOLEAN: // boolean
+            case BOOLEAN: // boolean
                 return String.valueOf(c.getBooleanCellValue());
-            case Cell.CELL_TYPE_FORMULA:
+            case FORMULA:
                 return Strings.trim(String.valueOf(c.getStringCellValue()));
             default:
                 return Strings.trim(c.getStringCellValue());
