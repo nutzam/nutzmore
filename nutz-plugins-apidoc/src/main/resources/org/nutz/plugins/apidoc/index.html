@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha256-ZT4HPpdCOt2lvDkXokHuhJfdOKSPFLzeAJik5U/Q+l4="
 	crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha256-916EbMg70RQy9LHiGkXzG8hSg9EdNy97GazNG/aiY1w=" crossorigin="anonymous">
-<link rel="icon" href="https://nutz.cn/rs/logo.png" type="image/x-icon"/>
+<link rel="icon" href="https://nutz.cn/rs/logo.png" type="image/x-icon" />
 <style type="text/css">
 /*
  * Base structure
@@ -141,9 +141,9 @@ body {
 				</div>
 				<div id="navbar" class="navbar-collapse collapse">
 					<ul class="nav navbar-nav">
-						<li><a href="#" @click="display_mode = 'group'" :class="display_mode != 'group' ? 'active': '' ">模块分组</a></li>
-						<li><a href="#" @click="display_mode = 'bigtable'" :class="display_mode != 'bigtable' ? 'active': '' ">路径总表</a></li>
-						<li><a href="#" @click="display_mode = 'detail'" :class="display_mode != 'detail' ? 'active': '' ">详细列表</a></li>
+						<li><a href="#" @click="switchMode('group')" :class="display_mode != 'group' ? 'active': '' ">模块分组</a></li>
+						<li><a href="#" @click="switchMode('bigtable') " :class="display_mode != 'bigtable' ? 'active': '' ">路径总表</a></li>
+						<li><a href="#" @click="switchMode('detail') " :class="display_mode != 'detail' ? 'active': '' ">详细列表</a></li>
 					</ul>
 					<ul class="nav navbar-nav navbar-right">
 						<li><a href="https://nutz.cn">NutzCN论坛</a></li>
@@ -231,7 +231,8 @@ body {
 									</tr>
 								</thead>
 								<tbody>
-									<tr v-for="it in listMethods()" track-by="methodId" v-if="(!path_filter || it.paths.join(',').indexOf(path_filter)!= -1) && (!methodName_filter || it.methodName.indexOf(methodName_filter))">
+									<tr v-for="it in listMethods()" track-by="methodId"
+										v-if="(!path_filter || it.paths.join(',').indexOf(path_filter)!= -1) && (!methodName_filter || it.methodName.indexOf(methodName_filter))">
 										<td v-if="display_paths">{{it.paths.join(' ')}}</td>
 										<td v-if="display_methodName"><a :title="it.methodId" @click="showDetail(it)" :href="'#'">{{it.methodName}}</a></td>
 										<td v-if="display_httpMethods">{{it.httpMethods.join(',')}}</td>
@@ -248,48 +249,66 @@ body {
 					<div v-if="display_mode == 'detail'" v-for="info in modules" trace-by="typeName">
 						<h2 class="sub-header" v-bind:id="info.typeName" :title="info.typeName">{{info.name}}</h2>
 						<div v-for="it in info.methods" v-if="(!path_filter || it.paths.join(',').indexOf(path_filter)!= -1) && (!methodName_filter || it.methodName.indexOf(methodName_filter))">
-							<div class="pull-left">
-								<h3>
-									{{info.name}} - {{it.name}} <span class="method-description" v-if="it.description"> : {{it.description || it.methodName}}</span>
-								</h3>
-								<button class="btn btn-info" @click="debugCall(it)">调试</button>
-							</div>
-							<div class="clearfix"></div>
-							<div v-for="path in it.paths">
-								<p>
+							<div>
+								<h3>{{info.name}} - {{it.name}}</h3>
+								请求路径:
+								<div v-for="path in it.paths">
 									<code>
 										<span class="pln">{{path}}</span>
 									</code>
-								</p>
+								</div>
+								请求方式:
+								<div v-for="method in it.httpMethods">
+									<code>
+										<span class="pln">{{method}}</span>
+									</code>
+								</div>
+								方法说明:
+								<div class="method-description" v-if="it.description || it.methodName">{{it.description || it.typeName + '#' + it.methodName}}</div>
+								参数位置:
+								<div>
+									<code>
+										<span class="pln">{{it.requestBody?'BODY':'FORM'}}</span>
+									</code>
+								</div>
+								<div v-if="it.params.length &gt; 0">
+									<h4>请求参数</h4>
+									<div class="table-responsive">
+										<table class="table table-striped table-bordered">
+											<thead>
+												<tr>
+													<th>字段</th>
+													<th>类型</th>
+													<th>描述</th>
+													<th>示例</th>
+													<th>可选</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr v-for="param in it.params" v-if="!param.ignore">
+													<td class="code">{{param.paramName || param.paramLocalName}}</td>
+													<td>{{param.typeName}}</td>
+													<td>
+														<p>{{param.description}}</p>
+													</td>
+													<td><pre>{{param.requestData}}</pre></td>
+													<td>
+														<p>{{param.optional != false}}</p>
+													</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+								</div>
+
+								<button class="btn btn-sm btn-info" @click="debugCall(it)">调试</button>
 							</div>
-							<div v-if="it.params.length &gt; 0">
-								<h4>请求参数</h4>
-								<div class="table-responsive">
-									<table class="table table-striped table-bordered">
-										<thead>
-											<tr class="row">
-												<th class="col-md-1">字段</th>
-												<th class="col-md-2">类型</th>
-												<th class="col-md-8">描述</th>
-												<th class="col-md-1">可选</th>
-											</tr>
-										</thead>
-										<tbody>
-											<tr v-for="param in it.params" class="row">
-												<td class="code">{{param.paramName}}</td>
-												<td>{{param.typeName}}</td>
-												<td>
-													<p>{{param.description}}</p>
-												</td>
-												<td>
-													<p>{{param.optional != false}}</p>
-												</td>
-											</tr>
-										</tbody>
-									</table>
+							<div>
+								返回数据:
+								<div>
+									<pre>{{it.returnData}}</pre>
 								</div>
 							</div>
-
 							<div v-if="it.oks && it.oks.length &gt; 0">
 								<h4>返回值</h4>
 								<div class="table-responsive">
@@ -318,7 +337,7 @@ body {
 									<table class="table table-striped table-bordered">
 										<thead>
 											<tr>
-												<th>字段</th>
+												<th>状态</th>
 												<th>描述</th>
 											</tr>
 										</thead>
@@ -369,9 +388,13 @@ body {
 				content_path : ""
 			},
 			methods : {
-				showDetail:function(it){
+				showDetail : function(it) {
 					this.display_mode = "detail",
 					this.path_filter = it.paths[0];
+				},
+				switchMode : function(mode) {
+					this.display_mode = mode;
+					this.path_filter = '';
 				},
 				debugCall : function(it) {
 					if (!document.getElementById("dhc")) {
@@ -432,8 +455,6 @@ body {
 						for (var m in this.modules[i].methods)
 							tmp.push(this.modules[i].methods[m]);
 					}
-					//console.info(tmp);
-					//console.info(this.infos);
 					return tmp;
 				},
 			},
@@ -453,7 +474,7 @@ body {
 					}
 					return modules;
 				},
-				mailto:function(){
+				mailto : function() {
 					return 'mailto:' + this.apis.project.email
 				}
 			}

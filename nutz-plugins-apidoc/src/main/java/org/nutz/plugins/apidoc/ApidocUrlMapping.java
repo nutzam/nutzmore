@@ -3,9 +3,13 @@ package org.nutz.plugins.apidoc;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -25,6 +29,7 @@ import org.nutz.lang.LoopException;
 import org.nutz.lang.Mirror;
 import org.nutz.lang.Streams;
 import org.nutz.lang.Strings;
+import org.nutz.lang.Times;
 import org.nutz.lang.util.ClassMeta;
 import org.nutz.lang.util.ClassMetaReader;
 import org.nutz.lang.util.NutMap;
@@ -73,6 +78,15 @@ public class ApidocUrlMapping extends UrlMappingImpl {
 	protected static String[] EMTRY = new String[0];
 
 	protected String globalFailView;
+
+	protected List<NutMap> defaultFails;
+
+	{
+		defaultFails = new ArrayList<NutMap>();
+		defaultFails.add(NutMap.NEW().addv("key", 404).addv("description", "Not Found"));
+		defaultFails.add(NutMap.NEW().addv("key", 403).addv("description", "Permission Denied"));
+		defaultFails.add(NutMap.NEW().addv("key", 500).addv("description", "Exception Occured"));
+	}
 
 	@Override
 	public void add(ActionChainMaker maker, ActionInfo ai, NutConfig nc) {
@@ -259,6 +273,69 @@ public class ApidocUrlMapping extends UrlMappingImpl {
 		return expClass;
 	}
 
+	protected NutMap cache = NutMap.NEW();
+
+	/**
+	 * 实例化一个0值对象
+	 * 
+	 * @param clazz
+	 * @return
+	 */
+	protected Object instance(Class clazz) {
+		if (cache.get(clazz.getName()) != null) {
+			return cache.get(clazz.getName());
+		}
+		if (clazz == int.class || clazz == Integer.class) {
+			return 0;
+		}
+		if (clazz == short.class || clazz == Short.class) {
+			return 0;
+		}
+		if (clazz == double.class || clazz == Double.class) {
+			return 0.0d;
+		}
+		if (clazz == byte.class || clazz == Byte.class) {
+			return 0;
+		}
+		if (clazz == long.class || clazz == Long.class) {
+			return 0l;
+		}
+		if (clazz == float.class || clazz == Float.class) {
+			return 0.0f;
+		}
+		if (clazz == char.class || clazz == Character.class) {
+			return 'a';
+		}
+		if (clazz == boolean.class || clazz == Boolean.class) {
+			return false;
+		}
+		if (clazz == String.class) {
+			return "S";
+		}
+		if (clazz == Date.class) {
+			return Times.now();
+		}
+		if (clazz == BigDecimal.class) {
+			return new BigDecimal(0);
+		}
+		if (clazz == BigInteger.class) {
+			return new BigInteger("1");
+		}
+		try {
+			Object obj = clazz.newInstance();
+			Field[] fields = Mirror.me(clazz).getFields();
+			for (Field field : fields) {
+				if (field.getType() != clazz) {
+					Mirror.me(clazz).setValue(obj, field.getName(), instance(field.getType()));
+				}
+			}
+			cache.put(clazz.getName(), obj);
+			return obj;
+		} catch (InstantiationException | IllegalAccessException e) {
+		}
+		return null;
+	}
+
 	protected ExpMethod makeMethod(ExpContext ctx) {
 		ActionInfo ai = ctx.ai();
 		ExpMethod expMethod = new ExpMethod();
@@ -272,14 +349,7 @@ public class ApidocUrlMapping extends UrlMappingImpl {
 		expMethod.put("lineNumber", ai.getLineNumber());
 		expMethod.put("paths", ai.getPaths());
 		expMethod.put("returnType", ai.getMethod().getReturnType().getName());
-
-		try {
-			Object obj = ai.getMethod().getReturnType().newInstance();
-			expMethod.put("returnData", obj);
-		} catch (InstantiationException | IllegalAccessException e) {
-			e.printStackTrace();
-		}
-
+		expMethod.put("returnData", instance(ai.getMethod().getReturnType()));
 		expMethod.put("methodName", ai.getMethod().getName());
 		if (ai.getAdaptorInfo() != null)
 			expMethod.put("adaptorName", ai.getAdaptorInfo().getType().getName());
@@ -351,6 +421,8 @@ public class ApidocUrlMapping extends UrlMappingImpl {
 				}
 			});
 			expMethod.put("fails", data);
+		} else {
+			expMethod.put("fails", defaultFails);
 		}
 		Annotation[][] annos = method.getParameterAnnotations();
 		Type[] types = method.getGenericParameterTypes();
@@ -364,13 +436,8 @@ public class ApidocUrlMapping extends UrlMappingImpl {
 			Mirror<?> mirror = Mirror.me(types[i]);
 			expParam.put("typeName", mirror.getType().getName());
 			Class<?> clazz = mirror.getType();
-			try {
-				Object obj = clazz.newInstance();
-				expParam.put("requestData", obj);
-			} catch (InstantiationException | IllegalAccessException e) {
-				e.printStackTrace();
-			}
-			expParam.put("optional",
+			expParam.put("requestData", instance(clazz));
+			expParam.put("ignore",
 					(clazz.isAssignableFrom(HttpServletRequest.class)
 							|| clazz.isAssignableFrom(HttpServletResponse.class)
 							|| clazz.isAssignableFrom(HttpSession.class)
