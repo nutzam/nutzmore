@@ -45,7 +45,6 @@ import org.nutz.mvc.NutConfig;
 import org.nutz.mvc.ObjectInfo;
 import org.nutz.mvc.View;
 import org.nutz.mvc.annotation.At;
-import org.nutz.mvc.annotation.Attr;
 import org.nutz.mvc.annotation.Fail;
 import org.nutz.mvc.annotation.Param;
 import org.nutz.mvc.impl.ActionInvoker;
@@ -107,7 +106,7 @@ public class ApidocUrlMapping extends UrlMappingImpl {
 			if (document != null) {
 				projectInfo.addv("name", document.name()).addv("description", document.description())
 						.addv("author", document.author()).addv("email", document.email())
-						.addv("homePage", document.homePage());
+						.addv("homePage", document.homePage()).addv("copyright", document.copyRight());
 			}
 		}
 	}
@@ -344,8 +343,7 @@ public class ApidocUrlMapping extends UrlMappingImpl {
 		expMethod.put("typeName", ai.getModuleType().getName());
 		expMethod.put("okView", ai.getOkView());
 		expMethod.put("failView", Strings.isBlank(ai.getFailView()) ? globalFailView : ai.getFailView());
-		expMethod.put("httpMethods", ai.getHttpMethods() == null || ai.getHttpMethods().size() == 0
-				? new String[] { "GET", "POST" } : ai.getHttpMethods());
+		
 		expMethod.put("lineNumber", ai.getLineNumber());
 		expMethod.put("paths", ai.getPaths());
 		expMethod.put("returnType", ai.getMethod().getReturnType().getName());
@@ -355,6 +353,8 @@ public class ApidocUrlMapping extends UrlMappingImpl {
 			expMethod.put("adaptorName", ai.getAdaptorInfo().getType().getName());
 		expMethod.put("requestBody",
 				Strings.equals(expMethod.getString("adaptorName"), "org.nutz.mvc.adaptor.JsonAdaptor"));
+		expMethod.put("httpMethods", ai.getHttpMethods() == null || ai.getHttpMethods().size() == 0
+				? Strings.equals(expMethod.getString("adaptorName"), "org.nutz.mvc.adaptor.JsonAdaptor") ?new String[] {  "POST" } : new String[] { "GET", "POST" }  : ai.getHttpMethods());
 		ObjectInfo<? extends ActionFilter>[] filters = ai.getFilterInfos();
 		if (filters == null)
 			expMethod.put("filters", EMTRY);
@@ -376,25 +376,135 @@ public class ApidocUrlMapping extends UrlMappingImpl {
 		expMethod.put("params", make(ai.getMethod(), expMethod, ctx));
 		return expMethod;
 	}
+	
+	/**
+	 * 根据索引匹配
+	 * @param params
+	 * @param index
+	 * @param name 
+	 * @return
+	 */
+	protected ApiParam matchApiParam(List<ApiParam> params,int index, String name) {
+		if (params == null || params.size() == 0) {
+			return null;
+		}
+		for (ApiParam apiParam : params) {
+			if (apiParam.index() == index || Strings.equals(name, apiParam.name())) {
+				return apiParam;
+			}
+		}
+		return null;
+	}
 
 	protected List<ExpParam> make(Method method, ExpMethod expMethod, ExpContext ctx) {
+		
+		//TODO 这里的逻辑值得商榷
+		
+		/**
+		 * 1.根据方法获取注解<br>
+		 * 2.根据方法获取参数列表<br>
+		 * 3.如果注解中存在params配置<br>
+		 * 	3.1  遍历配置
+		 * 	3.2 根据配置对象获取对应参数类型进行数据组装
+		 * 4.如果没有配置
+		 * 	4.1 根据参数列表进行组装
+		 * 
+		 */
+		List<ExpParam> params = new ArrayList<>();
 		String metaKey = ClassMetaReader.getKey(method);
 		expMethod.put("methodId", ctx.expClass().getString("typeName") + "#" + metaKey);
 		ClassMeta meta = ctx.expClass().getAs("meta", ClassMeta.class);
-		List<String> paramNames = meta == null ? null : meta.paramNames.get(metaKey);
-		// TODO 还得解析参数
-		List<ExpParam> params = new ArrayList<>();
-		ApiParam[] apiParams = null;
+		List<String> paramNames = meta == null ? null : meta.paramNames.get(metaKey);// 参数名列表
+		Api api = method.getAnnotation(Api.class);
+		List<ApiParam> apiParams = null;
+		if (api != null) {
+			apiParams = Lang.array2list(api.params());
+		}
+		Type[] types = method.getGenericParameterTypes();
+		Annotation[][] annos = method.getParameterAnnotations();
+		for (int i = 0; i < types.length; i++) {
+			Mirror<?> mirror = Mirror.me(types[i]);
+			Class<?> clazz = mirror.getType();
+			if (clazz.isAssignableFrom(HttpServletRequest.class) || clazz.isAssignableFrom(HttpServletResponse.class)
+					|| clazz.isAssignableFrom(HttpSession.class) || clazz.isAssignableFrom(ServletContext.class)) {//Servlet相关的类型直接跳过
+				continue;
+			}
+			ExpParam expParam = new ExpParam();
+			expParam.put("index", i); 
+			expParam.put("ignore", false); 
+			expParam.put("paramLocalName", paramNames.get(i));
+			expParam.put("typeName", mirror.getType().getName());
+			expParam.put("requestData", instance(clazz));
+			for (Annotation anno : annos[i]) {// 尝试获取Param注解
+				if (anno instanceof Param) {
+					Param _param = (Param) anno;
+					expParam.put("annoParamName", _param.value());
+					expParam.put("annoParamDefault", _param.df());
+					expParam.put("paramDefault", _param.df());
+					expParam.put("annoParamDateFormat", _param.dfmt());
+					expParam.put("paramDateFormat", _param.dfmt());
+				} 
+			}
+			// 把参数名先定下来
+			if (!Strings.isBlank(expParam.getString("annoParamName")))
+				expParam.put("paramName", expParam.getString("annoParamName"));
+			else
+				expParam.put("paramName", expParam.getString("paramLocalName"));
+			
+			//尝试获取apiParam对象
+			ApiParam apiParam = matchApiParam(apiParams,i,expParam.getString("paramName"));
+			if (apiParam!=null) {
+				if (apiParam.index() != -1) {
+					expParam.put("index", apiParam.index()); 
+				}
+				if (Strings.isBlank(apiParam.name())) {
+					expParam.put("paramName", apiParam.name());
+				}
+				expParam.put("ignore", apiParam.ignore());
+				expParam.put("description", apiParam.description());
+				if (!Strings.isBlank(apiParam.type()))
+					expParam.put("typeName", apiParam.type());
+				if (!Strings.isBlank(apiParam.defaultValue()))
+					expParam.put("paramDefault", apiParam.defaultValue());
+				if (!Strings.isBlank(apiParam.dateFormat()))
+					expParam.put("paramDateFormat", apiParam.dateFormat());
+				expParam.put("optional", apiParam.optional());
+				apiParams.remove(apiParam);//处理完成 移除之
+			}
+			params.add(expParam);
+		}
+		//检查一下没有处理到的注解
+		if (apiParams!=null) {
+			for (ApiParam apiParam : apiParams) {
+				ExpParam expParam = new ExpParam();
+				expParam.put("requestData", apiParam.requestData());
+				if (apiParam.index() != -1) {
+					expParam.put("index", apiParam.index()); 
+				}
+				if (Strings.isBlank(apiParam.name())) {
+					expParam.put("paramName", apiParam.name());
+				}
+				expParam.put("ignore", apiParam.ignore());
+				expParam.put("paramName", apiParam.name());
+				expParam.put("description", apiParam.description());
+				if (!Strings.isBlank(apiParam.type()))
+					expParam.put("typeName", apiParam.type());
+				if (!Strings.isBlank(apiParam.defaultValue()))
+					expParam.put("paramDefault", apiParam.defaultValue());
+				if (!Strings.isBlank(apiParam.dateFormat()))
+					expParam.put("paramDateFormat", apiParam.dateFormat());
+				expParam.put("optional", apiParam.optional());
+				params.add(expParam);
+			}
+		}
+		// 处理一下返回和异常
 		ReturnKey[] oks = null;
 		ReturnKey[] fails = null;
-		Api api = method.getAnnotation(Api.class);
 		if (api != null) {
-			apiParams = api.params();
 			oks = api.ok();
 			fails = api.fail();
-		} else
-			apiParams = new ApiParam[0];
-		if (oks != null) {
+		}
+		if (oks != null) {//有配置
 			final List<NutMap> data = new ArrayList<NutMap>();
 			Lang.each(oks, new Each<ReturnKey>() {
 
@@ -408,7 +518,7 @@ public class ApidocUrlMapping extends UrlMappingImpl {
 			});
 			expMethod.put("oks", data);
 		}
-		if (fails != null) {
+		if (fails != null && fails.length!=0) {//有配置
 			final List<NutMap> data = new ArrayList<NutMap>();
 			Lang.each(fails, new Each<ReturnKey>() {
 
@@ -423,92 +533,6 @@ public class ApidocUrlMapping extends UrlMappingImpl {
 			expMethod.put("fails", data);
 		} else {
 			expMethod.put("fails", defaultFails);
-		}
-		Annotation[][] annos = method.getParameterAnnotations();
-		Type[] types = method.getGenericParameterTypes();
-		for (int i = 0; i < types.length; i++) {
-			ExpParam expParam = new ExpParam();
-			expParam.put("index", i); // 实际顺序
-			if (paramNames != null)
-				expParam.put("paramLocalName", paramNames.get(i));
-			else
-				expParam.put("paramLocalName", "arg" + i);
-			Mirror<?> mirror = Mirror.me(types[i]);
-			expParam.put("typeName", mirror.getType().getName());
-			Class<?> clazz = mirror.getType();
-			expParam.put("requestData", instance(clazz));
-			expParam.put("ignore",
-					(clazz.isAssignableFrom(HttpServletRequest.class)
-							|| clazz.isAssignableFrom(HttpServletResponse.class)
-							|| clazz.isAssignableFrom(HttpSession.class)
-							|| clazz.isAssignableFrom(ServletContext.class)));
-
-			// TODO 按不同注解可以分别处理
-			for (Annotation anno : annos[i]) {
-				if (anno instanceof Param) {
-					Param _param = (Param) anno;
-					expParam.put("annoParamName", _param.value());
-					expParam.put("annoParamDefault", _param.df());
-					expParam.put("paramDefault", _param.df());
-					expParam.put("annoParamDateFormat", _param.dfmt());
-					expParam.put("paramDateFormat", _param.dfmt());
-				} else if (anno instanceof Attr) {
-					Attr attr = (Attr) anno;
-					expParam.put("annoAttrName", attr.value());
-					expParam.put("annoAttrScope", attr.scope());
-					expParam.put("optional", true);
-				}
-			}
-			if (Strings.isBlank(expParam.getString("paramName"))) {
-				if (!Strings.isBlank(expParam.getString("annoParamName")))
-					expParam.put("paramName", expParam.getString("annoParamName"));
-				else
-					expParam.put("paramName", expParam.getString("paramLocalName"));
-			}
-
-			for (int j = 0; j < apiParams.length; j++) {
-				ApiParam apiParam = apiParams[j];
-				if (apiParam == null)
-					continue;
-				if (apiParam.name().equals(expParam.getString("paramName")) || apiParam.index() == i) {
-					// 主动忽略参数
-					if (apiParam.ignore()) {
-						expParam = null;
-						apiParams[j] = null;
-						break;
-					}
-					expParam.put("paramName", apiParam.name());
-					expParam.put("description", apiParam.description());
-					if (!Strings.isBlank(apiParam.type()))
-						expParam.put("typeName", apiParam.type());
-					if (!Strings.isBlank(apiParam.defaultValue()))
-						expParam.put("paramDefault", apiParam.defaultValue());
-					if (!Strings.isBlank(apiParam.dateFormat()))
-						expParam.put("paramDateFormat", apiParam.dateFormat());
-					expParam.put("optional", apiParam.optional());
-					apiParams[j] = null;
-					break;
-				}
-			}
-
-			if (expParam != null)
-				params.add(expParam);
-		}
-		for (int j = 0; j < apiParams.length; j++) {
-			ApiParam apiParam = apiParams[j];
-			if (apiParam == null)
-				continue;
-			ExpParam expParam = new ExpParam();
-			expParam.put("index", apiParam.index());
-			expParam.put("description", apiParam.description());
-			expParam.put("paramName", apiParam.name());
-			expParam.put("typeName", apiParam.type());
-			expParam.put("paramDefault", apiParam.defaultValue());
-			expParam.put("paramDateFormat", apiParam.dateFormat());
-			expParam.put("optional", apiParam.optional());
-			params.add(expParam);
-
-			// TODO 解析复杂参数
 		}
 		return params;
 	}

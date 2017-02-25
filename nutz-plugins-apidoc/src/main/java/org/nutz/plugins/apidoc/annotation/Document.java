@@ -40,5 +40,7 @@ public @interface Document {
 	 * @return 作者主页
 	 */
 	String homePage() default "";
+	
+	String copyRight() default "© 2017 Powered By Nutz.cn.";
 
 }

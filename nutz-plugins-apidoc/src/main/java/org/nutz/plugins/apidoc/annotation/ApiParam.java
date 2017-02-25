@@ -51,4 +51,10 @@ public @interface ApiParam {
      */
     boolean ignore() default false;
     
+    /**
+     * 
+     * @return 请求数据示例
+     */
+    String requestData() default "";
+    
 }

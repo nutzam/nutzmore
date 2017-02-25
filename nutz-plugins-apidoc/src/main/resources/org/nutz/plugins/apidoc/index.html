@@ -127,6 +127,11 @@ body {
 .method-description {
 	font-size: 16px;
 }
+.copy-info{
+	width:95%;
+	position: absolute;
+	bottom: -45px
+}
 </style>
 </head>
 <body>
@@ -146,11 +151,11 @@ body {
 						<li><a href="#" @click="switchMode('detail') " :class="display_mode != 'detail' ? 'active': '' ">详细列表</a></li>
 					</ul>
 					<ul class="nav navbar-nav navbar-right">
-						<li><a href="https://nutz.cn">NutzCN论坛</a></li>
-						<li><a href="http://nutzam.com">官网</a></li>
-						<li><a :href="apis.project.homePage">{{apis.project.author}}</a></li>
-						<li><a :href="mailto">联系我们</a></li>
-					</ul>
+							<li ><a :href="apis.project.homePage">{{apis.project.author}}</a></li>
+							<li ><a :href="mailto">联系我们</a></li>
+							<li ><a href="https://nutz.cn">NutzCN论坛</a></li>
+							<li ><a href="http://nutzam.com">NUTZ官网</a></li>
+						</ul>
 				</div>
 			</div>
 		</nav>
@@ -251,30 +256,30 @@ body {
 						<div v-for="it in info.methods" v-if="(!path_filter || it.paths.join(',').indexOf(path_filter)!= -1) && (!methodName_filter || it.methodName.indexOf(methodName_filter))">
 							<div>
 								<h3>{{info.name}} - {{it.name}}</h3>
-								请求路径:
+								<h4>请求路径:</h4>
 								<div v-for="path in it.paths">
 									<code>
 										<span class="pln">{{path}}</span>
 									</code>
 								</div>
-								请求方式:
+								<h4>请求方式:</h4>
 								<div v-for="method in it.httpMethods">
 									<code>
 										<span class="pln">{{method}}</span>
 									</code>
 								</div>
-								方法说明:
+								<h4>方法说明:</h4>
 								<div class="method-description" v-if="it.description || it.methodName">{{it.description || it.typeName + '#' + it.methodName}}</div>
-								参数位置:
+								<h4>参数位置:</h4>
 								<div>
 									<code>
 										<span class="pln">{{it.requestBody?'BODY':'FORM'}}</span>
 									</code>
 								</div>
-								<div v-if="it.params.length &gt; 0">
+								<div v-if="it.params && it.params.length &gt; 0">
 									<h4>请求参数</h4>
 									<div class="table-responsive">
-										<table class="table table-striped table-bordered">
+										<table class="table table-bordered">
 											<thead>
 												<tr>
 													<th>字段</th>
@@ -291,7 +296,8 @@ body {
 													<td>
 														<p>{{param.description}}</p>
 													</td>
-													<td><pre>{{param.requestData}}</pre></td>
+													<td  v-if="it.requestBody"><pre>{{param.requestData}}</pre></td>
+													<td  v-else>{{param.requestData}}</td>
 													<td>
 														<p>{{param.optional != false}}</p>
 													</td>
@@ -304,7 +310,7 @@ body {
 								<button class="btn btn-sm btn-info" @click="debugCall(it)">调试</button>
 							</div>
 							<div>
-								返回数据:
+								<h4>返回数据:</h4>
 								<div>
 									<pre>{{it.returnData}}</pre>
 								</div>
@@ -354,6 +360,10 @@ body {
 							</div>
 
 						</div>
+					</div>
+					<div class="copy-info">
+						<hr>
+						<div>{{apis.project.copyright}}</div>
 					</div>
 				</div>
 			</div>
