@@ -15,9 +15,11 @@ POI封装了对Excel的基本读写操作，j4e是其基础上按照Nutz使用�
 
 # 使用手册
 
-## 基本的导入导出
+## 基本用法
 
-基本上来说Excel中的一个Sheet对应Java中的一个POJO对象，导入导出都是以该对象为基础。
+### 定义对象
+
+Excel中的一个Sheet对应Java中的一个POJO对象，导入导出都是以该对象为基础。
 
 比如我们要导出一个表的数据，假如说这个表是Nutz创建的POJO，那么它应该长这样：
 
@@ -67,6 +69,8 @@ public class Person {
 }
 ```
 
+### 导出操作
+
 接下来就是导出操作了, 下面的数据库相关操作都以nutz为准，不太熟的可以看下[官网文档](https://nutzam.com/core/dao/hello.html)
 
 ```java
@@ -82,6 +86,8 @@ J4E.toExcel(Files.createFileIfNoExists2("~/人员.xls"), people, null);
 
 ![](media/14880389482305.jpg)
 
+
+### 导入操作
 
 接着我们再测试下导入，就把刚刚导出的数据直接再写回数据库看看
 
@@ -101,11 +107,101 @@ dao.insert(people);
 ![14880385199204](media/14880385199204.jpg)
 
 
-是不是很简单
 
+总的来说只要在POJO对象上设置好相应的注解，excel的导入导出基本上就只需要一行代码即可搞定，是不是很简单呢
+
+
+## J4E注解详解
+
+### @J4EName
+
+定义在类上就是指定Excel中sheet名，定义在字段上就是指定列名（表头）
+
+### @J4EIgnore
+
+定义在字段上，顾名思义就是被忽略的字段，这字段既不会导入也不会导出
+
+### @J4EDefine
+
+定义在字段上，这个是因为Excel中的类型可能与POJO中的字段类型有差异，需要进行一定的转换操作，所以指明该字段的具体类型可以更加方面的做数据转换。
+
+默认的转换类似为String，也就说不论Excel是什么类型存储的，默认读取出来都是按照String。
+
+像float，double类型的数据，对于数字的精度是有要求的，所以手动指定precision的长度是最好的选择，否者自动转换会出现丢失精度的问题。
+
+像日期时间类型数据，写法更是五花八门了，更是需要我们手动指定导出与导出格式。
+
+目前支持的类型有三种：
+
+```java
+public enum J4EColumnType {
+    STRING, NUMERIC, DATE
+}
+```
+
+### @J4EFormat
+
+字符串类型数据适用。
+
+常用于导入数据过程中，对字符串类型数据做一些处理（并不改变导入文件本身数据）。
+
+```java
+@J4EFormat(UpperCase = true)     // 全部转换为大写
+private String name;
+```
+
+```java
+@J4EFormat(LowerCase = true)     // 全部转换为小写
+private String name;
+```
+
+### @J4EDateFormat
+
+日期类型数据使用。
+
+常用于导入数据过程中，转换表格中日期为自己需要的格式。
+
+```java
+@J4EDefine(type = J4EColumnType.DATE)
+@J4EDateFormat(from = "yyyy-MM-dd HH:mm:ss", to = "yyyyMMdd")
+private Date birthday;
+```
+
+
+### @J4EExt
+
+定义在类上，主要是对非标准的表格做一些处理。
+
+比如导出的表格会在头几行写一些别的内容，需要跳过n行活n列才是一个正常的表格。
+
+```java
+@J4EExt(passRow = 2)   // 跳过头2两行
+public class Person { 
+}
+```
+
+```java
+@J4EExt(passColumn = 2)   // 跳过头2两列
+public class Person { 
+}
+```
+
+## 高级用法
+
+### J4EConf的配置
+
+// 待写
+
+### 按行处理的方式
+
+// 待写
+
+### json作为配置文件
+
+// 待写
 
 # 后续开发计划
 
-// TODO
+// 代写
 
 
