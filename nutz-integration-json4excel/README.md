@@ -79,7 +79,8 @@ J4E.toExcel(Files.createFileIfNoExists2("~/人员.xls"), people, null);
    
 ```
 看看生成的文件
-![14880377328027](media/14880377328027.jpg)
+
+![](media/14880389482305.jpg)
 
 
 接着我们再测试下导入，就把刚刚导出的数据直接再写回数据库看看
