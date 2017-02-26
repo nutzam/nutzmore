@@ -1,11 +1,7 @@
 package org.nutz.plugins.nop.core;
 
-import java.util.Iterator;
-import java.util.Map;
-
 import org.nutz.json.Json;
 import org.nutz.json.JsonFormat;
-import org.nutz.lang.util.NutMap;
 
 /**
  * 携带数据的操作结果描述<br>
@@ -16,7 +12,7 @@ import org.nutz.lang.util.NutMap;
  *
  *         create at 2014年8月22日
  */
-public class NOPData {
+public class NOPData<T> {
 
 	public static enum OperationState {
 		/**
@@ -78,7 +74,7 @@ public class NOPData {
 	 * @return 一个异常结果实例,不携带异常信息
 	 */
 	public static NOPData exception(String msg) {
-		return NOPData.exception().addData("reason", msg);
+		return NOPData.exception().setMsg( msg);
 	}
 
 	/**
@@ -89,9 +85,7 @@ public class NOPData {
 	 * @return NOPData实例
 	 */
 	public static NOPData fail(String reason) {
-		Map data = new NutMap();
-		data.put("reason", reason);
-		return NOPData.me().setOperationState(OperationState.FAIL).setData(data);
+		return NOPData.me().setOperationState(OperationState.FAIL).setMsg(reason);
 	}
 
 	/**
@@ -111,23 +105,39 @@ public class NOPData {
 	public static NOPData success() {
 		return NOPData.me().setOperationState(OperationState.SUCCESS);
 	}
-
-	/**
-	 * 创建一个成功结果
-	 * 
-	 * @param data
-	 *            需要携带的数据
-	 * @return NOPData实例状态为成功数据位传入参数
-	 */
-	public static NOPData success(Map data) {
-		return NOPData.success().setData(data);
+	
+	public NOPData<T> success(T t) {
+		return success().setData(t);
 	}
+
 
 	/**
 	 * 操作结果数据 假设一个操作要返回很多的数据 一个用户名 一个产品 一个相关产品列表 一个产品的评论信息列表 我们以key
 	 * value形式进行保存，页面获取data对象读取其对于的value即可
 	 */
-	private NutMap data = new NutMap();
+	private T data;
+	
+	private String msg;
+	
+	
+
+	public T getData() {
+		return data;
+	}
+
+	public NOPData<T> setData(T data) {
+		this.data = data;
+		return this;
+	}
+
+	public String getMsg() {
+		return msg;
+	}
+
+	public NOPData setMsg(String msg) {
+		this.msg = msg;
+		return this;
+	}
 
 	/**
 	 * 带状态的操作 比如登录有成功和失败
@@ -138,79 +148,13 @@ public class NOPData {
 		super();
 	}
 
-	public NOPData(OperationState operationState, Map data, String title) {
-		super();
-		this.operationState = operationState;
-		this.data = NutMap.WRAP(data);
-	}
 
-	/**
-	 * 添加更多的数据
-	 * 
-	 * @param data
-	 *            待添加的数据
-	 * @return 结果实例
-	 */
-	public NOPData addData(Map data) {
-		Iterator iterator = data.keySet().iterator();
-		while (iterator.hasNext()) {
-			String key = iterator.next().toString();
-			this.data.put(key, data.get(key));
-		}
-		return this;
-	}
 
-	/**
-	 * 添加数据
-	 * 
-	 * @param key
-	 * @param object
-	 * @return
-	 */
-	public NOPData addData(String key, Object object) {
-		if (this.data == null) {
-			data = new NutMap();
-		}
-		data.put(key, object);
-		return this;
-	}
-
-	/**
-	 * 清空结果
-	 */
-	public NOPData clear() {
-		this.operationState = OperationState.DEFAULT;
-		if (data != null) {
-			this.data.clear();
-		}
-		return this;
-	}
-
-	public NutMap getData() {
-		return data;
-	}
-
-	/**
-	 * 以nutmap包装数据
-	 * 
-	 * @return
-	 */
-	public NutMap getNutMapData() {
-		return NutMap.WRAP(data);
-	}
 
 	public OperationState getOperationState() {
 		return operationState;
 	}
 
-	/**
-	 * 获取错误获取异常原因
-	 * 
-	 * @return
-	 */
-	public String getReason() {
-		return getData().getString("reason");
-	}
 
 	/**
 	 * 是否成功
@@ -221,10 +165,6 @@ public class NOPData {
 		return getOperationState() == OperationState.SUCCESS;
 	}
 
-	public NOPData setData(Map data) {
-		this.data = NutMap.WRAP(data);
-		return this;
-	}
 
 	public NOPData setOperationState(OperationState operationState) {
 		this.operationState = operationState;

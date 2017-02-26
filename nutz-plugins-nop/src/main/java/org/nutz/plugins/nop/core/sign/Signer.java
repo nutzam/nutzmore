@@ -5,23 +5,38 @@ import org.nutz.log.Logs;
 import org.nutz.plugins.nop.core.NOPRequest;
 
 /**
- * @author Kerbores(kerbores@gmail.com)
- *
- * @project nutz-plugins-nop
- *
- * @file Signer.java
- *
- * @description 签名产生器
- *
- * @time 2016年8月31日 下午2:17:14
+ * 签名器
+ * 
+ * @author kerbores
  *
  */
 public interface Signer {
-
+	
 	public Log log = Logs.get();
 
+	/**
+	 * 名称
+	 * 
+	 * @return
+	 */
 	public String name();
 
-	public String sign(String appKey, String appSecret, NOPRequest request);
+	/**
+	 * 签名生成
+	 * 
+	 * @param request
+	 *            请求
+	 * @return
+	 */
+	public String sign(NOPRequest request);
+
+	/**
+	 * 签名检查
+	 * 
+	 * @param request
+	 *            请求
+	 * @return
+	 */
+	public boolean check(NOPRequest request);
 
 }

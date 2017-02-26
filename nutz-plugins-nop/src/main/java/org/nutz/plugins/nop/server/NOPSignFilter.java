@@ -1,13 +1,12 @@
 package org.nutz.plugins.nop.server;
 
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.nutz.http.Header;
 import org.nutz.http.Request.METHOD;
 import org.nutz.lang.Strings;
-import org.nutz.lang.util.NutMap;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.mvc.ActionContext;
@@ -17,7 +16,8 @@ import org.nutz.mvc.view.UTF8JsonView;
 import org.nutz.plugins.nop.NOPConfig;
 import org.nutz.plugins.nop.core.NOPData;
 import org.nutz.plugins.nop.core.NOPRequest;
-import org.nutz.plugins.nop.core.sign.NOPSigner;
+import org.nutz.plugins.nop.core.sign.AppsecretFetcher;
+import org.nutz.plugins.nop.core.sign.DigestSigner;
 import org.nutz.plugins.nop.core.sign.Signer;
 
 /**
@@ -43,55 +43,25 @@ public class NOPSignFilter implements ActionFilter {
 	 */
 	@Override
 	public View match(ActionContext ac) {
-		Map<String, String> header = new HashMap<String, String>();
-
-		Enumeration<String> headerKeys = ac.getRequest().getHeaderNames();
-		while (headerKeys.hasMoreElements()) {
-			String key = headerKeys.nextElement();
-			header.put(key, ac.getRequest().getHeader(key));
+		HttpServletRequest request = ac.getRequest();
+		String digestName = request.getAttribute("digestName") == null ? "MD5" : request.getAttribute("digestName") .toString();
+		String fetcherName = request.getAttribute("fetcherName") == null ? "default" : request.getAttribute("fetcherName") .toString();
+		AppsecretFetcher fetcher = Strings.equals("default", fetcherName) ? AppsecretFetcher.defaultFetcher : ac.getIoc().get(AppsecretFetcher.class, fetcherName);
+		Signer signer = new DigestSigner(digestName, fetcher);
+		Header header = Header.create();
+		Enumeration<String> headers =	request.getHeaderNames();
+		while (headers.hasMoreElements()) {
+			String key = headers.nextElement();
+			header.set(key, request.getHeader(key));
 		}
-		String sign = header.remove(NOPConfig.signkey());
-		String signerName = header.remove(NOPConfig.signerKey());
-		String appKey = header.remove(NOPConfig.appkeyKey());
-		String appSecret = header.remove(NOPConfig.appSecretKey());
-
-		if (!checkAppKey(appKey, appSecret)) {// appKey 验证失败
-			return new UTF8JsonView().setData(NOPData.exception("checkAppKey failed"));
-		} else if (!checkSign(sign, signerName, appKey, appSecret, ac)) {// 签名验证失败
+		String method = request.getHeader(NOPConfig.methodKey);
+		NOPRequest req = NOPRequest.create(method, METHOD.valueOf(request.getMethod()), "", header);
+		if (signer.check(req)) {
+			return null;
+		}else {
 			return new UTF8JsonView().setData(NOPData.exception("checkSign failed"));
 		}
-		return null;
 	}
 
-	/**
-	 * @param sign
-	 * @param signerName
-	 * @param appKey
-	 * @param appSecret
-	 * @param header
-	 * @param ac
-	 * @return
-	 */
-	private boolean checkSign(String sign, String signerName, String appKey, String appSecret, ActionContext ac) {
-		Signer signer = getSignerByName(signerName);
-		NOPRequest request = NOPRequest.create("", Strings.equalsIgnoreCase(ac.getRequest().getMethod(), "get") ? METHOD.GET : METHOD.POST,
-				(NutMap) ac.getRequest().getAttribute(NOPConfig.parasKey()), Header.create());
-		return Strings.equals(signer.sign(appKey, appSecret, request), sign);
-	}
-
-	public boolean checkAppKey(String appKey, String appSecret) {
-		return Strings.isNotBlank(appKey) && Strings.isNotBlank(appSecret);// 非空即可,自行覆盖实现业务
-	}
-
-	/**
-	 * 根据名称找实例
-	 * 
-	 * @param name
-	 * @return
-	 */
-	public Signer getSignerByName(String name) {
-
-		return new NOPSigner();
-	}
 
 }

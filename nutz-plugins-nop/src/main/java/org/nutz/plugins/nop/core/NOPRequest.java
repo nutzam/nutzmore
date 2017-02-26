@@ -63,6 +63,12 @@ public class NOPRequest {
 	public static NOPRequest create(String service, METHOD method, String paramsAsJson) {
 		return create(service, method, (Map<String, Object>) Json.fromJson(paramsAsJson));
 	}
+	public static NOPRequest create(String service,  String body, Header header) {
+		NOPRequest request = create(service, METHOD.POST);
+		request.setHeader(header);
+		request.setData(body);
+		return request;
+	}
 
 	public static NOPRequest create(String service, METHOD method, Map<String, Object> params) {
 		return NOPRequest.create(service, method, params, Header.create());
@@ -89,6 +95,17 @@ public class NOPRequest {
 	private byte[] data;
 	private InputStream inputStream;
 	private String enc = Encoding.UTF8;
+	private String appSecret;
+	
+	
+
+	public String getAppSecret() {
+		return appSecret;
+	}
+
+	public void setAppSecret(String appSecret) {
+		this.appSecret = appSecret;
+	}
 
 	public Map<String, Object> getParams() {
 		return params;

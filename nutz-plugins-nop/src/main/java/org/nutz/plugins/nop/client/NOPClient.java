@@ -1,14 +1,13 @@
 package org.nutz.plugins.nop.client;
 
 import org.nutz.http.Request;
+import org.nutz.http.Response;
 import org.nutz.http.Sender;
-import org.nutz.json.Json;
 import org.nutz.lang.Times;
-import org.nutz.lang.util.NutMap;
+import org.nutz.lang.random.R;
 import org.nutz.plugins.nop.NOPConfig;
 import org.nutz.plugins.nop.core.NOPRequest;
-import org.nutz.plugins.nop.core.NOPResponse;
-import org.nutz.plugins.nop.core.sign.NOPSigner;
+import org.nutz.plugins.nop.core.sign.DigestSigner;
 import org.nutz.plugins.nop.core.sign.Signer;
 
 /**
@@ -28,19 +27,22 @@ public class NOPClient {
 	private String appKey;
 	private String appSecret;
 	private String endpoint;// 调用点
+	private String digestName;
 
-	private Signer signer = new NOPSigner();
+	public String getDigestName() {
+		return digestName;
+	}
 
-	public String getAppKey() {
-		return appKey;
+	public void setDigestName(String digestName) {
+		this.digestName = digestName;
 	}
 
 	public Signer getSigner() {
-		return signer;
+		return new DigestSigner(digestName, null);
 	}
 
-	public void setSigner(Signer signer) {
-		this.signer = signer;
+	public String getAppKey() {
+		return appKey;
 	}
 
 	public void setAppKey(String appKey) {
@@ -66,27 +68,34 @@ public class NOPClient {
 	private NOPClient() {
 	}
 
-	public static NOPClient create(String appKey, String appSecret, String endpoint) {
+	public static NOPClient create(String appKey, String appSecret, String endpoint, String digestName) {
 		NOPClient client = new NOPClient();
 		client.setAppKey(appKey);
 		client.setAppSecret(appSecret);
 		client.setEndpoint(endpoint);
+		client.setDigestName(digestName);
 		return client;
 	}
 
-	public NOPResponse send(NOPRequest request) {
-		request.getHeader().set(NOPConfig.tskey(), Times.now().getTime() + "");// 添加时间戳
-		request.getHeader().set(NOPConfig.methodKey(), request.getService());// 添加请求方法
-		String sign = signer.sign(appKey, appSecret, request);
-
-		request.getHeader().set(NOPConfig.signkey(), sign);
-		request.getHeader().set(NOPConfig.signerKey(), signer.name());
-		request.getHeader().set(NOPConfig.appkeyKey(), appKey);// appKey
-		request.getHeader().set(NOPConfig.appSecretKey(), appSecret);// appSecret
-
-		Request req = Request.create(endpoint, request.getMethod(), NutMap.NEW(), request.getHeader()).setData(Json.toJson(request.getParams()));
+	public Response send(NOPRequest request) {
+		request.setAppSecret(appSecret);
+		request.getHeader().set(NOPConfig.tsKey, Times.now().getTime() + "");// 添加时间戳
+		request.getHeader().set(NOPConfig.methodKey, request.getService());// 添加请求方法
+		request.getHeader().set(NOPConfig.appkeyKey, appKey);// appKey
+		request.getHeader().set("once", R.sg(16).next());
+		String sign = getSigner().sign(request);
+		request.getHeader().set(NOPConfig.signKey, sign);//签名
+		
+		Request req = null;
+		if (request.getParams() != null) {
+			req = Request.create(endpoint, request.getMethod(), request.getParams(), request.getHeader());
+		} else {
+			req = Request.create(endpoint, request.getMethod());
+			req.setHeader(request.getHeader());
+			req.setData(request.getData());
+		}
 
 		Sender sender = Sender.create(req);
-		return NOPResponse.warp(sender.send());
+		return sender.send();
 	}
 }
