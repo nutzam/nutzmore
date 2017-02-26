@@ -5,9 +5,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -107,6 +111,8 @@ public class NgrokClient implements Runnable {
     protected transient ExecutorService executorService;
 
     protected transient Socket ctlSocket;
+    
+    protected ConcurrentHashMap<String, ProxyConn> pmap = new ConcurrentHashMap<String, NgrokClient.ProxyConn>();
 
     public void start() {
         if (auth_token == null) {
@@ -155,27 +161,7 @@ public class NgrokClient implements Runnable {
             }
             
             // 启动心跳线程
-            executorService.submit(new Runnable() {
-                public void run() {
-                    while (status == 1) {
-                        try {
-                            // 每隔15秒发个心跳包,不然服务器会断开连接
-                            Thread.sleep(15000);
-                            NgrokAgent.writeMsg(ctlOut, NgrokMsg.ping());
-                        }
-                        catch (InterruptedException e) {
-                            break;
-                        }
-                        catch (IOException e) {
-                            if (status == 1)
-                                log.debug("heartbeat exit. Contrl Conntion close?", e);
-                            else
-                                log.debug("heartbeat exit.");
-                            break;
-                        }
-                    }
-                }
-            });
+            executorService.submit(new PingThread());
             handle();
         }
         catch (Exception e) {
@@ -195,11 +181,9 @@ public class NgrokClient implements Runnable {
                 String type = msg.getString("Type");
                 // 服务器要求我们发送新的代理链接
                 if ("ReqProxy".equals(type)) {
-                    executorService.submit(new Runnable(){
-                        public void run() {
-                            proxy();
-                        }
-                    });
+                    ProxyConn pc = new ProxyConn();
+                    pmap.put(pc.pcid, pc);
+                    executorService.submit(pc);
                 }
                 // 服务器发心跳了!!!, 需要回应pong
                 else if ("Ping".equals(type)) {
@@ -259,6 +243,12 @@ public class NgrokClient implements Runnable {
             executorService.shutdownNow();
             executorService = null;
         }
+        List<ProxyConn> list = new ArrayList<ProxyConn>(pmap.values());
+        pmap.clear();
+        for (ProxyConn pc : list) {
+            Streams.safeClose(pc.toLoc);
+            Streams.safeClose(pc.toSrv);
+        }
     }
 
     /**
@@ -273,70 +263,102 @@ public class NgrokClient implements Runnable {
     /**
      * 开启一个代理请求
      */
-    protected void proxy() {
-        Socket toSrv = null;
-        try {
-            // 首先,建立一条通道
-            toSrv = newSocket2Server();
-            // 需要等服务器响应,可能会很久
-            toSrv.setSoTimeout(3600 * 1000); // 一小时
-            // 取出该通道的输入输出流备用
-            OutputStream srvOut = toSrv.getOutputStream();
-            InputStream srvIn = toSrv.getInputStream();
-            // 发起注册通道的请求
-            NgrokAgent.writeMsg(srvOut, NgrokMsg.regProxy(getId()));
-            // 等待服务器响应StartProxy
-            NgrokMsg msg = NgrokAgent.readMsg(srvIn);
-            // 如果真的响应了StartProxy,开始桥接Socket
-            if ("StartProxy".equals(msg.getString("Type"))) {
-                try {
-                    if (log.isDebugEnabled())
-                        log.debug("start socket pipe ...");
-                    Socket locSocket = newSocket2Local();
+    protected class ProxyConn implements Callable<Object> {
+        public Socket toSrv = null;
+        public Socket toLoc = null;
+        public String pcid = R.UU32();
+        
+        @Override
+        public Object call() throws Exception {
+            try {
+                // 首先,建立一条通道
+                toSrv = newSocket2Server();
+                // 需要等服务器响应,可能会很久
+                toSrv.setSoTimeout(3600 * 1000); // 一小时
+                // 取出该通道的输入输出流备用
+                OutputStream srvOut = toSrv.getOutputStream();
+                InputStream srvIn = toSrv.getInputStream();
+                // 发起注册通道的请求
+                NgrokAgent.writeMsg(srvOut, NgrokMsg.regProxy(getId()));
+                // 等待服务器响应StartProxy
+                NgrokMsg msg = NgrokAgent.readMsg(srvIn);
+                // 如果真的响应了StartProxy,开始桥接Socket
+                if ("StartProxy".equals(msg.getString("Type"))) {
                     try {
-                        // 服务器-->本地
-                        PipedStreamThread srv2loc = new PipedStreamThread("srv2loc",
-                                                                          srvIn,
-                                                                          locSocket.getOutputStream(),
-                                                                          bufSize);
-                        // 本地-->服务器
-                        PipedStreamThread loc2srv = new PipedStreamThread("loc2srv",
-                                                                          locSocket.getInputStream(),
-                                                                          srvOut,
-                                                                          bufSize);
-                        // 等待其中任意一个管道的关闭
-                        String exitFirst = executorService.invokeAny(Arrays.asList(srv2loc, loc2srv));
                         if (log.isDebugEnabled())
-                            log.debug("proxy conn exit first at " + exitFirst);
+                            log.debug("start socket pipe ...");
+                        toLoc = newSocket2Local();
+                        try {
+                            // 服务器-->本地
+                            PipedStreamThread srv2loc = new PipedStreamThread("srv2loc",
+                                                                              srvIn,
+                                                                              toLoc.getOutputStream(),
+                                                                              bufSize);
+                            // 本地-->服务器
+                            PipedStreamThread loc2srv = new PipedStreamThread("loc2srv",
+                                                                              toLoc.getInputStream(),
+                                                                              srvOut,
+                                                                              bufSize);
+                            // 等待其中任意一个管道的关闭
+                            String exitFirst = executorService.invokeAny(Arrays.asList(srv2loc, loc2srv));
+                            if (log.isDebugEnabled())
+                                log.debug("proxy conn exit first at " + exitFirst);
+                        }
+                        catch (Exception e) {
+                            if (status == 1)
+                                log.debug("something happen", e);
+                            else
+                                log.debug("proxy conn exit ...");
+                        }
+                        finally {
+                            Streams.safeClose(toLoc);
+                        }
                     }
-                    catch (Exception e) {
-                        if (status == 1)
-                            log.debug("something happen", e);
-                        else
-                            log.debug("proxy conn exit ...");
+                    catch (IOException e) {
+                        log.debug("bab bad!! can't acccess local port", e);
+                        srvOut.write("can't acccess local port".getBytes());
+                        srvOut.flush();
+                        toSrv.close();
                     }
-                    finally {
-                        Streams.safeClose(locSocket);
-                    }
+                } else {
+                    log.debugf("unkown type %s from proxy conn", msg.getString("Type"));
+                }
+            }
+            catch (IOException e) {
+                if (status == 1)
+                    log.debug("something happen. proxy conn is lose", e);
+                else
+                    log.debug("proxy conn is closed");
+            }
+            finally {
+                Streams.safeClose(toSrv);
+                pmap.remove(pcid);
+            }
+            return null;
+        }
+    }
+    
+    protected class PingThread implements Callable<Object> {
+        
+        public Object call() throws Exception {
+            while (status == 1) {
+                try {
+                    // 每隔15秒发个心跳包,不然服务器会断开连接
+                    Thread.sleep(15000);
+                    NgrokAgent.writeMsg(ctlOut, NgrokMsg.ping());
+                }
+                catch (InterruptedException e) {
+                    break;
                 }
                 catch (IOException e) {
-                    log.debug("bab bad!! can't acccess local port", e);
-                    srvOut.write("can't acccess local port".getBytes());
-                    srvOut.flush();
-                    toSrv.close();
+                    if (status == 1)
+                        log.debug("heartbeat exit. Contrl Conntion close?", e);
+                    else
+                        log.debug("heartbeat exit.");
+                    break;
                 }
-            } else {
-                log.debugf("unkown type %s from proxy conn", msg.getString("Type"));
             }
-        }
-        catch (IOException e) {
-            if (status == 1)
-                log.debug("something happen. proxy conn is lose", e);
-            else
-                log.debug("proxy conn is closed");
-        }
-        finally {
-            Streams.safeClose(toSrv);
+            return null;
         }
     }
     
