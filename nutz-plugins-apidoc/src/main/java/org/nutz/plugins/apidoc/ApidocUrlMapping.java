@@ -54,7 +54,7 @@ import org.nutz.mvc.view.UTF8JsonView;
 import org.nutz.plugins.apidoc.annotation.Api;
 import org.nutz.plugins.apidoc.annotation.ApiMatchMode;
 import org.nutz.plugins.apidoc.annotation.ApiParam;
-import org.nutz.plugins.apidoc.annotation.Document;
+import org.nutz.plugins.apidoc.annotation.Manual;
 import org.nutz.plugins.apidoc.annotation.ReturnKey;
 
 /**
@@ -102,7 +102,7 @@ public class ApidocUrlMapping extends UrlMappingImpl {
 			if (fail != null) {
 				globalFailView = fail.value();
 			}
-			Document document = nc.getMainModule().getAnnotation(Document.class);
+			Manual document = nc.getMainModule().getAnnotation(Manual.class);
 			if (document != null) {
 				projectInfo.addv("name", document.name()).addv("description", document.description())
 						.addv("author", document.author()).addv("email", document.email())

@@ -395,7 +395,9 @@ body {
 				display_filters : false,
 				display_ops : true,
 				display_httpMethods : true,
-				content_path : ""
+				content_path : "",
+				debugMethod:null,
+				debugShow:false
 			},
 			methods : {
 				showDetail : function(it) {
@@ -407,6 +409,7 @@ body {
 					this.path_filter = '';
 				},
 				debugCall : function(it) {
+					var scheme_name = location.protocol == "http:" ? "http" : "https";
 					if (!document.getElementById("dhc")) {
 						layer.alert("未安装DHC");
 						return;
@@ -421,7 +424,6 @@ body {
 						bodyType = "Form";
 						headersType = "MultiPartForm";
 					}
-					var scheme_name = location.protocol == "http:" ? "http" : "https";
 					var payload = {
 						body : {
 							bodyType : bodyType
