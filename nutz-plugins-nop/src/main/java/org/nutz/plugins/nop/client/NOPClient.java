@@ -87,7 +87,7 @@ public class NOPClient {
 		request.getHeader().set(NOPConfig.signKey, sign);//签名
 		
 		Request req = null;
-		if (request.getParams() != null) {
+		if (request.getParams() != null && request.getParams().size() > 0) {
 			req = Request.create(endpoint, request.getMethod(), request.getParams(), request.getHeader());
 		} else {
 			req = Request.create(endpoint, request.getMethod());

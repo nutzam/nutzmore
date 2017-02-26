@@ -157,16 +157,18 @@ public class NOPRequest {
 		return data;
 	}
 
-	public void setData(byte[] data) {
+	public NOPRequest setData(byte[] data) {
 		this.data = data;
+		return this;
 	}
 
-	public void setData(String data) {
+	public NOPRequest setData(String data) {
 		try {
 			this.data = data.getBytes(Encoding.UTF8);
 		} catch (UnsupportedEncodingException e) {
 			// 不可能
 		}
+		return this;
 	}
 
 	private NOPRequest setParams(Map<String, Object> params) {

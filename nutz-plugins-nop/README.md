@@ -23,15 +23,33 @@ NUTZ OPEN PLATFORM
 ```xml
 	<servlet>
 		<servlet-name>nop</servlet-name>
-		<servlet-class> org.nutz.plugins.nop.server.NOPServlet</servlet-class>
+		<servlet-class>org.nutz.plugins.nop.server.NOPServlet</servlet-class>
+		<init-param>
+			<!-- 如果配置路径为nop.properties可以不设置 -->
+			<param-name>config</param-name>
+			<param-value>nop.properties</param-value>
+		</init-param>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>nop</servlet-name>
-		<url-pattern>/nop</url-pattern>
+		<url-pattern>/endpoint</url-pattern>
 	</servlet-mapping>
 ```
 
-- 实现服务
+- 在classPath下添加nop.properties,名称同web.xml中的config参数值即可
+
+```properties
+	# 签名摘要方式
+	digestName=MD5
+	# org.nutz.plugins.nop.core.sign.AppsecretFetcher接口的实现类在ioc中的beanName
+	fetcherName=default
+	# 接口超时校验时间
+	timeout=600
+```
+- 实现
+
+- 声明AppsecretFetcher
+实现接口org.nutz.plugins.nop.core.sign.AppsecretFetcher并声明为iocBean beanName和properties配置中一致即可
 
 ```java
 package club.zhcs.thunder.module;
@@ -48,7 +66,7 @@ import org.nutz.plugins.nop.server.NOPSignFilter;
 import club.zhcs.titans.nutz.module.base.AbstractBaseModule;
 
 @At("test")
-@Filters(@By(type = NOPSignFilter.class))//添加此filter用于签名验证,继承此filter可实现自定义appKey,appSecret的验证规则
+@Filters(@By(type = NOPSignFilter.class))
 public class NOPModule extends AbstractBaseModule {
 
 	@At
@@ -107,7 +125,7 @@ public class ClientTest {
 
 	@Before
 	public void init() {
-		client = NOPClient.create("a", "b", "http://localhost:8080/ROOT/nop");//初始化客户端,生成环境一般处理为单例
+		client = NOPClient.create("abcd", Lang.md5("abcd"), "localhost:8080/nop-demo/endpoint", "MD5");//初始化客户端,生成环境一般处理为单例
 	}
 
 	@Test
