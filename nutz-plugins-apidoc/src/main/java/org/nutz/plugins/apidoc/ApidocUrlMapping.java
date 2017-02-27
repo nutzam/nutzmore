@@ -322,13 +322,15 @@ public class ApidocUrlMapping extends UrlMappingImpl {
 		}
 		try {
 			Object obj = clazz.newInstance();
+            cache.put(clazz.getName(), obj);
 			Field[] fields = Mirror.me(clazz).getFields();
 			for (Field field : fields) {
 				if (field.getType() != clazz) {
-					Mirror.me(clazz).setValue(obj, field.getName(), instance(field.getType()));
+				    Object _obj = instance(field.getType());
+				    cache.put(field.getType().getName(), _obj);
+					Mirror.me(clazz).setValue(obj, field.getName(), _obj);
 				}
 			}
-			cache.put(clazz.getName(), obj);
 			return obj;
 		} catch (InstantiationException | IllegalAccessException e) {
 		}
