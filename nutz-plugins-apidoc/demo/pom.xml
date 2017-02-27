@@ -40,14 +40,14 @@
 	</dependencies>
 	<repositories>
 			<repository>
-				<id>*</id>
+				<id>nutzcn-jcenter</id>
 				<url>https://jfrog.nutz.cn/artifactory/jcenter</url>
 				<snapshots>
 					<enabled>false</enabled>
 				</snapshots>
 			</repository>
 			<repository>
-				<id>*</id>
+				<id>nutzcn-snapshots</id>
 				<url>https://jfrog.nutz.cn/artifactory/snapshots</url>
 				<snapshots>
 					<enabled>true</enabled>
