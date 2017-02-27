@@ -149,13 +149,13 @@ public class ClientTest {
 ```
 - 同IOC容器一起工作
 	+ nutz-ioc
-		```javascript
-		client:{
-			type : "org.nutz.plugins.nop.client.NOPClient",
-			args : ["appKey","appSecret","endpoint","digestName"],
-			factory:"org.nutz.plugins.nop.client.NOPClient#create"
-		}
-		```
+	```javaScript	
+	client:{
+		type : "org.nutz.plugins.nop.client.NOPClient",
+		args : ["appKey","appSecret","endpoint","digestName"],
+		factory:"org.nutz.plugins.nop.client.NOPClient#create"
+	}
+	```
 	+ spring容器 
 	```xml
 	<bean id="client" class="org.nutz.plugins.nop.client.NOPClient" factory-method="create">
