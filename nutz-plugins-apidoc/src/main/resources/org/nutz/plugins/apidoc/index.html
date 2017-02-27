@@ -293,9 +293,7 @@ body {
 												<tr v-for="param in it.params" v-if="!param.ignore">
 													<td class="code">{{param.paramName || param.paramLocalName}}</td>
 													<td>{{param.typeName}}</td>
-													<td>
-														<p>{{param.description}}</p>
-													</td>
+													<td v-html="param.description"></td>
 													<td  v-if="it.requestBody"><pre>{{param.requestData}}</pre></td>
 													<td  v-else>{{param.requestData}}</td>
 													<td>
