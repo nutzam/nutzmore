@@ -1,6 +1,6 @@
 ### NOP on Nutz 
 
-简介(可用性:测试)
+简介(可用性:试用)
 ==================================
 
 NUTZ OPEN PLATFORM
@@ -35,8 +35,9 @@ NUTZ OPEN PLATFORM
 		<url-pattern>/endpoint</url-pattern>
 	</servlet-mapping>
 ```
+**注意:** 如果使用servlet3.0以上的容器,可以不用申明这部分,默认的调用点为/nop.endpoint
 
-- 在classPath下添加nop.properties,名称同web.xml中的config参数值即可
+- *在classPath下添加nop.properties,名称同web.xml中的config参数值即可
 
 ```properties
 	# 签名摘要方式
@@ -48,7 +49,7 @@ NUTZ OPEN PLATFORM
 ```
 - 实现
 
-- 声明AppsecretFetcher
+- *声明AppsecretFetcher
 实现接口org.nutz.plugins.nop.core.sign.AppsecretFetcher并声明为iocBean beanName和properties配置中一致即可
 
 ```java
@@ -91,7 +92,7 @@ public class NOPModule extends AbstractBaseModule {
 
 ### 客户端实现(服务调用)
 
-用于实现NOP客户端进行服务的调用
+- 用于实现NOP客户端进行服务的调用
 
 ```java
 package org.nutz.plugins.nop;
@@ -146,3 +147,21 @@ public class ClientTest {
 	}
 }
 ```
+- 同IOC容器一起工作
+	+ nutz-ioc
+		```javascript
+		client:{
+			type : "org.nutz.plugins.nop.client.NOPClient",
+			args : ["appKey","appSecret","endpoint","digestName"],
+			factory:"org.nutz.plugins.nop.client.NOPClient#create"
+		}
+		```
+	+ spring容器 
+	```xml
+	<bean id="client" class="org.nutz.plugins.nop.client.NOPClient" factory-method="create">
+		<constructor-arg index="0" value="appKey" />
+		<constructor-arg index="1" value="appSecret" />
+		<constructor-arg index="2" value="endpoint" />
+		<constructor-arg index="3" value="digestName" />
+	</bean>
+	```

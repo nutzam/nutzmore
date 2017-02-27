@@ -20,11 +20,11 @@
 		<dispatcher>FORWARD</dispatcher>
 		<dispatcher>INCLUDE</dispatcher>
 	</filter-mapping>
-	<servlet>
+	<!-- <servlet>
 		<servlet-name>nop</servlet-name>
 		<servlet-class>org.nutz.plugins.nop.server.NOPServlet</servlet-class>
 		<init-param>
-			<!-- 如果配置路径为nop.properties可以不设置 -->
+			如果配置路径为nop.properties可以不设置
 			<param-name>config</param-name>
 			<param-value>nop.properties</param-value>
 		</init-param>
@@ -32,7 +32,7 @@
 	<servlet-mapping>
 		<servlet-name>nop</servlet-name>
 		<url-pattern>/endpoint</url-pattern>
-	</servlet-mapping>
+	</servlet-mapping> -->
 	<welcome-file-list>
 		<welcome-file>index.html</welcome-file>
 		<welcome-file>index.htm</welcome-file>
