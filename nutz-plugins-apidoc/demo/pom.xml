@@ -37,7 +37,21 @@
 			<version>3.0.1</version>
 			<scope>provided</scope>
 		</dependency>
-
-
 	</dependencies>
+	<repositories>
+			<repository>
+				<id>*</id>
+				<url>https://jfrog.nutz.cn/artifactory/jcenter</url>
+				<snapshots>
+					<enabled>false</enabled>
+				</snapshots>
+			</repository>
+			<repository>
+				<id>*</id>
+				<url>https://jfrog.nutz.cn/artifactory/snapshots</url>
+				<snapshots>
+					<enabled>true</enabled>
+				</snapshots>
+			</repository>
+		</repositories>
 </project>
