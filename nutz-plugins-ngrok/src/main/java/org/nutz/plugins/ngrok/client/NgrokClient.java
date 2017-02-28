@@ -54,28 +54,28 @@ public class NgrokClient implements Runnable {
     /**
      * 缓存区大小,默认64kb
      */
-    public int bufSize = 64*1024;
-    
+    public int bufSize = 64 * 1024;
+
     /**
      * 隧道协议, 默认是http, 如需设置多个,用加号连起来, 例如 http+https+tcp
      */
     public String protocol = "http";
-    
+
     /**
      * tcp隧道的外网端口号. http/https时无效
      */
     public int remote_port;
-    
+
     /**
      * Http/Https协议时的简单鉴权,通常不需要
      */
     public String http_auth = "";
-    
+
     /**
      * Http/Https协议时的CNAME,通常不需要
      */
     public String hostname = "";
-    
+
     /**
      * 指定子域名, 通过不支持
      */
@@ -96,7 +96,7 @@ public class NgrokClient implements Runnable {
      * 0代表ready,1代表运行中,2代表异常退出,3代表已关闭
      */
     public int status = 0;
-    
+
     /**
      * 最后出现的信息
      */
@@ -111,7 +111,7 @@ public class NgrokClient implements Runnable {
     protected transient ExecutorService executorService;
 
     protected transient Socket ctlSocket;
-    
+
     protected ConcurrentHashMap<String, ProxyConn> pmap = new ConcurrentHashMap<String, NgrokClient.ProxyConn>();
 
     public void start() {
@@ -129,6 +129,7 @@ public class NgrokClient implements Runnable {
         executorService.submit(this);
     }
 
+    @Override
     public void run() {
         try {
             status = 1;
@@ -153,20 +154,28 @@ public class NgrokClient implements Runnable {
             String reqId = R.UU32();
             for (String prot : protocol.split("[\\+]")) {
                 if (prot.startsWith("http"))
-                    NgrokAgent.writeMsg(ctlOut, NgrokMsg.reqTunnel(reqId, hostname, prot, subdomain, http_auth, 0));
-                else if (prot.startsWith("tcp")) 
-                    NgrokAgent.writeMsg(ctlOut, NgrokMsg.reqTunnel(reqId, "", prot, "", "", remote_port));
+                    NgrokAgent.writeMsg(ctlOut,
+                                        NgrokMsg.reqTunnel(reqId,
+                                                           hostname,
+                                                           prot,
+                                                           subdomain,
+                                                           http_auth,
+                                                           0));
+                else if (prot.startsWith("tcp"))
+                    NgrokAgent.writeMsg(ctlOut,
+                                        NgrokMsg.reqTunnel(reqId, "", prot, "", "", remote_port));
                 else
                     log.warn("unkown protocol=" + prot);
             }
-            
+
             // 启动心跳线程
             executorService.submit(new PingThread());
             handle();
         }
         catch (Exception e) {
             log.debug("something happen", e);
-        } finally {
+        }
+        finally {
             Streams.safeClose(ctlSocket);
             if (status == 1)
                 status = 2;
@@ -202,9 +211,7 @@ public class NgrokClient implements Runnable {
                     }
                 }
                 // 服务器对心跳线程ping的回应,可以忽略
-                else if ("Pong".equals(type)) {
-                }
-                else {
+                else if ("Pong".equals(type)) {} else {
                     log.info("unknown type=" + msg.getString("Type"));
                 }
             }
@@ -267,7 +274,7 @@ public class NgrokClient implements Runnable {
         public Socket toSrv = null;
         public Socket toLoc = null;
         public String pcid = R.UU32();
-        
+
         @Override
         public Object call() throws Exception {
             try {
@@ -300,7 +307,8 @@ public class NgrokClient implements Runnable {
                                                                               srvOut,
                                                                               bufSize);
                             // 等待其中任意一个管道的关闭
-                            String exitFirst = executorService.invokeAny(Arrays.asList(srv2loc, loc2srv));
+                            String exitFirst = executorService.invokeAny(Arrays.asList(srv2loc,
+                                                                                       loc2srv));
                             if (log.isDebugEnabled())
                                 log.debug("proxy conn exit first at " + exitFirst);
                         }
@@ -337,9 +345,10 @@ public class NgrokClient implements Runnable {
             return null;
         }
     }
-    
+
     protected class PingThread implements Callable<Object> {
-        
+
+        @Override
         public Object call() throws Exception {
             while (status == 1) {
                 try {
@@ -361,7 +370,7 @@ public class NgrokClient implements Runnable {
             return null;
         }
     }
-    
+
     public static NgrokClient make(PropertiesProxy conf, String prefix) {
         NgrokClient client = new NgrokClient();
         Mirror<NgrokClient> mirror = Mirror.me(NgrokClient.class);
@@ -374,7 +383,8 @@ public class NgrokClient implements Runnable {
                 continue;
             try {
                 mirror.setValue(client, key.substring(prefix.length()), value);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 log.warnf("bad ngrok.client configure k=%s v=%s", key, value, e);
             }
         }
@@ -387,13 +397,21 @@ public class NgrokClient implements Runnable {
         for (String arg : args) {
             if (!arg.startsWith("-") || !arg.contains("=")) {
                 log.debug("bad arg = " + arg);
-                log.debug("usage : -srv_host=wendal.cn -srv_port=4443 -to_host=127.0.0.1 -to_port=8080 -auth_token=ABC");
+                log.debug("usage : -srv_host=wendal.cn -srv_port=4443 -to_host=127.0.0.1 -to_port=8080 -auth_token=ABC -conf_file=xxx.properties");
                 return;
             }
             arg = arg.substring(1);
             String[] tmp = arg.split("=", 2);
-            log.debugf("config key=%s value=%s", tmp[0], tmp[1]);
-            mirror.setValue(client, tmp[0], tmp[1]);
+            if ("conf_file".equals(tmp[0])) {
+                PropertiesProxy cpp = new PropertiesProxy(tmp[1]);
+                for (String key : cpp.keySet()) {
+                    log.debugf("config key=%s value=%s", key, cpp.get(key));
+                    mirror.setValue(client, key, cpp.get(key));
+                }
+            } else {
+                log.debugf("config key=%s value=%s", tmp[0], tmp[1]);
+                mirror.setValue(client, tmp[0], tmp[1]);
+            }
         }
         client.start();
     }
