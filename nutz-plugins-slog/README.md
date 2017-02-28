@@ -15,8 +15,8 @@ MainModule的IocBy启用该插件
 @IocBy(args={
 	"*js", "ioc/",
 	"*anno", "net.wendal.nutzbook",
-	"*async", // 建议一起启用,否则@SLog(async=true)不会生效
-	"*slog" // 启用即可
+	"*async", // 建议一起启用,否则@SLog(async=true)会以同步方式插入,而非异步.
+	"*slog" // 启用即可,不需要其他配置. 会自动建表的.
 })
 ```
 
@@ -53,7 +53,7 @@ public User add(User user) {
 
 ```java
     SlogService.GET_USER_ID = new Callable<Object>() {
-        public String call() throws Exception {
+        public Object call() throws Exception {
             return 你的用户标示; // 默认走shiro的登录信息.
         };
     };
@@ -70,3 +70,6 @@ public class MySlogService extends SlogService {
 }
 ```
 
+## 兼容性提醒
+
+从 1.r.60.r4 开始, SlogBean移除id属性, 添加username(u_name)属性, 类型为String了,敬请留意!!!!

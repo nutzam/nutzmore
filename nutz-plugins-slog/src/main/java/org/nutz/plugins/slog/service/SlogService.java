@@ -16,6 +16,7 @@ import org.nutz.dao.Dao;
 import org.nutz.dao.util.Daos;
 import org.nutz.el.El;
 import org.nutz.lang.Lang;
+import org.nutz.lang.Strings;
 import org.nutz.lang.segment.CharSegment;
 import org.nutz.lang.util.ClassMetaReader;
 import org.nutz.lang.util.Context;
@@ -94,10 +95,19 @@ public class SlogService {
         try {
             Object uid = GET_USER_ID.call();
             if (uid != null && uid instanceof Number)
-                slog.setUid(((Number)uid).intValue());
+                slog.setUid(((Number)uid).longValue());
         }
         catch (Exception e) {
-            log.debug("get user id fail", e);
+            if (log.isDebugEnabled())
+                log.debug("get user id fail", e);
+        }
+        try {
+            Object uname = GET_USER_NAME.call();
+            slog.setUsername(Strings.sBlank(uname));
+        }
+        catch (Exception e) {
+            if (log.isDebugEnabled())
+                log.debug("get user name fail", e);
         }
         if (async)
             async(slog);
@@ -105,18 +115,33 @@ public class SlogService {
             sync(slog);
     }
 	
+    /**
+     * 获取用户id, 长整型
+     */
 	public static Callable<Object> GET_USER_ID = new Callable<Object>() {
         public Object call() throws Exception {
             Object u;
             try {
                 u = SecurityUtils.getSubject().getPrincipal();
             } catch (Throwable e) {
-                return Integer.valueOf(-1);
+                return 0;
             }
             if (u != null) {
-                return u.toString();
+                return u;
             }
-            return Integer.valueOf(0);
+            return 0;
+        };
+    };
+    
+    /**
+     * 获取用户名称, 字符串类型
+     */
+    public static Callable<Object> GET_USER_NAME = new Callable<Object>() {
+        public Object call() throws Exception {
+            Object uid = GET_USER_ID.call();
+            if (uid != null && ((Number)uid).longValue() > 0)
+                return uid;
+            return "";
         };
     };
     
@@ -124,7 +149,7 @@ public class SlogService {
      * 获取按月分表的Dao实例,即当前日期的dao实例
      * @return
      */
-    protected Dao dao() {
+    public Dao dao() {
         Calendar cal = Calendar.getInstance();
         String key = String.format("%d%02d", cal.get(Calendar.YEAR), cal.get(Calendar.MONTH)+1);
         return dao(key);
@@ -135,7 +160,7 @@ public class SlogService {
      * @param key
      * @return
      */
-    protected Dao dao(String key) {
+    public Dao dao(String key) {
         Dao dao = ymDaos.get(key);
         if (dao == null) {
             synchronized (this) {
@@ -144,6 +169,10 @@ public class SlogService {
                     dao = Daos.ext(this.dao, key);
                     dao.create(SlogBean.class, false);
                     ymDaos.put(key, dao);
+                    try {
+                        Daos.migration(dao, SlogBean.class, true, false);
+                    }
+                    catch (Throwable e) {}
                 }
             }
         }
