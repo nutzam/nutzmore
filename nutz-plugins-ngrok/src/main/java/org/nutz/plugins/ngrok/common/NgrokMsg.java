@@ -1,4 +1,4 @@
-package org.nutz.plugins.ngrok.client;
+package org.nutz.plugins.ngrok.common;
 
 import org.nutz.lang.Strings;
 import org.nutz.lang.util.NutMap;

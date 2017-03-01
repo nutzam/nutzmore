@@ -25,6 +25,9 @@ import org.nutz.lang.Strings;
 import org.nutz.lang.random.R;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
+import org.nutz.plugins.ngrok.common.NgrokAgent;
+import org.nutz.plugins.ngrok.common.NgrokMsg;
+import org.nutz.plugins.ngrok.common.PipedStreamThread;
 
 public class NgrokClient implements Runnable {
 

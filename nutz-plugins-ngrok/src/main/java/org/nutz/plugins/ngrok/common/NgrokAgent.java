@@ -1,4 +1,4 @@
-package org.nutz.plugins.ngrok.client;
+package org.nutz.plugins.ngrok.common;
 
 import java.io.DataInputStream;
 import java.io.IOException;
