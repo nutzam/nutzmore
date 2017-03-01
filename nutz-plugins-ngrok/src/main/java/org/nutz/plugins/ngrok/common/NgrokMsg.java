@@ -25,6 +25,14 @@ public class NgrokMsg extends NutMap {
         msg.setv("ClientId", Strings.sBlank(clientId));
         return msg;
     }
+    
+    public static NgrokMsg authResp(String clientId,
+                                String error) {
+        NgrokMsg msg = new NgrokMsg();
+        msg.setv("Type", "AuthResp").setv("Version", "2").setv("MmVersion", "1.7");
+        msg.setv("ClientId", Strings.sBlank(clientId)).setv("Error", error);
+        return msg;
+    }
 
     /**
      * type ReqTunnel struct { ReqId string Protocol string
@@ -48,6 +56,15 @@ public class NgrokMsg extends NutMap {
         msg.setv("HttpAuth", Strings.sBlank(httpAuth)).setv("RemotePort", remotePort);
         return msg;
     }
+    
+    public static NgrokMsg newTunnel(String reqId,
+                                     String url,
+                                     String error) {
+    NgrokMsg msg = new NgrokMsg();
+    msg.put("Type", "NewTunnel");
+    msg.setv("ReqId", reqId).setv("Url", url).setv("Error", error);
+    return msg;
+}
 
     /**
      * // After a client receives a ReqProxy message, it opens a new //

@@ -28,8 +28,9 @@ import org.nutz.log.Logs;
 import org.nutz.plugins.ngrok.common.NgrokAgent;
 import org.nutz.plugins.ngrok.common.NgrokMsg;
 import org.nutz.plugins.ngrok.common.PipedStreamThread;
+import org.nutz.plugins.ngrok.common.StatusProvider;
 
-public class NgrokClient implements Runnable {
+public class NgrokClient implements Runnable, StatusProvider<Integer> {
 
     protected static final Log log = Logs.get();
     /** ClientId, 根据AuthResp响应从服务器获取 */
@@ -417,5 +418,10 @@ public class NgrokClient implements Runnable {
             }
         }
         client.start();
+    }
+    
+    @Override
+    public Integer getStatus() {
+        return status;
     }
 }
