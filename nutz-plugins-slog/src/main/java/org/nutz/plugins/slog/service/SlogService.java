@@ -74,8 +74,8 @@ public class SlogService {
         }
         if (source == null) {
             StackTraceElement[] tmp = Thread.currentThread().getStackTrace();
-            if (tmp.length > 2) {
-                source = tmp[2].getClassName() + "#" + tmp[2].getMethodName();
+            if (tmp.length > 3) {
+                source = tmp[3].getClassName() + "#" + tmp[3].getMethodName();
             } else {
                 source = "main";
             }
