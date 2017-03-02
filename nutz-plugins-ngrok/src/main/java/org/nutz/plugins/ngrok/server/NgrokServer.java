@@ -2,6 +2,8 @@ package org.nutz.plugins.ngrok.server;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -25,7 +27,6 @@ import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.nutz.lang.Files;
 import org.nutz.lang.Streams;
 import org.nutz.lang.Strings;
 import org.nutz.lang.random.R;
@@ -46,15 +47,16 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
     public transient SSLServerSocket mainCtlSS;
     public transient ServerSocket httpSS;
     public transient SSLServerSocketFactory sslServerSocketFactory;
-    public char[] ssl_jks_password;
+    public String ssl_jks_password = "123456";
     public byte[] ssl_jks;
-    public int ctl_port = 4443;
+    public String ssl_jks_path;
+    public int srv_port = 4443;
     public int http_port = 9080;
     public ExecutorService executorService;
     public int status;
     public Map<String, NgrokServerClient> clients = new ConcurrentHashMap<String, NgrokServerClient>();
     public NgrokAuthProvider auth;
-    public String hostname;
+    public String srv_host = "wendal.cn";
     public int client_proxy_init_size = 1;
     public int client_proxy_wait_timeout = 30 * 1000;
     public Map<String, String> hostmap = new ConcurrentHashMap<String, String>();
@@ -62,19 +64,28 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
     public int bufSize = 8192;
 
     public void start() throws Exception {
+        log.debug("NgrokServer start ...");
         if (sslServerSocketFactory == null)
             sslServerSocketFactory = buildSSL();
-        if (executorService == null)
+        if (executorService == null) {
+            log.debug("using default CachedThreadPool");
             executorService = Executors.newCachedThreadPool();
-        if (auth == null)
+        }
+        if (auth == null) {
+            log.debug("using default ngrok auth provider");
             auth = new DefaultNgrokAuthProvider();
+        }
         status = 1;
 
         // 先创建监听,然后再启动哦,
-        mainCtlSS = (SSLServerSocket) sslServerSocketFactory.createServerSocket(ctl_port);
+        log.debug("start listen srv_port=" + srv_port);
+        mainCtlSS = (SSLServerSocket) sslServerSocketFactory.createServerSocket(srv_port);
+        log.debug("start listen http_port=" + http_port);
         httpSS = new ServerSocket(http_port);
 
+        log.debug("start Contrl Thread...");
         executorService.submit(this);
+        log.debug("start Http Thread...");
         executorService.submit(new Callable<Object>() {
             @Override
             public Object call() throws Exception {
@@ -102,15 +113,27 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
     }
 
     public SSLServerSocketFactory buildSSL() throws Exception {
+        log.debug("try to load Java KeyStore File ...");
         KeyStore ks = KeyStore.getInstance("JKS");
-        ks.load(new ByteArrayInputStream(ssl_jks), ssl_jks_password);
+        if (ssl_jks != null)
+            ks.load(new ByteArrayInputStream(ssl_jks), ssl_jks_password.toCharArray());
+        else if (ssl_jks_path != null) {
+            log.debug("load jks from " + this.ssl_jks_path);
+            ks.load(new FileInputStream(this.ssl_jks_path), ssl_jks_password.toCharArray());
+        }
+        else if (new File(srv_host + ".jks").exists()) {
+            log.debug("load jks from " + srv_host + ".jks");
+            ks.load(new FileInputStream(srv_host + ".jks"), ssl_jks_password.toCharArray());
+        }
+        else
+            throw new RuntimeException("must set ssl_jks_path or ssl_jks");
 
         TrustManagerFactory tmfactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         tmfactory.init(ks);
         TrustManager[] tms = tmfactory.getTrustManagers();
 
         KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-        kmf.init(ks, ssl_jks_password);
+        kmf.init(ks, ssl_jks_password.toCharArray());
 
         SSLContext sc = SSLContext.getInstance("SSL");
         sc.init(kmf.getKeyManagers(), tms, new SecureRandom());
@@ -176,7 +199,7 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
                         }
                         String reqId = msg.getString("ReqId");
                         for (String mapp : mapping) {
-                            String host = mapp + "." + hostname;
+                            String host = mapp + "." + srv_host;
                             NgrokMsg.newTunnel(reqId,
                                                "http://" + host,
                                                "http",
@@ -332,13 +355,7 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
                                     NgrokAgent.writeMsg(proxySocket.socket.getOutputStream(),
                                                         NgrokMsg.startProxy("http://" + host, ""));
                                     proxySocket.socket.getOutputStream().write(bao.toByteArray());
-//                                    NgrokAgent.pipe2way(executorService,
-//                                                        _ins,
-//                                                        proxySocket.socket.getOutputStream(),
-//                                                        proxySocket.socket.getInputStream(),
-//                                                        _out,
-//                                                        bufSize);
-                                 // 服务器-->本地
+                                    // 服务器-->本地
                                     PipedStreamThread srv2loc = new PipedStreamThread("http2proxy",
                                                                                       _ins,
                                                                                       proxySocket.socket.getOutputStream(),
@@ -385,10 +402,9 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
         // System.setProperty("javax.net.debug","all");
 
         NgrokServer server = new NgrokServer();
-        server.ssl_jks = Files.readBytes("D:\\wendal.cn.jks");
-        server.ssl_jks_password = "123456".toCharArray();
-        server.hostname = "wendal.cn";
-        server.ctl_port = 4443;
+        if (!NgrokAgent.fixFromArgs(server, args)) {
+            log.debug("usage : -srv_host=wendal.cn -srv_port=4443 -http_port=9080 -ssl_jks=wendal.cn.jks -ssl_jks_password=123456 -conf_file=xxx.properties");
+        }
         server.start();
     }
     // 使用 crt和key文件, 也就是nginx使用的证书,生成jks的步骤

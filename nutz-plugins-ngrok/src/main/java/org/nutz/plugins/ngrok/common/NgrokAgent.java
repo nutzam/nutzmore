@@ -10,9 +10,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
+import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.json.Json;
 import org.nutz.json.JsonFormat;
 import org.nutz.lang.Encoding;
+import org.nutz.lang.Mirror;
 import org.nutz.lang.util.NutMap;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
@@ -114,5 +116,28 @@ public class NgrokAgent {
         String exitFirst = executorService.invokeAny(Arrays.asList(srv2loc, loc2srv));
         if (log.isDebugEnabled())
             log.debug("proxy conn exit first at " + exitFirst);
+    }
+    
+    public static boolean fixFromArgs(Object obj, String[] args) {
+        Mirror<?> mirror = Mirror.me(obj);
+        for (String arg : args) {
+            if (!arg.startsWith("-") || !arg.contains("=")) {
+                log.debug("bad arg = " + arg);
+                return false;
+            }
+            arg = arg.substring(1);
+            String[] tmp = arg.split("=", 2);
+            if ("conf_file".equals(tmp[0])) {
+                PropertiesProxy cpp = new PropertiesProxy(tmp[1]);
+                for (String key : cpp.keySet()) {
+                    log.debugf("config key=%s value=%s", key, cpp.get(key));
+                    mirror.setValue(obj, key, cpp.get(key));
+                }
+            } else {
+                log.debugf("config key=%s value=%s", tmp[0], tmp[1]);
+                mirror.setValue(obj, tmp[0], tmp[1]);
+            }
+        }
+        return true;
     }
 }

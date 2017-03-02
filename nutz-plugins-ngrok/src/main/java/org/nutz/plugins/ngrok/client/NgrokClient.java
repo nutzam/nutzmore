@@ -394,26 +394,10 @@ public class NgrokClient implements Runnable, StatusProvider<Integer> {
 
     public static void main(String[] args) {
         NgrokClient client = new NgrokClient();
-        Mirror<NgrokClient> mirror = Mirror.me(NgrokClient.class);
-        for (String arg : args) {
-            if (!arg.startsWith("-") || !arg.contains("=")) {
-                log.debug("bad arg = " + arg);
-                log.debug("usage : -srv_host=wendal.cn -srv_port=4443 -to_host=127.0.0.1 -to_port=8080 -auth_token=ABC -conf_file=xxx.properties");
-                return;
-            }
-            arg = arg.substring(1);
-            String[] tmp = arg.split("=", 2);
-            if ("conf_file".equals(tmp[0])) {
-                PropertiesProxy cpp = new PropertiesProxy(tmp[1]);
-                for (String key : cpp.keySet()) {
-                    log.debugf("config key=%s value=%s", key, cpp.get(key));
-                    mirror.setValue(client, key, cpp.get(key));
-                }
-            } else {
-                log.debugf("config key=%s value=%s", tmp[0], tmp[1]);
-                mirror.setValue(client, tmp[0], tmp[1]);
-            }
-        }
+        if (!NgrokAgent.fixFromArgs(client, args)) {
+            log.debug("usage : -srv_host=wendal.cn -srv_port=4443 -to_host=127.0.0.1 -to_port=8080 -auth_token=ABC -conf_file=xxx.properties");
+            return;
+         }
         client.start();
     }
     
