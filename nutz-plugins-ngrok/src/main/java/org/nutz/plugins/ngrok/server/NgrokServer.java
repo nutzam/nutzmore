@@ -9,12 +9,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.KeyStore;
 import java.security.SecureRandom;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,11 +32,12 @@ import org.nutz.lang.random.R;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.plugins.ngrok.common.NgrokAgent;
-import org.nutz.plugins.ngrok.common.NgrokAuthProvider;
 import org.nutz.plugins.ngrok.common.NgrokMsg;
 import org.nutz.plugins.ngrok.common.PipedStreamThread;
 import org.nutz.plugins.ngrok.common.StatusProvider;
-import org.nutz.plugins.ngrok.server.NgrokServer.ClientConnThread.ProxySocket;
+import org.nutz.plugins.ngrok.server.NgrokServer.NgrokServerClient.ProxySocket;
+import org.nutz.plugins.ngrok.server.auth.DefaultNgrokAuthProvider;
+import org.nutz.plugins.ngrok.server.auth.NgrokAuthProvider;
 
 public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
 
@@ -55,7 +52,7 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
     public int http_port = 9080;
     public ExecutorService executorService;
     public int status;
-    public Map<String, ClientConnThread> clients = new ConcurrentHashMap<String, ClientConnThread>();
+    public Map<String, NgrokServerClient> clients = new ConcurrentHashMap<String, NgrokServerClient>();
     public NgrokAuthProvider auth;
     public String hostname;
     public int client_proxy_init_size = 1;
@@ -69,6 +66,8 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
             sslServerSocketFactory = buildSSL();
         if (executorService == null)
             executorService = Executors.newCachedThreadPool();
+        if (auth == null)
+            auth = new DefaultNgrokAuthProvider();
         status = 1;
 
         // 先创建监听,然后再启动哦,
@@ -97,7 +96,7 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
     public Object call() throws Exception {
         while (status == 1) {
             Socket socket = mainCtlSS.accept();
-            executorService.submit(new ClientConnThread(socket));
+            executorService.submit(new NgrokServerClient(socket));
         }
         return null;
     }
@@ -119,19 +118,19 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
         return sc.getServerSocketFactory();
     }
 
-    public class ClientConnThread implements Callable<Object> {
+    public class NgrokServerClient implements Callable<Object> {
 
         protected Socket socket;
         protected InputStream ins;
         protected OutputStream out;
         protected boolean proxyMode;
         protected boolean authed;
-        protected String id;
-        public ArrayBlockingQueue<ProxySocket> idleProxys = new ArrayBlockingQueue<NgrokServer.ClientConnThread.ProxySocket>(128);
+        public String id;
+        public ArrayBlockingQueue<ProxySocket> idleProxys = new ArrayBlockingQueue<NgrokServer.NgrokServerClient.ProxySocket>(128);
         public NgrokMsg authMsg;
         public long lastPing;
 
-        public ClientConnThread(Socket socket) {
+        public NgrokServerClient(Socket socket) {
             this.socket = socket;
         }
 
@@ -147,7 +146,7 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
                             NgrokMsg.authResp("", "Auth Again?!!").write(out);
                             break;
                         }
-                        if (auth != null && !auth.check(msg)) {
+                        if (!auth.check(NgrokServer.this, msg)) {
                             NgrokMsg.authResp("", "AuthError").write(out);
                             break;
                         }
@@ -167,12 +166,7 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
                             NgrokMsg.newTunnel("", "", "", "Not Auth Yet").write(out);
                             break;
                         }
-                        String[] mapping;
-                        if (auth == null) {
-                            mapping = new String[]{id};
-                        } else {
-                            mapping = auth.mapping(authMsg, msg);
-                        }
+                        String[] mapping = auth.mapping(NgrokServer.this, NgrokServerClient.this, msg);
                         if (mapping == null || mapping.length == 0) {
                             NgrokMsg.newTunnel("",
                                                "",
@@ -197,7 +191,7 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
                         lastPing = System.currentTimeMillis();
                     } else if ("RegProxy".equals(type)) {
                         String clientId = msg.getString("ClientId");
-                        ClientConnThread client = clients.get(clientId);
+                        NgrokServerClient client = clients.get(clientId);
                         if (client == null) {
                             log.debug("not such client id=" + clientId);
                             break;
@@ -314,7 +308,7 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
                                     socket.close();
                                     return null;
                                 }
-                                ClientConnThread client = clients.get(clientId);
+                                NgrokServerClient client = clients.get(clientId);
                                 if (client == null) {
                                     _out.write(("Tunnel " + host + " is Closed").getBytes());
                                     _out.flush();
@@ -395,15 +389,6 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
         server.ssl_jks_password = "123456".toCharArray();
         server.hostname = "wendal.cn";
         server.ctl_port = 4443;
-        server.auth = new NgrokAuthProvider() {
-            public String[] mapping(NgrokMsg auth, NgrokMsg req) {
-                return new String[]{auth.getString("ClientId").substring(0, 6)};
-            }
-
-            public boolean check(NgrokMsg auth) {
-                return true;
-            }
-        };
         server.start();
     }
     // 使用 crt和key文件, 也就是nginx使用的证书,生成jks的步骤
