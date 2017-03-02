@@ -1,5 +1,8 @@
 package org.nutz.plugins.ngrok.common;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 import org.nutz.lang.Strings;
 import org.nutz.lang.util.NutMap;
 
@@ -59,10 +62,11 @@ public class NgrokMsg extends NutMap {
     
     public static NgrokMsg newTunnel(String reqId,
                                      String url,
+                                     String protocol,
                                      String error) {
     NgrokMsg msg = new NgrokMsg();
     msg.put("Type", "NewTunnel");
-    msg.setv("ReqId", reqId).setv("Url", url).setv("Error", error);
+    msg.setv("ReqId", reqId).setv("Url", url).setv("Protocol", protocol).setv("Error", error);
     return msg;
 }
 
@@ -77,6 +81,25 @@ public class NgrokMsg extends NutMap {
         msg.setv("ClientId", clientId);
         return msg;
     }
+    
+    /**
+     * // After a client receives a ReqProxy message, it opens a new //
+     * connection to the server and sends a RegProxy message. type RegProxy
+     * struct { ClientId string }
+     */
+    public static NgrokMsg reqProxy(String reqId, String url, String protocol, String error) {
+        NgrokMsg msg = new NgrokMsg();
+        msg.put("Type", "ReqProxy");
+        msg.setv("ReqId", reqId).setv("Url", url).setv("Protocol", protocol).setv("Error", error);
+        return msg;
+    }
+    
+    public static NgrokMsg startProxy(String url, String clientAddr) {
+        NgrokMsg msg = new NgrokMsg();
+        msg.put("Type", "StartProxy");
+        msg.setv("Url", url).setv("ClientAddr", clientAddr);
+        return msg;
+    }
 
     public static NgrokMsg ping() {
         NgrokMsg msg = new NgrokMsg();
@@ -88,5 +111,9 @@ public class NgrokMsg extends NutMap {
         NgrokMsg msg = new NgrokMsg();
         msg.put("Type", "Pong");
         return msg;
+    }
+    
+    public void write(OutputStream out) throws IOException {
+        NgrokAgent.writeMsg(out, this);
     }
 }

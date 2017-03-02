@@ -5,8 +5,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 import org.nutz.json.Json;
 import org.nutz.json.JsonFormat;
@@ -97,5 +99,20 @@ public class NgrokAgent {
                 | (((long) array[offset + 5] & 0xff) << 16)
                 | (((long) array[offset + 6] & 0xff) << 8)
                 | (((long) array[offset + 7] & 0xff) << 0));
+    }
+
+    public static void pipe2way(ExecutorService executorService,
+                         InputStream fromA,
+                         OutputStream toA,
+                         InputStream fromB,
+                         OutputStream toB,
+                         int bufSize) throws Exception {
+        PipedStreamThread srv2loc = new PipedStreamThread("srv2loc", fromA, toB, bufSize);
+        // 本地-->服务器
+        PipedStreamThread loc2srv = new PipedStreamThread("loc2srv", fromB, toA, bufSize);
+        // 等待其中任意一个管道的关闭
+        String exitFirst = executorService.invokeAny(Arrays.asList(srv2loc, loc2srv));
+        if (log.isDebugEnabled())
+            log.debug("proxy conn exit first at " + exitFirst);
     }
 }

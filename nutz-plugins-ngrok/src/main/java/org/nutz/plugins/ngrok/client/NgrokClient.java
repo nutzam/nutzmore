@@ -143,8 +143,7 @@ public class NgrokClient implements Runnable, StatusProvider<Integer> {
             ctlIn = ctlSocket.getInputStream();
             ctlOut = ctlSocket.getOutputStream();
             // 发送登录信息
-            NgrokMsg auth = NgrokMsg.auth(auth_token, "", "windows", "386", "");
-            NgrokAgent.writeMsg(ctlOut, auth);
+            NgrokMsg.auth(auth_token, "", "windows", "386", "").write(ctlOut);
             // 接受登录信息
             NgrokMsg authResp = NgrokAgent.readMsg(ctlIn);
             String error = authResp.getString("Error");
@@ -158,16 +157,14 @@ public class NgrokClient implements Runnable, StatusProvider<Integer> {
             String reqId = R.UU32();
             for (String prot : protocol.split("[\\+]")) {
                 if (prot.startsWith("http"))
-                    NgrokAgent.writeMsg(ctlOut,
-                                        NgrokMsg.reqTunnel(reqId,
+                    NgrokMsg.reqTunnel(reqId,
                                                            hostname,
                                                            prot,
                                                            subdomain,
                                                            http_auth,
-                                                           0));
+                                                           0).write(ctlOut);
                 else if (prot.startsWith("tcp"))
-                    NgrokAgent.writeMsg(ctlOut,
-                                        NgrokMsg.reqTunnel(reqId, "", prot, "", "", remote_port));
+                    NgrokMsg.reqTunnel(reqId, "", prot, "", "", remote_port).write(ctlOut);
                 else
                     log.warn("unkown protocol=" + prot);
             }
@@ -200,7 +197,7 @@ public class NgrokClient implements Runnable, StatusProvider<Integer> {
                 }
                 // 服务器发心跳了!!!, 需要回应pong
                 else if ("Ping".equals(type)) {
-                    NgrokAgent.writeMsg(ctlOut, NgrokMsg.pong());
+                    NgrokMsg.pong().write(ctlOut);
                 }
                 // 服务器响应ReqTunnel,但有可能已经注册过,那么只能直接退出了
                 else if ("NewTunnel".equals(type)) {
@@ -290,7 +287,7 @@ public class NgrokClient implements Runnable, StatusProvider<Integer> {
                 OutputStream srvOut = toSrv.getOutputStream();
                 InputStream srvIn = toSrv.getInputStream();
                 // 发起注册通道的请求
-                NgrokAgent.writeMsg(srvOut, NgrokMsg.regProxy(getId()));
+                NgrokMsg.regProxy(getId()).write(srvOut);
                 // 等待服务器响应StartProxy
                 NgrokMsg msg = NgrokAgent.readMsg(srvIn);
                 // 如果真的响应了StartProxy,开始桥接Socket
@@ -358,7 +355,7 @@ public class NgrokClient implements Runnable, StatusProvider<Integer> {
                 try {
                     // 每隔15秒发个心跳包,不然服务器会断开连接
                     Thread.sleep(15000);
-                    NgrokAgent.writeMsg(ctlOut, NgrokMsg.ping());
+                    NgrokMsg.ping().write(ctlOut);
                 }
                 catch (InterruptedException e) {
                     break;
