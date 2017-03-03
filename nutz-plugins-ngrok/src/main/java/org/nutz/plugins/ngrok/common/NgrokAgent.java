@@ -9,6 +9,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.json.Json;
@@ -139,5 +141,17 @@ public class NgrokAgent {
             }
         }
         return true;
+    }
+    
+    public static OutputStream gzip_out(boolean enable, OutputStream out) throws IOException {
+        if (enable)
+            return new GZIPOutputStream(out);
+        return out;
+    }
+    
+    public static InputStream gzip_in(boolean enable, InputStream ins) throws IOException {
+        if (enable)
+            return new GZIPInputStream(ins);
+        return ins;
     }
 }

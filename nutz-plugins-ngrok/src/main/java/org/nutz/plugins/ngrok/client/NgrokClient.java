@@ -84,6 +84,11 @@ public class NgrokClient implements Runnable, StatusProvider<Integer> {
      * 指定子域名, 通过不支持
      */
     public String subdomain = "";
+    
+    /**
+     * 是否启用gzip支持, 只对NutzNgrok服务器有效果
+     */
+    public boolean gzip;
     /**
      * ssl链接的工厂
      */
@@ -143,7 +148,7 @@ public class NgrokClient implements Runnable, StatusProvider<Integer> {
             ctlIn = ctlSocket.getInputStream();
             ctlOut = ctlSocket.getOutputStream();
             // 发送登录信息
-            NgrokMsg.auth(auth_token, "", "windows", "386", "").write(ctlOut);
+            NgrokMsg.auth(auth_token, "", "windows", "386", "", gzip).write(ctlOut);
             // 接受登录信息
             NgrokMsg authResp = NgrokAgent.readMsg(ctlIn);
             String error = authResp.getString("Error");

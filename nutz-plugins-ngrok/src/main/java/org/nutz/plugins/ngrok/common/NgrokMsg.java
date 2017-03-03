@@ -21,11 +21,12 @@ public class NgrokMsg extends NutMap {
                                 String password,
                                 String os,
                                 String arch,
-                                String clientId) {
+                                String clientId,
+                                boolean gzipProxy) {
         NgrokMsg msg = new NgrokMsg();
         msg.setv("Type", "Auth").setv("Version", "2").setv("MmVersion", "1.7");
         msg.setv("User", user).setv("Password", password).setv("OS", os).setv("Arch", arch);
-        msg.setv("ClientId", Strings.sBlank(clientId));
+        msg.setv("ClientId", Strings.sBlank(clientId)).setv("GzipProxy", gzipProxy);
         return msg;
     }
     

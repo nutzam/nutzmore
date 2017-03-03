@@ -39,6 +39,7 @@ import org.nutz.plugins.ngrok.common.StatusProvider;
 import org.nutz.plugins.ngrok.server.NgrokServer.NgrokServerClient.ProxySocket;
 import org.nutz.plugins.ngrok.server.auth.DefaultNgrokAuthProvider;
 import org.nutz.plugins.ngrok.server.auth.NgrokAuthProvider;
+import org.nutz.plugins.ngrok.server.auth.SimpleRedisAuthProvider;
 
 public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
 
@@ -62,6 +63,10 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
     public Map<String, String> hostmap = new ConcurrentHashMap<String, String>();
     public Map<String, String> reqIdMap = new ConcurrentHashMap<String, String>();
     public int bufSize = 8192;
+    public boolean redis;
+    public String redis_host= "127.0.0.1";
+    public int redis_port = 6379;
+    public String redis_key = "ngrok";
 
     public void start() throws Exception {
         log.debug("NgrokServer start ...");
@@ -72,8 +77,15 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
             executorService = Executors.newCachedThreadPool();
         }
         if (auth == null) {
-            log.debug("using default ngrok auth provider");
-            auth = new DefaultNgrokAuthProvider();
+            if (redis) {
+                log.debug("using redis auth provider");
+                auth = new SimpleRedisAuthProvider(redis_host, redis_port, redis_key);
+            } else {
+                log.debug("using default ngrok auth provider");
+                auth = new DefaultNgrokAuthProvider();
+            }
+        } else {
+            log.debug("using custom auth provider class=" + auth.getClass().getName());
         }
         status = 1;
 
@@ -152,6 +164,7 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
         public ArrayBlockingQueue<ProxySocket> idleProxys = new ArrayBlockingQueue<NgrokServer.NgrokServerClient.ProxySocket>(128);
         public NgrokMsg authMsg;
         public long lastPing;
+        public boolean gzip_proxy;
 
         public NgrokServerClient(Socket socket) {
             this.socket = socket;
@@ -176,8 +189,9 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
                         id = msg.getString("ClientId");
                         if (Strings.isBlank(id))
                             id = R.UU32();
+                        gzip_proxy = msg.getBoolean("GzipProxy", false);
                         if (log.isDebugEnabled())
-                            log.debug("New Client >> id=" + id);
+                            log.debugf("New Client >> id=%s gzip_proxy=%s", id, gzip_proxy);
                         NgrokMsg.authResp(id, "").write(out);
                         msg.put("ClientId", id);
                         authMsg = msg;
@@ -198,8 +212,7 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
                             break;
                         }
                         String reqId = msg.getString("ReqId");
-                        for (String mapp : mapping) {
-                            String host = mapp + "." + srv_host;
+                        for (String host : mapping) {
                             NgrokMsg.newTunnel(reqId,
                                                "http://" + host,
                                                "http",
@@ -255,7 +268,14 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
         }
 
         public ProxySocket getProxy(String host) throws Exception {
-            ProxySocket ps = idleProxys.poll();
+            ProxySocket ps = null;
+            while (true) {
+                ps = idleProxys.poll();
+                if (ps == null)
+                    break;
+                if (!ps.socket.isClosed())
+                    return ps;
+            }
             if (ps == null) {
                 if (reqProxy(host))
                     ps = idleProxys.poll(client_proxy_wait_timeout, TimeUnit.MILLISECONDS);
@@ -358,11 +378,11 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
                                     // 服务器-->本地
                                     PipedStreamThread srv2loc = new PipedStreamThread("http2proxy",
                                                                                       _ins,
-                                                                                      proxySocket.socket.getOutputStream(),
+                                                                                      NgrokAgent.gzip_out(client.gzip_proxy, proxySocket.socket.getOutputStream()),
                                                                                       bufSize);
                                     // 本地-->服务器
                                     PipedStreamThread loc2srv = new PipedStreamThread("proxy2http",
-                                                                                      proxySocket.socket.getInputStream(),
+                                                                                      NgrokAgent.gzip_in(client.gzip_proxy, proxySocket.socket.getInputStream()),
                                                                                       _out,
                                                                                       bufSize);
                                     // 等待其中任意一个管道的关闭
