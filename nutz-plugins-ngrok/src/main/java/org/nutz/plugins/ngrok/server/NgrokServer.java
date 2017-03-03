@@ -211,8 +211,27 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
                                                "Not Channel To Give").write(out);
                             break;
                         }
+                        for (String host : mapping) {
+                            String prevClientId = hostmap.get(host);
+                            if (prevClientId != null) {
+                                NgrokServerClient prevClient = clients.get(prevClientId);
+                                if (prevClient != null) {
+                                    if (prevClient.socket.isConnected()) {
+                                        log.debug("dup connect!!! host=" + host);
+                                        NgrokMsg.newTunnel("",
+                                                           "",
+                                                           "",
+                                                           "host="+host+" is used by another client!!!").write(out);
+                                        break;
+                                    } else {
+                                        prevClient.clean();
+                                    }
+                                }
+                            }
+                        }
                         String reqId = msg.getString("ReqId");
                         for (String host : mapping) {
+                            
                             NgrokMsg.newTunnel(reqId,
                                                "http://" + host,
                                                "http",
@@ -323,9 +342,7 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
                     continue;
                 count++;
                 if (count > 8192) {
-                    log.info("Too Big, reject!!");
-                    _out.write("HTTP/1.0 413 Request Entity Too Large\r\n\r\n".getBytes());
-                    _out.flush();
+                    NgrokAgent.httpResp(_out, 400, "无法读取合法的Host,拒绝访问.不允许ip直接访问,同时Host必须存在于请求的前8192个字节!");
                     socket.close();
                     return null;
                 }
@@ -338,7 +355,7 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
                         if (line_len > 8) { // Host: wendal.cn 域名起码3位吧?
                             byte[] line_buf = line_buffer_bao.toByteArray();
                             String line = new String(line_buf).trim().toLowerCase();
-                            log.debug("Header Line --> " + line);
+                            //log.debug("Header Line --> " + line);
                             // 看看是不是Host
                             // 有可能是Host或者host哦
                             if (line.startsWith("host") && line.contains(":")) {
@@ -346,15 +363,13 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
                                 log.debug("Host --> " + host);
                                 String clientId = hostmap.get(host);
                                 if (clientId == null) {
-                                    _out.write(("Tunnel " + host + " not found").getBytes());
-                                    _out.flush();
+                                    NgrokAgent.httpResp(_out, 404, "Tunnel " + host + " not found");
                                     socket.close();
                                     return null;
                                 }
                                 NgrokServerClient client = clients.get(clientId);
                                 if (client == null) {
-                                    _out.write(("Tunnel " + host + " is Closed").getBytes());
-                                    _out.flush();
+                                    NgrokAgent.httpResp(_out, 404, "Tunnel " + host + " is Closed");
                                     socket.close();
                                     return null;
                                 }
@@ -364,10 +379,9 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
                                 }
                                 catch (Exception e) {
                                     log.debug("Get ProxySocket FAIL host=" + host);
-                                    _out.write(("Tunnel "
+                                    NgrokAgent.httpResp(_out, 500, "Tunnel "
                                                 + host
-                                                + "did't has any proxy conntion yet!!").getBytes());
-                                    _out.flush();
+                                                + "did't has any proxy conntion yet!!");
                                     socket.close();
                                     return null;
                                 }

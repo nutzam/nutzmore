@@ -12,6 +12,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import org.nutz.http.Http;
 import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.json.Json;
 import org.nutz.json.JsonFormat;
@@ -153,5 +154,19 @@ public class NgrokAgent {
         if (enable)
             return new GZIPInputStream(ins);
         return ins;
+    }
+    
+    public static void httpResp(OutputStream out , int code, String cnt) {
+        try {
+            String respLine = String.format("HTTP/1.0 %d %s\r\n", code, Http.getStatusText(code, ""));
+            String content_len = "Content-Length: " + cnt.getBytes().length + "\r\n";
+            out.write(respLine.getBytes());
+            out.write(content_len.getBytes());
+            out.write("\r\n".getBytes());
+            out.write(cnt.getBytes());
+            out.flush();
+        }
+        catch (IOException e) {
+        }
     }
 }
