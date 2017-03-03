@@ -34,6 +34,7 @@ import org.nutz.lang.util.Disks;
 import org.nutz.lang.util.FileVisitor;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
+import org.nutz.mvc.ActionChainMaker;
 import org.nutz.mvc.Mvcs;
 import org.nutz.mvc.NutConfig;
 import org.nutz.mvc.Setup;
@@ -104,6 +105,8 @@ public class Hotplug extends NutLoading {
      */
     protected ViewMaker[] views;
     
+    protected ActionChainMaker chainMaker;
+    
     @Override
     public UrlMapping load(NutConfig config) {
         this.config = config; // 保存起来,后面会用到
@@ -143,6 +146,13 @@ public class Hotplug extends NutLoading {
         if (views == null) //保持主项目的@Ok/@Fail处理器
             views = super.createViewMakers(mainModule, ioc);
         return views;
+    }
+    
+    @Override
+    protected ActionChainMaker createChainMaker(NutConfig config, Class<?> mainModule) {
+        if (chainMaker == null)
+            chainMaker = super.createChainMaker(config, mainModule);
+        return chainMaker;
     }
     
     /**
