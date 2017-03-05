@@ -36,7 +36,7 @@ public class NutzDataBaseIniter {
 
 				@Override
 				public void invoke(int arg0, String pkg, int arg2) throws ExitLoop, ContinueLoop, LoopException {
-					Daos.createTablesInPackage(dao, pkg, false);
+					Daos.createTablesInPackage(dao, pkg, nutzDaoRuntimeProperties.isFoceCreate());
 				}
 			});
 		}
@@ -45,7 +45,7 @@ public class NutzDataBaseIniter {
 
 				@Override
 				public void invoke(int arg0, String pkg, int arg2) throws ExitLoop, ContinueLoop, LoopException {
-					Daos.migration(dao, pkg, false, false);
+					Daos.migration(dao, pkg, nutzDaoRuntimeProperties.isAddColumn(), nutzDaoRuntimeProperties.isDeleteColumn(), nutzDaoRuntimeProperties.isCheckIndex());
 				}
 			});
 		}
