@@ -5,6 +5,8 @@ import java.util.HashMap;
 import org.nutz.ioc.IocLoader;
 import org.nutz.lang.util.NutMap;
 import org.nutz.mvc.UrlMapping;
+import org.nutz.mvc.impl.ActionInvoker;
+import org.nutz.mvc.impl.MappingNode;
 import org.nutz.resource.impl.ResourceLocation;
 
 public class HotplugConfig extends NutMap {
@@ -15,14 +17,16 @@ public class HotplugConfig extends NutMap {
      * 映射类别
      */
     protected UrlMapping urlMapping;
+    
+    protected MappingNode<ActionInvoker> mapping_root;
     /**
      * IocLoader,即Ioc配置加载器
      */
     protected IocLoader iocLoader;
     /**
-     * 资源文件,例如js/css/png等,还没搞定,应该是弄个入口方法什么的来提供服务
+     * 资源文件,例如js/css/png等
      */
-    protected HashMap<String, byte[]> asserts;
+    protected HashMap<String, HotplugAsset> assets;
     /**
      * 模板数据,一般都是文本吧!!
      */
@@ -68,11 +72,11 @@ public class HotplugConfig extends NutMap {
     public void setIocLoader(IocLoader iocLoader) {
         this.iocLoader = iocLoader;
     }
-    public HashMap<String, byte[]> getAsserts() {
-        return asserts;
+    public HashMap<String, HotplugAsset> getAssets() {
+        return assets;
     }
-    public void setAsserts(HashMap<String, byte[]> asserts) {
-        this.asserts = asserts;
+    public void setAssets(HashMap<String, HotplugAsset> assets) {
+        this.assets = assets;
     }
     public HashMap<String, String> getTmpls() {
         return tmpls;
