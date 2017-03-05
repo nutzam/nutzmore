@@ -1,14 +1,14 @@
 spring:
     datasource:
         name: test
-        url: jdbc:h2:~/.h2db/nutz-starter;MODE=MYSQL
-        #url: jdbc:mysql://127.0.0.1:3306/camunda?useUnicode=true&characterEncoding=utf-8&useSSL=false
+        #url: jdbc:h2:~/.h2db/nutz-starter;MODE=MYSQL
+        url: jdbc:mysql://127.0.0.1:3306/test?useUnicode=true&characterEncoding=utf-8&useSSL=false
         username: root
         password: 123456
         # 使用druid数据源
         type: com.alibaba.druid.pool.DruidDataSource
-        driver-class-name: org.h2.Driver
-        #driver-class-name: com.mysql.jdbc.Driver
+        #driver-class-name: org.h2.Driver
+        driver-class-name: com.mysql.jdbc.Driver
         filters: stat,wall,log4j
         connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
         maxActive: 20
@@ -25,10 +25,22 @@ spring:
         maxOpenPreparedStatements: 20
     jackson:
         date-format: yyyy-MM-dd HH:mm:ss
-        
+logging:
+  level:
+    org.nutz: debug   
+    demo: debug
+       
 nutz:
     dao:
         runtime:
-            create: true
-            migration: true
-            basepackage: demo
+          add-column: true
+          check-index: true
+          delete-column: true
+          foce-create: false #此配置为true则每次均会删表重建
+          create: true
+          migration: true
+          basepackage: demo
+        sqlmanager:
+          paths:
+            - sqls
+            - other

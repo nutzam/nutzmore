@@ -1,9 +1,11 @@
 package demo.bean;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import org.nutz.dao.entity.annotation.Column;
 import org.nutz.dao.entity.annotation.Id;
+import org.nutz.dao.entity.annotation.Name;
 import org.nutz.dao.entity.annotation.Table;
 
 @Table("t_user")
@@ -13,13 +15,32 @@ public class User {
 	private int id;
 
 	@Column("u_name")
+	@Name
 	private String name;
+
+	@Column("u_account")
+	private BigDecimal acount;
 
 	@Column("u_birth")
 	private Date brithDay;
 
 	@Column("u_sex")
 	private Sex sex;
+
+	/**
+	 * @return the acount
+	 */
+	public BigDecimal getAcount() {
+		return acount;
+	}
+
+	/**
+	 * @param acount
+	 *            the acount to set
+	 */
+	public void setAcount(BigDecimal acount) {
+		this.acount = acount;
+	}
 
 	public static enum Sex {
 		MALE, FEMALE
