@@ -139,7 +139,8 @@
         <module>nutz-plugins-daomapping</module>
         <module>nutz-plugins-ngrok</module>
     <module>nutz-integration-json4excel</module>
-  </modules>
+    <module>nutz-integration-rabbitmq</module>
+	</modules>
 	<distributionManagement>
 		<snapshotRepository>
 			<id>nutzcn-snapshots</id>
