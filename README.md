@@ -1,10 +1,10 @@
-# nutzmore Nutz的插件与扩展
+# Nutz的插件与集成库
 
 [![Build Status](https://travis-ci.org/nutzam/nutzmore.png?branch=master)](https://travis-ci.org/nutzam/nutzmore)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutzmore/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutzmore/)
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
-### 各种官方插件的集合
+### 各种插件和集成的集合
 
 每个插件都有自己的文件夹,均为maven module, 请按需获取.
 
@@ -58,6 +58,7 @@ https://jfrog.nutz.cn/artifactory/snapshots/org/nutz/
 | [nutz-integration-json4excel](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-json4excel) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-json4excel/badge.svg) | 待编写 | 开发中 |
 | [nutz-integration-jsr303](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-jsr303) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-jsr303/badge.svg) | 深度集成jsr303的校验机制 | 试用 |
 | [nutz-integration-quartz](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-quartz) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-quartz/badge.svg) | 集成Quartz(计划任务/定时任务)的不二选择 | **生产** |
+| [nutz-integration-rabbitmq](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-rabbitmq) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-rabbitmq/badge.svg) | 集成rabbitmq很复杂吗?核心是拿到Channel对象嘛. | 开发中 |
 | [nutz-integration-shiro](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-shiro) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-shiro/badge.svg) | 集成Shiro的登陆,鉴权,和Session机制 | **生产** |
 | [nutz-integration-spring](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-spring) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-spring/badge.svg) | Spring与Nutz集成所需要的一切 | **生产** |
 | [nutz-integration-struts2](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-struts2) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-struts2/badge.svg) | 替换struts2的Ioc容器为NutIoc | 试用 |

@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -47,33 +46,25 @@ public class HotplugFilter implements Filter {
                 resp.getOutputStream().write(Files.readBytes(f));
                 return;
             }
+            String _etag = req.getHeader("If-None-Match");
             for (HotplugConfig hc : Hotplug.getActiveHotPlugList()) {
                 // String key = en.getKey();
-                Map<String, byte[]> asserts = hc.asserts;
-                byte[] buf = asserts.get(tmp);
-                if (buf == null) {
+                Map<String, HotplugAsset> asserts = hc.assets;
+                HotplugAsset asset = asserts.get(tmp);
+                if (asset == null) {
                     InputStream ins = hc.classLoader.getResourceAsStream(tmp);
                     if (ins != null) {
-                        setContentType(path, resp);
-                        Streams.writeAndClose(resp.getOutputStream(), ins);
-                        return;
+                        asset = new HotplugAsset(Streams.readBytesAndClose(ins));
                     }
                 }
-                if (buf != null) {
+                if (asset != null) {
+                    if (asset.etag.equals(_etag)) {
+                        resp.setStatus(304);
+                        return;
+                    }
+                    resp.setHeader("ETag", asset.etag);
                     setContentType(path, resp);
-                    resp.getOutputStream().write(buf);
-                    return;
-                }
-            }
-            for (Entry<String, HotplugConfig> en : Hotplug.getActiveHotPlug().entrySet()) {
-                // String key = en.getKey();
-                Map<String, byte[]> asserts = en.getValue().asserts;
-                if (asserts.isEmpty())
-                    continue;
-                byte[] buf = asserts.get(tmp);
-                if (buf != null) {
-                    setContentType(path, resp);
-                    resp.getOutputStream().write(buf);
+                    resp.getOutputStream().write(asset.buf);
                     return;
                 }
             }

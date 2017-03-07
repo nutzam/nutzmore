@@ -27,7 +27,6 @@ nutzcn,nutzwk,nutz-onekey,rkcms, 都定义了一套自己的模式, 即package�
 
 - [x] 支持子模块的@At,实现动态添加入口方法
 - [x] 支持子模块的@IocBean, 实现动态添加Ioc对象
-- [x] 支持子模块的@At, 实现动态添加入口方法
 - [x] 支持子模块的@SetupBy
 - [x] 支持子模块的IocBy
 - [x] 支持插件间的类引用

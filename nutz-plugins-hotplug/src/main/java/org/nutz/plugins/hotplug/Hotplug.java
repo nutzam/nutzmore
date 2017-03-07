@@ -173,7 +173,7 @@ public class Hotplug extends NutLoading {
         // 首先,我们需要解析这个jar. Jar文件也是Zip. 解析完成前,还不会影响到现有系统的运行
         ZipFile zf = new ZipFile(f);
         Enumeration<ZipEntry> en = (Enumeration<ZipEntry>) zf.entries();
-        HashMap<String, byte[]> asserts = new HashMap<String, byte[]>();
+        HashMap<String, HotplugAsset> assets = new HashMap<String, HotplugAsset>();
         HashMap<String, String> tmpls = new HashMap<String, String>();
         while (en.hasMoreElements()) {
             ZipEntry ze = en.nextElement();
@@ -182,13 +182,15 @@ public class Hotplug extends NutLoading {
                 continue;
             // 解析资源文件
             if (name.startsWith("assets/")) {
-                asserts.put(name.substring("assets/".length()), Streams.readBytes(zf.getInputStream(ze)));
+                byte[] buf = Streams.readBytes(zf.getInputStream(ze));
+                HotplugAsset asset = new HotplugAsset(buf);
+                assets.put(name.substring("assets/".length()), asset);
             } else if (name.startsWith("templates/")) {
                 tmpls.put(name.substring("templates/".length()), new String(Streams.readBytes(zf.getInputStream(ze))));
             }
         }
         zf.close();
-        hc.asserts = asserts;
+        hc.assets = assets;
         hc.tmpls = tmpls;
         // 解析完成, 开始影响现有系统.
         // -----------------------------------------------------
@@ -297,7 +299,7 @@ public class Hotplug extends NutLoading {
         for (HotplugConfig hc : hclist) {
             hc.put("enable", true);
             hc.classLoader = getClass().getClassLoader();
-            hc.asserts = new HashMap<String, byte[]>();
+            hc.assets = new HashMap<String, HotplugAsset>();
             hc.tmpls = new HashMap<String, String>();
             _plugins.put(hc.getName(), hc);
             log.debug("init hotplug name=" + hc.getName());
