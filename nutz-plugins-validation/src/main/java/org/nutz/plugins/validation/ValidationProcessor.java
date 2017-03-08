@@ -18,21 +18,23 @@ public class ValidationProcessor extends AbstractProcessor {
 	
 	private static AnnotationValidation av = new AnnotationValidation();
 	
-	protected boolean hasErrorArg;
+	protected int index = -1;
 	
 	public void init(NutConfig config, ActionInfo ai) throws Throwable {
-	    for (Class<?> klass : ai.getMethod().getParameterTypes()) {
-            if (klass.isAssignableFrom(Errors.class))
-                hasErrorArg = true;
+	    Class<?>[] tmp = ai.getMethod().getParameterTypes();
+	    for (int i = 0; i < tmp.length; i++) {
+	        if (tmp[i].isAssignableFrom(Errors.class))
+	            index = i;
         }
 	}
 
 	public void process(ActionContext ac) throws Throwable {
-	    if (hasErrorArg) {
+	    if (index >= 0) {
 	        Errors es = new Errors();
 	        for (Object obj : ac.getMethodArgs()) {
                 av.validate(obj, es);
             }
+	        ac.getMethodArgs()[index] = es;
 	    }
 		doNext(ac);
 	}
