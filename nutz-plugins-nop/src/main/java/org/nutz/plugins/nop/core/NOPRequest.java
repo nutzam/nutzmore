@@ -149,8 +149,9 @@ public class NOPRequest {
 		}
 	}
 
-	public void setInputStream(InputStream inputStream) {
+	public NOPRequest setInputStream(InputStream inputStream) {
 		this.inputStream = inputStream;
+		return this;
 	}
 
 	public byte[] getData() {
@@ -171,7 +172,7 @@ public class NOPRequest {
 		return this;
 	}
 
-	private NOPRequest setParams(Map<String, Object> params) {
+	public NOPRequest setParams(Map<String, Object> params) {
 		this.params = params;
 		return this;
 	}

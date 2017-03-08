@@ -7,6 +7,7 @@ import org.nutz.dao.entity.annotation.Column;
 import org.nutz.dao.entity.annotation.Id;
 import org.nutz.dao.entity.annotation.Name;
 import org.nutz.dao.entity.annotation.Table;
+import org.nutz.lang.Times;
 
 @Table("t_user")
 public class User {
@@ -22,7 +23,7 @@ public class User {
 	private BigDecimal acount;
 
 	@Column("u_birth")
-	private Date brithDay;
+	private Date brithDay = Times.now();
 
 	@Column("u_sex")
 	private Sex sex;

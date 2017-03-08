@@ -20,6 +20,18 @@ import org.springframework.http.converter.HttpMessageNotWritableException;
  *
  */
 public class NutzJsonMessageConverter extends AbstractGenericHttpMessageConverter<Object> {
+
+	JsonFormat format = JsonFormat.compact();
+
+	/**
+	 * @param format
+	 *            the format to set
+	 */
+	public NutzJsonMessageConverter setFormat(JsonFormat format) {
+		this.format = format;
+		return this;
+	}
+
 	{
 		setSupportedMediaTypes(Lang.array2list(new MediaType[] { MediaType.APPLICATION_JSON }));
 	}
@@ -31,7 +43,7 @@ public class NutzJsonMessageConverter extends AbstractGenericHttpMessageConverte
 
 	@Override
 	protected void writeInternal(Object t, Type type, HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
-		Json.toJson(new OutputStreamWriter(outputMessage.getBody()), t, JsonFormat.compact());
+		Json.toJson(new OutputStreamWriter(outputMessage.getBody()), t, format);
 	}
 
 	@Override
