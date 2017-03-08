@@ -1,27 +1,41 @@
 package org.nutz.plugins.mvc.websocket.room;
 
-import static org.nutz.integration.jedis.RedisInterceptor.jedis;
-
 import java.util.Set;
 
-import org.nutz.ioc.aop.Aop;
+import org.nutz.integration.jedis.JedisAgent;
 import org.nutz.plugins.mvc.websocket.WsRoomProvider;
 
+import redis.clients.jedis.Jedis;
+
+/**
+ * 基于Redis/Jedis的Websocket房间实现
+ * @author wendal
+ *
+ */
 public class JedisRoomProvider implements WsRoomProvider {
+    
+    protected JedisAgent jedisAgent;
+    
+    public JedisRoomProvider(JedisAgent jedisAgent) {
+        this.jedisAgent = jedisAgent;
+    }
 
-    @Aop("redis")
     public Set<String> wsids(String room) {
-        return jedis().smembers(room);
+        try (Jedis jedis = jedisAgent.getResource()) {
+            return jedis.smembers(room);
+        }
     }
 
-    @Aop("redis")
     public void join(String room, String wsid) {
-        jedis().sadd(room, wsid);
+        try (Jedis jedis = jedisAgent.getResource()) {
+            jedis.sadd(room, wsid);
+        }
     }
 
-    @Aop("redis")
     public void left(String room, String wsid) {
-        jedis().srem(room, wsid);
+        try (Jedis jedis = jedisAgent.getResource()) {
+            jedis.srem(room, wsid);
+        }
     }
     
     
