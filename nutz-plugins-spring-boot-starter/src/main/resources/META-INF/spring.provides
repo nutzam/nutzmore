@@ -1,1 +1,1 @@
-provides: nutz-dao,sql-manager
+provides: nutz-dao,sql-manager,json-converter
