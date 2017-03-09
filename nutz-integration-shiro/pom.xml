@@ -64,14 +64,10 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
-			<version>1.1.1</version>
-		</dependency>
-		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.6.4</version>
+			<version>1.7.24</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>redis.clients</groupId>
@@ -89,6 +85,17 @@
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz-plugins-cache</artifactId>
 			<version>1.r.61-SNAPSHOT</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.24</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
+			<version>1.7.24</version>
 		</dependency>
 	</dependencies>
 	<build>
