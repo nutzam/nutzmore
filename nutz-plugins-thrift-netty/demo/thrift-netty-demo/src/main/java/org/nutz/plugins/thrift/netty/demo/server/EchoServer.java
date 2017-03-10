@@ -7,7 +7,10 @@ import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.TProcessorFactory;
 import org.apache.thrift.protocol.TProtocol;
+import org.nutz.ioc.impl.NutIoc;
+import org.nutz.ioc.loader.combo.ComboIocLoader;
 import org.nutz.lang.Mirror;
+import org.nutz.plugins.thrift.NutThriftNettyFactory;
 import org.nutz.plugins.thrift.netty.server.ThriftNettyServer;
 import org.nutz.plugins.thrift.netty.server.configure.ThriftNettyServerDefBuilder;
 import org.nutz.resource.Scans;
@@ -32,7 +35,7 @@ public class EchoServer {
 	 * @param args
 	 * @throws InterruptedException
 	 */
-	public static void main(String[] args) throws InterruptedException {
+	public static void main1(String[] args) throws InterruptedException {
 		ResourceLeakDetector.setLevel(Level.ADVANCED); // check memory leak
 		List<Class<?>> clazzs = Scans.me().scanPackage("org.nutz.plugins.thrift.netty.demo");
 		List<Object> services = new ArrayList<>();
@@ -65,5 +68,11 @@ public class EchoServer {
 		};
 		ThriftNettyServer server = new ThriftNettyServer(new ThriftNettyServerDefBuilder().processorFactory(new TProcessorFactory(processor)).build());
 		server.start();
+	}
+	
+	public static void main(String[] args) throws ClassNotFoundException {
+		ResourceLeakDetector.setLevel(Level.ADVANCED);
+		NutIoc ioc = new NutIoc(new ComboIocLoader("*anno", "org.nutz.plugins.thrift.netty.demo","*org.nutz.plugins.thrift.ThriftIocLoader"));
+		ioc.get(NutThriftNettyFactory.class,"thriftFactory").load("org.nutz.plugins.thrift.netty.demo");
 	}
 }
