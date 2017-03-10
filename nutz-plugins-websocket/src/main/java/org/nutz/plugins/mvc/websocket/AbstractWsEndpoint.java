@@ -292,4 +292,20 @@ public abstract class AbstractWsEndpoint extends Endpoint {
             }
         });
     }
+
+    public WsRoomProvider getRoomProvider() {
+        return roomProvider;
+    }
+
+    public void setRoomProvider(WsRoomProvider roomProvider) {
+        this.roomProvider = roomProvider;
+    }
+
+    public String getRoomPrefix() {
+        return roomPrefix;
+    }
+
+    public void setRoomPrefix(String roomPrefix) {
+        this.roomPrefix = roomPrefix;
+    }
 }
