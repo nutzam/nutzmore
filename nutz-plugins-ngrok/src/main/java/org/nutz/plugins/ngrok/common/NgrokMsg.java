@@ -117,4 +117,8 @@ public class NgrokMsg extends NutMap {
     public void write(OutputStream out) throws IOException {
         NgrokAgent.writeMsg(out, this);
     }
+    
+    public String getType() {
+        return this.getString("Type");
+    }
 }

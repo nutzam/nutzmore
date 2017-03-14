@@ -28,9 +28,10 @@ public class NgrokAgent {
 
     public static void writeMsg(OutputStream out, NgrokMsg msg) throws IOException {
         synchronized (out) {
-            NutMap map = new NutMap("Type", msg.remove("Type")).setv("Payload", msg);
+            String type = (String) msg.remove("Type");
+            NutMap map = new NutMap("Type", type).setv("Payload", msg);
             String cnt = Json.toJson(map, JsonFormat.tidy().setQuoteName(true));
-            if (log.isDebugEnabled() && !"Ping".equals(map.get("Type")))
+            if (log.isDebugEnabled() && !"Ping".equals(type) && !"Pong".equals(type))
                 log.debug("write msg = " + cnt);
             byte[] buf = cnt.getBytes(Encoding.CHARSET_UTF8);
             int len = buf.length;
@@ -55,7 +56,7 @@ public class NgrokAgent {
         Map<String, Object> payload = map.getAs("Payload", Map.class);
         if (payload == null)
             payload = new HashMap<String, Object>();
-        if (log.isDebugEnabled() && !"Pong".equals(msg.get("Type")))
+        if (log.isDebugEnabled() && !"Pong".equals(msg.get("Type")) && !"Ping".equals(msg.get("Type")))
             log.debug("read msg = " + cnt);
         msg.putAll(payload);
         return msg;
@@ -158,13 +159,15 @@ public class NgrokAgent {
     
     public static void httpResp(OutputStream out , int code, String cnt) {
         try {
+            byte[] buf = cnt.getBytes();
             String respLine = String.format("HTTP/1.0 %d %s\r\n", code, Http.getStatusText(code, ""));
-            String content_len = "Content-Length: " + cnt.getBytes().length + "\r\n";
+            String content_len = "Content-Length: " + buf.length + "\r\n";
             out.write(respLine.getBytes());
             out.write(content_len.getBytes());
             out.write("\r\n".getBytes());
-            out.write(cnt.getBytes());
+            out.write(buf);
             out.flush();
+            out.close();
         }
         catch (IOException e) {
         }

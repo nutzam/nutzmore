@@ -193,7 +193,7 @@ public class NgrokClient implements Runnable, StatusProvider<Integer> {
             try {
                 // 看看服务器想干啥
                 NgrokMsg msg = NgrokAgent.readMsg(ctlIn);
-                String type = msg.getString("Type");
+                String type = msg.getType();
                 // 服务器要求我们发送新的代理链接
                 if ("ReqProxy".equals(type)) {
                     ProxyConn pc = new ProxyConn();
@@ -296,7 +296,7 @@ public class NgrokClient implements Runnable, StatusProvider<Integer> {
                 // 等待服务器响应StartProxy
                 NgrokMsg msg = NgrokAgent.readMsg(srvIn);
                 // 如果真的响应了StartProxy,开始桥接Socket
-                if ("StartProxy".equals(msg.getString("Type"))) {
+                if ("StartProxy".equals(msg.getType())) {
                     try {
                         if (log.isDebugEnabled())
                             log.debug("start socket pipe ...");
