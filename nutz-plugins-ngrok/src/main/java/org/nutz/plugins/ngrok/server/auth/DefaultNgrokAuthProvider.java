@@ -14,4 +14,6 @@ public class DefaultNgrokAuthProvider implements NgrokAuthProvider {
         return new String[]{client.id.substring(0, 6) + "." + srv.srv_host};
     }
 
+    public void record(String host, long in, long out) {}
+
 }

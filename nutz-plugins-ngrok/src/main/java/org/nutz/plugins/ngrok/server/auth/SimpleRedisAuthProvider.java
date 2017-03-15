@@ -1,5 +1,8 @@
 package org.nutz.plugins.ngrok.server.auth;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.nutz.integration.jedis.JedisAgent;
 import org.nutz.lang.Streams;
 import org.nutz.lang.Strings;
@@ -25,12 +28,18 @@ public class SimpleRedisAuthProvider implements NgrokAuthProvider {
 
     @Override
     public boolean check(NgrokServer srv, NgrokMsg auth) {
-        if (Strings.isBlank(auth.getString("User")))
+        String token = auth.getString("User");
+        if (Strings.isBlank(token))
             return false;
         Jedis jedis = null;
         try {
             jedis = jedis();
-            return "nil" != jedis.hget(key, auth.getString("User"));
+            boolean re = "nil" != jedis.hget(key, token);
+            if (re) {
+                jedis.zadd("ngrok:lv", System.currentTimeMillis(), token);
+                return true;
+            }
+            return token.equals(srv.redis_rkey);
         } catch (Throwable e){
             return false;
         } finally {
@@ -43,13 +52,19 @@ public class SimpleRedisAuthProvider implements NgrokAuthProvider {
         Jedis jedis = null;
         try {
             jedis = jedis();
-            String map = jedis.hget(key, client.authMsg.getString("User"));
-            if ("nil".equals(map))
-                return null;
-            String[] tmp = Strings.splitIgnoreBlank(map, ",");
-            for (int i = 0; i < tmp.length; i++) {
-                if (!tmp[i].startsWith("#"))
-                    tmp[i] += "." + srv.srv_host;
+            String[] tmp = null;
+            String token = client.authMsg.getString("User");
+            if (token.equals(srv.redis_rkey)) {
+                tmp = new String[]{client.id.substring(0, 6) + "." + srv.srv_host};
+            } else {
+                String map = jedis.hget(key, token);
+                if ("nil".equals(map))
+                    return null;
+                tmp = Strings.splitIgnoreBlank(map, ",");
+                for (int i = 0; i < tmp.length; i++) {
+                    if (!tmp[i].startsWith("#"))
+                        tmp[i] += "." + srv.srv_host;
+                }
             }
             return tmp;
         } catch (Throwable e){
@@ -63,5 +78,19 @@ public class SimpleRedisAuthProvider implements NgrokAuthProvider {
         if (jedisAgent == null)
             jedisAgent = new JedisAgent(new JedisPool());
         return jedisAgent.getResource();
+    }
+    
+    public static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+
+    public void record(String host, long in, long out) {
+        String rkey = key+":bytes:"+sdf.format(new Date());
+        Jedis jedis = null;
+        try {
+            jedis = jedis();
+            jedis.hincrBy(rkey, host, in+out);
+        } catch (Exception e) {
+        } finally {
+            Streams.safeClose(jedis);
+        }
     }
 }

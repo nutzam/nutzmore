@@ -18,6 +18,7 @@ public class PipedStreamThread implements Callable<String> {
     protected String name;
     protected int bufSize;
     protected Stopwatch sw;
+    protected int count;
 
     public PipedStreamThread(String name, InputStream ins, OutputStream out, int bufSize) {
         this.name = name;
@@ -28,7 +29,6 @@ public class PipedStreamThread implements Callable<String> {
 
     public String call() throws Exception {
         byte[] buf = new byte[bufSize];
-        int count = 0;
         if (log.isDebugEnabled())
             sw = Stopwatch.begin();
         while (true) {
@@ -52,9 +52,13 @@ public class PipedStreamThread implements Callable<String> {
         }
         if (log.isDebugEnabled()) {
             sw.stop();
-            log.infof("%s %dms %dkb", name, sw.getDuration(), count/1024);
+            if (log.isDebugEnabled())
+                log.debugf("%s %dms %dkb", name, sw.getDuration(), count/1024);
         }
         return name;
     }
 
+    public int getCount() {
+        return count;
+    }
 }
