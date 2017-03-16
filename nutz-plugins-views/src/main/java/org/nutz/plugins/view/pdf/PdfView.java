@@ -1,8 +1,10 @@
 package org.nutz.plugins.view.pdf;
 
 import java.io.File;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLEncoder;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -18,6 +20,8 @@ import org.nutz.lang.util.Context;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.mvc.View;
+import org.nutz.resource.NutResource;
+import org.nutz.resource.Scans;
 
 import com.google.typography.font.tools.sfnttool.SfntTool;
 import com.itextpdf.text.pdf.AcroFields;
@@ -82,37 +86,50 @@ public class PdfView implements View {
     @SuppressWarnings("unchecked")
     public void render(HttpServletRequest req, HttpServletResponse resp, Object obj)
             throws Throwable {
+        InputStream ins;
         File f = Files.findFile(this.format.tmpl);
-        if (!f.exists()) {
-            resp.sendError(404);
-            return;
+        if (f == null) {
+            List<NutResource> resources = Scans.me().scan(this.format.tmpl);
+            if (resources.isEmpty()) {
+                log.info("pdf tmpl not found --> " + format.tmpl);
+                resp.sendError(404);
+                return;
+            }
+            ins = resources.get(0).getInputStream();
+        } else {
+            ins = Streams.fileIn(f);
         }
-        Context cnt = (Context) obj;
-        resp.setContentType("application/pdf");
-        if (!resp.containsHeader("Content-Disposition") && !cnt.getBoolean("*viewOnly")) {
-            String filename = URLEncoder.encode(cnt.getString("filename", "out.pdf"),
-                                                Encoding.UTF8);
-            resp.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+        try {
+            Context cnt = (Context) obj;
+            resp.setContentType("application/pdf");
+            if (!resp.containsHeader("Content-Disposition") && !cnt.getBoolean("*viewOnly")) {
+                String filename = URLEncoder.encode(cnt.getString("filename", "out.pdf"),
+                                                    Encoding.UTF8);
+                resp.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+            }
+            PdfReader reader = new PdfReader(ins);
+            OutputStream out = resp.getOutputStream();
+            PdfStamper ps = new PdfStamper(reader, out);
+            AcroFields fields = ps.getAcroFields();
+            StringBuilder sb = new StringBuilder();
+            for (String key : fields.getFields().keySet()) {
+                sb.append(Strings.sBlank(cnt.get(key)));
+            }
+            BaseFont bf = subFont(format.fontData, sb.toString());
+            for (String key : fields.getFields().keySet()) {
+                fields.setField(key, Strings.sBlank(cnt.get(key)));
+                if (bf != null)
+                    fields.setFieldProperty(key, "textfont", bf, null);
+            }
+            ps.setFormFlattening(true);
+            Callback<PdfStamper> callback = cnt.getAs(Callback.class, "*callback");
+            if (callback != null)
+                callback.invoke(ps);
+            ps.close();
         }
-        PdfReader reader = new PdfReader(Streams.fileIn(f));
-        OutputStream out = resp.getOutputStream();
-        PdfStamper ps = new PdfStamper(reader, out);
-        AcroFields fields = ps.getAcroFields();
-        StringBuilder sb = new StringBuilder();
-        for (String key : fields.getFields().keySet()) {
-            sb.append(Strings.sBlank(cnt.get(key)));
+        finally {
+            Streams.safeClose(ins);
         }
-        BaseFont bf = subFont(format.fontData, sb.toString());
-        for (String key : fields.getFields().keySet()) {
-            fields.setField(key, Strings.sBlank(cnt.get(key)));
-            if (bf != null)
-                fields.setFieldProperty(key, "textfont", bf, null);
-        }
-        ps.setFormFlattening(true);
-        Callback<PdfStamper> callback = cnt.getAs(Callback.class, "*callback");
-        if (callback != null)
-            callback.invoke(ps);
-        ps.close();
     }
     
     public static BaseFont subFont(byte[] source, String strs) {
