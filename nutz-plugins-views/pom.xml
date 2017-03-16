@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.r.61-SNAPSHOT</version>
+		<version>1.r.60.r4</version>
 	</parent>
 	<artifactId>nutz-plugins-views</artifactId>
 	<description>Nutz More Views</description>
@@ -105,7 +105,9 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz-plugins-sfntly</artifactId>
-			<version>1.r.61-SNAPSHOT</version>
+			<version>1.r.60</version>
+			<optional>true</optional>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 	<build>

@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.r.61-SNAPSHOT</version>
+		<version>1.r.60.r4</version>
 	</parent>
 	<artifactId>nutz-integration-autoloadcache</artifactId>
 	<properties>
