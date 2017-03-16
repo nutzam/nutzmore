@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.r.60.r4</version>
+		<version>1.r.61-SNAPSHOT</version>
 	</parent>
 	<artifactId>nutz-integration-activiti</artifactId>
 	<url>https://nutzam.com</url>
