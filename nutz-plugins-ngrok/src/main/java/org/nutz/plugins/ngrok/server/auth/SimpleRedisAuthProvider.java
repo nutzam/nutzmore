@@ -1,7 +1,9 @@
 package org.nutz.plugins.ngrok.server.auth;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.nutz.integration.jedis.JedisAgent;
 import org.nutz.lang.Streams;
@@ -52,21 +54,29 @@ public class SimpleRedisAuthProvider implements NgrokAuthProvider {
         Jedis jedis = null;
         try {
             jedis = jedis();
-            String[] tmp = null;
+            List<String> hosts = new ArrayList<String>();
             String token = client.authMsg.getString("User");
             if (token.equals(srv.redis_rkey)) {
-                tmp = new String[]{client.id.substring(0, 6) + "." + srv.srv_host};
+                hosts.add(client.id.substring(0, 6) + "." + srv.srv_host);
             } else {
                 String map = jedis.hget(key, token);
                 if ("nil".equals(map))
                     return null;
-                tmp = Strings.splitIgnoreBlank(map, ",");
+                String[] tmp = Strings.splitIgnoreBlank(map, ",");
                 for (int i = 0; i < tmp.length; i++) {
-                    if (!tmp[i].startsWith("#"))
+                    if (tmp[i].startsWith("#")) {
+                        hosts.add(tmp[i].substring(1));
+                    }
+                    else {
                         tmp[i] += "." + srv.srv_host;
+                        hosts.add(tmp[i]);
+                        if (tmp[i].contains("_")) {
+                            hosts.add(tmp[i].replace('_', 'z'));
+                        }
+                    }
                 }
             }
-            return tmp;
+            return hosts.toArray(new String[hosts.size()]);
         } catch (Throwable e){
             return null;
         } finally {

@@ -6,8 +6,7 @@
 		<artifactId>nutzmore</artifactId>
 		<version>1.r.61-SNAPSHOT</version>
 	</parent>
-	<artifactId>nutz-integration-rabbitmq</artifactId>
-
+	<artifactId>nutz-integration-zookeeper</artifactId>
 	<url>https://nutzam.com</url>
 	<issueManagement>
 		<system>Github Issue</system>
@@ -92,22 +91,10 @@
 	</distributionManagement>
 	<dependencies>
 		<dependency>
-			<groupId>com.rabbitmq</groupId>
-			<artifactId>amqp-client</artifactId>
-			<version>4.1.0</version>
+			<groupId>org.apache.zookeeper</groupId>
+			<artifactId>zookeeper</artifactId>
+			<version>3.4.9</version>
 			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.12</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-simple</artifactId>
-			<version>1.7.24</version>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>

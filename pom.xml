@@ -99,7 +99,7 @@
 	</build>
 	<packaging>pom</packaging>
 	<modules>
-		<module>nutz-plugins-sfntly</module>
+		
         <module>nutz-integration-activiti</module>
 		<module>nutz-integration-spring</module>
 		<module>nutz-integration-jcache</module>
@@ -109,7 +109,7 @@
 		<module>nutz-integration-jsf</module>
 		<module>nutz-integration-shiro</module>
 		<module>nutz-integration-dubbo</module>
-		<module>nutz-integration-jsch</module>
+		
 		<module>nutz-integration-struts2</module>
 		<module>nutz-integration-zbus</module>
 		<module>nutz-integration-hessian</module>
@@ -124,7 +124,7 @@
 		<module>nutz-plugins-daocache</module>
 		<module>nutz-plugins-protobuf</module>
 		<module>nutz-plugins-sqltpl</module>
-		<module>nutz-plugins-secken</module>
+		
 		<module>nutz-plugins-jsonrpc</module>
 		<module>nutz-plugins-sigar</module>
 		<module>nutz-plugins-mock</module>
@@ -140,6 +140,7 @@
         <module>nutz-plugins-ngrok</module>
     <module>nutz-integration-json4excel</module>
     <module>nutz-integration-rabbitmq</module>
+    
 	</modules>
 	<distributionManagement>
 		<snapshotRepository>
