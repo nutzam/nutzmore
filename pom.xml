@@ -59,7 +59,7 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz</artifactId>
-			<version>1.r.61-snapshot</version>
+			<version>1.r.61-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 
