@@ -3,6 +3,7 @@ package demo.bean;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import org.nutz.dao.entity.annotation.ColDefine;
 import org.nutz.dao.entity.annotation.Column;
 import org.nutz.dao.entity.annotation.Id;
 import org.nutz.dao.entity.annotation.Name;
@@ -19,8 +20,6 @@ public class User {
 	@Name
 	private String name;
 
-	@Column("u_account")
-	private BigDecimal acount;
 
 	@Column("u_birth")
 	private Date brithDay = Times.now();
@@ -28,19 +27,24 @@ public class User {
 	@Column("u_sex")
 	private Sex sex;
 
+	@Column("u_account")
+	@ColDefine(customType = "decimal(65,10)")
+	private BigDecimal account;
+
+
 	/**
-	 * @return the acount
+	 * @return the account
 	 */
-	public BigDecimal getAcount() {
-		return acount;
+	public BigDecimal getAccount() {
+		return account;
 	}
 
 	/**
-	 * @param acount
-	 *            the acount to set
+	 * @param account
+	 *            the account to set
 	 */
-	public void setAcount(BigDecimal acount) {
-		this.acount = acount;
+	public void setAccount(BigDecimal account) {
+		this.account = account;
 	}
 
 	public static enum Sex {

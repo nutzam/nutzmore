@@ -51,6 +51,26 @@ basepackage 实体类所在包名
 ``` java
     nutz.dao.sqlmanager.paths=demo,sqls
 ```
+## 使用nutzJson
+
+### 移除jackson和其他的json包即可,然后什么都不做
+### 定制json
+```yml
+nutz: 
+    json:
+            auto-unicode: true
+            mode: compact  #json模式,支持的模式有COMPACT, FULL, NICE, FORLOOK, TIDY
+            quote-name: false #是否对json key加引号
+            date-format: yyyy-MM-dd HH:mm:ss Z #时间格式
+            actived:  #激活的key的正则匹配
+            ignore-null: #是否忽略空值
+            indent:  # 缩进
+            indent-by:  #缩进
+            locked: #不显示的key的正则匹配
+            null-as-emtry: #空值转换为空
+            unicode-lower: #是否小写Unicode
+```
+然后就没有然后了
 
 
 

@@ -60,6 +60,11 @@
 			<artifactId>nutz-integration-activiti</artifactId>
 			<version>1.r.61-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.0.1</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>nutzdemo</finalName>

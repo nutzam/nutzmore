@@ -45,7 +45,7 @@ public class App {
 		User u = new User();
 		u.setName(R.UU16());
 		u.setSex(Sex.FEMALE);
-		u.setAcount(new BigDecimal(R.random(400, 500) * 10000));
+		u.setAccount(new BigDecimal(R.random(400, 500) * 10000));
 		return dao.insert(u);
 	}
 
