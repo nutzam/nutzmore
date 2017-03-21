@@ -3,14 +3,16 @@ package org.nutz.plugins.slog.bean;
 import java.io.Serializable;
 import java.util.Date;
 
-import org.nutz.dao.entity.annotation.ColDefine;
-import org.nutz.dao.entity.annotation.Column;
-import org.nutz.dao.entity.annotation.Table;
+import org.nutz.dao.entity.annotation.*;
 
 @Table("t_syslog_${ym}")
 public class SlogBean implements Serializable {
 
     private static final long serialVersionUID = 4048681972879639280L;
+    
+    @Column
+    @Prev(els={@EL("uuid()")})
+    protected String uu32;
 
     @Column("t") // aop.before aop.after aop.error
     protected String t;

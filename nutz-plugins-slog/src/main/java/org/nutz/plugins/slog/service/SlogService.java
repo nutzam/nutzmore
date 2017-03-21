@@ -60,7 +60,7 @@ public class SlogService {
      */
 	public void sync(Object syslog) {
 		try {
-			dao().fastInsert(syslog);
+			dao().insert(syslog);
 		} catch (Throwable e) {
 			log.info("insert syslog sync fail", e);
 		}
