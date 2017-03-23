@@ -29,6 +29,8 @@ public class RedisCache<K, V> implements Cache<K, V> {
     protected CacheSerializer serializer = new DefaultJdkSerializer();
     
     protected boolean debug;
+    
+    protected int ttl;
 
     public RedisCache<K, V> setName(String name) {
         this.name = name;
@@ -155,5 +157,9 @@ public class RedisCache<K, V> implements Cache<K, V> {
     public RedisCache<K, V> setSerializer(CacheSerializer serializer) {
         this.serializer = serializer;
         return this;
+    }
+    
+    public void setTtl(int ttl) {
+        this.ttl = ttl;
     }
 }

@@ -47,7 +47,11 @@ public class RedisCache2<K, V> extends RedisCache<K, V> {
         Jedis jedis = null;
         try {
             jedis = LCacheManager.me().jedis();
-            jedis.set(genKey(key), (byte[])serializer.fromObject(value));
+            byte[] buf = (byte[])serializer.fromObject(value);
+            if (ttl > 0)
+                jedis.setex(genKey(key), ttl, buf);
+            else
+                jedis.set(genKey(key), buf);
             return null;
         } finally {
             Streams.safeClose(jedis);
