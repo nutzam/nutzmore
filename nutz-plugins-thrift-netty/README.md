@@ -9,7 +9,7 @@
 ### 添加依赖
  
 ``` xml
-		<dependency>
+	<dependency>
             <groupId>org.nutz</groupId>
             <artifactId>nutz-plugins-thrift-netty</artifactId>
             <version>1.r.61-SNAPSHOT</version>
