@@ -25,7 +25,7 @@ var ioc = {
 			}
 		},
 		jedisClusterNodes : {
-			type : "org.nutz.integration.jedis.jedisClusterNodeSet",
+			type : "org.nutz.integration.jedis.JedisClusterNodeSet",
 			fields : {
 				conf : {refer:"conf"}
 			},

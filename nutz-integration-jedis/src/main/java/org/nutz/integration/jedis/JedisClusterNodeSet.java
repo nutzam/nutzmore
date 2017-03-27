@@ -7,7 +7,7 @@ import org.nutz.lang.Strings;
 
 import redis.clients.jedis.HostAndPort;
 
-public class jedisClusterNodeSet extends HashSet<HostAndPort> {
+public class JedisClusterNodeSet extends HashSet<HostAndPort> {
 
     private static final long serialVersionUID = 6028293027128774439L;
     
