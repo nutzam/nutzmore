@@ -15,6 +15,7 @@ var ioc = {
 			        {java : "$conf.get('redis.host', 'localhost')"}, 
 			        {java : "$conf.getInt('redis.port', 6379)"}, 
 			        {java : "$conf.getInt('redis.timeout', 2000)"}, 
+			        {java : "$conf.getInt('redis.soTimeout', 0)"},
 			        {java : "$conf.get('redis.password')"}, 
 			        {java : "$conf.getInt('redis.database', 0)"}
 			        ],
@@ -24,16 +25,13 @@ var ioc = {
 			}
 		},
 		jedisClusterNodes : {
-			type : "java.util.HashSet",
-			args : [
-				[{
-					type : "redis.clients.jedis.HostAndPort",
-					args : [
-						{java : "$conf.get('redis.host', 'localhost')"},
-						{java : "$conf.getInt('redis.port', 6379)"}
-					]
-				}]
-			]
+			type : "org.nutz.integration.jedis.jedisClusterNodeSet",
+			fields : {
+				conf : {refer:"conf"}
+			},
+			events : {
+				create : "init"
+			}
 		},
 		jedisCluster : {
 			type : "redis.clients.jedis.JedisCluster",
@@ -41,6 +39,7 @@ var ioc = {
 				{refer:"jedisClusterNodes"},
 				{java : "$conf.getInt('redis.timeout', 2000)"},
 				{java : "$conf.getInt('redis.max_redir', 10)"},
+		        {java : "$conf.get('redis.password')"}, 
 				{refer:"jedisPoolConfig"}
 			],
 			events : {
