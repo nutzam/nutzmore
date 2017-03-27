@@ -15,7 +15,6 @@ var ioc = {
 			        {java : "$conf.get('redis.host', 'localhost')"}, 
 			        {java : "$conf.getInt('redis.port', 6379)"}, 
 			        {java : "$conf.getInt('redis.timeout', 2000)"}, 
-			        {java : "$conf.getInt('redis.soTimeout', 0)"},
 			        {java : "$conf.get('redis.password')"}, 
 			        {java : "$conf.getInt('redis.database', 0)"}
 			        ],
