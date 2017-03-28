@@ -26,7 +26,9 @@ var ioc = {
 		jedisClusterNodes : {
 			type : "org.nutz.integration.jedis.JedisClusterNodeSet",
 			fields : {
-				conf : {refer:"conf"}
+                nodes:{java : "$conf.get('redis.nodes')"},
+                host:{java : "$conf.get('redis.host', 'localhost')"},
+                port:{java : "$conf.getInt('redis.port', 6379)"}
 			},
 			events : {
 				create : "init"

@@ -2,7 +2,6 @@ package org.nutz.integration.jedis;
 
 import java.util.HashSet;
 
-import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.lang.Strings;
 
 import redis.clients.jedis.HostAndPort;
@@ -10,11 +9,12 @@ import redis.clients.jedis.HostAndPort;
 public class JedisClusterNodeSet extends HashSet<HostAndPort> {
 
     private static final long serialVersionUID = 6028293027128774439L;
-    
-    protected PropertiesProxy conf;
-    
+
+    private String nodes;
+    private int port = 6379;
+    private String host = "localhost";
+
     public void init() {
-        String nodes = conf.get("redis.nodes");
         if (!Strings.isBlank(nodes)) {
             String[] tmp = Strings.splitIgnoreBlank(nodes);
             for (String node : tmp) {
@@ -23,12 +23,36 @@ public class JedisClusterNodeSet extends HashSet<HostAndPort> {
                     String[] tmp2 = node.split("[\\:]");
                     hp = new HostAndPort(tmp2[0], Integer.parseInt(tmp2[1]));
                 } else {
-                    hp = new HostAndPort(node, conf.getInt("redis.port", 6937));
+                    hp = new HostAndPort(node, port);
                 }
                 this.add(hp);
             }
         } else {
-            this.add(new HostAndPort(conf.get("redis.host", "127.0.0.1"), conf.getInt("redis.port", 6937)));
+            this.add(new HostAndPort(host, port));
         }
+    }
+
+    public String getNodes() {
+        return nodes;
+    }
+
+    public void setNodes(String nodes) {
+        this.nodes = nodes;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
     }
 }
