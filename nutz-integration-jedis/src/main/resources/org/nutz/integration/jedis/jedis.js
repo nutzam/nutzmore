@@ -38,7 +38,8 @@ var ioc = {
 			type : "redis.clients.jedis.JedisCluster",
 			args : [
 				{refer:"jedisClusterNodes"},
-				{java : "$conf.getInt('redis.timeout', 2000)"},
+                {java : "$conf.getInt('redis.timeout', 2000)"},
+                {java : "$conf.getInt('redis.soTimeout', 0)"},
 				{java : "$conf.getInt('redis.max_redir', 10)"},
 		        {java : "$conf.get('redis.password')"}, 
 				{refer:"jedisPoolConfig"}
