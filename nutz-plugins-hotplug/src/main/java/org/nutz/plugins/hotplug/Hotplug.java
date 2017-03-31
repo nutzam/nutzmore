@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -332,7 +333,7 @@ public class Hotplug extends NutLoading {
     }
     
     public void sort(List<HotplugConfig> hclist) {
-        hclist.sort(new Comparator<HotplugConfig>() {
+        Collections.sort(hclist, new Comparator<HotplugConfig>() {
             public int compare(HotplugConfig prev, HotplugConfig next) {
                 if (prev.getName().equals(next.getName()))
                     return 0;
