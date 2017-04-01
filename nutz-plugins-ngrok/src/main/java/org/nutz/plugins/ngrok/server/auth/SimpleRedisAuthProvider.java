@@ -69,7 +69,7 @@ public class SimpleRedisAuthProvider implements NgrokAuthProvider {
                     }
                     else {
                         tmp[i] += "." + srv.srv_host;
-                        hosts.add(tmp[i]);
+                        hosts.add(tmp[i].toLowerCase());
                         if (tmp[i].contains("_")) {
                             hosts.add(tmp[i].replace('_', 'z'));
                         }
