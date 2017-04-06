@@ -16,36 +16,46 @@ import org.nutz.lang.Strings;
 
 /**
  * Beetl视图。
+ * 
  * @author denghuafeng(it@denghuafeng.com)
  *
  */
 public class BeetlView extends AbstractTemplateViewResolver {
+
+	public BeetlView(String dest) {
+		super(dest);
+	}
+
 	public GroupTemplate groupTemplate;
 
 	@Override
-	protected void init(String appRoot,ServletContext sc) {
+	protected void init(String appRoot, ServletContext sc) {
 		Configuration cfg = null;
 		try {
 			cfg = Configuration.defaultConfiguration();
-			//针对beetl放在公共的lib目录获取不到beetl.properties的补救方案
-			if(!Strings.isBlank(getConfigPath())){
-				cfg.add(new File(appRoot+"/"+getConfigPath()+"/beetl.properties"));
+			// 针对beetl放在公共的lib目录获取不到beetl.properties的补救方案
+			if (!Strings.isBlank(appRoot) && !Strings.isBlank(getConfigPath())) {
+				cfg.add(new File(appRoot + "/" + getConfigPath() + "/beetl.properties"));
 			}
 		} catch (IOException e) {
 			throw new RuntimeException("加载GroupTemplate失败", e);
 		}
 		WebAppResourceLoader resourceLoader = new WebAppResourceLoader();
-		resourceLoader.setRoot(appRoot);
+		if (!Strings.isBlank(appRoot)) {
+			resourceLoader.setRoot(appRoot);
+		}
 		groupTemplate = new GroupTemplate(resourceLoader, cfg);
-		groupTemplate.setClassLoader(sc.getClassLoader());
+		// 3.0以上用sc.getClassLoader()
+		// 2.5以下用Thread.currentThread().getContextClassLoader()
+		groupTemplate.setClassLoader(Thread.currentThread().getContextClassLoader());
 	}
 
 	@Override
-	public void render(HttpServletRequest req, HttpServletResponse resp,
-			String evalPath, Map<String, Object> sharedVars) throws Throwable {
+	public void render(HttpServletRequest req, HttpServletResponse resp, String evalPath,
+			Map<String, Object> sharedVars) throws Throwable {
 		groupTemplate.setSharedVars(sharedVars);
 		WebRender render = new WebRender(groupTemplate);
 		render.render(evalPath, req, resp);
 	}
-
+	
 }

@@ -42,6 +42,10 @@ public class FreemarkerView extends AbstractTemplateViewResolver {
 	private static final String KEY_EXCEPTION = "exception";
 	private static final String KEY_JSP_TAGLIBS = "JspTaglibs";
 	private Configuration cfg;
+	
+	public FreemarkerView(String dest) {
+		super(dest);
+	}
 
 	@Override
 	protected void init(String appRoot,ServletContext sc) {
@@ -57,6 +61,7 @@ public class FreemarkerView extends AbstractTemplateViewResolver {
 		cfg.setWhitespaceStripping(true);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void render(HttpServletRequest request,
 			HttpServletResponse response, String evalPath,

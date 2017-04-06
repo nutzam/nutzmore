@@ -8,8 +8,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.nutz.ioc.Ioc;
+import org.nutz.ioc.IocException;
 import org.nutz.ioc.impl.PropertiesProxy;
-import org.nutz.lang.Files;
 import org.nutz.lang.Strings;
 import org.nutz.mvc.ActionInfo;
 import org.nutz.mvc.Mvcs;
@@ -25,23 +25,8 @@ import org.nutz.mvc.view.AbstractPathView;
  *
  */
 public class ResourceBundleViewResolver implements ViewMaker2 {
-	private static final String OBJ = "obj";
-	private static final String REQUEST = "request";
-	private static final String RESPONSE = "response";
-	private static final String SESSION = "session";
-	private static final String APPLICATION = "application";
 	private static final String CONFIG = "conf";
 	private static final String MULTI_VIEW_RESOVER = "multiViewResover";
-	private static final String VIEW_NAME = "viewName";
-	private static final String PATH = "path";
-	private static final String BASE_PATH = "basePath";
-	private static final String SERVLET_EXTENSION = "servletExtension";
-	private static final String SERVLET_EXTENSION_KEY = "servlet.extension";
-	private static final String TPL_DIR = "tplDir";
-	private static final String RESOURCE_DIR = "resource.dir";
-	private static final String RES_PATH = "resPath";
-	private static final String TPL_RES_PATH = "tplResPath";
-	private static final String WEB_INF = "WEB-INF/";
 	private LinkedHashMap<String, AbstractTemplateViewResolver> resolvers = new LinkedHashMap<String, AbstractTemplateViewResolver>();
 	private MultiViewResover multiViewResover;
 	private PropertiesProxy config;
@@ -49,13 +34,20 @@ public class ResourceBundleViewResolver implements ViewMaker2 {
 	private boolean inited;
 
 	@Override
-	public View make(Ioc ioc, String type, String value) {
+	public View make(Ioc ioc, String type, final String value) {
 		if (!inited) {
 			synchronized (resolvers) {
 				if (!inited) {
-					config = ioc.get(PropertiesProxy.class, CONFIG);
-					multiViewResover = ioc.get(MultiViewResover.class,
-							MULTI_VIEW_RESOVER);
+					if(ioc!=null){
+						try {
+							config = ioc.get(PropertiesProxy.class, CONFIG);
+						} catch (IocException e) {
+							//org.nutz.ioc.IocException: [conf] # For object [conf] - type:[class org.nutz.ioc.impl.PropertiesProxy]
+						}
+						multiViewResover = ioc.get(MultiViewResover.class,
+								MULTI_VIEW_RESOVER);
+					}
+					
 					if (multiViewResover != null) {
 						resolvers = multiViewResover.getResolvers();
 					}
@@ -66,10 +58,16 @@ public class ResourceBundleViewResolver implements ViewMaker2 {
 				}
 			}
 		}
-
+		//TODO 定义为Object 类型，通过反射去调用公用的方法，为了方便子类扩展属性
 		final AbstractTemplateViewResolver vr = resolvers.get(type);
-		if (vr == null)
+		if(vr==null){
 			return null;
+		}
+		
+		if(vr.getConfig()==null){
+			vr.setConfig(config);
+		}
+		
 		if (Strings.isBlank(vr.getPrefix()) || Strings.isBlank(vr.getSuffix())) {
 			throw new NullPointerException(vr.getClass().getSimpleName()
 					+ " prefix or suffix is null");
@@ -84,69 +82,14 @@ public class ResourceBundleViewResolver implements ViewMaker2 {
 			}
 		}
 
-		return new AbstractPathView(value) {
-			public void render(HttpServletRequest req,
-					HttpServletResponse resp, Object obj) throws Throwable {
-				Map<String, Object> sv = new HashMap<String, Object>();
-				sv.put(OBJ, obj);
-				sv.put(REQUEST, req);
-				sv.put(RESPONSE, resp);
-				sv.put(SESSION, Mvcs.getHttpSession());
-				sv.put(APPLICATION, Mvcs.getServletContext());
-				sv.put(VIEW_NAME, vr.getClass().getSimpleName());
-
-				if (Strings.isBlank(resp.getContentType())
-						&& !Strings.isBlank(vr.getContentType())) {//resp的contentType优先级高
-					resp.setContentType(vr.getContentType());//配置文件设置的contentType
-				}
-
-				String evalPath = evalPath(req, obj);
-				String tplDir = vr.getPrefix();// 模板路径
-				String ext = vr.getSuffix();// 模板文件扩展名
-
-				if (Strings.isBlank(tplDir)) {
-					tplDir = "";
-				}
-
-				if (evalPath != null && evalPath.contains("?")) { // 将参数部分分解出来
-					evalPath = evalPath.substring(0, evalPath.indexOf('?'));
-				}
-
-				if (Strings.isBlank(evalPath)) {
-					evalPath = Mvcs.getRequestPath(req);
-					evalPath = tplDir + (evalPath.startsWith("/") ? "" : "/")
-							+ Files.renameSuffix(evalPath, ext);
-				}
-				// 绝对路径 : 以 '/' 开头的路径不增加视图配置的模板路径
-				else if (evalPath.charAt(0) == '/') {
-					if (!evalPath.toLowerCase().endsWith(ext))
-						evalPath += ext;
-				}
-				// 包名形式的路径
-				else {
-					evalPath = tplDir + "/" + evalPath.replace('.', '/') + ext;
-				}
-
-				String resDir = config.get(RESOURCE_DIR);
-				if (Strings.isBlank(resDir)) {
-					resDir = "";
-				}
-				String path = req.getContextPath();
-				int serverPort = req.getServerPort();
-				String basePath = req.getScheme() + "://" + req.getServerName()
-						+ (serverPort != 80 ? ":" + serverPort : "") + path
-						+ "/";
-				sv.put(PATH, path);
-				sv.put(BASE_PATH, basePath);
-				sv.put(SERVLET_EXTENSION, config.get(SERVLET_EXTENSION_KEY));
-				sv.put(TPL_DIR, tplDir);
-				if (!resDir.startsWith("http")) {// 如果是http开头，说明是CDN静态地址
-					resDir = path + "/" + resDir;
-				}
-				sv.put(RES_PATH, resDir);// 资源路径
-				sv.put(TPL_RES_PATH,
-						resDir + tplDir.replace(WEB_INF, "") + "/");// 模板对应的资源路径
-				vr.render(req, resp, evalPath, sv);
+		return new AbstractPathView(value){
+			@Override
+			public void render(HttpServletRequest req, HttpServletResponse resp, Object obj) throws Throwable {
+				Map<String, Object> sourceMap = new HashMap<String, Object>();
+				sourceMap.put("obj", obj);
+				sourceMap.put("evalPath", this.evalPath(req, obj));
+				sourceMap.put("dest", value);
+				vr.render(req, resp, sourceMap);
 			}
 		};
 	}

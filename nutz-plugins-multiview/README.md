@@ -6,7 +6,10 @@
 集合N种模板引擎,可配置性强
 
 ###### 适应nutz 1.r.55以上，以下版本暂时未测试
-
+# 版本更新日志：
+###### 1.把所有属性配置文件里的变量及值加载到全局里，例如，在配置文件中配置了CDN地址，想在页面中能调用，默认全局变量是cfg变量，通过cfg调用相应的键值。
+###### 2.支持直接调用视图 AbstractTemplateViewResolver atvr=new org.nutz.plugins.view.JspView("abc.bcd");
+###### 3.代码重构，去除了AbstractUrlBasedView.java和ViewResolver
 针对https://github.com/nutzam/nutz/issues/603#issuecomment-35709620上提出的问题，开发了此插件、
 <br/>目的是用于开发博客社交类等程序，这些可能会经常要更换模板，路径写死在代码不合适。
 
@@ -26,6 +29,7 @@
  var ioc = {
     jsp : {
         type : "org.nutz.plugins.view.JspView",
+        args:[null],//新功能需要个构造参数
         fields : {
             prefix : "/WEB-INF/templates/jsp",
             suffix : ".jsp"
@@ -33,15 +37,17 @@
     },
     btl : {
         type : "org.nutz.plugins.view.BeetlView",
+        args:[null],
         fields : {
-            contentType:"text/html; charset=UTF-8",
-            configPath:"WEB-INF/classes",
+            contentType : "text/html; charset=UTF-8",
+            configPath : "WEB-INF/classes",
             prefix : "/templates/btl",
             suffix : ".html"
         }
     },
     jetx : {
         type : "org.nutz.plugins.view.JetTemplateView",
+        args:[null],
         fields : {
             prefix : "/WEB-INF/templates/jetx",
             suffix : ".html"
@@ -49,6 +55,7 @@
     },
     ftl : {
         type : "org.nutz.plugins.view.FreemarkerView",
+        args:[null],
         fields : {
             prefix : "/WEB-INF/templates/ftl",
             suffix : ".html"
@@ -73,7 +80,7 @@
             }
         }
     }
-}; 
+};
 ```
 当然要创建对应配置的目录，上面beetl的configPath是指这个视图的配置文件目录，相对于项目根目录来说的，可配置或不配置，分情况而定。 
 
@@ -210,34 +217,43 @@ import org.beetl.ext.web.WebRender;
 import org.nutz.lang.Strings;
 
 public class BeetlView extends AbstractTemplateViewResolver {
+
+    public BeetlView(String dest) {
+        super(dest);
+    }
+
     public GroupTemplate groupTemplate;
 
     @Override
-    protected void init(String appRoot,ServletContext sc) {
+    protected void init(String appRoot, ServletContext sc) {
         Configuration cfg = null;
         try {
             cfg = Configuration.defaultConfiguration();
-            //针对beetl放在公共的lib目录获取不到beetl.properties的补救方案
-            if(!Strings.isBlank(getConfigPath())){
-                cfg.add(new File(appRoot+"/"+getConfigPath()+"/beetl.properties"));
+            // 针对beetl放在公共的lib目录获取不到beetl.properties的补救方案
+            if (!Strings.isBlank(appRoot) && !Strings.isBlank(getConfigPath())) {
+                cfg.add(new File(appRoot + "/" + getConfigPath() + "/beetl.properties"));
             }
         } catch (IOException e) {
             throw new RuntimeException("加载GroupTemplate失败", e);
         }
         WebAppResourceLoader resourceLoader = new WebAppResourceLoader();
-        resourceLoader.setRoot(appRoot);
+        if (!Strings.isBlank(appRoot)) {
+            resourceLoader.setRoot(appRoot);
+        }
         groupTemplate = new GroupTemplate(resourceLoader, cfg);
-        groupTemplate.setClassLoader(sc.getClassLoader());//beetl放在公共lib包，classpath路径会出错，需告知beetl的classLoader
+        // 3.0以上用sc.getClassLoader()
+        // 2.5以下用Thread.currentThread().getContextClassLoader()
+        groupTemplate.setClassLoader(Thread.currentThread().getContextClassLoader());
     }
 
     @Override
-    public void render(HttpServletRequest req, HttpServletResponse resp,
-            String evalPath, Map<String, Object> sharedVars) throws Throwable {
+    public void render(HttpServletRequest req, HttpServletResponse resp, String evalPath,
+            Map<String, Object> sharedVars) throws Throwable {
         groupTemplate.setSharedVars(sharedVars);
         WebRender render = new WebRender(groupTemplate);
         render.render(evalPath, req, resp);
     }
-
+    
 }
 ```
 <br/>注意上面的getConfigPath()方法的代码，是为了实现beetl放在公共的lib目录获取不到beetl配置文件的问题而补救的一个解决方案，configPath是父类AbstractTemplateViewResolver 的属性,可在ioc配置文件中配置。 
@@ -255,6 +271,12 @@ path 项目根路径，
 资源根路径resPath，
 
 模板对应的资源路径tplResPath，
+
+当前系统java边聊props，
+
+国际语言mvcs，
+
+所有配置文件信息cfg，
 
 还有个viewName变量，用于显示使用的模板视图的名称。
 
@@ -314,6 +336,6 @@ resource.dir  资源根路径 对应页面变量resPath,此路径可以设置为
 
 ###### 1.支持全局变量的添加，例如，把一些字典的类加载到全局里，供页面调用。
 
-###### 2.考虑把config加到全局里，例如，在配置文件中配置了CDN地址，想在页面中能调用。
+###### 2.支持Ajax视图，此需要特殊处理。例如，前段Ajax请求，需要处理获取的数据、本次请求状态、提示信息等。
 
-###### 3.支持Ajax视图，此需要特殊处理。例如，前段Ajax请求，需要处理获取的数据、本次请求状态、提示信息等。 
+###### 3.增加对pdf、velocity、thymeleaf、captcha视图支持，增强Freemarker视图可配置性。 
