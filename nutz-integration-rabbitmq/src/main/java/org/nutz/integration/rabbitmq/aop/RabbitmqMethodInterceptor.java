@@ -26,6 +26,7 @@ public class RabbitmqMethodInterceptor implements MethodInterceptor {
             Channel channel = conn.createChannel();
             _connection.set(conn);
             _channel.set(channel);
+            chain.doChain();
         } finally {
             Streams.safeClose(_connection.get());
             _connection.remove();
