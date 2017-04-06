@@ -63,24 +63,27 @@ var ioc = {
 			autoLoadPeriod : 50
 		}
 	},
-	hessianSerializer : {
-		type : "com.jarvis.cache.serializer.HessianSerializer"
+	fastjsonSerializer : {
+		type : "com.jarvis.cache.serializer.FastjsonSerializer"
 	},
+	scriptParser : {
+        type : "com.jarvis.cache.script.OgnlParser"
+    },
 	cachePointCut : {
-		type : "com.jarvis.cache.redis.ShardedCachePointCut",
+		type : "com.jarvis.cache.map.CachePointCut",
 		args : [ {
-			refer : "autoLoadConfig"
-		} ],
+			refer : "autoLoadConfig",
+		},{
+		  refer : "fastjsonSerializer"
+		} ,{
+          refer : "scriptParser"
+        }],
 		fields : {
-			serializer : {
-				refer : "hessianSerializer"
-			},
-			shardedJedisPool : {
-				refer : "shardedJedisPool"
-			},
-			namespace : 'test_hessian'
+			namespace : 'test_hessian',
+			needPersist : false
 		},
 		events : {
+		    create : "start",
 			depose : "destroy"
 		}
 	}
