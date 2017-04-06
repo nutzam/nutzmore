@@ -16,8 +16,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.net.SocketFactory;
-import javax.net.ssl.SSLSocketFactory;
 
+import org.nutz.http.Http;
 import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.lang.Mirror;
 import org.nutz.lang.Streams;
@@ -133,7 +133,12 @@ public class NgrokClient implements Runnable, StatusProvider<Integer> {
             executorService = Executors.newCachedThreadPool();
         // 如果没设置SSLSocketFactory,那就取系统默认的
         if (socketFactory == null)
-            socketFactory = SSLSocketFactory.getDefault();
+            try {
+                socketFactory = Http.nopSSLSocketFactory();
+            }
+            catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         // 把自身提交到线程池去执行呗
         executorService.submit(this);
     }

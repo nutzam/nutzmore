@@ -67,13 +67,20 @@ NgrokClient有大量可以配置的选项,请查阅源码的javadoc注释.
 * JDK 8最新版
 * 若使用redis鉴权, 那么需要redis
 * https证书, 合法的,不是自签名的
+* 服务器必须有一个外网ip
 
 使用redis与否的区别:
 
 * 非redis模式下,域名是随机6位字母,填写任意access token即可.
 * redis模式下, 会执行hget ngrok token 获取域名前缀, 不再是随机域名.
 
-## 你需要一个https证书生成jks文件
+### 如果你没有https证书??
+
+请访问: https://github.com/diafygi/acme-tiny
+
+按页面上的步骤, 生成crt和key文件
+
+### 然后用https证书生成jks文件
 
 使用 crt和key文件, 也就是nginx使用的证书,生成jks的步骤
 
@@ -83,7 +90,7 @@ NgrokClient有大量可以配置的选项,请查阅源码的javadoc注释.
 openssl pkcs12 -export -in 1_wendal.cn_bundle.crt -inkey 2_wendal.cn.key -out wendal.cn.p12
 ```
 
-### 然后, 使用keytool 生成jks
+### 再然后, 使用keytool 生成jks
 
 ```
 keytool -importkeystore -destkeystore wendal.cn.jks -srckeystore wendal.cn.p12 -srcstoretype pkcs12 -alias 1
@@ -91,7 +98,9 @@ keytool -importkeystore -destkeystore wendal.cn.jks -srckeystore wendal.cn.p12 -
 
 目标文件是 wendal.cn.jks 即     域名.jks
 
-## 启动NgrokServer
+### 最后,启动NgrokServer,普通模式
+
+跟普通java程序一下, 传点参数,启动它就可以了
 
 ```
 java -cp nutz-plugins-ngrok.jar org.nutz.plugins.ngrok.server.NgrokServer -srv_host=wendal.cn -ssl_jks_path=wendal.cn.jks
@@ -114,7 +123,7 @@ java -cp nutz-plugins-ngrok.jar org.nutz.plugins.ngrok.server.NgrokServer -srv_h
 2017-3-16 21:59:45.575 DEBUG [main] start Http Thread...
 ```
 
-## 带Redis启动
+### 以Redis模式启动NgrokServer
 
 ```
 java -cp nutz-plugins-ngrok.jar org.nutz.plugins.ngrok.server.NgrokServer -srv_host=wendal.cn -ssl_jks_path=wendal.cn.jks -redis=true
@@ -142,3 +151,68 @@ hset ngrok aabbccddeeff hello,hi
 ```
 
 使用 access token=aabbccddeeff 进行登录, 即可拥有 hello.wendal.cn 和 hi.wendal.cn 两个隧道域名
+
+### Nginx配置实例
+
+默认情况下, NgrokServer监听的是9080端口, 而通常访问的端口是80, 所以有两个选择
+
+* 让NgrokServer监听80端口,但其他程序就没法使用80端口了
+* 让nginx/apache/iis监听80端口, 按域名规则转发给NgrokServer
+
+因为我最熟的就是nginx,下面给出nginx的配置实例:
+
+值得注意的几个点:
+
+* 不要使用upstream, 不要使用proxy_http_version 1.1; 会导致请求乱转发
+* 关闭gzip,否则etag会被nginx过滤掉,使得资源文件没法通过etag相等来判断是否发送304响应,会消耗一些流量.
+
+```
+        server {
+            listen 80;
+            server_name www.wendal.cn wendal.cn;
+            location / {
+                    proxy_pass http://127.0.0.1:8181;
+                    proxy_set_header Host $http_host;
+                    proxy_set_header X-Forwarded-For $remote_addr;
+                    proxy_send_timeout 1h;
+                    proxy_read_timeout 1h;
+                    client_max_body_size 128m;
+                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection $http_connection;
+            }
+        }
+
+        server {
+            listen 80;
+            server_name *.ngrok.wendal.cn;
+            gzip off;
+            location / {
+                    proxy_pass http://127.0.0.1:9080;
+                    proxy_set_header Host $http_host;
+                    proxy_set_header X-Forwarded-For $remote_addr;
+                    proxy_send_timeout 1h;
+                    proxy_read_timeout 1h;
+                    client_max_body_size 128m;
+                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection $http_connection;
+            }
+        }
+
+        server {
+            listen 80;
+            server_name "~^[a-z0-9]{6}.wendal.cn$";
+            gzip off;
+            resolver 8.8.8.8;
+            location / {
+                    proxy_pass http://127.0.0.1:9080;
+                    proxy_set_header Host $http_host;
+                    proxy_set_header X-Forwarded-For $remote_addr;
+                    proxy_send_timeout 1h;
+                    proxy_read_timeout 1h;
+                    client_max_body_size 128m;
+                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection $http_connection;
+
+            }
+        }
+```
