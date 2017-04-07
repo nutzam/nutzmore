@@ -210,7 +210,7 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
                             NgrokMsg.newTunnel("",
                                                "",
                                                "",
-                                               "Not Channel To Give").write(out);
+                                               "pls check your token").write(out);
                             break;
                         }
                         for (String host : mapping) {
