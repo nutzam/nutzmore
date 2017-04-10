@@ -11,7 +11,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.KeyStore;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
@@ -27,7 +29,6 @@ import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.nutz.lang.Stopwatch;
 import org.nutz.lang.Streams;
 import org.nutz.lang.Strings;
 import org.nutz.lang.random.R;
@@ -65,7 +66,7 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
     public Map<String, String> reqIdMap = new ConcurrentHashMap<String, String>();
     public int bufSize = 8192;
     public boolean redis;
-    public String redis_host= "127.0.0.1";
+    public String redis_host = "127.0.0.1";
     public int redis_port = 6379;
     public String redis_key = "ngrok";
     public String redis_rkey;
@@ -134,12 +135,10 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
         else if (ssl_jks_path != null) {
             log.debug("load jks from " + this.ssl_jks_path);
             ks.load(new FileInputStream(this.ssl_jks_path), ssl_jks_password.toCharArray());
-        }
-        else if (new File(srv_host + ".jks").exists()) {
+        } else if (new File(srv_host + ".jks").exists()) {
             log.debug("load jks from " + srv_host + ".jks");
             ks.load(new FileInputStream(srv_host + ".jks"), ssl_jks_password.toCharArray());
-        }
-        else
+        } else
             throw new RuntimeException("must set ssl_jks_path or ssl_jks");
 
         TrustManagerFactory tmfactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
@@ -205,12 +204,11 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
                             NgrokMsg.newTunnel("", "", "", "Not Auth Yet").write(out);
                             break;
                         }
-                        String[] mapping = auth.mapping(NgrokServer.this, NgrokServerClient.this, msg);
+                        String[] mapping = auth.mapping(NgrokServer.this,
+                                                        NgrokServerClient.this,
+                                                        msg);
                         if (mapping == null || mapping.length == 0) {
-                            NgrokMsg.newTunnel("",
-                                               "",
-                                               "",
-                                               "pls check your token").write(out);
+                            NgrokMsg.newTunnel("", "", "", "pls check your token").write(out);
                             break;
                         }
                         for (String host : mapping) {
@@ -223,7 +221,10 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
                                         NgrokMsg.newTunnel("",
                                                            "",
                                                            "",
-                                                           "host="+host+" is used by another client!!!").write(out);
+                                                           "host="
+                                                               + host
+                                                               + " is used by another client!!!")
+                                                .write(out);
                                         break;
                                     } else {
                                         prevClient.clean();
@@ -233,11 +234,8 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
                         }
                         String reqId = msg.getString("ReqId");
                         for (String host : mapping) {
-                            
-                            NgrokMsg.newTunnel(reqId,
-                                               "http://" + host,
-                                               "http",
-                                               "").write(out);
+
+                            NgrokMsg.newTunnel(reqId, "http://" + host, "http", "").write(out);
                             hostmap.put(host, id); // 冲突了怎么办?
                             reqIdMap.put(host, reqId);
                             reqProxy(host);
@@ -296,14 +294,23 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
                 ps = idleProxys.poll();
                 if (ps == null)
                     break;
-                if (!ps.socket.isClosed())
+                try {
+                    NgrokAgent.writeMsg(ps.socket.getOutputStream(), NgrokMsg.startProxy("http://" + host, ""));
                     return ps;
+                } catch (Exception e) {
+                    continue;
+                }
             }
             if (ps == null) {
                 if (log.isDebugEnabled())
                     log.debugf("req proxy conn for host[%s]", host);
-                if (reqProxy(host))
+                if (reqProxy(host)) {
                     ps = idleProxys.poll(client_proxy_wait_timeout, TimeUnit.MILLISECONDS);
+                    if (ps != null) {
+                        NgrokAgent.writeMsg(ps.socket.getOutputStream(), NgrokMsg.startProxy("http://" + host, ""));
+                        return ps;
+                    }
+                }
             }
             return ps;
         }
@@ -327,6 +334,8 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
 
     public class HttpThread implements Callable<Object> {
         public Socket socket;
+        InputStream _ins;
+        OutputStream _out;
 
         public HttpThread(Socket socket) {
             super();
@@ -334,127 +343,137 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
         }
 
         public Object call() throws Exception {
-            //if (log.isDebugEnabled())
-            //    log.debug("NEW Http Request ...");
-            Stopwatch sw = Stopwatch.begin();
-            InputStream _ins = socket.getInputStream();
-            OutputStream _out = socket.getOutputStream();
-            ByteArrayOutputStream bao = new ByteArrayOutputStream(8192);
-            ByteArrayOutputStream line_buffer_bao = new ByteArrayOutputStream();
-            int line_len = 0;
-            int count = 0;
-            byte[] buf = new byte[1];
-            String firstLine = null;
-            while (true) {
-                int len = _ins.read(buf);
-                if (len == -1)
-                    break;
-                else if (len == 0)
-                    continue;
-                count++;
-                if (count > 8192) {
-                    NgrokAgent.httpResp(_out, 400, "无法读取合法的Host,拒绝访问.不允许ip直接访问,同时Host必须存在于请求的前8192个字节!");
-                    socket.close();
-                    return null;
-                }
-                bao.write(buf);
-                if (buf[0] == '\n') {
-                    if (line_len == 0) {
+
+            _ins = socket.getInputStream();
+            _out = socket.getOutputStream();
+
+            HttpBuf httpBuf = new HttpBuf();
+            try {
+                int line_start = 0;
+                byte[] buf = new byte[1];
+                List<String> lines = new ArrayList<String>();
+                while (true) {
+                    int len = _ins.read(buf);
+                    if (len == -1)
                         break;
-                    } else {
-                        // 读取了有效的一行,那么, 解析一下吧
-                        if (line_len > 8) { // Host: wendal.cn 域名起码3位吧?
-                            byte[] line_buf = line_buffer_bao.toByteArray();
-                            String line = new String(line_buf).trim().toLowerCase();
-                            if (firstLine == null) {
-                                firstLine = line;
-                            }
-                            //log.debug("Header Line --> " + line);
-                            // 看看是不是Host
-                            // 有可能是Host或者host哦
-                            else if (line.startsWith("host") && line.contains(":")) {
-                                String host = line.split("[\\:]")[1].trim();
-                                sw.tag("Read Host");
-                                if (log.isDebugEnabled())
-                                    log.debugf("Host[%s] >> %s", host, firstLine);
-                                String clientId = hostmap.get(host);
-                                if (clientId == null) {
-                                    NgrokAgent.httpResp(_out, 404, "Tunnel " + host + " not found");
-                                    socket.close();
-                                    return null;
-                                }
-                                NgrokServerClient client = clients.get(clientId);
-                                if (client == null) {
-                                    NgrokAgent.httpResp(_out, 404, "Tunnel " + host + " is Closed");
-                                    socket.close();
-                                    return null;
-                                }
-                                ProxySocket proxySocket;
-                                try {
-                                    proxySocket = client.getProxy(host);
-                                }
-                                catch (Exception e) {
-                                    log.debug("Get ProxySocket FAIL host=" + host);
-                                    NgrokAgent.httpResp(_out, 500, "Tunnel "
-                                                + host
-                                                + "did't has any proxy conntion yet!!");
-                                    socket.close();
-                                    return null;
-                                }
-                                sw.tag("After Get ProxySocket");
-                                PipedStreamThread srv2loc = null;
-                                PipedStreamThread loc2srv = null;
-                                try {
-                                    NgrokAgent.writeMsg(proxySocket.socket.getOutputStream(),
-                                                        NgrokMsg.startProxy("http://" + host, ""));
-                                    sw.tag("After Send Start Proxy");
-                                    proxySocket.socket.getOutputStream().write(bao.toByteArray());
-                                    // 服务器-->本地
-                                    srv2loc = new PipedStreamThread("http2proxy",
-                                                                                      _ins,
-                                                                                      NgrokAgent.gzip_out(client.gzip_proxy, proxySocket.socket.getOutputStream()),
-                                                                                      bufSize);
-                                    // 本地-->服务器
-                                    loc2srv = new PipedStreamThread("proxy2http",
-                                                                                      NgrokAgent.gzip_in(client.gzip_proxy, proxySocket.socket.getInputStream()),
-                                                                                      _out,
-                                                                                      bufSize);
-                                    sw.tag("After PipedStream Make");
-                                    sw.stop();
-                                    log.debug("ProxyConn Timeline = " + sw.toString());
-                                    // 等待其中任意一个管道的关闭
-                                    String exitFirst = executorService.invokeAny(Arrays.asList(srv2loc,
-                                                                                               loc2srv));
-                                    if (log.isDebugEnabled())
-                                        log.debug("proxy conn exit first at " + exitFirst);
-                                }
-                                catch (Exception e) {
-                                    log.debug("done?", e);
-                                }
-                                finally {
-                                    Streams.safeClose(proxySocket.socket);
-                                    Streams.safeClose(socket);
-                                    if (srv2loc != null && loc2srv != null)
-                                        auth.record(host, srv2loc.getCount(), loc2srv.getCount());
-                                }
-                                return null;
-                            }
+                    else if (len == 0)
+                        continue;
+                    if (httpBuf.size() > 8192) {
+                        NgrokAgent.httpResp(_out,
+                                            400,
+                                            "无法读取合法的Host,拒绝访问.不允许ip直接访问,同时Host必须存在于请求的前8192个字节!");
+                        return null;
+                    }
+                    httpBuf.write(buf, 0, 1);
+                    if (buf[0] == '\n') {
+                        int size = httpBuf.size();
+                        if (size - line_start <= 2) {
+                            break;
                         }
-                        line_buffer_bao.reset();
-                        line_len = 0;
+                        String line = new String(httpBuf.getBuf(),
+                                                 line_start,
+                                                 size - 2 - line_start);
+                        // log.debug(">> " + line);
+                        lines.add(line);
+                        line_start = size;
                     }
                 }
-                line_buffer_bao.write(buf, 0, 1);
-                line_len++;
+                buf = httpBuf.toByteArray();
+                httpBuf.close();
+                httpBuf = null;
+                if (lines.size() > 1) {
+                    String firstLine = lines.remove(0);
+                    for (String line : lines) {
+                        if (line.toLowerCase().startsWith("host") && line.contains(":")) {
+                            String key = line.substring(0, line.indexOf(':')).trim().toLowerCase();
+                            if (!key.equals("host")) {
+                                continue;
+                            }
+                            String host = line.substring(line.indexOf(':') + 1)
+                                              .trim()
+                                              .toLowerCase();
+                            log.debugf("Host[%s] %s", host, firstLine);
+                            if (host.contains(":"))
+                                host = host.substring(0, host.indexOf(':'));
+                            abcdefg(host.toLowerCase(), buf);
+                            return null;
+                        }
+                    }
+                }
             }
-            socket.close();
+            finally {
+                Streams.safeClose(httpBuf);
+                Streams.safeClose(socket);
+            }
             return null;
         }
+
+        protected void abcdefg(String host, byte[] buf) throws Exception {
+
+            //Stopwatch sw = Stopwatch.begin();
+            String clientId = hostmap.get(host);
+            if (clientId == null) {
+                NgrokAgent.httpResp(_out, 404, "Tunnel " + host + " not found");
+                return;
+            }
+            NgrokServerClient client = clients.get(clientId);
+            if (client == null) {
+                NgrokAgent.httpResp(_out, 404, "Tunnel " + host + " is Closed");
+                return;
+            }
+            ProxySocket proxySocket;
+            try {
+                proxySocket = client.getProxy(host);
+            }
+            catch (Exception e) {
+                log.debug("Get ProxySocket FAIL host=" + host, e);
+                NgrokAgent.httpResp(_out,
+                                    500,
+                                    "Tunnel " + host + " did't has any proxy conntion yet!!");
+                return;
+            }
+            //sw.tag("After Get ProxySocket");
+            PipedStreamThread srv2loc = null;
+            PipedStreamThread loc2srv = null;
+            //NgrokAgent.writeMsg(proxySocket.socket.getOutputStream(), NgrokMsg.startProxy("http://" + host, ""));
+            //sw.tag("After Send Start Proxy");
+            proxySocket.socket.getOutputStream().write(buf);
+            // 服务器-->本地
+            srv2loc = new PipedStreamThread("http2proxy",
+                                            _ins,
+                                            NgrokAgent.gzip_out(client.gzip_proxy,
+                                                                proxySocket.socket.getOutputStream()),
+                                            bufSize);
+            // 本地-->服务器
+            loc2srv = new PipedStreamThread("proxy2http",
+                                            NgrokAgent.gzip_in(client.gzip_proxy,
+                                                               proxySocket.socket.getInputStream()),
+                                            _out,
+                                            bufSize);
+            //sw.tag("After PipedStream Make");
+            //sw.stop();
+            //log.debug("ProxyConn Timeline = " + sw.toString());
+            // 等待其中任意一个管道的关闭
+            String exitFirst = executorService.invokeAny(Arrays.asList(srv2loc, loc2srv));
+            if (log.isDebugEnabled())
+                log.debug("proxy conn exit first at " + exitFirst);
+        }
+
     }
 
     @Override
     public Integer getStatus() {
         return status;
+    }
+
+    public static class HttpBuf extends ByteArrayOutputStream {
+        public HttpBuf() {
+            super(512);
+        }
+
+        public byte[] getBuf() {
+            return buf;
+        }
     }
 
     public static void main(String[] args) throws Exception {
