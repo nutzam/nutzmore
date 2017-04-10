@@ -19,6 +19,7 @@ import javax.net.SocketFactory;
 
 import org.nutz.http.Http;
 import org.nutz.ioc.impl.PropertiesProxy;
+import org.nutz.lang.Lang;
 import org.nutz.lang.Mirror;
 import org.nutz.lang.Streams;
 import org.nutz.lang.Strings;
@@ -143,10 +144,18 @@ public class NgrokClient implements Runnable, StatusProvider<Integer> {
         executorService.submit(this);
     }
 
-    @Override
     public void run() {
+        status = 1;
+        while (status == 1) {
+            _run();
+            if (status != 1)
+                break;
+            Lang.quiteSleep(30000);
+        }
+    }
+    
+    public void _run() {
         try {
-            status = 1;
             reqIdMap.clear();
             // 建一个通往服务器的控制Socket
             ctlSocket = newSocket2Server();
@@ -188,8 +197,6 @@ public class NgrokClient implements Runnable, StatusProvider<Integer> {
         }
         finally {
             Streams.safeClose(ctlSocket);
-            if (status == 1)
-                status = 2;
         }
     }
 
@@ -215,14 +222,15 @@ public class NgrokClient implements Runnable, StatusProvider<Integer> {
                         reqIdMap.put(msg.getString("ReqId"), msg);
                         log.debugf("ReqId=%s URL=%s", msg.getString("ReqId"), msg.getString("Url"));
                     } else {
-                        log.error("ReqTunnel Failed!!! Exit!!" + msg.getString("Error"));
-                        this.error = "ReqTunnel fail : " + msg.getString("Error");
-                        if (status == 1)
-                            status = 2;
+                        log.error(msg.getString("Error"));
+                        this.error = msg.getString("Error");
+                        break;
                     }
                 }
                 // 服务器对心跳线程ping的回应,可以忽略
-                else if ("Pong".equals(type)) {} else {
+                else if ("Pong".equals(type)) {
+                    // nop
+                } else {
                     log.info("unknown type=" + msg.getString("Type"));
                 }
             }
@@ -257,7 +265,7 @@ public class NgrokClient implements Runnable, StatusProvider<Integer> {
         status = 3;
         reqIdMap.clear();
         Streams.safeClose(ctlSocket); // 强制关闭控制链接,这样就触发其他链接全部被服务器中断,然后所有线程得以退出
-        if (executorService != null) {
+        if (executorService != null && !executorService.isShutdown()) {
             executorService.shutdownNow();
             executorService = null;
         }
@@ -292,7 +300,7 @@ public class NgrokClient implements Runnable, StatusProvider<Integer> {
                 // 首先,建立一条通道
                 toSrv = newSocket2Server();
                 // 需要等服务器响应,可能会很久
-                toSrv.setSoTimeout(3600 * 1000); // 一小时
+                //toSrv.setSoTimeout(60 * 1000); // 一小时
                 // 取出该通道的输入输出流备用
                 OutputStream srvOut = toSrv.getOutputStream();
                 InputStream srvIn = toSrv.getInputStream();
