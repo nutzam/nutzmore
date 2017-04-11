@@ -63,7 +63,7 @@ ws.send(JSON.stringify({room:'房间名称',"action":"join"}));
 ```java
 通过ioc注入上述的MyWebsocket
 @Inject
-protect MyWebsocket myWebsocket;
+protected MyWebsocket myWebsocket;
 
 public void sayhi(String room) {
     myWebsocket.each(room, new Each<Session>() {
