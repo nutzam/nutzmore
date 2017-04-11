@@ -76,10 +76,12 @@ public void sayhi(String room) {
 
 ### 从服务器发消息给指定的WebSocket会话
 
+这是高级用法, 需要自行建立wsid与业务数据的关联,然后才能得到wsid
+
 ```java
 通过ioc注入上述的MyWebsocket
 @Inject
-protect MyWebsocket myWebsocket;
+protected MyWebsocket myWebsocket;
 
 public void sayhi(String wsid) {
     myWebsocket.sendJson(wsid, new NutMap("action", "layer").setv("msg", "hi"));
