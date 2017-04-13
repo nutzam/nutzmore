@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
-
 import javax.imageio.ImageIO;
 
 import org.nutz.img.Images;
@@ -157,7 +156,8 @@ public final class QRCode {
         try {
             if (!qrcodeFile.exists()) {
                 qrcodeFile.getParentFile().mkdirs();
-                qrcodeFile.createNewFile();
+                //20170413,ecoolper，注释，解决生成二维码图片失败后，存在0大小的文件
+                //qrcodeFile.createNewFile();
             }
 
             if (null != appendFile) {
