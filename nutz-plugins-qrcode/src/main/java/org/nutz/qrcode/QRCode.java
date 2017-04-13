@@ -1,10 +1,15 @@
 package org.nutz.qrcode;
 
-import java.awt.AlphaComposite;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
+import com.google.zxing.*;
+import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.common.HybridBinarizer;
+import com.google.zxing.qrcode.QRCodeReader;
+import com.google.zxing.qrcode.QRCodeWriter;
+import org.nutz.img.Images;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -12,24 +17,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
-
-import javax.imageio.ImageIO;
-
-import org.nutz.img.Images;
-
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.BinaryBitmap;
-import com.google.zxing.ChecksumException;
-import com.google.zxing.FormatException;
-import com.google.zxing.LuminanceSource;
-import com.google.zxing.NotFoundException;
-import com.google.zxing.Result;
-import com.google.zxing.WriterException;
-import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.common.HybridBinarizer;
-import com.google.zxing.qrcode.QRCodeReader;
-import com.google.zxing.qrcode.QRCodeWriter;
 
 /**
  * QRCode 处理器
@@ -157,7 +144,8 @@ public final class QRCode {
         try {
             if (!qrcodeFile.exists()) {
                 qrcodeFile.getParentFile().mkdirs();
-                qrcodeFile.createNewFile();
+                //20170413,ecoolper，注释，解决生成二维码图片失败后，存在0大小的文件
+                //qrcodeFile.createNewFile();
             }
 
             if (null != appendFile) {
