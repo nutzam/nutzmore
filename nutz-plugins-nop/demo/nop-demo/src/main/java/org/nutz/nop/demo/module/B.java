@@ -74,8 +74,8 @@ public class B {
 
 	@At
 	@AdaptBy(type = UploadAdaptor.class)
-	public NutMap upload(TempFile file) {
-		return NutMap.NEW().addv("f", file.getSubmittedFileName());
+	public NutMap upload(TempFile[] file) {
+		return NutMap.NEW().addv("f", file.length);
 	}
 
 }

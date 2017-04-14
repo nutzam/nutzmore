@@ -8,18 +8,15 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.http.Part;
 
 import org.nutz.lang.Lang;
 import org.nutz.lang.Streams;
@@ -57,7 +54,7 @@ public class NOPSignFilter implements ActionFilter {
 
 		private Map<String, String[]> _paramMap;
 
-		private Collection<Part> _parts;
+		// private Collection<Part> _parts;
 
 		public ResettableStreamHttpServletRequest(HttpServletRequest request) {
 			super(request);
@@ -107,9 +104,6 @@ public class NOPSignFilter implements ActionFilter {
 
 				}
 			}
-			if (Strings.isNotBlank(getHeader("Content-Type")) && getHeader("Content-Type").startsWith("application/x-www-form-urlencoded")) {// get参数
-
-			}
 
 			return target;
 		}
@@ -124,30 +118,30 @@ public class NOPSignFilter implements ActionFilter {
 			return _paramMap;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see javax.servlet.http.HttpServletRequestWrapper#getParts()
-		 */
-		@Override
-		public Collection<Part> getParts() throws IOException, ServletException {
-			return _parts;
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see javax.servlet.http.HttpServletRequestWrapper#getPart(java.lang.String)
-		 */
-		@Override
-		public Part getPart(String name) throws IOException, ServletException {
-			for (Part part : _parts) {
-				if (Strings.equals(part.getName(), name)) {
-					return part;
-				}
-			}
-			return null;
-		}
+		// /*
+		// * (non-Javadoc)
+		// *
+		// * @see javax.servlet.http.HttpServletRequestWrapper#getParts()
+		// */
+		// @Override
+		// public Collection<Part> getParts() throws IOException, ServletException {
+		// return _parts;
+		// }
+		//
+		// /*
+		// * (non-Javadoc)
+		// *
+		// * @see javax.servlet.http.HttpServletRequestWrapper#getPart(java.lang.String)
+		// */
+		// @Override
+		// public Part getPart(String name) throws IOException, ServletException {
+		// for (Part part : _parts) {
+		// if (Strings.equals(part.getName(), name)) {
+		// return part;
+		// }
+		// }
+		// return null;
+		// }
 
 		/*
 		 * (non-Javadoc)

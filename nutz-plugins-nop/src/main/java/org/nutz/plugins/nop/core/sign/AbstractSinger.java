@@ -1,9 +1,13 @@
 package org.nutz.plugins.nop.core.sign;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -16,6 +20,13 @@ import org.nutz.lang.LoopException;
 import org.nutz.lang.Strings;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
+import org.nutz.mvc.upload.FastUploading;
+import org.nutz.mvc.upload.Html5Uploading;
+import org.nutz.mvc.upload.TempFile;
+import org.nutz.mvc.upload.UploadException;
+import org.nutz.mvc.upload.Uploading;
+import org.nutz.mvc.upload.UploadingContext;
+import org.nutz.mvc.upload.Uploads;
 import org.nutz.plugins.nop.NOPConfig;
 import org.nutz.plugins.nop.core.NOPRequest;
 
@@ -50,6 +61,102 @@ public abstract class AbstractSinger implements Signer {
 		return sign(fetcher.fetch(appKey), timestamp, gateway, nonce, dataMate);
 	}
 
+	private boolean isCommonFileUpload(HttpServletRequest request) {
+		return request.getHeader("Content-Type") != null && request.getHeader("Content-Type").startsWith("multipart/form-data");
+	}
+
+	private boolean isHtml5FileUpload(HttpServletRequest request) {
+		return request.getHeader("Content-Type") != null && request.getHeader("Content-Type").startsWith("application/octet-stream");
+	}
+
+	/**
+	 * @param request
+	 * @return
+	 */
+	private boolean isFileUpload(HttpServletRequest request) {
+		return isCommonFileUpload(request) || isHtml5FileUpload(request);
+	}
+
+	UploadingContext context = new UploadingContext(System.getProperty("java.io.tmpdir"));
+
+	// NUTZ的文件上传解析先拿过来用起来
+	public Map<String, Object> getReferObject(HttpServletRequest request) {
+		try {
+			if (!"POST".equals(request.getMethod()) && !"PUT".equals(request.getMethod())) {
+				String str = "Not POST or PUT, Wrong HTTP method! --> " + request.getMethod();
+				throw new UploadException(str);
+			}
+			// 看看是不是传统的上传
+			String contentType = request.getContentType();
+			if (contentType == null) {
+				throw new UploadException("Content-Type is NULL!!");
+			}
+			if (contentType.contains("multipart/form-data")) { // 普通表单上传
+				if (log.isDebugEnabled())
+					log.debug("Select Html4 Form upload parser --> " + request.getRequestURI());
+				Uploading ing = new FastUploading();
+				return ing.parse(request, context);
+			}
+			if (contentType.contains("application/octet-stream")) { // Html5
+				// 流式上传
+				if (log.isDebugEnabled())
+					log.debug("Select Html5 Stream upload parser --> " + request.getRequestURI());
+				Uploading ing = new Html5Uploading();
+				return ing.parse(request, context);
+			}
+			// 100%是没写enctype='multipart/form-data'
+			if (contentType.contains("application/x-www-form-urlencoded")) {
+				log.warn("Using form upload ? You forgot this --> enctype='multipart/form-data' ?");
+			}
+			throw new UploadException("Unknow Content-Type : " + contentType);
+		} catch (UploadException e) {
+			throw Lang.wrapThrow(e);
+		} finally {
+			Uploads.removeInfo(request);
+		}
+	}
+
+	public String getURLEncodedParams(final HttpServletRequest request) {
+		Map<String, ?> params = getReferObject(request);
+		final StringBuilder sb = new StringBuilder();
+		List<String> keys = new ArrayList<String>(params.keySet());
+		Collections.sort(keys);
+		for (final String key : keys) {
+			Object val = params.get(key);
+			if (val == null)
+				val = "";
+			Lang.each(val, new Each<Object>() {// TODO 其他的类型
+				@Override
+				public void invoke(int index, Object ele, int length)
+						throws ExitLoop, ContinueLoop, LoopException {
+					if (ele instanceof File) {// 文件
+						sb.append(Http.encode(key, request.getCharacterEncoding()))
+								.append('=')
+								.append(Http.encode(Lang.md5((File) ele), request.getCharacterEncoding()))
+								.append('&');
+					} else if (ele instanceof TempFile) {// tempFile
+						try {
+							sb.append(Http.encode(key, request.getCharacterEncoding()))
+									.append('=')
+									.append(Http.encode(Lang.md5(((TempFile) ele).getInputStream()), request.getCharacterEncoding()))
+									.append('&');
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					} else {
+						sb.append(Http.encode(key, request.getCharacterEncoding()))
+								.append('=')
+								.append(Http.encode(ele, request.getCharacterEncoding()))
+								.append('&');
+					}
+				}
+			});
+		}
+		if (sb.length() > 0)
+			sb.setLength(sb.length() - 1);
+		return sb.toString();
+
+	}
 
 	/**
 	 * 服务器端签名
@@ -69,6 +176,15 @@ public abstract class AbstractSinger implements Signer {
 	protected String getDataMate(HttpServletRequest request) {
 		if (Strings.equalsIgnoreCase(request.getMethod(), "GET")) {// GET请求需要处理一下
 			return Lang.md5(request.getQueryString());
+		}
+		// 文件上传
+		if (isFileUpload(request)) {
+			try {
+				return Lang.md5(new ByteArrayInputStream(getURLEncodedParams(request).getBytes(request.getCharacterEncoding())));
+			} catch (UnsupportedEncodingException e) {
+				log.debug("不支持的编码!");
+				e.printStackTrace();
+			}
 		}
 		try {
 			return Lang.md5(request.getInputStream());
@@ -106,32 +222,7 @@ public abstract class AbstractSinger implements Signer {
 			query = method.indexOf("?") > 0 ? method.substring(method.indexOf("?") + 1) : "";
 			return Lang.md5(query);
 		}
-
 		return Lang.md5(request.getInputStream());
-	}
-
-	protected String getURLEncodedParams(Map<String, String[]> params, final String enc) {
-		final StringBuilder sb = new StringBuilder();
-		if (params != null) {
-			for (Entry<String, String[]> en : params.entrySet()) {
-				final String key = en.getKey();
-				Object val = en.getValue();
-				if (val == null)
-					val = "";
-				Lang.each(val, new Each<Object>() {
-					@Override
-					public void invoke(int index, Object ele, int length) throws ExitLoop, ContinueLoop, LoopException {
-						sb.append(Http.encode(key, enc))
-								.append('=')
-								.append(Http.encode(ele, enc))
-								.append('&');
-					}
-				});
-			}
-			if (sb.length() > 0)
-				sb.setLength(sb.length() - 1);
-		}
-		return sb.toString();
 	}
 
 	@Override

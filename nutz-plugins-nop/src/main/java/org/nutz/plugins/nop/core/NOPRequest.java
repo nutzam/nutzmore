@@ -1,9 +1,13 @@
 package org.nutz.plugins.nop.core;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -18,6 +22,7 @@ import org.nutz.lang.Encoding;
 import org.nutz.lang.ExitLoop;
 import org.nutz.lang.Lang;
 import org.nutz.lang.LoopException;
+import org.nutz.lang.util.NutMap;
 
 public class NOPRequest {
 
@@ -93,7 +98,32 @@ public class NOPRequest {
 
 	public String getURLEncodedParams() {
 		final StringBuilder sb = new StringBuilder();
-		if (params != null) {
+		if (isFileUpload()) {// 文件上传的签名流
+			List<String> keys = new ArrayList<String>(params.keySet());
+			Collections.sort(keys);
+			for (final String key : keys) {
+				Object val = params.get(key);
+				if (val == null)
+					val = "";
+				Lang.each(val, new Each<Object>() {
+					@Override
+					public void invoke(int index, Object ele, int length)
+							throws ExitLoop, ContinueLoop, LoopException {
+						if (ele instanceof File) {
+							sb.append(Http.encode(key, enc))
+									.append('=')
+									.append(Http.encode(Lang.md5((File) ele), enc))
+									.append('&');
+						} else {
+							sb.append(Http.encode(key, enc))
+									.append('=')
+									.append(Http.encode(ele, enc))
+									.append('&');
+						}
+					}
+				});
+			}
+		} else if (params != null) {
 			for (Entry<String, Object> en : params.entrySet()) {
 				final String key = en.getKey();
 				Object val = en.getValue();
@@ -110,10 +140,29 @@ public class NOPRequest {
 					}
 				});
 			}
-			if (sb.length() > 0)
-				sb.setLength(sb.length() - 1);
 		}
+		if (sb.length() > 0)
+			sb.setLength(sb.length() - 1);
 		return sb.toString();
+	}
+
+	public boolean isFileUpload() {
+		final NutMap t = NutMap.NEW().addv("target", false);
+		if ((isPost() || isPut()) && getParams() != null) {
+			for (Object val : getParams().values()) {
+				Lang.each(val, new Each<Object>() {
+
+					@Override
+					public void invoke(int index, Object ele, int length) throws ExitLoop, ContinueLoop, LoopException {
+						if (ele instanceof File) {
+							t.put("target", true);
+							throw new ExitLoop();
+						}
+					}
+				});
+			}
+		}
+		return t.getBoolean("target");
 	}
 
 	public InputStream getInputStream() {

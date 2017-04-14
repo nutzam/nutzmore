@@ -2,6 +2,7 @@ package demo;
 
 import org.nutz.http.Request.METHOD;
 import org.nutz.http.Response;
+import org.nutz.lang.Files;
 import org.nutz.lang.Lang;
 import org.nutz.lang.Times;
 import org.nutz.lang.random.R;
@@ -13,8 +14,9 @@ public class Demo {
 	public static void main(String[] args) {
 		NOPClient client = NOPClient.create("test", Lang.md5("test"), "http://localhost:8080/nop-demo/nop.endpoint", "SHA1");// 一般情况来说调用客户端一个是单例的
 		Response response = client
-				.send(NOPRequest.create("/b/ss", METHOD.POST)
-						.setParams(NutMap.NEW().addv("i", Lang.array(R.random(0, 10), R.random(0, 10), R.random(0, 10), R.random(0, 10))).addv("k", "中文").addv("d",
+				.send(NOPRequest.create("/b/upload", METHOD.POST)
+						.setParams(NutMap.NEW().addv("file", Lang.array(Files.checkFile("/Users/kerbores/Desktop/tika/2"), Files.checkFile("/Users/kerbores/Desktop/tika/2.js")))
+								.addv("i", Lang.array(R.random(0, 10), R.random(0, 10), R.random(0, 10), R.random(0, 10))).addv("k", "中文").addv("d",
 								Times.format("yyyy-MM-dd", Times.now()))));
 		if (response.isOK()) {
 			System.err.println(response.getContent());
