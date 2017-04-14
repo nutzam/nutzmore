@@ -22,10 +22,11 @@ import org.nutz.plugins.nop.server.NOPSignFilter;
 @UrlMappingBy(ApidocUrlMapping.class)
 @Manual(name = "NOP示例手册", description = "Nop集成的Apidoc手册", author = "Kerbores", email = "kerbores@gmail.com", homePage = "http://blog.zhcs.club", copyRight = "️ &copy; 2017 Kerbores All Right XXX")
 @Api(author = "Kerbores", name = "主模块", match = ApiMatchMode.ALL)
-@Filters(@By(type = NOPSignFilter.class))
+@Filters(@By(type = NOPSignFilter.class, args = { "SHA1" }))
 public class MainModule {
 
 	@At("/")
+	@Filters
 	public NutMap hello() {
 		return NutMap.NEW().addv("msg", "Hello NOP!");
 	}

@@ -8,6 +8,8 @@ import org.nutz.lang.util.NutMap;
 import org.nutz.mvc.adaptor.JsonAdaptor;
 import org.nutz.mvc.annotation.AdaptBy;
 import org.nutz.mvc.annotation.At;
+import org.nutz.mvc.upload.TempFile;
+import org.nutz.mvc.upload.UploadAdaptor;
 import org.nutz.plugins.apidoc.annotation.Api;
 import org.nutz.plugins.apidoc.annotation.ApiMatchMode;
 import org.nutz.plugins.apidoc.annotation.ReturnKey;
@@ -66,8 +68,14 @@ public class B {
 	}
 	
 	@At
-	public NutMap ss(int i,Date d) {
-		return NutMap.NEW();
+	public NutMap ss(int[] i, Date d, String k) {
+		return NutMap.NEW().addv("i", i).addv("d", d).addv("k", k);
+	}
+
+	@At
+	@AdaptBy(type = UploadAdaptor.class)
+	public NutMap upload(TempFile file) {
+		return NutMap.NEW().addv("f", file.getSubmittedFileName());
 	}
 
 }

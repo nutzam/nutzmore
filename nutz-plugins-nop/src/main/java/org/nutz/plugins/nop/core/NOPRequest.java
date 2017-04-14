@@ -19,92 +19,72 @@ import org.nutz.lang.ExitLoop;
 import org.nutz.lang.Lang;
 import org.nutz.lang.LoopException;
 
-/**
- * @author Kerbores(kerbores@gmail.com)
- *
- * @project nutz-plugins-nop
- *
- * @file NOPRequest.java
- *
- * @description NOP请求 warp of Request
- *
- * @time 2016年8月31日 下午2:18:56
- *
- */
-
 public class NOPRequest {
 
-	public static NOPRequest get(String service) {
-		return create(service, METHOD.GET, new HashMap<String, Object>());
+	public static NOPRequest get(String gateway) {
+		return create(gateway, METHOD.GET, new HashMap<String, Object>());
 	}
 
-	public static NOPRequest get(String service, Header header) {
-		return NOPRequest.create(service, METHOD.GET, new HashMap<String, Object>(), header);
+	public static NOPRequest get(String gateway, Header header) {
+		return NOPRequest.create(gateway, METHOD.GET, new HashMap<String, Object>(), header);
 	}
 
-	public static NOPRequest post(String service) {
-		return create(service, METHOD.POST, new HashMap<String, Object>());
+	public static NOPRequest post(String gateway) {
+		return create(gateway, METHOD.POST, new HashMap<String, Object>());
 	}
 
-	public static NOPRequest post(String service, Header header) {
-		return NOPRequest.create(service, METHOD.POST, new HashMap<String, Object>(), header);
+	public static NOPRequest post(String gateway, Header header) {
+		return NOPRequest.create(gateway, METHOD.POST, new HashMap<String, Object>(), header);
 	}
 
-	public static NOPRequest create(String service, METHOD method) {
-		return create(service, method, new HashMap<String, Object>());
-	}
-
-	@SuppressWarnings("unchecked")
-	public static NOPRequest create(String service, METHOD method, String paramsAsJson, Header header) {
-		return create(service, method, (Map<String, Object>) Json.fromJson(paramsAsJson), header);
+	public static NOPRequest create(String gateway, METHOD method) {
+		return create(gateway, method, new HashMap<String, Object>());
 	}
 
 	@SuppressWarnings("unchecked")
-	public static NOPRequest create(String service, METHOD method, String paramsAsJson) {
-		return create(service, method, (Map<String, Object>) Json.fromJson(paramsAsJson));
-	}
-	public static NOPRequest create(String service,  String body, Header header) {
-		NOPRequest request = create(service, METHOD.POST);
-		request.setHeader(header);
-		request.setData(body);
-		return request;
+	public static NOPRequest create(String gateway, METHOD method, String paramsAsJson, Header header) {
+		return create(gateway, method, (Map<String, Object>) Json.fromJson(paramsAsJson), header);
 	}
 
-	public static NOPRequest create(String service, METHOD method, Map<String, Object> params) {
-		return NOPRequest.create(service, method, params, Header.create());
+	@SuppressWarnings("unchecked")
+	public static NOPRequest create(String gateway, METHOD method, String paramsAsJson) {
+		return create(gateway, method, (Map<String, Object>) Json.fromJson(paramsAsJson));
 	}
 
-	public static NOPRequest create(String service,
-			METHOD method,
-			Map<String, Object> params,
-			Header header) {
-		return new NOPRequest().setMethod(method).setParams(params).setService(service).setHeader(header);
+	public static NOPRequest create(String gateway, METHOD method, Map<String, Object> params) {
+		return NOPRequest.create(gateway, method, params, Header.create());
 	}
 
-	public String getService() {
-		return service;
+	public static NOPRequest create(String gateway, METHOD method, Map<String, Object> params, Header header) {
+		return new NOPRequest().setMethod(method).setParams(params).setGateway(gateway).setHeader(header);
 	}
+
 
 	private NOPRequest() {
 	}
 
-	private String service;
+	private String gateway;
 	private METHOD method;
 	private Header header;
 	private Map<String, Object> params;
 	private byte[] data;
 	private InputStream inputStream;
 	private String enc = Encoding.UTF8;
-	private String appSecret;
-	
-	
 
-	public String getAppSecret() {
-		return appSecret;
+	/**
+	 * @return the gateway
+	 */
+	public String getGateway() {
+		return gateway;
 	}
 
-	public void setAppSecret(String appSecret) {
-		this.appSecret = appSecret;
+	/**
+	 * @param gateway
+	 *            the gateway to set
+	 */
+	public NOPRequest setGateway(String gateway) {
+		this.gateway = gateway;
+		return this;
 	}
 
 	public Map<String, Object> getParams() {
@@ -121,10 +101,12 @@ public class NOPRequest {
 					val = "";
 				Lang.each(val, new Each<Object>() {
 					@Override
-					public void invoke(int index, Object ele, int length) throws ExitLoop, ContinueLoop, LoopException {
+					public void invoke(int index, Object ele, int length)
+							throws ExitLoop, ContinueLoop, LoopException {
 						sb.append(Http.encode(key, enc))
 								.append('=')
-								.append(Http.encode(ele, enc)).append('&');
+								.append(Http.encode(ele, enc))
+								.append('&');
 					}
 				});
 			}
@@ -138,6 +120,8 @@ public class NOPRequest {
 		if (inputStream != null) {
 			return inputStream;
 		} else {
+			if (header.get("Content-Type") == null)
+				header.asFormContentType(enc);
 			if (null == data) {
 				try {
 					return new ByteArrayInputStream(getURLEncodedParams().getBytes(enc));
@@ -177,11 +161,6 @@ public class NOPRequest {
 		return this;
 	}
 
-	public NOPRequest setService(String service) {
-		this.service = service;
-		return this;
-	}
-
 	public METHOD getMethod() {
 		return method;
 	}
@@ -212,6 +191,8 @@ public class NOPRequest {
 	}
 
 	public NOPRequest setHeader(Header header) {
+		if (header == null)
+			header = Header.create();
 		this.header = header;
 		return this;
 	}
@@ -239,5 +220,10 @@ public class NOPRequest {
 
 	public String getEnc() {
 		return enc;
+	}
+
+	public NOPRequest header(String key, String value) {
+		getHeader().set(key, value);
+		return this;
 	}
 }

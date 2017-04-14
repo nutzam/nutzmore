@@ -43,7 +43,7 @@ public class App {
 	public User add() {
 		System.err.println(R.captchaChar(5));
 		User u = new User();
-		u.setName(R.UU16());
+		u.setName(String.format("(%s)", R.UU16()));
 		u.setSex(Sex.FEMALE);
 		u.setAccount(new BigDecimal(R.random(400, 500) * 10000));
 		return dao.insert(u);
@@ -85,6 +85,11 @@ public class App {
 	@RequestMapping("/count")
 	public int count() {
 		return dao.count(User.class);
+	}
+
+	@RequestMapping("dd")
+	public NutMap dd() {
+		return NutMap.NEW().addv("k", "(sss)");
 	}
 
 	@Autowired
