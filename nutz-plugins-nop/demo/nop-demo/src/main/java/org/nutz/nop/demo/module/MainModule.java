@@ -1,14 +1,11 @@
 package org.nutz.nop.demo.module;
 
 import org.nutz.lang.util.NutMap;
-import org.nutz.mvc.adaptor.JsonAdaptor;
-import org.nutz.mvc.annotation.AdaptBy;
 import org.nutz.mvc.annotation.At;
 import org.nutz.mvc.annotation.By;
 import org.nutz.mvc.annotation.Filters;
 import org.nutz.mvc.annotation.IocBy;
 import org.nutz.mvc.annotation.Ok;
-import org.nutz.mvc.annotation.POST;
 import org.nutz.mvc.annotation.UrlMappingBy;
 import org.nutz.mvc.ioc.provider.ComboIocProvider;
 import org.nutz.plugins.apidoc.ApidocUrlMapping;
@@ -29,13 +26,6 @@ public class MainModule {
 	@Filters
 	public NutMap hello() {
 		return NutMap.NEW().addv("msg", "Hello NOP!");
-	}
-
-	@At
-	@POST
-	@AdaptBy(type = JsonAdaptor.class)
-	public NutMap body(NutMap data) {
-		return data;
 	}
 
 }

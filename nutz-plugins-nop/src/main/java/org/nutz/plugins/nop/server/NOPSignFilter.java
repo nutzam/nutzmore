@@ -80,6 +80,10 @@ public class NOPSignFilter implements ActionFilter {
 			} else {
 				info = new String(Streams.readBytes(getInputStream()), request.getCharacterEncoding());
 			}
+			if (Strings.isBlank(info)) {
+				return target;
+			}
+
 			if (Strings.isNotBlank(getHeader("Content-Type"))
 					&& getHeader("Content-Type").startsWith("application/x-www-form-urlencoded")) {// 表单参数
 				for (String seg : info.split("&")) {
@@ -124,17 +128,20 @@ public class NOPSignFilter implements ActionFilter {
 		// * @see javax.servlet.http.HttpServletRequestWrapper#getParts()
 		// */
 		// @Override
-		// public Collection<Part> getParts() throws IOException, ServletException {
+		// public Collection<Part> getParts() throws IOException,
+		// ServletException {
 		// return _parts;
 		// }
 		//
 		// /*
 		// * (non-Javadoc)
 		// *
-		// * @see javax.servlet.http.HttpServletRequestWrapper#getPart(java.lang.String)
+		// * @see
+		// javax.servlet.http.HttpServletRequestWrapper#getPart(java.lang.String)
 		// */
 		// @Override
-		// public Part getPart(String name) throws IOException, ServletException {
+		// public Part getPart(String name) throws IOException, ServletException
+		// {
 		// for (Part part : _parts) {
 		// if (Strings.equals(part.getName(), name)) {
 		// return part;
@@ -146,7 +153,8 @@ public class NOPSignFilter implements ActionFilter {
 		/*
 		 * (non-Javadoc)
 		 * 
-		 * @see javax.servlet.ServletRequestWrapper#getParameter(java.lang.String)
+		 * @see
+		 * javax.servlet.ServletRequestWrapper#getParameter(java.lang.String)
 		 */
 		@Override
 		public String getParameter(String name) {
@@ -166,7 +174,9 @@ public class NOPSignFilter implements ActionFilter {
 		/*
 		 * (non-Javadoc)
 		 * 
-		 * @see javax.servlet.ServletRequestWrapper#getParameterValues(java.lang.String)
+		 * @see
+		 * javax.servlet.ServletRequestWrapper#getParameterValues(java.lang.
+		 * String)
 		 */
 		@Override
 		public String[] getParameterValues(String name) {
