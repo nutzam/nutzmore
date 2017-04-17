@@ -2,7 +2,6 @@ package org.nutz.plugins.nop.core.sign;
 
 import java.util.Arrays;
 
-import org.nutz.json.Json;
 import org.nutz.lang.Lang;
 import org.nutz.lang.Strings;
 
@@ -38,16 +37,15 @@ public class DigestSigner extends AbstractSinger {
 		return name;
 	}
 
-
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.nutz.plugins.nop.core.sign.Signer#sign(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 * @see org.nutz.plugins.nop.core.sign.Signer#sign(java.lang.String,
+	 * java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
 	public String sign(String appSecret, String timestamp, String gateway, String nonce, String dataMate) {
 		String[] temp = Lang.array(appSecret, timestamp, gateway, nonce, dataMate);
-		System.err.println(Json.toJson(temp));
 		Arrays.sort(temp);
 		return Lang.digest(name(), Strings.join("", temp));
 	}

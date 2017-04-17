@@ -9,7 +9,6 @@ import org.nutz.lang.Strings;
 import org.nutz.lang.Times;
 import org.nutz.lang.random.R;
 import org.nutz.plugins.nop.NOPConfig;
-import org.nutz.plugins.nop.core.NOPRequest;
 import org.nutz.plugins.nop.core.sign.DigestSigner;
 
 /**

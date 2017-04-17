@@ -8,7 +8,7 @@ import org.nutz.http.Response;
 import org.nutz.lang.Files;
 import org.nutz.lang.Lang;
 import org.nutz.lang.util.NutMap;
-import org.nutz.plugins.nop.core.NOPRequest;
+import org.nutz.plugins.nop.client.NOPRequest;
 
 public class NOPFILE extends Base {
 

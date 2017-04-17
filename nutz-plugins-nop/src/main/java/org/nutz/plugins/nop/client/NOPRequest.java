@@ -1,4 +1,4 @@
-package org.nutz.plugins.nop.core;
+package org.nutz.plugins.nop.client;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;

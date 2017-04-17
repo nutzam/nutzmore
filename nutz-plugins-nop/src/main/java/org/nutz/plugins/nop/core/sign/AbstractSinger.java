@@ -28,7 +28,7 @@ import org.nutz.mvc.upload.Uploading;
 import org.nutz.mvc.upload.UploadingContext;
 import org.nutz.mvc.upload.Uploads;
 import org.nutz.plugins.nop.NOPConfig;
-import org.nutz.plugins.nop.core.NOPRequest;
+import org.nutz.plugins.nop.client.NOPRequest;
 
 /**
  * 抽象一下
