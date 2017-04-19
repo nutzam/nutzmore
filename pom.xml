@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.nutz</groupId>
 	<artifactId>nutzmore</artifactId>
-	<version>1.r.61-SNAPSHOT</version>
+	<version>1.r.61.r2</version>
 	<name>nutzmore</name>
 	<description>Nutz, which is a collections of lightweight frameworks, each of them can be used independently</description>
 
@@ -59,7 +59,7 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz</artifactId>
-			<version>1.r.61-SNAPSHOT</version>
+			<version>1.r.61.r2</version>
 		</dependency>
 	</dependencies>
 
