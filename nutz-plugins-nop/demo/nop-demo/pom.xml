@@ -51,14 +51,14 @@
 	</dependencies>
 	<repositories>
 		<repository>
-			<id>*</id>
+			<id>r</id>
 			<url>https://jfrog.nutz.cn/artifactory/jcenter</url>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
 		<repository>
-			<id>*</id>
+			<id>s</id>
 			<url>https://jfrog.nutz.cn/artifactory/snapshots</url>
 			<snapshots>
 				<enabled>true</enabled>
