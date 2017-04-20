@@ -36,7 +36,7 @@ public class FreeMarkerConfigurer {
 	private Map<String, Object> tags = new HashMap<String, Object>();
 
 	public FreeMarkerConfigurer() {
-		Configuration configuration = new Configuration(Configuration.VERSION_2_3_26);
+		Configuration configuration = new Configuration();
 		this.initp(configuration, Mvcs.getServletContext(), "WEB-INF", ".ftl", new FreemarkerDirectiveFactory());
 	}
 
@@ -53,7 +53,7 @@ public class FreeMarkerConfigurer {
 			this.prefix = sc.getRealPath("/") + prefix;
 
 		this.configuration.setTagSyntax(Configuration.AUTO_DETECT_TAG_SYNTAX);
-		this.configuration.setTemplateUpdateDelayMilliseconds(-1000);
+		this.configuration.setTemplateUpdateDelay(-1000);
 		this.configuration.setDefaultEncoding("UTF-8");
 		this.configuration.setURLEscapingCharset("UTF-8");
 		this.configuration.setLocale(Locale.CHINA);
@@ -144,7 +144,7 @@ public class FreeMarkerConfigurer {
 	public FreeMarkerConfigurer addTags(Map<String, Object> map) {
 		if (map != null) {
 			try {
-				configuration.setAllSharedVariables(new SimpleHash(map, new DefaultObjectWrapper(Configuration.VERSION_2_3_26)));
+				configuration.setAllSharedVariables(new SimpleHash(map, new DefaultObjectWrapper()));
 			} catch (TemplateModelException e) {
 				log.error(e);
 			}
