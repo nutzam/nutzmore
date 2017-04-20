@@ -14,7 +14,7 @@ import org.nutz.lang.Lang;
 import org.nutz.lang.Times;
 import org.nutz.lang.random.R;
 import org.nutz.lang.util.NutMap;
-import org.nutz.plugins.nop.client.NOPRequest;
+import org.nutz.plugins.nop.core.NOPRequest;
 
 public class NOPPOST extends Base {
 	@Test

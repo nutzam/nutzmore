@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.nutz</groupId>
 	<artifactId>nutzmore</artifactId>
-	<version>1.r.61-SNAPSHOT</version>
+	<version>1.r.62-SNAPSHOT</version>
 	<name>nutzmore</name>
 	<description>Nutz, which is a collections of lightweight frameworks, each of them can be used independently</description>
 
@@ -59,7 +59,7 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz</artifactId>
-			<version>1.r.61-SNAPSHOT</version>
+			<version>1.r.62-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 
@@ -99,8 +99,7 @@
 	</build>
 	<packaging>pom</packaging>
 	<modules>
-		
-        <module>nutz-integration-activiti</module>
+		<module>nutz-integration-activiti</module>
 		<module>nutz-integration-spring</module>
 		<module>nutz-integration-jcache</module>
 		<module>nutz-integration-jsr303</module>
@@ -109,13 +108,11 @@
 		<module>nutz-integration-jsf</module>
 		<module>nutz-integration-shiro</module>
 		<module>nutz-integration-dubbo</module>
-		
 		<module>nutz-integration-struts2</module>
 		<module>nutz-integration-zbus</module>
 		<module>nutz-integration-hessian</module>
-        <module>nutz-integration-jedis</module>
-        <module>nutz-integration-hasor</module>
-		
+		<module>nutz-integration-jedis</module>
+		<module>nutz-integration-hasor</module>
 		<module>nutz-plugins-validation</module>
 		<module>nutz-plugins-views</module>
 		<module>nutz-plugins-multiview</module>
@@ -124,23 +121,21 @@
 		<module>nutz-plugins-daocache</module>
 		<module>nutz-plugins-protobuf</module>
 		<module>nutz-plugins-sqltpl</module>
-		
 		<module>nutz-plugins-jsonrpc</module>
 		<module>nutz-plugins-sigar</module>
 		<module>nutz-plugins-mock</module>
 		<module>nutz-plugins-qrcode</module>
-        <module>nutz-plugins-nop</module>
-        <module>nutz-plugins-apidoc</module>
-        <module>nutz-plugins-websocket</module>
-        <module>nutz-plugins-slog</module>
-        <module>nutz-plugins-spring-boot-starter</module>
-        <module>nutz-plugins-cache</module>
-        <module>nutz-plugins-hotplug</module>
-        <module>nutz-plugins-daomapping</module>
-        <module>nutz-plugins-ngrok</module>
-    <module>nutz-integration-json4excel</module>
-    <module>nutz-integration-rabbitmq</module>
-    
+		<module>nutz-plugins-nop</module>
+		<module>nutz-plugins-apidoc</module>
+		<module>nutz-plugins-websocket</module>
+		<module>nutz-plugins-slog</module>
+		<module>nutz-plugins-spring-boot-starter</module>
+		<module>nutz-plugins-cache</module>
+		<module>nutz-plugins-hotplug</module>
+		<module>nutz-plugins-daomapping</module>
+		<module>nutz-plugins-ngrok</module>
+		<module>nutz-integration-json4excel</module>
+		<module>nutz-integration-rabbitmq</module>
 	</modules>
 	<distributionManagement>
 		<snapshotRepository>
