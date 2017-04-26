@@ -1,0 +1,47 @@
+package org.nutz.integration.grpc.rpc;
+
+import org.nutz.ioc.loader.annotation.*;
+import org.nutz.integration.grpc.*;
+import io.grpc.stub.*;
+import io.grpc.*;
+
+@IocBean
+public class SimpleGrpcServiceGrpcServerProxy extends SimpleGrpcServiceGrpc.SimpleGrpcServiceImplBase {
+    @Inject public SimpleGrpcService proxy;
+    @Override public void ping(VoidMessage req, StreamObserver<VoidMessage> responseObserver) {
+        proxy.ping();
+        responseObserver.onNext(VoidMessage.getDefaultInstance());
+        responseObserver.onCompleted();
+    }
+
+    @Override public void incr(IncrRequest req, StreamObserver<IncrReply> responseObserver) {
+        java.lang.String re = proxy.incr(req.getKey());
+        IncrReply.Builder reply = IncrReply.newBuilder();        
+        reply.setRe(re);
+        responseObserver.onNext(reply.build());
+        responseObserver.onCompleted();
+    }
+
+    @Override public void simple(SimpleRequest req, StreamObserver<SimpleReply> responseObserver) {
+        int re = proxy.simple(req.getName(),req.getAge(),req.getX(),req.getY(),req.getFlag());
+        SimpleReply.Builder reply = SimpleReply.newBuilder();        
+        reply.setRe(re);
+        responseObserver.onNext(reply.build());
+        responseObserver.onCompleted();
+    }
+
+    @Override public void hello(HelloRequest req, StreamObserver<VoidMessage> responseObserver) {
+        proxy.hello(req.getName());
+        responseObserver.onNext(VoidMessage.getDefaultInstance());
+        responseObserver.onCompleted();
+    }
+
+    @Override public void pong(VoidMessage req, StreamObserver<PongReply> responseObserver) {
+        java.lang.String re = proxy.pong();
+        PongReply.Builder reply = PongReply.newBuilder();        
+        reply.setRe(re);
+        responseObserver.onNext(reply.build());
+        responseObserver.onCompleted();
+    }
+
+}

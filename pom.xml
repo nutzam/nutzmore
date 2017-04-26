@@ -136,6 +136,7 @@
 		<module>nutz-plugins-ngrok</module>
 		<module>nutz-integration-json4excel</module>
 		<module>nutz-integration-rabbitmq</module>
+		<module>nutz-integration-grpc</module>
 	</modules>
 	<distributionManagement>
 		<snapshotRepository>

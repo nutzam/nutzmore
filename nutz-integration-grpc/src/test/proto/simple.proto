@@ -1,0 +1,36 @@
+syntax = "proto3";
+option java_multiple_files = true;
+option java_package = "org.nutz.integration.grpc.rpc";
+option java_outer_classname = "SimpleGrpcServiceProto";
+package simplegrpcservice;
+service SimpleGrpcService{
+    rpc Simple(SimpleRequest) returns (SimpleReply) {}
+    rpc Hello(HelloRequest) returns (VoidMessage) {}
+    rpc Ping(VoidMessage) returns (VoidMessage) {}
+    rpc Incr(IncrRequest) returns (IncrReply) {}
+    rpc Pong(VoidMessage) returns (PongReply) {}
+}
+message SimpleRequest {
+    string name = 1;
+int32 age = 2;
+float x = 3;
+double y = 4;
+bool flag = 5;
+}
+message SimpleReply {
+    int32  re = 1;
+}
+message HelloRequest {
+    string name = 1;
+}
+message IncrRequest {
+    string key = 1;
+}
+message IncrReply {
+    string  re = 1;
+}
+message PongReply {
+    string  re = 1;
+}
+
+message VoidMessage {}
