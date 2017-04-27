@@ -37,9 +37,20 @@ public class NutThriftNettyFactory {
 	private Map<String, Object> map = new HashMap<String, Object>();
 
 	protected Ioc ioc;
+	private int port = 8080;
+
+	public NutThriftNettyFactory(Ioc ioc, int port) {
+		this.ioc = ioc;
+		this.port = port;
+	}
 
 	public NutThriftNettyFactory(Ioc ioc) {
 		this.ioc = ioc;
+	}
+
+	public NutThriftNettyFactory serverPort(int port) {
+		this.port = port;
+		return this;
 	}
 
 	public NutThriftNettyFactory load(String... packages) {
@@ -54,7 +65,7 @@ public class NutThriftNettyFactory {
 			for (Object object : map.values()) {
 				services.add(object);
 			}
-			final NiftyProcessor niftyProcessor = new ThriftServiceProcessor(new ThriftCodecManager(), ImmutableList.<ThriftEventHandler> of(), services);
+			final NiftyProcessor niftyProcessor = new ThriftServiceProcessor(new ThriftCodecManager(), ImmutableList.<ThriftEventHandler>of(), services);
 			TProcessor processor = new TProcessor() {
 
 				@Override
@@ -68,7 +79,7 @@ public class NutThriftNettyFactory {
 				}
 
 			};
-			ThriftNettyServer server = new ThriftNettyServer(new ThriftNettyServerDefBuilder().processorFactory(new TProcessorFactory(processor)).build());
+			ThriftNettyServer server = new ThriftNettyServer(new ThriftNettyServerDefBuilder().serverPort(port).processorFactory(new TProcessorFactory(processor)).build());
 			try {
 				server.start();
 			} catch (InterruptedException e) {

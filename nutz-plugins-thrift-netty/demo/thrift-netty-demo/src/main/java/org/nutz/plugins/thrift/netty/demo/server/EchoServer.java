@@ -73,6 +73,6 @@ public class EchoServer {
 	public static void main(String[] args) throws ClassNotFoundException {
 		ResourceLeakDetector.setLevel(Level.ADVANCED);
 		NutIoc ioc = new NutIoc(new ComboIocLoader("*anno", "org.nutz.plugins.thrift.netty.demo","*org.nutz.plugins.thrift.ThriftIocLoader"));
-		ioc.get(NutThriftNettyFactory.class,"thriftFactory").load("org.nutz.plugins.thrift.netty.demo");
+		ioc.get(NutThriftNettyFactory.class,"thriftFactory").serverPort(8081).load("org.nutz.plugins.thrift.netty.demo");
 	}
 }
