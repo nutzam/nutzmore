@@ -7,49 +7,39 @@
 	<packaging>jar</packaging>
 	<properties>
 		<webVersion>3.0</webVersion>
+		<swift-version>0.15.2</swift-version>
 	</properties>
 	<build>
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
+					<source>1.8</source>
+					<target>1.8</target>
 				</configuration>
 			</plugin>
+			<plugin>
+        <groupId>com.facebook.mojo</groupId>
+        <artifactId>swift-maven-plugin</artifactId>
+        <version>${swift-version}</version>
+        <configuration>
+            <skip>false</skip>
+            <idlFiles>
+                <directory>${project.basedir}/src/main/thrift/</directory>
+                <includes>
+                    <include>**/*.thrift</include>
+                </includes>
+                <!--<excludes>-->
+                    <!--<exclude>**/other.thrift</exclude>-->
+                <!--</excludes>-->
+            </idlFiles>
+            <defaultPackage>com.sada.common.thrift</defaultPackage>
+            <outputFolder>${project.basedir}/src/main/java/</outputFolder>
+        </configuration>
+    </plugin>
 		</plugins>
 	</build>
 	<dependencies>
-	<dependency>
-			<groupId>org.nutz</groupId>
-			<artifactId>nutz-integration-quartz</artifactId>
-			<version>1.r.57.r2</version>
-			<exclusions>
-				<exclusion>
-					<groupId>c3p0</groupId>
-					<artifactId>c3p0</artifactId>
-				</exclusion>
-				<exclusion>
-					<artifactId>nutz</artifactId>
-					<groupId>org.nutz</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.quartz-scheduler</groupId>
-			<artifactId>quartz</artifactId>
-			<version>2.2.1</version>
-			<exclusions>
-				<exclusion>
-					<groupId>c3p0</groupId>
-					<artifactId>c3p0</artifactId>
-				</exclusion>
-				<exclusion>
-					<artifactId>slf4j-api</artifactId>
-					<groupId>org.slf4j</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz-plugins-thrift-netty</artifactId>
