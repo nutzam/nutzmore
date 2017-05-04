@@ -1,5 +1,7 @@
 package org.nutz.plugins.thrift.netty.demo.api;
 
+import java.io.Closeable;
+
 import com.facebook.swift.service.ThriftMethod;
 import com.facebook.swift.service.ThriftService;
 
@@ -8,8 +10,9 @@ import com.facebook.swift.service.ThriftService;
  *
  */
 @ThriftService
-public interface Echo extends AutoCloseable {
+public interface Echo extends Closeable {
 
 	@ThriftMethod
 	public String echo(String info);
+
 }

@@ -19,24 +19,78 @@
 				</configuration>
 			</plugin>
 			<plugin>
-        <groupId>com.facebook.mojo</groupId>
-        <artifactId>swift-maven-plugin</artifactId>
-        <version>${swift-version}</version>
-        <configuration>
-            <skip>false</skip>
-            <idlFiles>
-                <directory>${project.basedir}/src/main/thrift/</directory>
-                <includes>
-                    <include>**/*.thrift</include>
-                </includes>
-                <!--<excludes>-->
-                    <!--<exclude>**/other.thrift</exclude>-->
-                <!--</excludes>-->
-            </idlFiles>
-            <defaultPackage>com.sada.common.thrift</defaultPackage>
-            <outputFolder>${project.basedir}/src/main/java/</outputFolder>
-        </configuration>
-    </plugin>
+				<groupId>com.facebook.mojo</groupId>
+				<artifactId>swift-maven-plugin</artifactId>
+				<version>${swift-version}</version>
+				<configuration>
+					<codeFlavor>java-immutable</codeFlavor>
+					<skip>false</skip>
+					<idlFiles>
+						<directory>${project.basedir}/src/main/thrift/</directory>
+						<includes>
+							<include>**/*.thrift</include>
+						</includes>
+						<!--<excludes> -->
+						<!--<exclude>**/other.thrift</exclude> -->
+						<!--</excludes> -->
+					</idlFiles>
+					<addCloseableInterface>true</addCloseableInterface>
+					<defaultPackage>com.sada.common.thrift</defaultPackage>
+					<outputFolder>${project.basedir}/src/main/java/</outputFolder>
+					<addThriftExceptions>true</addThriftExceptions>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>
+								${project.build.directory}/lib
+							</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.0.0</version>
+				<executions>
+					<!-- Run shade goal on package phase -->
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<filters>
+								<filter>
+									<artifact>*:*</artifact>
+									<excludes>
+										<exclude>META-INF/*.SF</exclude>
+										<exclude>META-INF/*.DSA</exclude>
+										<exclude>META-INF/*.RSA</exclude>
+									</excludes>
+								</filter>
+							</filters>
+							<transformers>
+								<!-- add Main-Class to manifest file -->
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<mainClass>org.nutz.plugins.thrift.netty.demo.client.EchoClient</mainClass>
+								</transformer>
+							</transformers>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 	<dependencies>
@@ -49,6 +103,11 @@
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>1.2.17</version>
+		</dependency>
+		<dependency>
+			<groupId>com.wealoha</groupId>
+			<artifactId>thrift-client-pool-java</artifactId>
+			<version>1.0</version>
 		</dependency>
 	</dependencies>
 </project>

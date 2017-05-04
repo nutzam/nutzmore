@@ -6,7 +6,9 @@ import java.util.List;
 import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.TProcessorFactory;
+import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
+import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.nutz.ioc.impl.NutIoc;
 import org.nutz.ioc.loader.combo.ComboIocLoader;
 import org.nutz.lang.Mirror;
@@ -15,6 +17,9 @@ import org.nutz.plugins.thrift.netty.server.ThriftNettyServer;
 import org.nutz.plugins.thrift.netty.server.configure.ThriftNettyServerDefBuilder;
 import org.nutz.resource.Scans;
 
+import com.facebook.nifty.core.NettyServerConfig;
+import com.facebook.nifty.core.NettyServerTransport;
+import com.facebook.nifty.core.ThriftServerDef;
 import com.facebook.nifty.processor.NiftyProcessor;
 import com.facebook.swift.codec.ThriftCodecManager;
 import com.facebook.swift.service.ThriftEventHandler;
@@ -35,11 +40,11 @@ public class EchoServer {
 	 * @param args
 	 * @throws InterruptedException
 	 */
-	public static void main1(String[] args) throws InterruptedException {
+	public static void main(String[] args) throws InterruptedException {
 		ResourceLeakDetector.setLevel(Level.ADVANCED); // check memory leak
 		List<Class<?>> clazzs = Scans.me().scanPackage("org.nutz.plugins.thrift.netty.demo");
 		List<Object> services = new ArrayList<>();
-		for (Class<?> clz : clazzs) {
+		/*for (Class<?> clz : clazzs) {
 			ThriftService ts = Mirror.getAnnotationDeep(clz, ThriftService.class);
 			if (ts != null && !clz.isInterface()) {
 				try {
@@ -51,8 +56,10 @@ public class EchoServer {
 					e.printStackTrace();
 				}
 			}
-		}
-		final NiftyProcessor niftyProcessor = new ThriftServiceProcessor(new ThriftCodecManager(), ImmutableList.<ThriftEventHandler> of(), services);
+		}*/
+		services.add(new EchoImpl());
+		final NiftyProcessor niftyProcessor = new ThriftServiceProcessor(new ThriftCodecManager(),
+				ImmutableList.<ThriftEventHandler>of(), services);
 		TProcessor processor = new TProcessor() {
 
 			@Override
@@ -66,13 +73,17 @@ public class EchoServer {
 			}
 
 		};
-		ThriftNettyServer server = new ThriftNettyServer(new ThriftNettyServerDefBuilder().processorFactory(new TProcessorFactory(processor)).build());
+		ThriftNettyServer server = new ThriftNettyServer(new ThriftNettyServerDefBuilder().serverPort(8083).protocolFactory(new TBinaryProtocol.Factory()).processorFactory(new TProcessorFactory(processor)).build());
+		//ThriftServerDef def = ThriftServerDef.newBuilder().listen(8082).withProcessor(processor).protocol(new TBinaryProtocol.Factory()).build();
+		//NettyServerTransport server = new NettyServerTransport(def, NettyServerConfig.newBuilder().build(), new DefaultChannelGroup());
 		server.start();
 	}
-	
-	public static void main(String[] args) throws ClassNotFoundException {
+
+	public static void main1(String[] args) throws ClassNotFoundException {
 		ResourceLeakDetector.setLevel(Level.ADVANCED);
-		NutIoc ioc = new NutIoc(new ComboIocLoader("*anno", "org.nutz.plugins.thrift.netty.demo","*org.nutz.plugins.thrift.ThriftIocLoader"));
-		ioc.get(NutThriftNettyFactory.class,"thriftFactory").serverPort(8081).load("org.nutz.plugins.thrift.netty.demo");
+		NutIoc ioc = new NutIoc(new ComboIocLoader("*anno", "org.nutz.plugins.thrift.netty.demo",
+				"*org.nutz.plugins.thrift.ThriftIocLoader"));
+		ioc.get(NutThriftNettyFactory.class, "thriftFactory").serverPort(8081)
+				.load("org.nutz.plugins.thrift.netty.demo");
 	}
 }

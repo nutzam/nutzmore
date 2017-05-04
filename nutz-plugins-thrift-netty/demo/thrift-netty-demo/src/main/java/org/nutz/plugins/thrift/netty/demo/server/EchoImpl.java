@@ -24,7 +24,7 @@ public class EchoImpl implements Echo {
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void close() {
 		//close some connection resource
 	}
 
