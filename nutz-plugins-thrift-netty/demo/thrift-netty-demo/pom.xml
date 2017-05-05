@@ -28,7 +28,7 @@
 					<idlFiles>
 						<directory>${project.basedir}/src/main/thrift/</directory>
 						<includes>
-							<include>**/*.thrift</include>
+							<include>**/common_server.thrift</include>
 						</includes>
 						<!--<excludes> -->
 						<!--<exclude>**/other.thrift</exclude> -->

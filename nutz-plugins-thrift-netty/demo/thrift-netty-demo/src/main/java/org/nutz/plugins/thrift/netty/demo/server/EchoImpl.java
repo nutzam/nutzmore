@@ -1,7 +1,7 @@
 package org.nutz.plugins.thrift.netty.demo.server;
 
 import org.nutz.ioc.loader.annotation.IocBean;
-import org.nutz.plugins.thrift.netty.demo.api.Echo;
+import org.nutz.plugins.thrift.netty.demo.client.Echo;
 import org.nutz.plugins.thrift.netty.server.context.ThreadContext;
 import org.nutz.plugins.thrift.netty.server.transport.TNettyTransportContext;
 import org.slf4j.Logger;
@@ -25,7 +25,6 @@ public class EchoImpl implements Echo {
 
 	@Override
 	public void close() {
-		//close some connection resource
 	}
 
 }

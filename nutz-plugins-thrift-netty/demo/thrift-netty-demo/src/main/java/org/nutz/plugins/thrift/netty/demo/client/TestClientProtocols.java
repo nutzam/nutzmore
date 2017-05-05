@@ -25,7 +25,6 @@ import org.apache.thrift.TProcessorFactory;
 import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
-import org.nutz.plugins.thrift.netty.demo.api.Echo;
 import org.nutz.plugins.thrift.netty.demo.server.EchoImpl;
 import org.nutz.plugins.thrift.netty.server.ThriftNettyServer;
 import org.nutz.plugins.thrift.netty.server.configure.ThriftNettyServerDefBuilder;
@@ -96,7 +95,7 @@ public class TestClientProtocols {
 		public int getPort() {
 			return port;
 		}
-
+ 
 		@Override
 		public void close() throws Exception {
 			server.stop();
