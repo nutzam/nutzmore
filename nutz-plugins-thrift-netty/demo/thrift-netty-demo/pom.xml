@@ -35,7 +35,7 @@
 						<!--</excludes> -->
 					</idlFiles>
 					<addCloseableInterface>true</addCloseableInterface>
-					<defaultPackage>com.sada.common.thrift</defaultPackage>
+					<defaultPackage>org.nutz.plugins.thrift.netty.demo.api</defaultPackage>
 					<outputFolder>${project.basedir}/src/main/java/</outputFolder>
 					<addThriftExceptions>true</addThriftExceptions>
 				</configuration>
