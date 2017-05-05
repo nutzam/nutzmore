@@ -10,7 +10,9 @@ import java.util.Map;
 import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.TProcessorFactory;
+import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.protocol.TProtocolFactory;
 import org.nutz.castor.Castors;
 import org.nutz.ioc.Ioc;
 import org.nutz.ioc.IocException;
@@ -38,10 +40,17 @@ public class NutThriftNettyFactory {
 
 	protected Ioc ioc;
 	private int port = 8080;
+	private TProtocolFactory factory;
 
 	public NutThriftNettyFactory(Ioc ioc, int port) {
 		this.ioc = ioc;
 		this.port = port;
+		this.factory = new TCompactProtocol.Factory();
+	}
+
+	public NutThriftNettyFactory tProtocolFactory(TProtocolFactory factory) {
+		this.factory = factory;
+		return this;
 	}
 
 	public NutThriftNettyFactory(Ioc ioc) {
@@ -79,7 +88,7 @@ public class NutThriftNettyFactory {
 				}
 
 			};
-			ThriftNettyServer server = new ThriftNettyServer(new ThriftNettyServerDefBuilder().serverPort(port).processorFactory(new TProcessorFactory(processor)).build());
+			ThriftNettyServer server = new ThriftNettyServer(new ThriftNettyServerDefBuilder().protocolFactory(factory).serverPort(port).processorFactory(new TProcessorFactory(processor)).build());
 			try {
 				server.start();
 			} catch (InterruptedException e) {

@@ -1,5 +1,6 @@
 package org.nutz.plugins.thrift;
 
+import org.apache.thrift.protocol.TCompactProtocol;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,7 +25,7 @@ public class ThriftTest {
 
 	@Test
 	public void testCronStringClassOfQ() {
-		ioc.get(NutThriftNettyFactory.class, "thriftFactory").load("org.nutz.plugins.thrift.netty.demo");
+		ioc.get(NutThriftNettyFactory.class, "thriftFactory").serverPort(8080).tProtocolFactory(new TCompactProtocol.Factory()).load("org.nutz.plugins.thrift.netty.demo");
 	}
 
 }
