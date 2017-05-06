@@ -66,7 +66,7 @@ ioc.get(NutThriftNettyFactory.class, "thriftFactory").serverPort(port).tProtocol
 				<!--</excludes> -->
 			</idlFiles>
 			<addCloseableInterface>true</addCloseableInterface>
-			<defaultPackage>org.nutz.plugins.thrift.netty.demo.api</defaultPackage>
+			<defaultPackage>${project.groupId}.thrift.swift</defaultPackage>
 			<outputFolder>${project.basedir}/src/main/java/</outputFolder>
 			<addThriftExceptions>true</addThriftExceptions>
 		</configuration>
