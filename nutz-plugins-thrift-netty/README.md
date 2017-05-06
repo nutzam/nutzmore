@@ -45,3 +45,38 @@ thrift.port=17424
 ```
 ioc.get(NutThriftNettyFactory.class, "thriftFactory").serverPort(port).tProtocolFactory(new TCompactProtocol.Factory()).load("pkg.service.impl");
 ```
+
+### thrift DTL文件生成插件 
+
+```
+	<plugin>
+		<groupId>com.facebook.mojo</groupId>
+		<artifactId>swift-maven-plugin</artifactId>
+		<version>${swift-version}</version>
+		<configuration>
+			<codeFlavor>java-immutable</codeFlavor>
+			<skip>false</skip>
+			<idlFiles>
+				<directory>${project.basedir}/src/main/thrift/</directory>
+				<includes>
+					<include>**/*.thrift</include>
+				</includes>
+				<!--<excludes> -->
+				<!--<exclude>**/other.thrift</exclude> -->
+				<!--</excludes> -->
+			</idlFiles>
+			<addCloseableInterface>true</addCloseableInterface>
+			<defaultPackage>org.nutz.plugins.thrift.netty.demo.api</defaultPackage>
+			<outputFolder>${project.basedir}/src/main/java/</outputFolder>
+			<addThriftExceptions>true</addThriftExceptions>
+		</configuration>
+	</plugin>
+```
+
+https://github.com/facebook/swift
+
+### 执行命令
+
+```
+mvn com.facebook.mojo:swift-maven-plugin:generate
+```
