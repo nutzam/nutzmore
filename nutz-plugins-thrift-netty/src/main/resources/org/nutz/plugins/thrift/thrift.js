@@ -1,53 +1,43 @@
 var ioc = {
 	"thriftFactory" : {
-		"type" : "org.nutz.plugins.thrift.NutThriftNettyFactory",
-		"args" : [ {
+		type : "org.nutz.plugins.thrift.NutThriftNettyFactory",
+		args : [ {
 			"refer" : "$ioc"
 		} ]
 	},
 	"tTransport" : {
-		"type" : "org.apache.thrift.transport.TSocket",
-		"singleton" : false,
-		"args" : [ {
+		type : "org.apache.thrift.transport.TSocket",
+		singleton : false,
+		args : [ {
 			java : "$conf.get('thrift.host', 'localhost')"
 		}, {
 			java : "$conf.getInt('thrift.port', 17424)"
 		} ]
 	},
 	"tCompactProtocol" : {
-		"type" : "org.apache.thrift.protocol.TCompactProtocol",
-		"singleton" : false,
-		"args" : [ {
-			"refer" : "$tTransport"
+		type : "org.apache.thrift.protocol.TCompactProtocol",
+		singleton : false,
+		args : [ {
+			refer : "tTransport"
 		} ]
 	},
-	"tCompactProtocol" : {
+	"TCOMPACTPROTOCOL" : {
 		type : "org.nutz.plugins.thrift.TCompactProtocolInterceptor",
-		fields : {
-			tTransport : {
-				refer : "tTransport"
-			},
-			protocol : {
-				refer : "tCompactProtocol"
-			}
-		}
-	},
-	"tBompactProtocol" : {
-		"type" : "org.apache.thrift.protocol.TBompactProtocol",
-		"singleton" : false,
-		"args" : [ {
-			"refer" : "$tTransport"
+		args : [ {
+			refer : "tCompactProtocol"
 		} ]
 	},
-	"tBompactProtocol" : {
-		type : "org.nutz.plugins.thrift.TBompactProtocolInterceptor",
-		fields : {
-			tTransport : {
-				refer : "tTransport"
-			},
-			protocol : {
-				refer : "tBompactProtocol"
-			}
-		}
+	"tBinaryProtocol" : {
+		type : "org.apache.thrift.protocol.TBinaryProtocol",
+		singleton : false,
+		args : [ {
+			refer : "tTransport"
+		} ]
 	},
+	"TBINARYPROTOCOL" : {
+		type : "org.nutz.plugins.thrift.TBinaryProtocolInterceptor",
+		args : [ {
+			refer : "tBinaryProtocol"
+		} ]
+	}
 };

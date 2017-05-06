@@ -15,3 +15,33 @@
             <version>1.r.61-SNAPSHOT</version>
         </dependency>
 ```
+
+```
+	@At("/echo/?")
+	@Ok("raw")
+	@Aop("TCOMPACTPROTOCOL")
+	public String echo(String info) throws TException {
+		TProtocol protocol = protocol();
+		TSegmentService.Client client = new TSegmentService.Client(protocol);
+		return client.getArabicWords(info);
+	}
+```
+
+### conf.properties 中添加
+
+```
+thrift.host=localhost
+thrift.port=17424
+```
+
+### 添加加载 
+
+```
+@IocBy(type = ComboIocProvider.class, args = { "*org.nutz.plugins.thrift.ThriftIocLoader" })
+```
+
+#### 如果启动自己的服务 请加载
+
+```
+ioc.get(NutThriftNettyFactory.class, "thriftFactory").serverPort(port).tProtocolFactory(new TCompactProtocol.Factory()).load("pkg.service.impl");
+```

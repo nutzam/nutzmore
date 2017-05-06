@@ -5,12 +5,12 @@ import org.apache.thrift.transport.TTransport;
 import org.nutz.aop.InterceptorChain;
 import org.nutz.aop.MethodInterceptor;
 
-public class TCompactProtocolInterceptor implements MethodInterceptor {
+public class TBinaryProtocolInterceptor2 implements MethodInterceptor {
 
 	private TTransport transport;
 	private TProtocol protocol;
 
-	public TCompactProtocolInterceptor(TProtocol protocol) {
+	public TBinaryProtocolInterceptor2(TProtocol protocol) {
 		this.transport = protocol.getTransport();
 		this.protocol = protocol;
 	}

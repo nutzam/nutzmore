@@ -3,6 +3,7 @@ package org.nutz.plugins.thrift.netty.demo.client;
 import java.net.InetSocketAddress;
 
 import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
