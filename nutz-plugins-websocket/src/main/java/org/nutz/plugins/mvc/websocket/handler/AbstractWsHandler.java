@@ -3,6 +3,7 @@ package org.nutz.plugins.mvc.websocket.handler;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.servlet.http.HttpSession;
 import javax.websocket.Session;
 
 import org.nutz.lang.Strings;
@@ -21,6 +22,7 @@ public abstract class AbstractWsHandler implements WsHandler {
     
     protected Session session;
     protected String prefix;
+    protected HttpSession httpSession;
     
     public AbstractWsHandler(String prefix) {
         rooms = new HashSet<>();
@@ -57,5 +59,9 @@ public abstract class AbstractWsHandler implements WsHandler {
     
     public void setSession(Session session) {
         this.session = session;
+    }
+    
+    public void setHttpSession(HttpSession httpSession) {
+        this.httpSession = httpSession;
     }
 }

@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.servlet.http.HttpSession;
 import javax.websocket.CloseReason;
 import javax.websocket.Endpoint;
 import javax.websocket.EndpointConfig;
@@ -70,6 +71,7 @@ public abstract class AbstractWsEndpoint extends Endpoint {
         WsHandler handler = createHandler(session, config);
         handler.setRoomProvider(roomProvider);
         handler.setSession(session);
+        handler.setHttpSession((HttpSession)config.getUserProperties().get("HttpSession"));
         session.addMessageHandler(handler);
         sessions.put(wsid, session);
         handlers.put(wsid, handler);

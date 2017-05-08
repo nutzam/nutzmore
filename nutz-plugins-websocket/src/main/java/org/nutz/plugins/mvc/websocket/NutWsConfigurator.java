@@ -1,5 +1,7 @@
 package org.nutz.plugins.mvc.websocket;
 
+import javax.websocket.HandshakeResponse;
+import javax.websocket.server.HandshakeRequest;
 import javax.websocket.server.ServerEndpointConfig;
 
 import org.nutz.ioc.Ioc;
@@ -17,6 +19,13 @@ public class NutWsConfigurator extends ServerEndpointConfig.Configurator {
         if (ioc == null)
             ioc = Mvcs.ctx().getDefaultIoc();
         return ioc.get(endpointClass);
+    }
+    
+    public void modifyHandshake(ServerEndpointConfig sec,
+                                HandshakeRequest request,
+                                HandshakeResponse response) {
+        super.modifyHandshake(sec, request, response);
+        sec.getUserProperties().put("HttpSession", request.getHttpSession());
     }
 }
 
