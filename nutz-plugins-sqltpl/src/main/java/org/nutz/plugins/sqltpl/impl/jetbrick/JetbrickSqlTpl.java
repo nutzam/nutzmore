@@ -3,6 +3,7 @@ package org.nutz.plugins.sqltpl.impl.jetbrick;
 import java.io.StringWriter;
 
 import org.nutz.dao.sql.Sql;
+import org.nutz.plugins.sqltpl.NutSqlTpl;
 import org.nutz.plugins.sqltpl.VarSetMap;
 
 import jetbrick.template.JetEngine;
@@ -13,7 +14,13 @@ import jetbrick.template.JetTemplate;
  * @author wendal(wendal1985@gmail.com)
  *
  */
-public class JetbrickSqlTpl {
+public class JetbrickSqlTpl extends NutSqlTpl {
+
+    public JetbrickSqlTpl(String source) {
+        super(source);
+    }
+
+    private static final long serialVersionUID = 1L;
 
     protected static JetEngine engine;
     
@@ -33,5 +40,10 @@ public class JetbrickSqlTpl {
     
     public static void setEngine(JetEngine engine) {
         JetbrickSqlTpl.engine = engine;
+    }
+
+    @Override
+    protected void render() {
+        c(this);
     }
 }
