@@ -124,3 +124,66 @@ public class DubboClientTest {
 }
 ```
 
+服务端调用实例
+--------------------------------------------------
+
+接口及其实现类 
+
+```java
+package net.wendal.nutzbook.service;
+
+public interface DubboWayService {
+
+    String redisSet(String key, String value);
+    
+    String redisGet(String key);
+
+    String hi(String name);
+
+}
+
+@IocBean(name="dubboWayService")
+public class DubboWayServiceImpl {
+
+	@Inject
+	JedisAgent jedisAgent;
+    pubic String redisSet(String key, String value) {
+        try (Jedis jedis = jedisAgent.getResource()){
+        	return jedis.set(key, value);
+        }
+    };
+    
+    public String redisGet(String key) {
+    	try (Jedis jedis = jedisAgent.getResource()){
+        	return jedis.get(key);
+        }
+    };
+
+    public String hi(String name) {
+    	return "hi," + name;
+    };
+
+}
+```
+
+新建一个配置文件 dubbo-client.xml, 使用dubbo原生配置
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans        http://www.springframework.org/schema/beans/spring-beans.xsd        http://code.alibabatech.com/schema/dubbo        http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+ 
+    <dubbo:application name="nutzcn-server"  />
+ 
+    <dubbo:registry address="multicast://224.5.6.7:1234" />
+ 
+    <dubbo:protocol name="dubbo" port="20880" />
+ 
+    <!-- ref对应bean的name属性 -->
+    <dubbo:service id="dubboWayService" interface="net.wendal.nutzbook.service.DubboWayService" 
+    ref="dubboWayService"/>
+ 
+</beans>
+```
