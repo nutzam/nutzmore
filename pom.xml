@@ -137,6 +137,7 @@
 		<module>nutz-integration-json4excel</module>
 		<module>nutz-integration-rabbitmq</module>
 		<module>nutz-integration-grpc</module>
+		<module>nutz-plugins-ml</module>
 	</modules>
 	<distributionManagement>
 		<snapshotRepository>
