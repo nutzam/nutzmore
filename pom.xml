@@ -138,6 +138,7 @@
 		<module>nutz-integration-rabbitmq</module>
 		<module>nutz-integration-grpc</module>
 		<module>nutz-plugins-ml</module>
+		<module>nutz-plugins-zdoc</module>
 	</modules>
 	<distributionManagement>
 		<snapshotRepository>
