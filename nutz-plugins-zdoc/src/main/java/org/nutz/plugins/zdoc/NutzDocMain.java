@@ -1,8 +1,5 @@
 package org.nutz.plugins.zdoc;
 
-import java.io.File;
-
-import org.nutz.lang.Files;
 import org.nutz.lang.Lang;
 import org.nutz.plugins.zdoc.html.Htmls;
 import org.nutz.plugins.zdoc.markdown.LocalMarkdownDSetParser;

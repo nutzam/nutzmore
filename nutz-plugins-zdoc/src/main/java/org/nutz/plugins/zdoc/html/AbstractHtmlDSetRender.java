@@ -10,6 +10,7 @@ import org.nutz.lang.util.NutMap;
 import org.nutz.lang.util.Tag;
 import org.nutz.plugins.zdoc.NutD;
 import org.nutz.plugins.zdoc.NutDSet;
+import org.nutz.plugins.zdoc.NutDSetRender;
 import org.nutz.plugins.zdoc.NutDoc;
 
 /**
@@ -71,7 +72,7 @@ import org.nutz.plugins.zdoc.NutDoc;
  * </pre>
  * 
  */
-public abstract class AbstractHtmlDSetRender {
+public abstract class AbstractHtmlDSetRender implements NutDSetRender {
 
     protected NutMap meta;
 
@@ -79,7 +80,7 @@ public abstract class AbstractHtmlDSetRender {
 
     protected Tmpl indexTmpl;
 
-    public void renderDSet(NutDSet ds, String target) {
+    public void render(NutDSet ds, String target) {
         // 检查目标
         this.checkTarget(target);
 

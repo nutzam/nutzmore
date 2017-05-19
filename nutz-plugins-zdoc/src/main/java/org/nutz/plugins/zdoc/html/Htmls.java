@@ -11,7 +11,7 @@ public class Htmls {
 
     public static void renderDSet(NutDSet ds, String target) {
         LocalHtmlDSetRender r = new LocalHtmlDSetRender();
-        r.renderDSet(ds, target);
+        r.render(ds, target);
     }
 
 }
