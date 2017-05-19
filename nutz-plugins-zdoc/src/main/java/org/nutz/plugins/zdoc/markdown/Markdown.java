@@ -20,7 +20,7 @@ public class Markdown {
         NutDoc d = new NutDoc(null);
         d.setPrimerContent(markdown);
         parse(d);
-        return d.getRoot().toInnerHtml(true);
+        return d.getRootTag().toInnerHtml(true);
     }
 
     /**

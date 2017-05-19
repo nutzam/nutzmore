@@ -9,7 +9,17 @@ import org.nutz.lang.Lang;
 import org.nutz.lang.Strings;
 
 /**
- * 文档集，相当于一层的目录结构
+ * 描述了一个文档集合
+ * <p>
+ * 这实际上是一个树形结构，类似:
+ * 
+ * <pre>
+ * NutDSet
+ *   - getChildren():List[NutD]
+ *      + NutDoc
+ *      + NutDSet ...
+ *      + NutDoc
+ * </pre>
  * 
  * @author zozoh(zozohtnt@gmail.com)
  */
@@ -25,9 +35,19 @@ public class NutDSet extends NutD {
      */
     private List<NutDSet> subs;
 
-    public NutDSet(String path) {
-        super(path);
+    public NutDSet(String name) {
+        super(name);
         this.map = new LinkedHashMap<>();
+    }
+
+    @Override
+    public boolean isDoc() {
+        return false;
+    }
+
+    @Override
+    public boolean isSet() {
+        return true;
     }
 
     public NutD get(String path) {
@@ -37,6 +57,14 @@ public class NutDSet extends NutD {
 
     public Collection<NutD> getChildren() {
         return map.values();
+    }
+
+    public NutD removeChild(String name) {
+        NutD d = map.remove(name);
+        if (null != d && d instanceof NutDSet) {
+            subs.remove(d);
+        }
+        return d;
     }
 
     private NutD __get(String[] nms, int off) {
@@ -82,13 +110,15 @@ public class NutDSet extends NutD {
         throw Lang.makeThrow("e.zdoc.nodoc : %s/%s", this.getPath(), name);
     }
 
-    public NutDoc createDocByPath(String path) {
+    public NutDoc createDocByPath(String path, boolean quiet) {
         String[] nms = Strings.splitIgnoreBlank(path, "[/\\\\]");
         NutDSet ds = this;
         int lastIndex = nms.length - 1;
         for (int i = 0; i < lastIndex; i++) {
             ds = ds.createSetIfNoExists(nms[i]);
         }
+        if (quiet)
+            return ds.createDocIfNoExists(nms[lastIndex]);
         return ds.createDoc(nms[lastIndex]);
     }
 
@@ -118,13 +148,15 @@ public class NutDSet extends NutD {
         throw Lang.makeThrow("e.zdoc.noset : %s/%s", this.getPath(), name);
     }
 
-    public NutDSet createSetByPath(String path) {
+    public NutDSet createSetByPath(String path, boolean quiet) {
         String[] nms = Strings.splitIgnoreBlank(path, "[/\\\\]");
         NutDSet ds = this;
         int lastIndex = nms.length - 1;
         for (int i = 0; i < lastIndex; i++) {
             ds = ds.createSetIfNoExists(nms[i]);
         }
+        if (quiet)
+            return ds.createSetIfNoExists(nms[lastIndex]);
         return ds.createSet(nms[lastIndex]);
     }
 

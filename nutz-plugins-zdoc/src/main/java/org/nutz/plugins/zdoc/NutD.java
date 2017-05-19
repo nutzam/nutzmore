@@ -19,6 +19,11 @@ public abstract class NutD {
     private String name;
 
     /**
+     * 存储对象的原始内容，比如，本地文件或者目录对象，或者对应的某条数据库记录
+     */
+    protected Object primerObj;
+
+    /**
      * 文档的一些元数据，固定的元数据有
      * 
      * <ul>
@@ -34,8 +39,26 @@ public abstract class NutD {
         this.meta = new NutMap();
     }
 
+    public Object getPrimerObj() {
+        return primerObj;
+    }
+
+    public void setPrimerObj(Object obj) {
+        this.primerObj = obj;
+    }
+
     public boolean isRoot() {
         return null == parent;
+    }
+
+    public abstract boolean isDoc();
+
+    public abstract boolean isSet();
+
+    public void remove() {
+        if (null != parent) {
+            parent.removeChild(this.name);
+        }
     }
 
     public NutDSet getHome() {
@@ -48,10 +71,18 @@ public abstract class NutD {
         return parent.getHome();
     }
 
+    /**
+     * 缓存 getPath() 的结果
+     */
+    private String _path;
+
     public String getPath() {
-        LinkedList<String> nms = new LinkedList<>();
-        this.__join_path(nms);
-        return Strings.join("/", nms);
+        if (null == _path) {
+            LinkedList<String> nms = new LinkedList<>();
+            this.__join_path(nms);
+            _path = Strings.join("/", nms);
+        }
+        return _path;
     }
 
     protected void __join_path(LinkedList<String> nms) {
@@ -93,12 +124,24 @@ public abstract class NutD {
         return meta.getString("title", dft);
     }
 
+    public void setTitle(String title) {
+        meta.put("title", title);
+    }
+
     public boolean hasAuthor() {
         return meta.has("author");
     }
 
-    public String getAuthor() {
-        return meta.getString("author");
+    public List<String> getAuthors() {
+        return meta.getList("authors", String.class);
+    }
+
+    public void addAuthors(String... authors) {
+        meta.pushTo("tags", authors);
+    }
+
+    public void addAuthors(List<String> authors) {
+        meta.pushTo("tags", authors);
     }
 
     public boolean hasTags() {
@@ -107,5 +150,13 @@ public abstract class NutD {
 
     public List<String> getTags() {
         return meta.getList("tags", String.class);
+    }
+
+    public void addTags(String... tags) {
+        meta.pushTo("tags", tags);
+    }
+
+    public void addTags(List<String> tags) {
+        meta.pushTo("tags", tags);
     }
 }

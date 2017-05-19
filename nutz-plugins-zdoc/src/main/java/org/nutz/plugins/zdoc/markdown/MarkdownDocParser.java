@@ -143,7 +143,7 @@ public class MarkdownDocParser implements NutDocParser {
     public void parse(NutDoc d) {
         // 初始化文档对象
         this.doc = d;
-        doc.setRootIfNull("main");
+        doc.setRootTagIfNull("main");
 
         /**
          * 首先将文本拆分成段落：
@@ -298,7 +298,7 @@ public class MarkdownDocParser implements NutDocParser {
         B = this.tryPush(B);
 
         // 逐个输出段落
-        Tag top = doc.getRoot();
+        Tag top = doc.getRootTag();
         for (; this.index < this.blocks.size(); this.index++) {
             B = this.blocks.get(this.index);
 
