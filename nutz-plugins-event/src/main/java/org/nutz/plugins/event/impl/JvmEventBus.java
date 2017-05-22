@@ -30,14 +30,13 @@ public class JvmEventBus implements EventBus {
 		String[] listeners = ioc.getNamesByType(EventListener.class);
 		for (String bean : listeners) {
 			EventListener listener = ioc.get(EventListener.class, bean);
-			String groupName = listener.groupName();
-			if (eventMap.containsKey(groupName)) {
-				List<String> list = eventMap.get(groupName);
-				list.add(bean);
+			String topic = listener.subscribeTopic();
+			if (eventMap.containsKey(topic)) {
+				eventMap.get(topic).add(bean);
 			} else {
 				List<String> list = new ArrayList<String>();
 				list.add(bean);
-				eventMap.put(groupName, list);
+				eventMap.put(topic, list);
 			}
 		}
 	}
@@ -47,8 +46,8 @@ public class JvmEventBus implements EventBus {
 	 * @param event
 	 */
 	public void fireEvent(Event event) {
-		if (eventMap.containsKey(event.getGroupName())) {
-			List<String> ql = eventMap.get(event.getGroupName());
+		if (eventMap.containsKey(event.getTopic())) {
+			List<String> ql = eventMap.get(event.getTopic());
 			// 循环派发事件
 			for (String bean : ql) {
 				try {

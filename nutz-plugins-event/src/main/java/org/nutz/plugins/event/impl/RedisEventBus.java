@@ -34,7 +34,7 @@ public class RedisEventBus implements EventBus {
 		String[] listeners = ioc.getNamesByType(EventListener.class);
 		for (final String bean : listeners) {
 			EventListener listener = ioc.get(EventListener.class, bean);
-			final String channelName = prefix + listener.groupName();
+			final String channelName = prefix + listener.subscribeTopic();
 
 			new Thread(channelName) {
 				public void run() {
@@ -70,7 +70,7 @@ public class RedisEventBus implements EventBus {
 	 */
 	@Override
 	public void fireEvent(Event event) {
-		String channelName = prefix + event.getGroupName(); //事件名
+		String channelName = prefix + event.getTopic(); //事件名
 		String message = Json.toJson(event, JsonFormat.compact()); //事件体
 
 		redisService.lpush(channelName, message);
