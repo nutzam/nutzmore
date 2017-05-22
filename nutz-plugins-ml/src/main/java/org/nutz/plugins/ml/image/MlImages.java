@@ -6,6 +6,26 @@ import java.awt.image.BufferedImage;
 
 public class MlImages {
 
+    public static int[][] toARGB(BufferedImage image, int[][] argb) {
+        int w = image.getWidth();
+        int h = image.getHeight();
+        if (image.getType() != BufferedImage.TYPE_INT_ARGB) {
+            BufferedImage dst = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2d = dst.createGraphics();
+            g2d.drawImage(image, 0, 0, null);
+            g2d.dispose();
+            image = dst;
+        }
+        if (argb == null)
+            argb = new int[image.getWidth()][image.getHeight()];
+        for (int i = 0; i < w; i++) {
+            for (int j = 0; j < h; j++) {
+                argb[i][j] = image.getRGB(i, j);
+            }
+        }
+        return argb;
+    }
+
     /**
      * 将图片变成灰度矩阵
      * @param image 不可以是null
@@ -16,11 +36,11 @@ public class MlImages {
      * @return 灰度矩阵
      */
     public static int[][] toGray(BufferedImage image, int x, int y, int w, int h) {
+        int[][] argb = toARGB(image, null);
         int[][] buf = new int[w][h];
         for (int i = x; i < image.getWidth() && i < w; i++) {
             for (int j = y; j < image.getHeight() && j < h; j++) {
-                int tmp = image.getRGB(i, j);
-                buf[i - x][j - y] = rgb2gray(tmp);
+                buf[i - x][j - y] = rgb2gray(argb[i][j]);
             }
         }
         return buf;
@@ -169,17 +189,6 @@ public class MlImages {
         _gray_bol_sell(x-1, y, gray_bol_ci, gray_walked, gray_bol);
         _gray_bol_sell(x, y+1, gray_bol_ci, gray_walked, gray_bol);
         _gray_bol_sell(x, y-1, gray_bol_ci, gray_walked, gray_bol);
-//        for (int i = -1; i < 2; i++) {
-//            for (int j = -1; j < 2; j++) {
-//                int nowX = x + i;
-//                int nowY = y + j;
-//                if (nowX < 0 || nowX >= gray_bol.length)
-//                    continue;
-//                if (nowY < 0 || nowY >= gray_bol[0].length)
-//                    continue;
-//                _gray_bol_sell(nowX, nowY, gray_bol_ci, gray_walked, gray_bol);
-//            }
-//        }
     }
     
     public static BufferedImage draw(boolean[][] gray_bol, int[][] gray_avg, int x, int y, int block_w, int block_h, BufferedImage in) {

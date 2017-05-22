@@ -16,7 +16,7 @@ public class LogEventListener implements EventListener {
 	private Log log = Logs.get();
 
 	@Override
-	public String groupName() {
+	public String subscribeTopic() {
 		return "log-event";
 	}
 

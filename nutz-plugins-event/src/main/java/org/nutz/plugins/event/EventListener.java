@@ -8,10 +8,10 @@ package org.nutz.plugins.event;
 public interface EventListener {
 	
 	/**
-	 * 处理的事件组名。仅组名相同的事件才会派发到此处理器
-	 * @return 事件组名
+	 * 订阅的topic名称。仅topic相同的事件才会派发到此处理器
+	 * @return 订阅的topic名称
 	 */
-	public String groupName();
+	public String subscribeTopic();
 
 	/**
 	 * 事件触发
