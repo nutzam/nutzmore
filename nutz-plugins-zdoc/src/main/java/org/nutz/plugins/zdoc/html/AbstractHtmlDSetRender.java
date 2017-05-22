@@ -2,12 +2,15 @@ package org.nutz.plugins.zdoc.html;
 
 import java.util.List;
 
+import org.nutz.json.Json;
 import org.nutz.lang.Files;
 import org.nutz.lang.Lang;
 import org.nutz.lang.Strings;
 import org.nutz.lang.tmpl.Tmpl;
 import org.nutz.lang.util.NutMap;
 import org.nutz.lang.util.Tag;
+import org.nutz.log.Log;
+import org.nutz.log.Logs;
 import org.nutz.plugins.zdoc.NutD;
 import org.nutz.plugins.zdoc.NutDSet;
 import org.nutz.plugins.zdoc.NutDSetRender;
@@ -24,7 +27,7 @@ import org.nutz.plugins.zdoc.NutDoc;
  *          doc.html   # 文档输出模板，其中占位符与所有 Meta 同名。文档内容占位符为 <code>${main}</code>
  *          index.html # 索引页模板，其中主要内容占位符为 <code>${indexes}</code>
  *      css/           # 资源目录是否 copy 声明在 zdoc.conf 里
- *      js/            # 属性名为 "copy-resources"
+ *      js/            # 属性名为 "copy-paths"
  *      emptydir/      # 其他目录如果没有文档，则会被无视
  *      some/          # 文档可以是多级目录，总之会被解析器解析好的
  *          xxx.md
@@ -61,7 +64,11 @@ import org.nutz.plugins.zdoc.NutDoc;
  * # 要 copy 的资源路径，单行的话，路径用半角逗号分隔
  * # 多行的话，一行一个路径好了。
  * # 如果没有声明这个属性，默认为 css,js,media,image
- * copy-resource=css,js,media,image
+ * copy-paths=css,js,media,image
+ * #------------------------------------------
+ * # 针对每个文档集所在目录，需要 copy 哪些资源文件
+ * # 用一个正则表达式来声明，默认为 ^.+[.](png|jpe?g|gif)$
+ * copy-set-rs=^.+[.](png|jpe?g|gif)$
  * #------------------------------------------
  * # 指明模板目录名，默认为 _tmpl
  * tmpl-dir=_tmpl
@@ -74,34 +81,50 @@ import org.nutz.plugins.zdoc.NutDoc;
  */
 public abstract class AbstractHtmlDSetRender implements NutDSetRender {
 
-    protected NutMap meta;
+    private static final Log log = Logs.get();
 
-    protected Tmpl docTmpl;
+    private NutMap meta;
 
-    protected Tmpl indexTmpl;
+    private Tmpl docTmpl;
+
+    private Tmpl indexTmpl;
+
+    private String copySetRs;
 
     public void render(NutDSet ds, String target) {
         // 检查目标
+        log.info("HtmlDSetRender: " + target);
         this.checkTarget(target);
 
         // 得到元数据
         this.meta = ds.getMeta();
+        log.info(Json.toJson(meta));
 
         // 检查原始对象是否合法
         this.checkPrimerObj(ds);
+        log.info("PrimerObj Checked");
 
         // 读取模板
         String tmplDirName = meta.getString("tmpl-dir", "_tmpl");
         this.docTmpl = this.loadTmpl(tmplDirName, "doc.html", "dft_tmpl_doc.html");
         this.indexTmpl = this.loadTmpl(tmplDirName, "index.html", "dft_tmpl_index.html");
+        log.info("Template Loaded");
+
+        // 得到文档集要 Copy 的资源列表
+        this.copySetRs = meta.getString("copy-set-rs", "^.+[.](png|jpe?g|gif)$");
 
         // 得到要 copy 的资源列表，并将其 Copy 的目标目录中
-        String copyRss = meta.getString("copy-resource");
+        String copyRss = meta.getString("copy-paths");
         if (!Strings.isBlank(copyRss)) {
             String[] rsPaths = Strings.splitIgnoreBlank(copyRss, "[\n,:]");
-            for (String rsph : rsPaths) {
+            log.infof("Will copy %d resources:", rsPaths.length);
+            for (int i = 0; i < rsPaths.length; i++) {
+                String rsph = rsPaths[i];
+                log.infof(" + %d + : %s", i, rsph);
                 this.copyResource(rsph);
             }
+        } else {
+            log.info("No resource need to be copied.");
         }
 
         // 渲染整个文档集
@@ -115,6 +138,9 @@ public abstract class AbstractHtmlDSetRender implements NutDSetRender {
             c.put("indexes", index.toOuterHtml(true));
             String html = indexTmpl.render(c, false);
             this.writeToTarget(indexName, html);
+            log.infof("Index '%s' generated.", indexName);
+        } else {
+            log.info("No index need to be generated.");
         }
     }
 
@@ -125,7 +151,7 @@ public abstract class AbstractHtmlDSetRender implements NutDSetRender {
 
             // 目录的话，增加一个 <b> 并递归
             if (d.isSet()) {
-                li.add("b");
+                li.add("b").setText(d.getTitle(d.getName()));
                 Tag ul2 = this.__gen_indexes((NutDSet) d);
                 li.add(ul2);
             }
@@ -133,7 +159,7 @@ public abstract class AbstractHtmlDSetRender implements NutDSetRender {
             else if (d.isDoc()) {
                 String rph = d.getPath();
                 rph = Files.renameSuffix(rph, ".html");
-                li.add("a").attr("href", rph);
+                li.add("a").attr("href", rph).setText(d.getTitle(d.getName()));
             }
             // 不可能
             else {
@@ -144,6 +170,10 @@ public abstract class AbstractHtmlDSetRender implements NutDSetRender {
     }
 
     private void __do_render(NutDSet ds) {
+        // 首先 copy 资源
+        this.copyToTarget(ds.getPath(), this.copySetRs);
+
+        // 处理子文档/文档集
         for (NutD d : ds.getChildren()) {
             // 目录:递归
             if (d.isSet()) {
@@ -155,6 +185,7 @@ public abstract class AbstractHtmlDSetRender implements NutDSetRender {
                 NutDoc doc = (NutDoc) d;
                 String ph = doc.getPath();
                 String taph = Files.renameSuffix(ph, ".html");
+                log.info(" -> " + taph);
                 NutMap c = new NutMap().attach(doc.getMeta());
                 c.put("main", doc.getRootTag().toInnerHtml(false));
                 c.put("tags", this.__gen_meta_list(doc.getTags(), ".doc-tags"));
@@ -182,6 +213,8 @@ public abstract class AbstractHtmlDSetRender implements NutDSetRender {
     }
 
     protected abstract Tmpl loadTmpl(String tmplDirName, String tmplName, String dftTmplName);
+
+    protected abstract void copyToTarget(String ph, String regex);
 
     protected abstract void writeToTarget(String ph, String html);
 

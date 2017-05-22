@@ -22,6 +22,25 @@ public class LocalHtmlDSetRender extends AbstractHtmlDSetRender {
         return t;
     }
 
+    @Override
+    protected void copyToTarget(String ph, String regex) {
+        File d = Files.getFile(dSrc, ph);
+        if (d.exists() && d.isDirectory()) {
+            String[] fnms = d.list();
+            for (String fnm : fnms) {
+                File f0 = Files.getFile(d, fnm);
+                if (f0.exists() && f0.isFile()) {
+                    if (null == regex || fnm.matches(regex)) {
+                        String taph = Disks.appendPath(ph, fnm);
+                        File fTa = Files.getFile(dTa, taph);
+                        Files.createFileIfNoExists(fTa);
+                        Files.copy(f0, fTa);
+                    }
+                }
+            }
+        }
+    }
+
     protected void writeToTarget(String ph, String html) {
         File ta = Files.getFile(dTa, ph);
         Files.createFileIfNoExists(ta);

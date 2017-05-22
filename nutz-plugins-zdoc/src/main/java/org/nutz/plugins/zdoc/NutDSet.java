@@ -90,6 +90,7 @@ public class NutDSet extends NutD {
         if (map.containsKey(name))
             throw Lang.makeThrow("e.zdoc.exists : %s/%s", this.getPath(), name);
         NutDoc d = new NutDoc(name);
+        d.setParent(this);
         map.put(name, d);
         return d;
     }
@@ -99,6 +100,7 @@ public class NutDSet extends NutD {
         // 不存在，创建
         if (null == d) {
             d = new NutDoc(name);
+            d.setParent(this);
             map.put(name, d);
             return (NutDoc) d;
         }
@@ -126,6 +128,7 @@ public class NutDSet extends NutD {
         if (map.containsKey(name))
             throw Lang.makeThrow("e.zdoc.exists : '%s' already in '%s'", name, this.getPath());
         NutDSet d = new NutDSet(name);
+        d.setParent(this);
         map.put(name, d);
         subs.add(d);
         return d;
@@ -136,6 +139,7 @@ public class NutDSet extends NutD {
         // 不存在，创建
         if (null == d) {
             NutDSet ds = new NutDSet(name);
+            ds.setParent(this);
             map.put(name, ds);
             subs.add(ds);
             return ds;
