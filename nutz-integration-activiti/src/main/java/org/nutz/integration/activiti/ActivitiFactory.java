@@ -2,8 +2,9 @@ package org.nutz.integration.activiti;
 
 import javax.sql.DataSource;
 
-import org.activiti.engine.ProcessEngine;
+import org.activiti.engine.ProcessEngineConfiguration;
 import org.activiti.engine.impl.cfg.StandaloneProcessEngineConfiguration;
+import org.activiti.engine.impl.scripting.ResolverFactory;
 import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.lang.Mirror;
 import org.nutz.log.Log;
@@ -12,8 +13,8 @@ import org.nutz.log.Logs;
 public class ActivitiFactory {
     
     private static final Log log = Logs.get();
-
-    public static ProcessEngine build(DataSource ds, PropertiesProxy conf) {
+    
+    public static ProcessEngineConfiguration build(DataSource ds, PropertiesProxy conf, ResolverFactory rf) {
         StandaloneProcessEngineConfiguration spec = new StandaloneProcessEngineConfiguration();
         spec.setDataSource(ds);
         Mirror<StandaloneProcessEngineConfiguration> mirror = Mirror.me(StandaloneProcessEngineConfiguration.class);
@@ -26,6 +27,8 @@ public class ActivitiFactory {
         }
         if (log.isDebugEnabled())
             log.debug("databaseSchemaUpdate = [" + spec.getDatabaseSchemaUpdate() + "]");
-        return spec.buildProcessEngine();
+        if (rf != null)
+            spec.getResolverFactories().add(rf);
+        return spec;
     }
 }
