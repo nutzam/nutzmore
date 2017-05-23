@@ -90,9 +90,6 @@ public class LocalMarkdownDSetParser extends AbstractMarkdownDSetParser {
     private int __load_recur(NutDSet ds) {
         File dir = (File) ds.getPrimerObj();
 
-        // 设置名称
-        ds.setName(dir.getName());
-
         // 遍历子目录/文件
         File[] fs = dir.listFiles();
 

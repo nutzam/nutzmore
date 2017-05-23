@@ -1,15 +1,19 @@
 package org.nutz.plugins.zdoc.markdown;
 
-import org.nutz.lang.Files;
+import org.nutz.json.Json;
 import org.nutz.lang.Lang;
 import org.nutz.lang.Strings;
 import org.nutz.lang.util.NutMap;
+import org.nutz.log.Log;
+import org.nutz.log.Logs;
 import org.nutz.plugins.zdoc.NutD;
 import org.nutz.plugins.zdoc.NutDSet;
 import org.nutz.plugins.zdoc.NutDSetParser;
 import org.nutz.plugins.zdoc.NutDoc;
 
 public abstract class AbstractMarkdownDSetParser implements NutDSetParser {
+
+    private static final Log log = Logs.get();
 
     /**
      * 子类来实现的，用来分析指定目录的文档集的目录信息。
@@ -39,13 +43,12 @@ public abstract class AbstractMarkdownDSetParser implements NutDSetParser {
 
     @Override
     public void parse(NutDSet home, String path, String configPath) {
-        // 确保设置名称
-        home.setName(Files.getMajorName(path));
-
         // 检查源对象
+        log.infof("checkPath: %s", path);
         this.checkPath(home, path);
 
         // 初始化目录结构
+        log.infof("loadConfig: %s", configPath);
         NutMap conf = this.loadConfig(home, path, configPath);
 
         // 检查一下，是否配置项指定了路径
@@ -53,10 +56,12 @@ public abstract class AbstractMarkdownDSetParser implements NutDSetParser {
 
         // 指定了路径，则用指定路径加载
         if (!Strings.isBlank(paths)) {
+            log.info("loadTreeByPaths:");
             this.loadTreeByPaths(home, paths);
         }
         // 否则采用递归加载
         else {
+            log.info("loadTreeByRecur:");
             this.loadTreeByRecur(home);
         }
 
@@ -67,6 +72,7 @@ public abstract class AbstractMarkdownDSetParser implements NutDSetParser {
                 home.getMeta().put(key, conf.get(key));
             }
         }
+        log.info(Json.toJson(home.getMeta()));
 
         // 依次处理
         for (NutD d : home.getChildren()) {
@@ -79,6 +85,7 @@ public abstract class AbstractMarkdownDSetParser implements NutDSetParser {
         if (d instanceof NutDoc) {
             MarkdownDocParser dp = new MarkdownDocParser();
             NutDoc doc = (NutDoc) d;
+            log.info(" - parse : " + doc.getPath());
             dp.parse(doc);
         }
         // 如果是目录，则递归
