@@ -6,6 +6,7 @@ var ioc = {
 			}
 		},
 		processEngineSpec : {
+			type : "org.activiti.engine.ProcessEngineConfiguration"
 			factory: "org.nutz.integration.activiti.ActivitiFactory#build",
 			args : [
 				{refer:"dataSource"}, {refer:"conf"}, {refer:"activitiBeansResolverFactory"}

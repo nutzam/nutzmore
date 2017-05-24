@@ -1,10 +1,14 @@
 package org.nutz.integration.activiti;
 
+import java.util.ArrayList;
+
 import javax.sql.DataSource;
 
 import org.activiti.engine.ProcessEngineConfiguration;
 import org.activiti.engine.impl.cfg.StandaloneProcessEngineConfiguration;
+import org.activiti.engine.impl.scripting.BeansResolverFactory;
 import org.activiti.engine.impl.scripting.ResolverFactory;
+import org.activiti.engine.impl.scripting.VariableScopeResolverFactory;
 import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.lang.Mirror;
 import org.nutz.log.Log;
@@ -27,8 +31,14 @@ public class ActivitiFactory {
         }
         if (log.isDebugEnabled())
             log.debug("databaseSchemaUpdate = [" + spec.getDatabaseSchemaUpdate() + "]");
-        if (rf != null)
+        if (rf != null) {
+            if (spec.getResolverFactories() == null) {
+                spec.setResolverFactories(new ArrayList<ResolverFactory>());
+                spec.getResolverFactories().add(new VariableScopeResolverFactory());
+                spec.getResolverFactories().add(new BeansResolverFactory());
+            }
             spec.getResolverFactories().add(rf);
+        }
         return spec;
     }
 }
