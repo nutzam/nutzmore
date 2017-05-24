@@ -1,16 +1,22 @@
 var ioc = {
-		activitiBeansResolverFactory : {
-			type : "org.nutz.integration.activiti.ActivitiNutIocBeansResolverFactory",
+		nutIocElResolver : {
+			type : "org.nutz.integration.activiti.NutIocElResolver",
+			args : [{refer:"$ioc"}]
+		},
+		nutzExpressionManager : {
+			type : "org.nutz.integration.activiti.NutzExpressionManager",
 			fields : {
-				ioc : {refer:"$ioc"}
+				nutIocElResolver : {refer:"nutIocElResolver"}
 			}
 		},
 		processEngineSpec : {
-			type : "org.activiti.engine.ProcessEngineConfiguration"
-			factory: "org.nutz.integration.activiti.ActivitiFactory#build",
-			args : [
-				{refer:"dataSource"}, {refer:"conf"}, {refer:"activitiBeansResolverFactory"}
-			]
+			type : "org.activiti.engine.impl.cfg.StandaloneProcessEngineConfiguration"
+			factory: "$conf#make",
+			args : ["org.activiti.engine.impl.cfg.StandaloneProcessEngineConfiguration", "activiti."],
+			fields : {
+				dataSource : {refer:"dataSource"},
+				expressionManager : {refer:"nutzExpressionManager"}
+			}
 		},
 		processEngine : {
 			type : "org.activiti.engine.ProcessEngine",
