@@ -29,6 +29,9 @@ spring:
 logging:
   level:
     root: debug
+management:
+  security:
+    enabled: false
 nutz:
     dao:
         runtime:

@@ -10,6 +10,7 @@ import org.nutz.plugin.spring.boot.config.NutzJsonProperties;
 import org.nutz.plugin.spring.boot.converters.NutzJsonMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,8 +27,9 @@ public class NutzJsonMessageConverterAutoConfiguration {
 
 	@Autowired
 	private NutzJsonProperties jsonProperties;
-	
+
 	@Bean
+	@ConditionalOnProperty("nutz.json")
 	public HttpMessageConverter json() {
 		JsonFormat format = null;
 		switch (jsonProperties.getMode()) {
