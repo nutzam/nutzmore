@@ -24,14 +24,23 @@ public class PrTest {
     }
     
     @Test
-    public void testBeginStringString() {
+    public void test_simple() {
         PrSpan span = Pr.begin("junit", "first class");
-        Lang.quiteSleep(1000);
-        span.end();
+        
+        for (int i = 0; i < 5; i++) {
+            PrSpan loop = Pr.begin("junit", "level2");
+            for (int j = 0; j < 2; j++) {
+                Pr.begin("junit", "level3").end(); // 这里产生 2*5=10条
+            }
+            loop.end();//这里产生5条
+        }
+        
+        span.end(); // 这里产生1条
         Lang.quiteSleep(1000);
         List<PrSpan> list = Pr.me().getStorage().query(null);
         assertNotNull(list);
-        assertEquals(1, list.size());
+        assertEquals(16, list.size());
+        
     }
 
 }

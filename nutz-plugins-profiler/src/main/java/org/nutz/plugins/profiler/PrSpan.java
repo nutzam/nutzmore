@@ -1,5 +1,7 @@
 package org.nutz.plugins.profiler;
 
+import org.nutz.dao.entity.annotation.ColDefine;
+import org.nutz.dao.entity.annotation.Column;
 import org.nutz.dao.entity.annotation.Table;
 import org.nutz.lang.util.Callback;
 import org.nutz.lang.util.NutMap;
@@ -13,23 +15,47 @@ import org.nutz.lang.util.NutMap;
 @Table("t_pr_span")
 public class PrSpan {
     // 跟踪的主id
+    @Column("trace_id")
     protected String traceId;
     // 父跟踪id,备用
+    @Column("parent_id")
     protected String parentId;
     // 时间片id
-    protected String spanId;
+    @Column("span_id")
+    protected String id;
     // 时间片的名字
+    @Column("nm")
     protected String name;
     // 时间片的类型,例如sql,request,mongodb,jedis
-    protected String spantype;
+    @Column("tp")
+    protected String type;
     // 附加的元数据,备用
-    protected NutMap metas;
+    @Column
+    @ColDefine(width=8096)
+    protected NutMap annotations;
     // 时间片创建的时间
-    protected long createTime;
+    @Column("tt")
+    protected long timestamp;
     // 时间片所耗费的时间
-    protected long spantime;
+    @Column("du")
+    protected long duration;
+    // 存储时间片开始的纳秒数
+    protected transient long begin;
     // 用于关闭并存在本时间片的钩子
     protected transient Callback<PrSpan> hook;
+
+    // -------------------------------------------
+    public void end() {
+        Callback<PrSpan> hook = this.hook;
+        if (hook != null) {
+            this.hook = null;
+            hook.invoke(this);
+        }
+    }
+
+    public void setHook(Callback<PrSpan> hook) {
+        this.hook = hook;
+    }
 
     public String getTraceId() {
         return traceId;
@@ -47,12 +73,12 @@ public class PrSpan {
         this.parentId = parentId;
     }
 
-    public String getSpanId() {
-        return spanId;
+    public String getId() {
+        return id;
     }
 
-    public void setSpanId(String spanId) {
-        this.spanId = spanId;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -63,48 +89,45 @@ public class PrSpan {
         this.name = name;
     }
 
-    public NutMap getMetas() {
-        return metas;
+    public String getType() {
+        return type;
     }
 
-    public void setMetas(NutMap metas) {
-        this.metas = metas;
+    public void setType(String type) {
+        this.type = type;
     }
 
-    public long getCreateTime() {
-        return createTime;
+    public NutMap getAnnotations() {
+        return annotations;
     }
 
-    public void setCreateTime(long createTime) {
-        this.createTime = createTime;
+    public void setAnnotations(NutMap annotations) {
+        this.annotations = annotations;
     }
 
-    public long getSpantime() {
-        return spantime;
+    public long getTimestamp() {
+        return timestamp;
     }
 
-    public void setSpantime(long spantime) {
-        this.spantime = spantime;
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
     }
 
-    public String getSpantype() {
-        return spantype;
+    public long getDuration() {
+        return duration;
     }
 
-    public void setSpantype(String spantype) {
-        this.spantype = spantype;
+    public void setDuration(long duration) {
+        this.duration = duration;
     }
 
-    // -------------------------------------------
-    public void end() {
-        Callback<PrSpan> hook = this.hook;
-        if (hook != null) {
-            this.hook = null;
-            hook.invoke(this);
-        }
+    public long getBegin() {
+        return begin;
     }
 
-    public void setHook(Callback<PrSpan> hook) {
-        this.hook = hook;
+    public void setBegin(long begin) {
+        this.begin = begin;
     }
+    
+    
 }
