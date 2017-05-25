@@ -1,5 +1,7 @@
 package org.nutz.plugins.profiler;
 
+import java.util.List;
+
 import org.nutz.dao.entity.annotation.ColDefine;
 import org.nutz.dao.entity.annotation.Column;
 import org.nutz.dao.entity.annotation.Table;
@@ -26,13 +28,14 @@ public class PrSpan {
     // 时间片的名字
     @Column("nm")
     protected String name;
-    // 时间片的类型,例如sql,request,mongodb,jedis
-    @Column("tp")
-    protected String type;
     // 附加的元数据,备用
     @Column
     @ColDefine(width=8096)
-    protected NutMap annotations;
+    protected List<NutMap> annotations;
+    // 附加的元数据,备用
+    @Column
+    @ColDefine(width=8096)
+    protected List<NutMap> binaryAnnotations;
     // 时间片创建的时间
     @Column("tt")
     protected long timestamp;
@@ -89,20 +92,20 @@ public class PrSpan {
         this.name = name;
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public NutMap getAnnotations() {
+    public List<NutMap> getAnnotations() {
         return annotations;
     }
 
-    public void setAnnotations(NutMap annotations) {
+    public void setAnnotations(List<NutMap> annotations) {
         this.annotations = annotations;
+    }
+
+    public List<NutMap> getBinaryAnnotations() {
+        return binaryAnnotations;
+    }
+
+    public void setBinaryAnnotations(List<NutMap> binaryAnnotations) {
+        this.binaryAnnotations = binaryAnnotations;
     }
 
     public long getTimestamp() {
@@ -128,6 +131,5 @@ public class PrSpan {
     public void setBegin(long begin) {
         this.begin = begin;
     }
-    
     
 }

@@ -21,7 +21,7 @@ public class PrProcessor extends AbstractProcessor {
         String parent_id = req.getHeader(ParentSpanIdHeader);
         //String simpled = req.getHeader(SimpledHeader);
         //String flags = req.getHeader(FlagsHeader);
-        PrSpan span = Pr.me().begin("req", trace_id, parent_id, ac.getPath(), null);
+        PrSpan span = Pr.me().begin("http."+req.getMethod(), trace_id, parent_id);
         try {
             ac.getResponse().setHeader(SpanIdHeader, span.getId());
             doNext(ac);

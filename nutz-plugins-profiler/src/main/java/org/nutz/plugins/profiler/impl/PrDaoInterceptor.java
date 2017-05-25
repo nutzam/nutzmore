@@ -18,7 +18,7 @@ public class PrDaoInterceptor implements DaoInterceptor {
             Entity<?> en = ds.getEntity();
             // 需要检测一下,看看是不是插入PrSpan对象,如果是的话就跳过
             if (en == null ||  ! PrSpan.class.isAssignableFrom(en.getType())) {
-                PrSpan span = Pr.begin("sql", ds.toPreparedStatement());
+                PrSpan span = Pr.begin("jdbc." + ds.getSqlType().name());
                 try {
                     chain.doChain();
                 }
