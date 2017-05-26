@@ -16,18 +16,52 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.async.DeferredResult;
 
 import demo.bean.User;
 import demo.bean.User.Sex;
+import springfox.documentation.builders.ApiInfoBuilder;
+import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.service.ApiInfo;
+import springfox.documentation.service.Contact;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @SpringBootApplication
 @EnableAutoConfiguration
 @EnableConfigurationProperties(SqlManagerProperties.class)
 @RestController
+@EnableSwagger2
 public class App {
+
+	@Bean
+	public Docket api() {
+		return new Docket(DocumentationType.SWAGGER_2)
+				.genericModelSubstitutes(DeferredResult.class)
+				.useDefaultResponseMessages(false)
+				.forCodeGeneration(true)
+				.pathMapping("/")
+				.select()
+				.apis(RequestHandlerSelectors.basePackage("demo"))
+				.build()
+				.apiInfo(apiInfo());
+	}
+
+	private ApiInfo apiInfo() {
+		return new ApiInfoBuilder().title("AD Platform API")
+				.description("AUTO-DEPLOY 接口手册")// 详细描述
+				.version("1.0")// 版本
+				.termsOfServiceUrl("ZHCS.CLUB")
+				.contact(new Contact("王贵源", "https://git.oschina.net/Edgware/auto-deploy.git", "wangguiyuan@sinosoft.com.cn"))// 作者
+				.license("The Apache License, Version 2.0")
+				.licenseUrl("http://www.apache.org/licenses/LICENSE-2.0.html")
+				.build();
+	}
 
 	@RequestMapping("/")
 	public SqlManagerProperties hello() {

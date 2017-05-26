@@ -52,6 +52,12 @@ public class NutzJsonMessageConverter extends AbstractGenericHttpMessageConverte
 	}
 
 	@Override
+	public boolean canWrite(Type type, Class<?> clazz, MediaType mediaType) {
+		// 妹的 见到swagger就躲
+		return type.getTypeName().indexOf("springfox") < 0;
+	}
+
+	@Override
 	protected Object readInternal(Class<? extends Object> clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
 		return Json.fromJson(clazz, new InputStreamReader(inputMessage.getBody()));
 	}

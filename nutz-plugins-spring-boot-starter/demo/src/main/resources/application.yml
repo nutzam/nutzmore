@@ -50,4 +50,4 @@ nutz:
         auto-unicode: true
         mode: compact
         quote-name: false
-        date-format: yyyy-MM-dd HH:mm:ss
+        date-format: yyyy-MM-dd HH:mm:ss Z
