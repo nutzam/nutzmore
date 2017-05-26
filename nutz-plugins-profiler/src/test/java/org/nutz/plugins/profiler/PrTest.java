@@ -25,12 +25,12 @@ public class PrTest {
     
     @Test
     public void test_simple() {
-        PrSpan span = Pr.begin("junit", "first class");
+        PrSpan span = Pr.begin("junit.level1");
         
         for (int i = 0; i < 5; i++) {
-            PrSpan loop = Pr.begin("junit", "level2");
+            PrSpan loop = Pr.begin("junit.level2");
             for (int j = 0; j < 2; j++) {
-                Pr.begin("junit", "level3").end(); // 这里产生 2*5=10条
+                Pr.begin("junit.level3").end(); // 这里产生 2*5=10条
             }
             loop.end();//这里产生5条
         }

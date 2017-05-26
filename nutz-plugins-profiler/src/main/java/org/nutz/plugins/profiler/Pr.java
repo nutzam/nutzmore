@@ -7,7 +7,6 @@ import org.nutz.dao.Dao;
 import org.nutz.dao.impl.NutDao;
 import org.nutz.dao.impl.SimpleDataSource;
 import org.nutz.lang.util.Callback;
-import org.nutz.lang.util.NutMap;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.plugins.profiler.impl.DefaultPr;
@@ -62,21 +61,11 @@ public abstract class Pr implements Callback<PrSpan> {
         es = null;
     }
 
-    public static PrSpan begin(String type, String name) {
-        return begin(type, name, null);
-    }
-
-    public static PrSpan begin(String type, String name, NutMap metas) {
-        return me().begin(type, null, null, name, metas);
-    }
-    
-    public static PrSpan begin(String type, String name, String traceId, NutMap metas) {
-        return me().begin(type, traceId, null, name, metas);
+    public static PrSpan begin(String name) {
+        return me().begin(name, null, null);
     }
 
     public abstract PrSpan begin(String type,
                                  String trace_id,
-                                 String parent_id,
-                                 String name,
-                                 NutMap metas);
+                                 String parent_id);
 }

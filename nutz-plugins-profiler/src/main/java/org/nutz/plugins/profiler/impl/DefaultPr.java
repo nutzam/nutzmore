@@ -4,7 +4,6 @@ import org.nutz.lang.Strings;
 import org.nutz.lang.random.R;
 import org.nutz.lang.util.Node;
 import org.nutz.lang.util.Nodes;
-import org.nutz.lang.util.NutMap;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.plugins.profiler.Pr;
@@ -17,7 +16,7 @@ public class DefaultPr extends Pr {
     
     protected static ThreadLocal<PrContext> _ctx = new ThreadLocal<PrContext>();
 
-    public PrSpan begin(String type, String trace_id, String parent_id, String name, NutMap metas) {
+    public PrSpan begin(String name, String trace_id, String parent_id) {
         PrSpan span = new PrSpan();
         span.setTimestamp(System.currentTimeMillis()*1000);
         span.setId(R.UU32().substring(0, 16));
@@ -28,7 +27,7 @@ public class DefaultPr extends Pr {
             ctx.current = node;
             _ctx.set(ctx);
             if (Strings.isBlank(trace_id))
-                trace_id = R.UU16();
+                trace_id = R.UU16().substring(0, 16);
             span.setTraceId(trace_id);
         } else {
             // 上层已经有span了,继承它
@@ -39,8 +38,6 @@ public class DefaultPr extends Pr {
             span.setTraceId(parent.getTraceId());
             span.setParentId(parent.getId());
         }
-        span.setAnnotations(metas);
-        span.setType(type);
         span.setName(name);
         span.setHook(this);
         // 最后才设置开始时间
