@@ -113,7 +113,7 @@ public class App {
 
 	@RequestMapping("/sqls")
 	public Object sqls() {
-		return dao.sqls().keys();
+		return dao.sqls();
 	}
 
 	@RequestMapping("/count")

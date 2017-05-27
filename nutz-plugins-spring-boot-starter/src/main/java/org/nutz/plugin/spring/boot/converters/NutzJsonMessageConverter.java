@@ -4,10 +4,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Type;
+import java.util.regex.Pattern;
 
 import org.nutz.json.Json;
 import org.nutz.json.JsonFormat;
 import org.nutz.lang.Lang;
+import org.nutz.lang.Strings;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
@@ -22,6 +24,16 @@ import org.springframework.http.converter.HttpMessageNotWritableException;
 public class NutzJsonMessageConverter extends AbstractGenericHttpMessageConverter<Object> {
 
 	JsonFormat format = JsonFormat.compact();
+
+	Pattern ignoreType;
+
+	public NutzJsonMessageConverter setIgnoreType(String ignoreType) {
+		if (Strings.isBlank(ignoreType)) {
+			return this;
+		}
+		this.ignoreType = Pattern.compile(ignoreType);
+		return this;
+	}
 
 	/**
 	 * @param format
@@ -53,8 +65,13 @@ public class NutzJsonMessageConverter extends AbstractGenericHttpMessageConverte
 
 	@Override
 	public boolean canWrite(Type type, Class<?> clazz, MediaType mediaType) {
-		// 妹的 见到swagger就躲
-		return type.getTypeName().indexOf("springfox") < 0;
+		/**
+		 * 放过swagger
+		 */
+		if (Pattern.matches(".*springfox.*", type.getTypeName())) {
+			return false;
+		}
+		return ignoreType == null || !ignoreType.matcher(type.getTypeName()).matches();
 	}
 
 	@Override

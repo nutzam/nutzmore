@@ -33,6 +33,8 @@ management:
   security:
     enabled: false
 nutz:
+    json:
+        mode: full
     dao:
         runtime:
           add-column: true
@@ -46,8 +48,4 @@ nutz:
           paths:
             - sqls
             - other
-    json:
-        auto-unicode: true
-        mode: compact
-        quote-name: false
-        date-format: yyyy-MM-dd HH:mm:ss Z
+        
