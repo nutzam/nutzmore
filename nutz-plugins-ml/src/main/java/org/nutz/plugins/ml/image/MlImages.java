@@ -141,10 +141,8 @@ public class MlImages {
         // 按4条边走一遍
         for (int i = 0; i < gray_bol.length; i++) {
             for (int j = 0; j < gray_bol[0].length; j++) {
-                if (i == 0 || i == gray_bol.length - 1) {
-                    if (j == 0 || j == gray_bol[0].length - 1) {
-                        _gray_bol_sell(i, j, gray_bol_ci, gray_walked, gray_bol);
-                    }
+                if ((i == 0 || i == gray_bol.length - 1) || (j == 0 || j == gray_bol[0].length - 1)) {
+                    _gray_bol_sell(i, j, gray_bol_ci, gray_walked, gray_bol);
                 }
             }
         }
