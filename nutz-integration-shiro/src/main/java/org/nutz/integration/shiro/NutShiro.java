@@ -31,7 +31,7 @@ public class NutShiro {
     public static String DefaultLoginURL = "/user/login";
     public static String DefaultNoAuthURL; // 默认与DefaultLoginURL一致
     
-    public static String SessionKey = "me";
+    public static final String SessionKey = "me";
     
     public static String AjaxEncode = Encoding.UTF8;
     
