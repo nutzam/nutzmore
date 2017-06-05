@@ -141,6 +141,8 @@
 		<module>nutz-plugins-zdoc</module>
 		
 		<module>nutz-plugins-profiler</module>
+		
+		<module>nutz-integration-neo4j</module>
 	</modules>
 	<distributionManagement>
 		<snapshotRepository>
