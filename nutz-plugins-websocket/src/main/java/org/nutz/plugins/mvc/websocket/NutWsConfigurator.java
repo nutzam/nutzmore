@@ -27,7 +27,7 @@ public class NutWsConfigurator extends ServerEndpointConfig.Configurator {
         super.modifyHandshake(sec, request, response);
         HttpSession session = request.getHttpSession();
         if (session != null)
-            sec.getUserProperties().put("HttpSession", );
+            sec.getUserProperties().put("HttpSession", session);
     }
 }
 
