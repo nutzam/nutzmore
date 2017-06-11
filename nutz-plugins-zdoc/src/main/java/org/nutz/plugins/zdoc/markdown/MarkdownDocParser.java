@@ -41,13 +41,13 @@ public class MarkdownDocParser implements NutDocParser {
     }
 
     private void __line_to_html(Tag tag, String str) {
-        String reg = "(\\*(.+)\\*)"
-                     + "|(\\*\\*(.+)\\*\\*)"
-                     + "|(__(.+)__)"
-                     + "|(~~(.+)~~)"
-                     + "|(`(.+)`)"
-                     + "|(!\\[(.*)\\]\\((.+)\\))"
-                     + "|(\\[(.*)\\]\\((.+)\\))"
+        String reg = "(\\*([^*]+)\\*)"
+                     + "|(\\*\\*([^*]+)\\*\\*)"
+                     + "|(__([^_]+)__)"
+                     + "|(~~([^~]+)~~)"
+                     + "|(`([^`]+)`)"
+                     + "|(!\\[([^\\]]*)\\]\\(([^\\)]+)\\))"
+                     + "|(\\[([^\\]]*)\\]\\(([^\\)]+)\\))"
                      + "|(https?:\\/\\/[^ ]+)";
         Pattern REG = Pattern.compile(reg);
         Matcher m = REG.matcher(str);

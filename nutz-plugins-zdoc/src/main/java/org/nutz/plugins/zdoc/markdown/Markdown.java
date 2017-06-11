@@ -1,5 +1,7 @@
 package org.nutz.plugins.zdoc.markdown;
 
+import org.nutz.lang.util.Callback;
+import org.nutz.lang.util.Tag;
 import org.nutz.plugins.zdoc.NutDoc;
 
 /**
@@ -14,13 +16,15 @@ public class Markdown {
      * 
      * @param markdown
      *            Markdown 文本
+     * @param tagWatcher
+     *            每次输出一个节点前，可以对节点进行修改的观察者
      * @return 转换成的 HTML 代码
      */
-    public static String toHtml(String markdown) {
+    public static String toHtml(String markdown, Callback<Tag> tagWatcher) {
         NutDoc d = new NutDoc(null);
         d.setPrimerContent(markdown);
         parse(d);
-        return d.getRootTag().toInnerHtml(true);
+        return d.getRootTag().toInnerHtml(true, tagWatcher);
     }
 
     /**
