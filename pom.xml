@@ -143,6 +143,7 @@
 		<module>nutz-plugins-profiler</module>
 		<module>nutz-integration-neo4j</module>
 		<module>nutz-plugins-wkcache</module>
+		<module>nutz-plugins-event</module>
 	</modules>
 	<distributionManagement>
 		<snapshotRepository>
