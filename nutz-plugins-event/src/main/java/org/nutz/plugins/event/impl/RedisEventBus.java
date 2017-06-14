@@ -1,5 +1,9 @@
 package org.nutz.plugins.event.impl;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 import org.nutz.integration.jedis.RedisService;
 import org.nutz.ioc.Ioc;
 import org.nutz.json.Json;
@@ -25,18 +29,21 @@ public class RedisEventBus implements EventBus {
 
 	private Ioc ioc;
 	private RedisService redisService;
+	private ExecutorService executorService;
 
 	/**
 	 * 初始化，将容器中所有EventListener子类注册进来
 	 */
 	@Override
 	public void init() {
+	    if (executorService == null)
+	        executorService = Executors.newCachedThreadPool();
 		String[] listeners = ioc.getNamesByType(EventListener.class);
 		for (final String bean : listeners) {
 			EventListener listener = ioc.get(EventListener.class, bean);
 			final String channelName = prefix + listener.subscribeTopic();
 
-			new Thread(channelName) {
+			executorService.submit(new Runnable() {
 				public void run() {
 					while (true) {
 						String message = null;
@@ -61,8 +68,20 @@ public class RedisEventBus implements EventBus {
 						}
 					}
 				}
-			}.start();
+			});
 		}
+	}
+	
+	@Override
+	public void depose() {
+	    if (executorService != null) {
+	        executorService.shutdown();
+	        try {
+                executorService.awaitTermination(5, TimeUnit.SECONDS);
+            }
+            catch (InterruptedException e) {
+            }
+	    }
 	}
 
 	/**
@@ -74,6 +93,7 @@ public class RedisEventBus implements EventBus {
 		String message = Json.toJson(event, JsonFormat.compact()); //事件体
 
 		redisService.lpush(channelName, message);
+		
 	}
 
 }
