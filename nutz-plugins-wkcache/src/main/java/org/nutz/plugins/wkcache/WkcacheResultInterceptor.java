@@ -35,11 +35,11 @@ public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
                                                 .getAnnotation(CacheDefaults.class);
             cacheName = cacheDefaults != null ? cacheDefaults.cacheName() : "wk";
         }
-        chain.doChain();
         Object obj;
         try (Jedis jedis = jedisAgent().getResource()) {
             byte[] bytes = jedis.get((cacheName + ":" + cacheKey).getBytes());
             if (bytes == null) {
+                chain.doChain();
                 obj = chain.getReturn();
                 jedis.set((cacheName + ":" + cacheKey).getBytes(), Lang.toBytes(obj));
             } else {
