@@ -9,7 +9,7 @@ import org.nutz.plugins.wkcache.annotation.CacheResult;
 /**
  * Created by wizzer on 2017/6/14.
  */
-@CacheDefaults(cacheName = "nutzwk_cache")
+@CacheDefaults(cacheName = "nutzwk_cache",cacheLiveTime = 300)
 @IocBean
 public class MyCacheTest {
     @CacheResult(cacheKey = "test")

@@ -23,17 +23,19 @@ public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
         CacheResult cacheResult = method.getAnnotation(CacheResult.class);
         String cacheKey = Strings.sNull(cacheResult.cacheKey());
         String cacheName = Strings.sNull(cacheResult.cacheName());
+        int liveTime = 0;
         if (Strings.isBlank(cacheKey)) {
             cacheKey = method.getDeclaringClass().getName()
-                       + "."
-                       + method.getName()
-                       + "#"
-                       + Arrays.toString(chain.getArgs());
+                    + "."
+                    + method.getName()
+                    + "#"
+                    + Arrays.toString(chain.getArgs());
         }
         if (Strings.isBlank(cacheName)) {
             CacheDefaults cacheDefaults = method.getDeclaringClass()
-                                                .getAnnotation(CacheDefaults.class);
+                    .getAnnotation(CacheDefaults.class);
             cacheName = cacheDefaults != null ? cacheDefaults.cacheName() : "wk";
+            liveTime = cacheDefaults != null ? cacheDefaults.cacheLiveTime() : 0;
         }
         Object obj;
         try (Jedis jedis = jedisAgent().getResource()) {
@@ -42,6 +44,9 @@ public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
                 chain.doChain();
                 obj = chain.getReturn();
                 jedis.set((cacheName + ":" + cacheKey).getBytes(), Lang.toBytes(obj));
+                if (liveTime > 0) {
+                    jedis.expire((cacheName + ":" + cacheKey).getBytes(), liveTime);
+                }
             } else {
                 obj = Lang.fromBytes(bytes, method.getReturnType());
             }

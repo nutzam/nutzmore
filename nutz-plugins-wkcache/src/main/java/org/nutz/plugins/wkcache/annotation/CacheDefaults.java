@@ -11,4 +11,6 @@ import java.lang.annotation.*;
 @Inherited
 public @interface CacheDefaults {
     String cacheName() default "wk";
+
+    int cacheLiveTime() default 0;
 }
