@@ -25,17 +25,20 @@ public class WkcacheAopConfigure implements AopConfigration {
         boolean flag = true;
         for (Method method : clazz.getMethods()) {
             if (method.getAnnotation(CacheResult.class) != null
-                    || method.getAnnotation(CacheRemove.class) != null
-                    || method.getAnnotation(CacheRemoveAll.class) != null) {
+                || method.getAnnotation(CacheRemove.class) != null
+                || method.getAnnotation(CacheRemoveAll.class) != null) {
                 flag = false;
                 break;
             }
         }
         if (flag)
             return list;
-        list.add(new InterceptorPair(ioc.get(WkcacheResultInterceptor.class), new WkcacheMethodMatcher(CacheResult.class)));
-        list.add(new InterceptorPair(ioc.get(WkcacheRemoveEntryInterceptor.class), new WkcacheMethodMatcher(CacheRemove.class)));
-        list.add(new InterceptorPair(ioc.get(WkcacheRemoveAllInterceptor.class), new WkcacheMethodMatcher(CacheRemoveAll.class)));
+        list.add(new InterceptorPair(ioc.get(WkcacheResultInterceptor.class),
+                                     new WkcacheMethodMatcher(CacheResult.class)));
+        list.add(new InterceptorPair(ioc.get(WkcacheRemoveEntryInterceptor.class),
+                                     new WkcacheMethodMatcher(CacheRemove.class)));
+        list.add(new InterceptorPair(ioc.get(WkcacheRemoveAllInterceptor.class),
+                                     new WkcacheMethodMatcher(CacheRemoveAll.class)));
         return list;
     }
 }
