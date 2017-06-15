@@ -2,8 +2,6 @@ package org.nutz.plugins.wkcache;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.nutz.aop.InterceptorChain;
 import org.nutz.el.El;
@@ -12,7 +10,6 @@ import org.nutz.lang.Lang;
 import org.nutz.lang.Strings;
 import org.nutz.lang.segment.CharSegment;
 import org.nutz.lang.util.Context;
-import org.nutz.mvc.Mvcs;
 import org.nutz.plugins.wkcache.annotation.CacheDefaults;
 import org.nutz.plugins.wkcache.annotation.CacheResult;
 
