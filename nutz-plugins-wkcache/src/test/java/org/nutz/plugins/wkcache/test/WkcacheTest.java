@@ -22,10 +22,16 @@ public class WkcacheTest extends Assert {
         NutIoc ioc = new NutIoc(new ComboIocLoader("*anno", "org.nutz.plugins.wkcache", "*jedis", "*wkcache"));
         ioc.getIocContext().save("app", "conf", new ObjectProxy(new PropertiesProxy()));
         assertTrue(ioc.getNames().length > 0);
-        log.debug(ioc.get(MyCacheTest.class).testCache("wizzer.cn"));
+//        log.debug(ioc.get(MyCacheTest.class).testCache("wizzer.cn"));
 //        ioc.get(MyCacheTest.class).testRemove();
         log.debug(ioc.get(MyCacheTest.class).testCache("大鲨鱼最帅"));
 //        ioc.get(MyCacheTest.class).testRemoveAll();
+        log.debug(ioc.get(MyCacheTest.class).testCacheEl("el"));
+        TestBean test = new TestBean();
+        test.setId("abc");
+        test.setName("def");
+        log.debug(ioc.get(MyCacheTest.class).testCacheObj(test));
+//        ioc.get(MyCacheTest.class).testRemove(test);
     }
 
 
