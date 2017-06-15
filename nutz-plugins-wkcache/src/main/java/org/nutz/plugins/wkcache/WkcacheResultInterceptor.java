@@ -59,8 +59,6 @@ public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
             if (bytes == null) {
                 chain.doChain();
                 obj = chain.getReturn();
-                System.out.println(obj);
-                System.out.println(Lang.toBytes(obj));
                 jedis.set((cacheName + ":" + cacheKey).getBytes(), Lang.toBytes(obj));
                 if (liveTime > 0) {
                     jedis.expire((cacheName + ":" + cacheKey).getBytes(), liveTime);
