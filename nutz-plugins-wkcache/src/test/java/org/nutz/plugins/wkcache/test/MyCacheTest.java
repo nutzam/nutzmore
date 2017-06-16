@@ -9,7 +9,7 @@ import org.nutz.plugins.wkcache.annotation.CacheResult;
 /**
  * Created by wizzer on 2017/6/14.
  */
-@CacheDefaults(cacheName = "nutzwk_cache")
+@CacheDefaults(cacheName = "nutzwk_cache",cacheLiveTime = 3000)
 @IocBean
 public class MyCacheTest {
     @CacheResult(cacheKey = "test")
@@ -17,8 +17,23 @@ public class MyCacheTest {
         return txt;
     }
 
+    @CacheResult(cacheKey = "${args[0]}")
+    public Object testCacheEl(String txt) {
+        return txt;
+    }
+
+    @CacheResult(cacheKey = "${args[0].id}_${args[0].name}")
+    public Object testCacheObj(TestBean test) {
+        return test;
+    }
+
     @CacheRemove(cacheKey = "test")
     public void testRemove() {
+
+    }
+
+    @CacheRemove(cacheKey = "${args[0].id}_${args[0].name}")
+    public void testRemove(TestBean test) {
 
     }
 

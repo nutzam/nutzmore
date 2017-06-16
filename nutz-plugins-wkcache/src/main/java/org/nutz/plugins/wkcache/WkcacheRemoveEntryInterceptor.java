@@ -4,8 +4,12 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import org.nutz.aop.InterceptorChain;
+import org.nutz.el.El;
 import org.nutz.ioc.loader.annotation.IocBean;
+import org.nutz.lang.Lang;
 import org.nutz.lang.Strings;
+import org.nutz.lang.segment.CharSegment;
+import org.nutz.lang.util.Context;
 import org.nutz.plugins.wkcache.annotation.CacheDefaults;
 import org.nutz.plugins.wkcache.annotation.CacheRemove;
 
@@ -24,14 +28,27 @@ public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
         String cacheName = Strings.sNull(cacheRemove.cacheName());
         if (Strings.isBlank(cacheKey)) {
             cacheKey = method.getDeclaringClass().getName()
-                       + "."
-                       + method.getName()
-                       + "#"
-                       + Arrays.toString(chain.getArgs());
+                    + "."
+                    + method.getName()
+                    + "#"
+                    + Arrays.toString(chain.getArgs());
+        } else {
+            this.key = new CharSegment(cacheKey);
+            if (key.hasKey()) {
+                Context ctx = Lang.context();
+                ctx.set("args", chain.getArgs());
+                Context _ctx = Lang.context();
+                for (String key : key.keys()) {
+                    _ctx.set(key, new El(key).eval(ctx));
+                }
+                cacheKey = key.render(_ctx).toString();
+            } else {
+                cacheKey = key.getOrginalString();
+            }
         }
         if (Strings.isBlank(cacheName)) {
             CacheDefaults cacheDefaults = method.getDeclaringClass()
-                                                .getAnnotation(CacheDefaults.class);
+                    .getAnnotation(CacheDefaults.class);
             cacheName = cacheDefaults != null ? cacheDefaults.cacheName() : "wk";
         }
         try (Jedis jedis = jedisAgent().getResource()) {
