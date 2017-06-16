@@ -14,7 +14,7 @@ var ioc = {
 			refer : "configuration"
 		}, {
 			app : '$servlet'
-		}, "WEB-INF", ".ftl", {
+		}, "/WEB-INF", ".ftl", {
 			refer : "freemarkerDirectiveFactory"
 		} ]
 	},
