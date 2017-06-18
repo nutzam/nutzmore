@@ -9,26 +9,28 @@ import javax.websocket.Session;
 import org.nutz.lang.Strings;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
+import org.nutz.plugins.mvc.websocket.AbstractWsEndpoint;
 import org.nutz.plugins.mvc.websocket.WsHandler;
 import org.nutz.plugins.mvc.websocket.WsRoomProvider;
 
 public abstract class AbstractWsHandler implements WsHandler {
 
     private static final Log log = Logs.get();
-    
+
     protected Set<String> rooms;
-    
+
     protected WsRoomProvider roomProvider;
-    
+
     protected Session session;
     protected String prefix;
     protected HttpSession httpSession;
-    
+    protected AbstractWsEndpoint endpoint;
+
     public AbstractWsHandler(String prefix) {
         rooms = new HashSet<>();
         this.prefix = prefix;
     }
-    
+
     public void join(String room) {
         if (!Strings.isBlank(room)) {
             rooms.add(room);
@@ -37,7 +39,7 @@ public abstract class AbstractWsHandler implements WsHandler {
             roomProvider.join(room, session.getId());
         }
     }
-    
+
     public void left(String room) {
         if (!Strings.isBlank(room)) {
             rooms.remove(room);
@@ -56,12 +58,16 @@ public abstract class AbstractWsHandler implements WsHandler {
     public void setRoomProvider(WsRoomProvider roomProvider) {
         this.roomProvider = roomProvider;
     }
-    
+
     public void setSession(Session session) {
         this.session = session;
     }
-    
+
     public void setHttpSession(HttpSession httpSession) {
         this.httpSession = httpSession;
+    }
+
+    public void setEndpoint(AbstractWsEndpoint endpoint) {
+        this.endpoint = endpoint;
     }
 }

@@ -8,11 +8,12 @@ import org.nutz.plugins.mvc.websocket.WsRoomProvider;
 
 /**
  * 单机版的WsRoom实现
+ * 
  * @author wendal
  *
  */
 public class MemoryRoomProvider implements WsRoomProvider {
-    
+
     private ConcurrentHashMap<String, ConcurrentSkipListSet<String>> rooms = new ConcurrentHashMap<>();
 
     public Set<String> wsids(String room) {
@@ -37,5 +38,5 @@ public class MemoryRoomProvider implements WsRoomProvider {
         }
         return _room;
     }
-    
+
 }
