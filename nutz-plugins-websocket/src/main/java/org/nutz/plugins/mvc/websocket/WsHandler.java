@@ -5,6 +5,8 @@ import javax.websocket.MessageHandler;
 import javax.websocket.Session;
 
 public interface WsHandler extends MessageHandler {
+    
+    void init();
 
     void setSession(Session session);
 

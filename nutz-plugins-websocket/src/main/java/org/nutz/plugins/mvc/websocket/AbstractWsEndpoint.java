@@ -74,6 +74,7 @@ public abstract class AbstractWsEndpoint extends Endpoint {
         handler.setSession(session);
         handler.setHttpSession((HttpSession) config.getUserProperties().get("HttpSession"));
         handler.setEndpoint(this);
+        handler.init();
         session.addMessageHandler(handler);
         sessions.put(wsid, session);
         handlers.put(wsid, handler);
