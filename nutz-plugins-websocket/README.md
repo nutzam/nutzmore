@@ -19,14 +19,14 @@ nutz-plugins-websocket
 * 接管了OnOpen/OnMessage/OnError/OnClose方法,让使用者专注于业务逻辑
 * 提供了"房间"这一概念的实现. 房间指一群WebSocket会话.
 
-## 有什么需要提前注意的地方吗?
+### 有什么需要提前注意的地方吗?
 
 * WebSocket Session与HttpSession是独立的,互不依赖.
 * 对一个服务来说,同一个浏览器实例一般只有一个HttpSession,但WebSocket Session可以有无数个.
 * 除WebSocket的OnOpen阶段, HttpServletRequest/HttpServletResponse都是不可用的
 * 虽然WebSocket支持传字节数据,但绝大多数情况下是文本
 
-## Nutz集成Websocket必须用这个插件吗?
+### Nutz集成Websocket必须用这个插件吗?
 
 不是, 正如所有nutzmore项目那样, nutz都给予完全的自由,你可以完全无视这些集成项目,自己写一套的.
 
@@ -35,7 +35,7 @@ nutz-plugins-websocket
 使用方法
 ==================================
 
-## 服务器端入口类
+### 服务器端入口类
 
 WebSocket的入口类叫 "Endpoint", 虽然可以通过api手工注册,但原生注解声明一下也是很方便的.
 
@@ -88,7 +88,7 @@ function ws_ping() {
 setInterval("ws_ping()", 25000); // 25秒一次就可以了
 ```
 
-## 默认的信息处理器WsHandler
+### 默认的信息处理器WsHandler
 
 AbstractWsEndpoint的默认的WsHandler实现是SimpleWsHandler, 足够满足前端写个简单chat应用. 
 
@@ -105,7 +105,33 @@ ws.send(JSON.stringify({room:'房间名称',"action":"msg2room", "msg" : "大家
 ws.send(JSON.stringify({"action":"nickname", "nickname" : "wendal"}));
 ```
 
-## 如何扩展或实现WsHandler(简单版)
+
+
+### 从服务器主动发消息给房间
+
+主动是指,在websocket的WsHandler之外,由业务逻辑决定推送通知. 例如新任务提醒,在任务添加完成后,向指定房间发送通知.
+
+
+```java
+// 在Service或Module中,通过ioc注入上述的MyWebsocket
+@Inject
+protected MyWebsocket myWebsocket;
+
+// 按业务需要,调用myWebsocket提供的各种api
+public void sayhi(String room) {
+    myWebsocket.each(room, new Each<Session>() {
+    	public void invoke(int index, Session ele, int length) {
+                myWebsocket.sendJson(ele.getId(), new NutMap("action", "layer").setv("notify", "你有新的待办事宜,请查看收件箱"));
+            }
+    });
+}
+```
+
+另外发送文本,二进制数据的异步或同步方法,请查阅AbstractWsEndpoint的javadoc
+
+## 如何扩展
+
+### 扩展或实现WsHandler(简单版)
 
 通常我会建议你继承SimpleWsHandler,添加自定义方法
 
@@ -137,34 +163,11 @@ ws.send(JSON.stringify({"action":"sayhi", "nickname" : "wendal"}));
 
 发送完成后, 后端的sayhi方法应该会接受到信息,然后页面端的onmessage方法马上收到响应
 
-## 如何扩展或实现WsHandler(深入版)
+### 如何扩展或实现WsHandler(深入版)
 
 如果你完全不需要SimpleWsHandler的默认方法,可以考虑继承AbstractWsHandler, 它相当于一个无action方法的空壳
 
 如果你希望更深入集成,可以直接实现WsHandler接口,完全按你的需求来做.
-
-
-### 从服务器主动发消息给浏览器
-
-主动是指,在websocket的WsHandler之外,由业务逻辑决定推送通知. 例如新任务提醒,在任务添加完成后,向指定房间发送通知.
-
-
-```java
-// 在Service或Module中,通过ioc注入上述的MyWebsocket
-@Inject
-protected MyWebsocket myWebsocket;
-
-// 按业务需要,调用myWebsocket提供的各种api
-public void sayhi(String room) {
-    myWebsocket.each(room, new Each<Session>() {
-    	public void invoke(int index, Session ele, int length) {
-                myWebsocket.sendJson(ele.getId(), new NutMap("action", "layer").setv("notify", "你有新的待办事宜,请查看收件箱"));
-            }
-    });
-}
-```
-
-另外发送文本,二进制数据的异步或同步方法,请查阅AbstractWsEndpoint的javadoc
 
 ### 从服务器发消息给指定的WebSocket会话
 
@@ -184,6 +187,7 @@ public void sayhi(String room) {
 
 ```java
 public void init() {
+    super.init(); // 必须调用超类的init,除非直接实现WsHandler接口
     if (httpSession != null)
         httpSession.setAttribute("wsid", session.getId()); // 其他业务代码只需要从HttpSession取出wsid,即可调用AbstractWsEndpoint的api发送消息
 }
@@ -207,9 +211,9 @@ AbstractWsEndpoint有一个属性叫 roomProvider, 自定义Endpoint的实例,�
 * 404 -- 在Nginx之后, 需要以下特别配置
 
 ```txt
-       proxy_read_timeout 60m;
-	   proxy_set_header Upgrade $http_upgrade;
-	   proxy_set_header Connection "upgrade";
+proxy_read_timeout 60m;
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection "upgrade";
 ```
 
 * 500 -- 通常configurator或OnOpen抛异常了,而且没catch
