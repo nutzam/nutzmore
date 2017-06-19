@@ -140,8 +140,9 @@
         <module>nutz-plugins-ngrok</module>
     <module>nutz-integration-json4excel</module>
     <module>nutz-integration-rabbitmq</module>
-    
-	</modules>
+        <module>nutz-integration-bex5</module>
+
+    </modules>
 	<distributionManagement>
 		<snapshotRepository>
 			<id>nutzcn-snapshots</id>
