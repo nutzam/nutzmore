@@ -3,7 +3,6 @@ package org.nutz.plugins.undertow;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.Undertow.Builder;
-import io.undertow.UndertowLogger;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.PathHandler;
 import io.undertow.server.handlers.resource.ClassPathResourceManager;
@@ -17,7 +16,6 @@ import java.io.File;
 
 import javax.servlet.DispatcherType;
 
-import org.jboss.logging.Logger.Level;
 import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.lang.Files;
 import org.nutz.lang.Lang;
@@ -38,11 +36,11 @@ public class WebLauncher {
 	private static Log log = Logs.get();
 	// 设置启动的参数
 	private static NutMap config = new NutMap();
-	
+
 	/**
-	* 执行启动的主函数，接受-config命令行参数，为 web 服务器的配置文件路径。如果没有这个参数，默认在 classpath 下寻找 "web.properties" 文件。
+	* 执行启动的主函数，接受-config命令行参数指定 web服务器的配置文件路径。如果没有这个参数，默认在 classpath 下寻找 "web.properties" 文件。
 	* <p>
-	* 这个文件遵循 Nutz 多行属性文件规范，同时必须具备如下的键:
+	* 这个文件遵循 Nutz 多行属性文件规范，可设定如下的键值:
 	* <ul>
 	* <li>"web.ip" - 绑定请求的IP，默认 0.0.0.0  
 	* <li>"web.port" - 应用监听的端口，默认 8080
@@ -60,19 +58,23 @@ public class WebLauncher {
 	 * @throws Exception 
 	*/
 	public static void start(String[] args) {
+		start(args, getDefaultBuilder());
+	}
+
+	public static void start(String[] args, Builder builder) {
+		start(args, getDefaultBuilder(), getDefaultServletBuilder());
+	}
+
+	public static void start(String[] args, Builder builder, DeploymentInfo servletBuilder) {
 		if (args != null && args.length > 0 && args[0].startsWith("-")) {
 			configByArgs(args);
 		} else {
 			configByProperties("web.properties");
 		}
 
-		UndertowLogger.ROOT_LOGGER.isEnabled(Level.DEBUG);
-
 		String contextPath = config.getString("web.path");
 
-		DeploymentInfo servletBuilder = Servlets.deployment().setClassLoader(DeploymentInfo.class.getClassLoader()).setContextPath(contextPath)
-				.setDefaultSessionTimeout(config.getInt("web.session")).setDeploymentName("nutz-web");
-		addCustomFilterServlets(servletBuilder); // 加载自定义的 filter 及 servlet
+		servletBuilder.setContextPath(contextPath).setDefaultSessionTimeout(config.getInt("web.session")).setDeploymentName("nutz-web");
 		addDefaultFilter(servletBuilder);
 		servletBuilder.addWelcomePages("index.html", "index.htm", "index.do");
 
@@ -91,9 +93,7 @@ public class WebLauncher {
 		} else {
 			pathHandler = Handlers.path(Handlers.redirect(contextPath)).addPrefixPath(contextPath, servletHandler);
 		}
-
-		Builder builder = Undertow.builder().addHttpListener(config.getInt("web.port"), config.getString("web.ip")).setHandler(pathHandler);
-		optimizeParam(builder); // 自定义优化
+		builder.addHttpListener(config.getInt("web.port"), config.getString("web.ip")).setHandler(pathHandler);
 
 		final Undertow server = builder.build();
 		server.start();
@@ -108,28 +108,29 @@ public class WebLauncher {
 	}
 
 	/**
+	 * 缺省的Builder
+	 * 用户可以通过它调整线程数、buffer、socket参数等，进行性能优化
+	 * @return
+	 */
+	public static Builder getDefaultBuilder() {
+		return Undertow.builder();
+	}
+
+	/**
+	 * 缺省的DeploymentInfo，可加载自定义的 Filter  Servlets
+	 * @param servletBuilder
+	 */
+	public static DeploymentInfo getDefaultServletBuilder() {
+		return Servlets.deployment().setClassLoader(DeploymentInfo.class.getClassLoader());
+	}
+
+	/**
 	 * 缺省的启动器
 	 * @param args
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
 		start(args);
-	}
-
-	/**
-	 * 子类可覆盖本方法，加载自定义的 Filter  Servlets
-	 * @param servletBuilder
-	 */
-	protected static void addCustomFilterServlets(DeploymentInfo servletBuilder) {
-
-	}
-
-	/**
-	 * 子类可覆盖此方法，进行线程数、网络参数等更精细化优化
-	 * @param builder
-	 */
-	protected static void optimizeParam(Builder builder) {
-
 	}
 
 	/**
@@ -176,6 +177,7 @@ public class WebLauncher {
 		}
 	}
 
+	//初始化参数项
 	private static void initCommonParam(NutMap map) {
 		config.put("web.ip", map.get("web.ip", "0.0.0.0"));
 		config.put("web.port", map.getInt("web.port", 8080));
