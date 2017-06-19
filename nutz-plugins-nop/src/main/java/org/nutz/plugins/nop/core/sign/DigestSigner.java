@@ -1,12 +1,9 @@
 package org.nutz.plugins.nop.core.sign;
 
 import java.util.Arrays;
-import java.util.Map;
 
 import org.nutz.lang.Lang;
 import org.nutz.lang.Strings;
-import org.nutz.plugins.nop.NOPConfig;
-import org.nutz.plugins.nop.core.NOPRequest;
 
 /**
  * @author Kerbores(kerbores@gmail.com)
@@ -24,8 +21,14 @@ public class DigestSigner extends AbstractSinger {
 
 	private String name;
 
-	public DigestSigner(String name, AppsecretFetcher fetcher) {
-		super(fetcher);
+	/**
+	 * 
+	 */
+	public DigestSigner() {
+		this.name = "MD5";
+	}
+
+	public DigestSigner(String name) {
 		this.name = name;
 	}
 
@@ -34,36 +37,17 @@ public class DigestSigner extends AbstractSinger {
 		return name;
 	}
 
-	public String dataMeta(NOPRequest request) {
-		String body = request.getInputStream() == null ? Lang.md5("") : Lang.md5(request.getInputStream());
-		String paras = Lang.md5(join(request.getParams()));
-		return Lang.md5(body + paras);
-	}
-
-	/**
-	 * @param params
-	 * @return
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.nutz.plugins.nop.core.sign.Signer#sign(java.lang.String,
+	 * java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
-	private String join(Map<String, Object> params) {
-		String[] keys = Lang.collection2array(params.keySet());
-		Arrays.sort(keys);
-		String target = "";
-		for (String key : keys) {
-			target += key + ":" + params.get(key);
-		}
-		return target;
-	}
-
 	@Override
-	public String sign(NOPRequest request) {
-		String appKey = request.getHeader().get(NOPConfig.appkeyKey);
-		String method = request.getHeader().get(NOPConfig.methodKey);
-		String timestamp = request.getHeader().get(NOPConfig.tsKey);
-		String once = request.getHeader().get("once");
-		String appSecret = Strings.isBlank(request.getAppSecret()) ? getFetcher().fetch(appKey) : request.getAppSecret();// 能取到就取出来
-		String[] temp = Lang.array(method, timestamp, once, appSecret); // dataMeta(request)
-		Arrays.sort(temp);// 字典序 method timestamp once appSecret
-		return Lang.digest(name(), Strings.join("", temp));// 用摘要名取摘要
+	public String sign(String appSecret, String timestamp, String gateway, String nonce, String dataMate) {
+		String[] temp = Lang.array(appSecret, timestamp, gateway, nonce, dataMate);
+		Arrays.sort(temp);
+		return Lang.digest(name(), Strings.join("", temp));
 	}
 
 }

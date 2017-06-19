@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -48,26 +49,32 @@ public class DubboIocLoader implements IocLoader {
     
     protected DubboIocLoader() {}
     
-    public DubboIocLoader(String xmlpath) {
-        Document doc = Xmls.xml(DubboConfigureReader.class.getClassLoader().getResourceAsStream(xmlpath));
-        doc.normalizeDocument();
-        Element top = doc.getDocumentElement();
-        load(top);
+    public DubboIocLoader(String ... paths) {
+        List<Element> tops = new ArrayList<>();
+        for (String xmlpath : paths) {
+            Document doc = Xmls.xml(getClass().getClassLoader().getResourceAsStream(xmlpath));
+            doc.normalizeDocument();
+            Element top = doc.getDocumentElement();
+            tops.add(top);
+        }
+        load(tops.toArray(new Element[tops.size()]));
     }
     
-    public void load(Element top) {
-        NodeList list = top.getChildNodes();
-        int count = list.getLength();
+    public void load(Element ... tops) {
+        for (Element top : tops) {
+            NodeList list = top.getChildNodes();
+            int count = list.getLength();
 
-        for (int i = 0; i < count; i++) {
-            Node node = list.item(i);
-            if (node instanceof Element) {
-                Element ele = (Element)node;
-                String eleName = ele.getNodeName();
-                if (!eleName.startsWith("dubbo:"))
-                    continue; // 跳过非dubbo节点
-                String typeName = eleName.substring("dubbo:".length());
-                load(typeName, ele);
+            for (int i = 0; i < count; i++) {
+                Node node = list.item(i);
+                if (node instanceof Element) {
+                    Element ele = (Element)node;
+                    String eleName = ele.getNodeName();
+                    if (!eleName.startsWith("dubbo:"))
+                        continue; // 跳过非dubbo节点
+                    String typeName = eleName.substring("dubbo:".length());
+                    load(typeName, ele);
+                }
             }
         }
         

@@ -8,6 +8,7 @@ import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.RuntimeSingleton;
 import org.nutz.dao.DaoException;
 import org.nutz.dao.sql.Sql;
+import org.nutz.plugins.sqltpl.NutSqlTpl;
 import org.nutz.plugins.sqltpl.VarSetMap;
 
 /**
@@ -15,8 +16,14 @@ import org.nutz.plugins.sqltpl.VarSetMap;
  * @author wendal(wendal1985@gmail.com)
  *
  */
-public class VelocitySqlTpl {
+public class VelocitySqlTpl extends NutSqlTpl {
+
+    private static final long serialVersionUID = 1L;
     
+    public VelocitySqlTpl(String source) {
+        super(source);
+    }
+
     /**
      * 自定义VelocityEngine
      */
@@ -52,5 +59,10 @@ public class VelocitySqlTpl {
      */
     public static void setEngine(VelocityEngine engine) {
         VelocitySqlTpl.engine = engine;
+    }
+
+    @Override
+    protected void render() {
+        c(this);
     }
 }

@@ -1,14 +1,11 @@
 package org.nutz.nop.demo.module;
 
 import org.nutz.lang.util.NutMap;
-import org.nutz.mvc.adaptor.JsonAdaptor;
-import org.nutz.mvc.annotation.AdaptBy;
 import org.nutz.mvc.annotation.At;
 import org.nutz.mvc.annotation.By;
 import org.nutz.mvc.annotation.Filters;
 import org.nutz.mvc.annotation.IocBy;
 import org.nutz.mvc.annotation.Ok;
-import org.nutz.mvc.annotation.POST;
 import org.nutz.mvc.annotation.UrlMappingBy;
 import org.nutz.mvc.ioc.provider.ComboIocProvider;
 import org.nutz.plugins.apidoc.ApidocUrlMapping;
@@ -22,19 +19,13 @@ import org.nutz.plugins.nop.server.NOPSignFilter;
 @UrlMappingBy(ApidocUrlMapping.class)
 @Manual(name = "NOP示例手册", description = "Nop集成的Apidoc手册", author = "Kerbores", email = "kerbores@gmail.com", homePage = "http://blog.zhcs.club", copyRight = "️ &copy; 2017 Kerbores All Right XXX")
 @Api(author = "Kerbores", name = "主模块", match = ApiMatchMode.ALL)
-@Filters(@By(type = NOPSignFilter.class))
+@Filters(@By(type = NOPSignFilter.class, args = { "SHA1" }))
 public class MainModule {
 
 	@At("/")
+	@Filters
 	public NutMap hello() {
 		return NutMap.NEW().addv("msg", "Hello NOP!");
-	}
-
-	@At
-	@POST
-	@AdaptBy(type = JsonAdaptor.class)
-	public NutMap body(NutMap data) {
-		return data;
 	}
 
 }

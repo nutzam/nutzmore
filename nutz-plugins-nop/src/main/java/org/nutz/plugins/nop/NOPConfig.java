@@ -21,5 +21,6 @@ public class NOPConfig {
 	public static final String appkeyKey = "nop-sign-appkey";
 	public static final String appSecretKey = "nop-sign-appsecret";
 	public static final String parasKey = "nop-paras";
+	public static final String nonceKey = "nop-nonce";
 
 }

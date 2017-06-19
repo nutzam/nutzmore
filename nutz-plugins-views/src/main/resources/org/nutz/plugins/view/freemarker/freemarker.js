@@ -14,14 +14,14 @@ var ioc = {
 			refer : "configuration"
 		}, {
 			app : '$servlet'
-		}, "WEB-INF", ".ftl", {
+		}, "/WEB-INF", ".ftl", {
 			refer : "freemarkerDirectiveFactory"
 		} ]
 	},
 	freemarkerDirectiveFactory : {
 		type : "org.nutz.plugins.view.freemarker.FreemarkerDirectiveFactory",
 		fields : {
-			freemarker : 'org/nutz/plugins/view/freemarker/freemarker.properties',
+			freemarker : 'org/nutz/plugins/view/freemarker/freemarker.properties'
 		}
 	}
 };

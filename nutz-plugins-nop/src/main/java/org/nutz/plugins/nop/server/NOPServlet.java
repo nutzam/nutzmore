@@ -61,8 +61,6 @@ public class NOPServlet extends HttpServlet {
 			configPath = "nop.properties";
 		}
 		PropertiesProxy proxy = new PropertiesProxy(configPath);
-		digestName = proxy.get("digestName", digestName);
-		fetcherName = proxy.get("fetcherName");
 		timeout = proxy.getInt("timeout", timeout);
 	}
 	

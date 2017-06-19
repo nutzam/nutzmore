@@ -9,13 +9,14 @@ import redis.clients.jedis.Jedis;
 
 /**
  * 基于Redis/Jedis的Websocket房间实现
+ * 
  * @author wendal
  *
  */
 public class JedisRoomProvider implements WsRoomProvider {
-    
+
     protected JedisAgent jedisAgent;
-    
+
     public JedisRoomProvider(JedisAgent jedisAgent) {
         this.jedisAgent = jedisAgent;
     }
@@ -37,6 +38,5 @@ public class JedisRoomProvider implements WsRoomProvider {
             jedis.srem(room, wsid);
         }
     }
-    
-    
+
 }
