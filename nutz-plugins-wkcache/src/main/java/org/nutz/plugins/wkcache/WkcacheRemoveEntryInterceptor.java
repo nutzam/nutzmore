@@ -2,6 +2,7 @@ package org.nutz.plugins.wkcache;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Set;
 
 import org.nutz.aop.InterceptorChain;
 import org.nutz.el.El;
@@ -52,7 +53,13 @@ public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
             cacheName = cacheDefaults != null ? cacheDefaults.cacheName() : "wk";
         }
         try (Jedis jedis = jedisAgent().getResource()) {
-            jedis.del(cacheName + ":" + cacheKey);
+            if (cacheKey.endsWith("*")) {
+                Set<String> set = jedis.keys(cacheName + ":" + cacheKey);
+                for (String it : set) {
+                    jedis.del(it.getBytes());
+                }
+            } else
+                jedis.del(cacheName + ":" + cacheKey);
         }
         chain.doChain();
     }
