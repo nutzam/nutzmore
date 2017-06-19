@@ -22,22 +22,22 @@ public class SimpleWsHandler extends AbstractWsHandler implements MessageHandler
     /**
      * 加入房间 对应的消息是  {action:"join", room:"wendal"}
      */
-    public void join(NutMap msg) {
-        join(msg.getString("room"));
+    public void join(NutMap req) {
+        join(req.getString("room"));
     }
 
     /**
      * 退出房间 对应的消息是 {action:"left", room:"wendal"}
      */
-    public void left(NutMap msg) {
-        left(msg.getString("room"));
+    public void left(NutMap req) {
+        left(req.getString("room"));
     }
     
     /**
      * 设置昵称
      */
-    public void nickname(NutMap msg) {
-        String nickname = msg.getString("nickname");
+    public void nickname(NutMap req) {
+        String nickname = req.getString("nickname");
         if (!Strings.isBlank(nickname))
             this.nickname = nickname;
     }
@@ -45,8 +45,8 @@ public class SimpleWsHandler extends AbstractWsHandler implements MessageHandler
     /**
      * 发送消息给房间
      */
-    public void msg2room(final NutMap msg) {
-        final String room = msg.getString("room");
+    public void msg2room(final NutMap req) {
+        final String room = req.getString("room");
         if (room == null)
             return;
         endpoint.each(room, new Each<Session>() {
@@ -56,7 +56,7 @@ public class SimpleWsHandler extends AbstractWsHandler implements MessageHandler
                 NutMap resp = new NutMap("action", "msg");
                 resp.setv("room", room);
                 resp.setv("from", session.getId());
-                resp.setv("msg", msg.get("data"));
+                resp.setv("msg", req.get("msg"));
                 if (nickname != null)
                     resp.setv("nickname", nickname);
                 endpoint.sendJson(ele.getId(), resp);
