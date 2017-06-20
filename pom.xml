@@ -143,6 +143,7 @@
 		<module>nutz-integration-neo4j</module>
 		<module>nutz-plugins-wkcache</module>
 		<module>nutz-plugins-event</module>
+    <module>nutz-integration-bex5</module>
 	</modules>
 	<distributionManagement>
 		<snapshotRepository>
