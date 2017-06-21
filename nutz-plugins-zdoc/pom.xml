@@ -1,0 +1,64 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.nutz</groupId>
+		<artifactId>nutzmore</artifactId>
+		<version>1.r.62-SNAPSHOT</version>
+	</parent>
+	<artifactId>nutz-plugins-zdoc</artifactId>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>3.15</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>3.15</version>
+		</dependency>
+		<dependency>
+			<groupId>com.itextpdf</groupId>
+			<artifactId>itextpdf</artifactId>
+			<version>5.5.10</version>
+		</dependency>
+		<dependency>
+			<groupId>com.itextpdf</groupId>
+			<artifactId>itext-asian</artifactId>
+			<version>5.2.0</version>
+		</dependency>
+	</dependencies>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>nutzcn-snapshots</id>
+			<name>NutzCN snapshot repository</name>
+			<url>https://jfrog.nutz.cn/artifactory/snapshots</url>
+		</snapshotRepository>
+
+		<repository>
+			<id>sonatype-release-staging</id>
+			<name>Sonatype Nexus release repository</name>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+		</repository>
+	</distributionManagement>
+
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.3</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+					<compilerArgs>
+						<arg>-parameters</arg>
+					</compilerArgs>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

@@ -1,7 +1,5 @@
 package org.nutz.mvc.testapp.views;
 
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Test;
 import org.nutz.mvc.testapp.BaseWebappTest;
 

@@ -1,5 +1,0 @@
-/**
- * @author kerbores
- *
- */
-package demo;

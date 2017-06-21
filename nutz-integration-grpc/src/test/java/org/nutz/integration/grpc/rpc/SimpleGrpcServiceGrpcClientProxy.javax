@@ -1,0 +1,36 @@
+package org.nutz.integration.grpc.rpc;
+
+import org.nutz.ioc.loader.annotation.*;
+import org.nutz.integration.grpc.*;
+import io.grpc.*;
+@IocBean
+public class SimpleGrpcServiceGrpcClientProxy implements SimpleGrpcService {
+    @Inject protected ManagedChannel channel;
+    protected SimpleGrpcServiceGrpc.SimpleGrpcServiceBlockingStub blockingStub;
+    public void setChannel(ManagedChannel channel) {this.channel=channel;blockingStub=SimpleGrpcServiceGrpc.newBlockingStub(channel);}
+    @Override public void ping(){
+        VoidMessage msg = VoidMessage.getDefaultInstance();
+        blockingStub.ping(msg);
+    }
+
+    @Override public java.lang.String incr(java.lang.String key){
+        IncrRequest msg = IncrRequest.newBuilder().setKey(key).build();
+        return blockingStub.incr(msg).getRe();
+    }
+
+    @Override public int simple(java.lang.String name,int age,float x,double y,boolean flag){
+        SimpleRequest msg = SimpleRequest.newBuilder().setName(name).setAge(age).setX(x).setY(y).setFlag(flag).build();
+        return blockingStub.simple(msg).getRe();
+    }
+
+    @Override public void hello(java.lang.String name){
+        HelloRequest msg = HelloRequest.newBuilder().setName(name).build();
+        blockingStub.hello(msg);
+    }
+
+    @Override public java.lang.String pong(){
+        VoidMessage msg = VoidMessage.getDefaultInstance();
+        return blockingStub.pong(msg).getRe();
+    }
+
+}

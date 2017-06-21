@@ -1,17 +1,13 @@
 package org.nutz.mvc.view;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.mock.Mock;
 import org.nutz.mock.servlet.MockHttpServletRequest;
 import org.nutz.mvc.Mvcs;
 import org.nutz.plugins.view.AbstractTemplateViewResolver;
-import org.nutz.plugins.view.ResourceBundleViewResolver;
-import org.nutz.test.BaseNutTest;
 
 // extends BaseNutTest
 public class MultiViewTestss{
@@ -43,7 +39,7 @@ public class MultiViewTestss{
     }
     @Test
     public void testMake() {
-    	ResourceBundleViewResolver maker = new ResourceBundleViewResolver();
+		// ResourceBundleViewResolver maker = new ResourceBundleViewResolver();
     	//ResourceBundleViewResolver maker = new ResourceBundleViewResolver();
     	//assertNotNull(maker.make(ioc, "btl", "auth.login"));
     	 //assertNotNull(maker.make(ioc, "ftl", "auth.login"));

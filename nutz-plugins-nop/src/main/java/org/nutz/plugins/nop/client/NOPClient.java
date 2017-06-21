@@ -1,14 +1,15 @@
 package org.nutz.plugins.nop.client;
 
+import org.nutz.http.Header;
 import org.nutz.http.Request;
+import org.nutz.http.Request.METHOD;
 import org.nutz.http.Response;
 import org.nutz.http.Sender;
+import org.nutz.lang.Strings;
 import org.nutz.lang.Times;
 import org.nutz.lang.random.R;
 import org.nutz.plugins.nop.NOPConfig;
-import org.nutz.plugins.nop.core.NOPRequest;
 import org.nutz.plugins.nop.core.sign.DigestSigner;
-import org.nutz.plugins.nop.core.sign.Signer;
 
 /**
  * @author Kerbores(kerbores@gmail.com)
@@ -35,10 +36,6 @@ public class NOPClient {
 
 	public void setDigestName(String digestName) {
 		this.digestName = digestName;
-	}
-
-	public Signer getSigner() {
-		return new DigestSigner(digestName, null);
 	}
 
 	public String getAppKey() {
@@ -77,25 +74,51 @@ public class NOPClient {
 		return client;
 	}
 
-	public Response send(NOPRequest request) {
-		request.setAppSecret(appSecret);
-		request.getHeader().set(NOPConfig.tsKey, Times.now().getTime() + "");// 添加时间戳
-		request.getHeader().set(NOPConfig.methodKey, request.getService());// 添加请求方法
-		request.getHeader().set(NOPConfig.appkeyKey, appKey);// appKey
-		request.getHeader().set("once", R.sg(16).next());
-		String sign = getSigner().sign(request);
-		request.getHeader().set(NOPConfig.signKey, sign);//签名
-		
-		Request req = null;
-		if (request.getParams() != null && request.getParams().size() > 0) {
-			req = Request.create(endpoint, request.getMethod(), request.getParams(), request.getHeader());
-		} else {
-			req = Request.create(endpoint, request.getMethod());
-			req.setHeader(request.getHeader());
-			req.setData(request.getData());
-		}
+	public Request toRequest(NOPRequest request) {
+		Request req = Request.create(endpoint, request.getMethod());
+		req.setParams(request.getParams());
+		req.setData(request.getData());
+		req.setHeader(signHeader(request));
+		return req;
+	}
 
-		Sender sender = Sender.create(req);
-		return sender.send();
+	/**
+	 * 发送请求
+	 * 
+	 * @param request
+	 * @return
+	 */
+	public Response send(NOPRequest request) {
+		return Sender.create(toRequest(request)).send();
+	}
+
+	/**
+	 * 处理header
+	 * 
+	 * @param request
+	 * @return
+	 */
+	private Header signHeader(NOPRequest request) {
+		String nonce = R.UU16();
+		String ts = Times.now().getTime() + "";
+		Header header = null;
+		if (request.getMethod() == METHOD.GET) {
+			String query = request.getURLEncodedParams();
+			String method = Strings.isBlank(query) ? request.getGateway() : request.getGateway() + "?" + query;
+			header = request.getHeader()
+					.set(NOPConfig.appkeyKey, appKey)
+					.set(NOPConfig.methodKey, method)
+					.set(NOPConfig.nonceKey, nonce)
+					.set(NOPConfig.tsKey, ts)
+					.set(NOPConfig.signKey, new DigestSigner(digestName).sign(appSecret, ts, method, nonce, request));
+		} else {
+			header = request.getHeader()
+					.set(NOPConfig.appkeyKey, appKey)
+					.set(NOPConfig.methodKey, request.getGateway())
+					.set(NOPConfig.nonceKey, nonce)
+					.set(NOPConfig.tsKey, ts)
+					.set(NOPConfig.signKey, new DigestSigner(digestName).sign(appSecret, ts, request.getGateway(), nonce, request));
+		}
+		return request.getData() == null || request.getData().length == 0 ? header.asFormContentType() : header.asJsonContentType();
 	}
 }

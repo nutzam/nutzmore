@@ -28,8 +28,15 @@ spring:
      #   time-zone: GMT+8     #此处有巨坑 jackson就是要按照utc时间来给你序列化咋滴!!  
 logging:
   level:
-    root: debug
+    root: info
+    org.nutz: debug
+    demo: debug
+management:
+  security:
+    enabled: false
 nutz:
+    json:
+      date-format: yyyy-MM-dd HH:mm:ss z
     dao:
         runtime:
           add-column: true
@@ -41,10 +48,5 @@ nutz:
           basepackage: demo
         sqlmanager:
           paths:
-            - sqls
-            - other
-    json:
-        auto-unicode: true
-        mode: compact
-        quote-name: false
-        date-format: yyyy-MM-dd HH:mm:ss Z
+            - sqls/acl/user.sql
+        

@@ -6,6 +6,7 @@ import java.io.StringWriter;
 import java.util.Map;
 
 import org.nutz.dao.sql.Sql;
+import org.nutz.plugins.sqltpl.NutSqlTpl;
 import org.nutz.plugins.sqltpl.VarSetMap;
 
 import freemarker.template.Configuration;
@@ -19,7 +20,13 @@ import freemarker.template.TemplateExceptionHandler;
  * @author wendal(wendal1985@gmail.com)
  *
  */
-public class FreeMarkerSqlTpl {
+public class FreeMarkerSqlTpl extends NutSqlTpl {
+
+    private static final long serialVersionUID = 1L;
+
+    public FreeMarkerSqlTpl(String source) {
+        super(source);
+    }
 
     /**
      * 自定义Configuration
@@ -73,5 +80,10 @@ public class FreeMarkerSqlTpl {
      */
     public static void setConfiguration(Configuration cfg) {
         FreeMarkerSqlTpl.cfg = cfg;
+    }
+
+    @Override
+    protected void render() {
+        c(this);
     }
 }

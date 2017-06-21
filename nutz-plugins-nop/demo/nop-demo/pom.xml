@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.nutz</groupId>
 	<artifactId>nop-demo</artifactId>
@@ -23,7 +22,7 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz-plugins-nop</artifactId>
-			<version>1.r.61-SNAPSHOT</version>
+			<version>1.r.62-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
@@ -40,19 +39,26 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz-plugins-apidoc</artifactId>
-			<version>1.r.61-SNAPSHOT</version>
+			<version>1.r.62-SNAPSHOT</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/junit/junit -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+		</dependency>
+
 	</dependencies>
 	<repositories>
 		<repository>
-			<id>*</id>
+			<id>r</id>
 			<url>https://jfrog.nutz.cn/artifactory/jcenter</url>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
 		<repository>
-			<id>*</id>
+			<id>s</id>
 			<url>https://jfrog.nutz.cn/artifactory/snapshots</url>
 			<snapshots>
 				<enabled>true</enabled>

@@ -1,7 +1,7 @@
 package org.nutz.plugin.spring.boot;
 
-import java.text.NumberFormat;
-import java.util.Locale;
+import java.text.DecimalFormat;
+import java.util.TimeZone;
 
 import org.nutz.json.Json;
 import org.nutz.json.JsonFormat;
@@ -26,51 +26,50 @@ public class NutzJsonMessageConverterAutoConfiguration {
 
 	@Autowired
 	private NutzJsonProperties jsonProperties;
-	
+
 	@Bean
 	public HttpMessageConverter json() {
-		JsonFormat format = null;
-		switch (jsonProperties.getMode()) {
-		case COMPACT:
-			format = JsonFormat.compact();
-			break;
-		case FORLOOK:
-			format = JsonFormat.forLook();
-			break;
-		case FULL:
-			format = JsonFormat.full();
-			break;
-		case NICE:
-			format = JsonFormat.nice();
-			break;
-		case TIDY:
-			format = JsonFormat.tidy();
-			break;
-		default:
-			format = JsonFormat.compact();
-			break;
+		JsonFormat format = JsonFormat.compact();
+		if (jsonProperties.getMode() != null) {// 直接模式设置
+			switch (jsonProperties.getMode()) {
+			case COMPACT:
+				format = JsonFormat.compact();
+				break;
+			case FORLOOK:
+				format = JsonFormat.forLook();
+				break;
+			case FULL:
+				format = JsonFormat.full();
+				break;
+			case NICE:
+				format = JsonFormat.nice();
+				break;
+			case TIDY:
+				format = JsonFormat.tidy();
+				break;
+			default:
+				format = JsonFormat.compact();
+				break;
+			}
+		} else {
+			format = Json.fromJson(JsonFormat.class, Json.toJson(jsonProperties));
+			if (Strings.isNotBlank(jsonProperties.getActived())) {
+				format.setActived(jsonProperties.getActived());
+			}
+			if (Strings.isNotBlank(jsonProperties.getLocked())) {
+				format.setLocked(jsonProperties.getLocked());
+			}
+			if (Strings.isNotBlank(jsonProperties.getDateFormat())) {
+				format.setDateFormat(jsonProperties.getDateFormat());
+			}
+			if (Strings.isNotBlank(jsonProperties.getNumberFormat())) {
+				format.setNumberFormat(new DecimalFormat(jsonProperties.getNumberFormat()));
+			}
+			if (Strings.isNotBlank(jsonProperties.getTimeZone())) {
+				format.setTimeZone(TimeZone.getTimeZone(jsonProperties.getTimeZone()));
+			}
 		}
-		format.setDateFormat(jsonProperties.getDateFormat());
-		if (Strings.isNotBlank(jsonProperties.getActived())) {
-			format.setActived(jsonProperties.getActived());
-		}
-		format.setAutoUnicode(jsonProperties.isAutoUnicode());
-		format.setIndent(jsonProperties.getIndent());
-		format.setIgnoreNull(jsonProperties.isIgnoreNull());
-
-		if (Strings.isNotBlank(jsonProperties.getIndentBy())) {
-			format.setIndentBy(jsonProperties.getIndentBy());
-		}
-
-		if (Strings.isNotBlank(jsonProperties.getLocked())) {
-			format.setLocked(jsonProperties.getLocked());
-		}
-
-		format.setNullAsEmtry(jsonProperties.isNullAsEmtry());
-		format.setNumberFormat(NumberFormat.getCurrencyInstance(Locale.CHINA));
-		format.setQuoteName(jsonProperties.isQuoteName());
-		format.setUnicodeLower(jsonProperties.isUnicodeLower());
-		return new NutzJsonMessageConverter().setFormat(format);
+		return new NutzJsonMessageConverter().setFormat(format).setIgnoreType(jsonProperties.getIgnoreType());
 	}
 
 }

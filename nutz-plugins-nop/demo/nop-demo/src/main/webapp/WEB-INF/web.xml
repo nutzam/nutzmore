@@ -24,7 +24,6 @@
 		<servlet-name>nop</servlet-name>
 		<servlet-class>org.nutz.plugins.nop.server.NOPServlet</servlet-class>
 		<init-param>
-			如果配置路径为nop.properties可以不设置
 			<param-name>config</param-name>
 			<param-value>nop.properties</param-value>
 		</init-param>

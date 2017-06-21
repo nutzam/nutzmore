@@ -10,7 +10,9 @@ import java.util.Map;
 import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.TProcessorFactory;
+import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.protocol.TProtocolFactory;
 import org.nutz.castor.Castors;
 import org.nutz.ioc.Ioc;
 import org.nutz.ioc.IocException;
@@ -37,9 +39,27 @@ public class NutThriftNettyFactory {
 	private Map<String, Object> map = new HashMap<String, Object>();
 
 	protected Ioc ioc;
+	private int port = 8080;
+	private TProtocolFactory factory;
+
+	public NutThriftNettyFactory(Ioc ioc, int port) {
+		this.ioc = ioc;
+		this.port = port;
+		this.factory = new TCompactProtocol.Factory();
+	}
+
+	public NutThriftNettyFactory tProtocolFactory(TProtocolFactory factory) {
+		this.factory = factory;
+		return this;
+	}
 
 	public NutThriftNettyFactory(Ioc ioc) {
 		this.ioc = ioc;
+	}
+
+	public NutThriftNettyFactory serverPort(int port) {
+		this.port = port;
+		return this;
 	}
 
 	public NutThriftNettyFactory load(String... packages) {
@@ -54,7 +74,7 @@ public class NutThriftNettyFactory {
 			for (Object object : map.values()) {
 				services.add(object);
 			}
-			final NiftyProcessor niftyProcessor = new ThriftServiceProcessor(new ThriftCodecManager(), ImmutableList.<ThriftEventHandler> of(), services);
+			final NiftyProcessor niftyProcessor = new ThriftServiceProcessor(new ThriftCodecManager(), ImmutableList.<ThriftEventHandler>of(), services);
 			TProcessor processor = new TProcessor() {
 
 				@Override
@@ -68,7 +88,7 @@ public class NutThriftNettyFactory {
 				}
 
 			};
-			ThriftNettyServer server = new ThriftNettyServer(new ThriftNettyServerDefBuilder().processorFactory(new TProcessorFactory(processor)).build());
+			ThriftNettyServer server = new ThriftNettyServer(new ThriftNettyServerDefBuilder().protocolFactory(factory).serverPort(port).processorFactory(new TProcessorFactory(processor)).build());
 			try {
 				server.start();
 			} catch (InterruptedException e) {

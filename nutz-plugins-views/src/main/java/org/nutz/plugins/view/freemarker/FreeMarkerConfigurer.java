@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -19,6 +20,7 @@ import org.nutz.log.Logs;
 import org.nutz.mvc.Mvcs;
 
 import freemarker.template.Configuration;
+import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.SimpleHash;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateModelException;
@@ -27,18 +29,15 @@ public class FreeMarkerConfigurer {
 
 	private final static Log log = Logs.get();
 
-	private final static String NEW_LINE = "\r\n";
-
 	private Configuration configuration;
 	private String prefix;
 	private String suffix;
 	private FreemarkerDirectiveFactory freemarkerDirectiveFactory;
 	private Map<String, Object> tags = new HashMap<String, Object>();
-	private final StringBuilder pro = new StringBuilder();
 
 	public FreeMarkerConfigurer() {
-		Configuration configuration = new Configuration();
-		this.initp(configuration, Mvcs.getServletContext(), "WEB-INF", ".ftl", new FreemarkerDirectiveFactory());
+		Configuration configuration = new Configuration(Configuration.VERSION_2_3_26);
+		this.initp(configuration, Mvcs.getServletContext(), "/WEB-INF", ".ftl", new FreemarkerDirectiveFactory());
 	}
 
 	public FreeMarkerConfigurer(Configuration configuration, ServletContext sc, String prefix, String suffix, FreemarkerDirectiveFactory freemarkerDirectiveFactory) {
@@ -52,17 +51,18 @@ public class FreeMarkerConfigurer {
 		this.freemarkerDirectiveFactory = freemarkerDirectiveFactory;
 		if (this.prefix == null)
 			this.prefix = sc.getRealPath("/") + prefix;
-		pro.append("tag_syntax=auto_detect").append(NEW_LINE);
-		pro.append("template_update_delay=-1").append(NEW_LINE);
-		pro.append("defaultEncoding=UTF-8").append(NEW_LINE);
-		pro.append("url_escaping_charset=UTF-8").append(NEW_LINE);
-		pro.append("locale=zh_CN").append(NEW_LINE);
-		pro.append("boolean_format=true,false").append(NEW_LINE);
-		pro.append("datetime_format=yyyy-MM-dd HH:mm:ss").append(NEW_LINE);
-		pro.append("date_format=yyyy-MM-dd").append(NEW_LINE);
-		pro.append("time_format=HH:mm:ss").append(NEW_LINE);
-		pro.append("number_format=0.######").append(NEW_LINE);
-		pro.append("whitespace_stripping=true");
+
+		this.configuration.setTagSyntax(Configuration.AUTO_DETECT_TAG_SYNTAX);
+		this.configuration.setTemplateUpdateDelayMilliseconds(-1000);
+		this.configuration.setDefaultEncoding("UTF-8");
+		this.configuration.setURLEscapingCharset("UTF-8");
+		this.configuration.setLocale(Locale.CHINA);
+		this.configuration.setBooleanFormat("true,false");
+		this.configuration.setDateTimeFormat("yyyy-MM-dd HH:mm:ss");
+		this.configuration.setDateFormat("yyyy-MM-dd");
+		this.configuration.setTimeFormat("HH:mm:ss");
+		this.configuration.setNumberFormat("0.######");
+		this.configuration.setWhitespaceStripping(true);
 	}
 
 	public Configuration getConfiguration() {
@@ -102,15 +102,13 @@ public class FreeMarkerConfigurer {
 	}
 
 	protected void initFreeMarkerConfigurer() throws IOException, TemplateException {
-		Properties p = new Properties();
 		String path = freemarkerDirectiveFactory.getFreemarker();
 		File file = Files.findFile(path);
-		if (Lang.isEmpty(file)) {
-			p.load(Streams.wrap(pro.toString().getBytes()));
-		} else {
+		if (!Lang.isEmpty(file)) {
+			Properties p = new Properties();
 			p.load(Streams.fileIn(file));
+			configuration.setSettings(p);
 		}
-		configuration.setSettings(p);
 		File f = Files.findFile(prefix);
 		configuration.setDirectoryForTemplateLoading(f);
 	}
@@ -136,17 +134,17 @@ public class FreeMarkerConfigurer {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param map
 	 * @return
-	 * 
+	 *
 	 *         mapTags : { factory : "$freeMarkerConfigurer#addTags", args : [ {
 	 *         'abc' : 1, 'def' : 2 } ] }
 	 */
 	public FreeMarkerConfigurer addTags(Map<String, Object> map) {
 		if (map != null) {
 			try {
-				configuration.setAllSharedVariables(new SimpleHash(map));
+				configuration.setAllSharedVariables(new SimpleHash(map, new DefaultObjectWrapper(Configuration.VERSION_2_3_26)));
 			} catch (TemplateModelException e) {
 				log.error(e);
 			}
