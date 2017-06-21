@@ -98,7 +98,7 @@ public class MlImagesTest {
         // 定义阀值, 数字越大,代表越白
         int gray_min = 248;
         String sourceDir = "E:\\ximage\\images";
-        String targetDir = "E:\\\\ximage\\\\images_out";
+        String targetDir = "E:\\ximage\\images_out";
         Files.createDirIfNoExists(targetDir);
         Map<String, BufferedImage> map = new LinkedHashMap<>();
         Disks.visitFile(sourceDir, null, false, new FileVisitor() {
@@ -160,7 +160,8 @@ public class MlImagesTest {
                                                            y,
                                                            (sub.x_bottom - sub.x_top) * block_w,
                                                            (sub.y_bottom - sub.y_top) * block_h);
-                    // if (tmpi.getWidth() > 64 && tmpi.getHeight() > 64) {
+                    // 长宽起码64个像素, 而且不能靠近边缘
+                    if (tmpi.getWidth() > 64 && tmpi.getHeight() > 64 && sub.x_top > 1 && sub.x_bottom < (image.getWidth()/block_w) - 1) {
                         File tmp = Files.createFileIfNoExists(targetDir
                                                               + "_object\\"
                                                               + Files.getMajorName(file)
@@ -170,7 +171,7 @@ public class MlImagesTest {
                         Images.write(tmpi, tmp);
                         g2d.drawRect(x, y, tmpi.getWidth(), tmpi.getHeight());
                         g2d.drawString(tmpi.getWidth() + "x" + tmpi.getHeight(), x, y);
-                    // }
+                    }
                 }
                 System.out.println("count=" + subs.size());
                 Images.write(bm, new File(targetDir + "\\" + Files.getMajorName(file) + ".png"));
@@ -205,8 +206,8 @@ public class MlImagesTest {
 
     @Test
     public void test_video_pic_create() throws IOException {
-        String source = "E:\\ximage\\base";
-        String target = "E:\\ximage\\images\\";
+        String source = "E:\\ximage\\base\\";
+        String target = "E:\\ximage\\seqs\\";
         ImageTrace trace = new ImageTrace();
         // 创建图片缓存
         List<BufferedImage> images = new ArrayList<>();
@@ -254,8 +255,7 @@ public class MlImagesTest {
             }
             g2d.dispose();
             out_count++;
-            // Images.write(image, new File(target + String.format("%06d", i) +
-            // ".png"));
+            //Images.write(image, new File(target + String.format("%06d", i) + ".png"));
             trace.update(i, image);
         }
         System.out.println(out_count);
@@ -263,11 +263,12 @@ public class MlImagesTest {
 
     @Test
     public void test_trace() {
-        String prev_path = "E:\\ximage\\images\\000100.png";
-        String next_path = "E:\\ximage\\images\\000101.png";
+        String prev_path = "E:\\ximage\\seqs\\000100.png";
+        String next_path = "E:\\ximage\\seqs\\000101.png";
         ImageTrace trace = new ImageTrace();
-        ImageFrame prev = ImageTrace.buildFrame(trace, Images.read(new File(prev_path)));
-        ImageFrame next = ImageTrace.buildFrame(trace, Images.read(new File(next_path)));
+        ImageFrame prev = trace.buildFrame(Images.read(new File(prev_path)));
+        ImageFrame next = trace.buildFrame(Images.read(new File(next_path)));
+        trace.update(prev);
         trace.update(prev);
         trace.update(next);
 
