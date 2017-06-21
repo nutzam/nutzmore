@@ -5,7 +5,7 @@
     <parent>
         <artifactId>nutzmore</artifactId>
         <groupId>org.nutz</groupId>
-        <version>1.r.61-SNAPSHOT</version>
+        <version>1.r.62-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -15,9 +15,7 @@
         <dependency>
             <groupId>com.justep.bex5</groupId>
             <artifactId>biz-api</artifactId>
-            <version>3.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/biz-api.jar</systemPath>
+            <version>3.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
