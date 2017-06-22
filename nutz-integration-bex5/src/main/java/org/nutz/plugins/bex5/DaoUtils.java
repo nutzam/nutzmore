@@ -72,7 +72,7 @@ public class DaoUtils {
 	 * @return
 	 * @throws Exception
 	 */
-	public static Dao getDaoInTransaction(Model model) throws Exception {
+	public static Dao getDaoInTransaction(Model model) {
 		if (model == null) {
 			throw new RuntimeException("model不能为空！");
 		}

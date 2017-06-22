@@ -96,3 +96,4 @@ https://jfrog.nutz.cn/artifactory/snapshots/org/nutz/
 | [nutz-plugins-websocket](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-websocket) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-websocket/badge.svg) | 为websocket提供完整支持 | **生产** |
 | [nutz-plugins-xmlentitymaker](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-xmlentitymaker) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-xmlentitymaker/badge.svg) | 使用xml定义实体,替换原生的注解方式 | 试用 |
 | [nutz-plugins-zdoc](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-zdoc) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-zdoc/badge.svg) | 写文档也可以很轻松 | 开发中 |
+| [nutz-plugins-bex5](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-bex5) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-bex5/badge.svg) | 和bex5集成 | 试用 |
