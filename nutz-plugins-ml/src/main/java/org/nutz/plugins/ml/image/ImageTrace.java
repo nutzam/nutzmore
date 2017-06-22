@@ -12,6 +12,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
+import org.nutz.plugins.ml.image.bean.ImageFrame;
+import org.nutz.plugins.ml.image.bean.ImageTraceCallback;
 import org.nutz.plugins.ml.image.bean.SubImage;
 
 public class ImageTrace {
@@ -28,6 +30,7 @@ public class ImageTrace {
     public int offset_detect_size = 32; // 物品偏移量检测块的宽高
     public Map<String, SubImage> subs = new LinkedHashMap<>();
     public AtomicLong objIdSeq = new AtomicLong();
+    public ImageTraceCallback callback;
 
     public void update(int index, BufferedImage img) {
         if (img.getWidth() != w || img.getHeight() != h) {
@@ -46,12 +49,18 @@ public class ImageTrace {
             log.debugf("%06d 下一帧图像没有任何物品!! 重置所有东西!!", next.index);
             this.prev = null;
             subs.clear(); // 清除已知物品列表
+            for (String id : new HashSet<>(subs.keySet())) {
+                removeObject(id, subs.get(id));
+            }
             return;
         }
         if (this.prev == null) {
             log.debugf("%06d 上一帧不存在,那把当前帧设置为上一帧,并添加检测到的物品", next.index);
             this.prev = next;
-            subs.clear(); // 清除已知物品列表
+            // 清除已知物品列表
+            for (String id : new HashSet<>(subs.keySet())) {
+                removeObject(id, subs.get(id));
+            }
             for (SubImage sub : this.prev.subs) {
                 // 新增物品 
                 newObject(prev, sub);
@@ -104,7 +113,7 @@ public class ImageTrace {
                 }
             } else {
                 log.debugf("%06d 物品(id=%s)已消失? 移除之", next.index,  en.getKey());
-                subs.remove(en.getKey());
+                removeObject(en.getKey(), en.getValue());
             }
         }
         for (SubImage sub : next.subs) {
@@ -168,15 +177,14 @@ public class ImageTrace {
         sub.gray_finger = new int[offset_detect_size][frame.image.getHeight()];
         System.arraycopy(frame.gray, finger_start, sub.gray_finger, 0, offset_detect_size);
         subs.put(id, sub);
+        if (callback != null)
+            callback.newObject(this, frame, id, sub);
     }
-
-    public static class ImageFrame {
-        int index;
-        public BufferedImage image;
-        public List<SubImage> subs;
-        public int[][] gray;
-        public int[][] gray_avg;
-        public boolean[][] gray_bol;
+    
+    public void removeObject(String id, SubImage sub) {
+        subs.remove(id);
+        if (callback != null)
+            callback.removeObject(this, id, sub);
     }
     
     public static void printAsImage(int[][] array) {

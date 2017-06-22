@@ -20,7 +20,7 @@ import org.nutz.lang.Files;
 import org.nutz.lang.Stopwatch;
 import org.nutz.lang.util.Disks;
 import org.nutz.lang.util.FileVisitor;
-import org.nutz.plugins.ml.image.ImageTrace.ImageFrame;
+import org.nutz.plugins.ml.image.bean.ImageFrame;
 import org.nutz.plugins.ml.image.bean.SubImage;
 
 public class MlImagesTest {
