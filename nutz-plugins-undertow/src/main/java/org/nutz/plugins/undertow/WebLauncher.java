@@ -16,17 +16,14 @@ import java.io.File;
 
 import javax.servlet.DispatcherType;
 
-import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.lang.Files;
 import org.nutz.lang.Lang;
-import org.nutz.lang.util.CmdParams;
-import org.nutz.lang.util.NutMap;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.mvc.NutFilter;
 
 /**
- * 默认的undertow服务的启动器
+ * 默认的undertow服务启动器
  * 
  * @author qinerg@gmail.com
  * @varsion 2017-5-24
@@ -34,8 +31,15 @@ import org.nutz.mvc.NutFilter;
 public class WebLauncher {
 
 	private static Log log = Logs.get();
-	// 设置启动的参数
-	private static NutMap config = new NutMap();
+
+	/**
+	 * 缺省的启动器
+	 * @param args
+	 * @throws Exception
+	 */
+	public static void main(String[] args) throws Exception {
+		start(args);
+	}
 
 	/**
 	* 执行启动的主函数，接受-config命令行参数指定 web服务器的配置文件路径。如果没有这个参数，默认在 classpath 下寻找 "web.properties" 文件。
@@ -58,24 +62,35 @@ public class WebLauncher {
 	 * @throws Exception 
 	*/
 	public static void start(String[] args) {
-		start(args, getDefaultBuilder());
-	}
-
-	public static void start(String[] args, Builder builder) {
 		start(args, getDefaultBuilder(), getDefaultServletBuilder());
 	}
 
+	public static void start(String[] args, Builder builder) {
+		start(args, builder, getDefaultServletBuilder());
+	}
+
 	public static void start(String[] args, Builder builder, DeploymentInfo servletBuilder) {
-		if (args != null && args.length > 0 && args[0].startsWith("-")) {
-			configByArgs(args);
-		} else {
-			configByProperties("web.properties");
-		}
+		WebConfig conf = WebConfig.NewByArgs(args);
+		start(conf, builder, servletBuilder);
+	}
 
-		String contextPath = config.getString("web.path");
+	/**
+	 * 直接指定运行参数方式启动
+	 * @param conf
+	 */
+	public static void start(WebConfig conf) {
+		start(conf, getDefaultBuilder(), getDefaultServletBuilder());
+	}
 
-		servletBuilder.setContextPath(contextPath).setDefaultSessionTimeout(config.getInt("web.session")).setDeploymentName("nutz-web");
-		addDefaultFilter(servletBuilder);
+	public static void start(WebConfig conf, Builder builder) {
+		start(conf, builder, getDefaultServletBuilder());
+	}
+
+	public static void start(WebConfig conf, Builder builder, DeploymentInfo servletBuilder) {
+		String contextPath = conf.getContextPath();
+
+		servletBuilder.setContextPath(contextPath).setDefaultSessionTimeout(conf.getSession()).setDeploymentName("nutz-web");
+		addDefaultFilter(servletBuilder, conf);
 		servletBuilder.addWelcomePages("index.html", "index.htm", "index.do");
 
 		DeploymentManager manager = Servlets.defaultContainer().addDeployment(servletBuilder);
@@ -93,12 +108,12 @@ public class WebLauncher {
 		} else {
 			pathHandler = Handlers.path(Handlers.redirect(contextPath)).addPrefixPath(contextPath, servletHandler);
 		}
-		builder.addHttpListener(config.getInt("web.port"), config.getString("web.ip")).setHandler(pathHandler);
+		builder.addHttpListener(conf.getPort(), conf.getIp()).setHandler(pathHandler);
 
 		final Undertow server = builder.build();
 		server.start();
 
-		log.infof("*** WebServer start at %s:%d! ***", config.getString("web.ip"), config.getInt("web.port"));
+		log.infof("*** WebServer start at %s:%d! ***", conf.getIp(), conf.getPort());
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
@@ -125,15 +140,6 @@ public class WebLauncher {
 	}
 
 	/**
-	 * 缺省的启动器
-	 * @param args
-	 * @throws Exception
-	 */
-	public static void main(String[] args) throws Exception {
-		start(args);
-	}
-
-	/**
 	 * 增加缺省的 filter
 	 * 
 	 * <li>NutFilter.class</li>
@@ -141,56 +147,16 @@ public class WebLauncher {
 	 * 
 	 * @param servletBuilder
 	 */
-	protected static void addDefaultFilter(DeploymentInfo servletBuilder) {
+	protected static void addDefaultFilter(DeploymentInfo servletBuilder, WebConfig conf) {
 		FilterInfo nutzFilter = new FilterInfo("mvc", NutFilter.class);
-		nutzFilter.addInitParam("modules", config.getString("web.modules"));
+		nutzFilter.addInitParam("modules", conf.getMainModules());
 
 		servletBuilder.addFilter(nutzFilter).addFilterUrlMapping("mvc", "/*", DispatcherType.REQUEST).addFilterUrlMapping("mvc", "/*", DispatcherType.FORWARD);
-		File resRootDir = Files.findFile(config.getString("web.root"));
+		File resRootDir = Files.findFile(conf.getRoot());
 		if (resRootDir != null && resRootDir.isDirectory()) {
 			servletBuilder.setResourceManager(new FileResourceManager(resRootDir, 100));
 		} else {
 			servletBuilder.setResourceManager(new ClassPathResourceManager(DeploymentInfo.class.getClassLoader(), "web/"));
 		}
-	}
-
-	// 通过命令行参数初始化
-	private static void configByArgs(String[] args) {
-		CmdParams pp = CmdParams.parse(args, "debug");
-		// 指定了配置文件名，优先加载配置文件中参数
-		if (pp.has("config")) {
-			configByProperties(pp.get("config"));
-		} else {
-			initCommonParam(pp.map());
-		}
-	}
-
-	// 通过 web.properties 文件初始化
-	private static void configByProperties(String configFile) {
-		if (Files.findFile(configFile) != null) {
-			NutMap m = new NutMap();
-			m.putAll(new PropertiesProxy(configFile));
-			initCommonParam(m);
-		} else {
-			log.warnf("web config file[%s] not find, use default config.", configFile);
-			initCommonParam(NutMap.NEW());
-		}
-	}
-
-	//初始化参数项
-	private static void initCommonParam(NutMap map) {
-		config.put("web.ip", map.get("web.ip", "0.0.0.0"));
-		config.put("web.port", map.getInt("web.port", 8080));
-		config.put("web.path", map.get("web.path", "/"));
-		config.put("web.root", map.get("web.root", "src/main/webapp/"));
-		config.put("web.modules", map.get("web.modules", "org.nutz.plugins.undertow.welcome.DefaultModule"));
-		config.put("web.session", map.getInt("web.session", 20));
-		config.put("web.runmode", map.get("web.runmode", "dev"));
-
-		// 线程数配置
-		if (map.containsKey("web.thread.io"))
-			config.put("web.thread.io", map.getInt("web.thread.io"));
-		if (map.containsKey("web.thread.worker"))
-			config.put("web.thread.worker", map.getInt("web.thread.worker"));
 	}
 }
