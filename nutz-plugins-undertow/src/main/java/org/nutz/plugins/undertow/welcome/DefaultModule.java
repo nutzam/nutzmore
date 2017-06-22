@@ -36,6 +36,7 @@ public class DefaultModule {
 		resp.getWriter().write(cs.toString());
 	}
 
+	// 使用nutz内置的代码片段工具来变通实现的视图模板
 	private Segment readTmpl(String tnm, NutMap param) {
 		String tmpl = Streams.readAndClose(Streams.utf8r(DefaultModule.class.getResourceAsStream(tnm)));
 		CharSegment cs = new CharSegment(tmpl);
