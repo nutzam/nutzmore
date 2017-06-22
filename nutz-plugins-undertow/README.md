@@ -2,16 +2,15 @@
 nutz-plugins-undertow 
 ==================================
 
-简单、轻量、高性能的嵌入式web服务器插件。
-
+简单、轻量、高性能的集成式web容器插件。可一键将您的web程序启动，无需繁琐的部署过程。
 
 
 简介(可用性:试用)
 ==================================
 
-nutz-plugins-undertow 是一个集成了JBOSS Undertow内嵌式高性能WEB服务器插件。Undertow 是红帽公司的开源产品，是 [Wildfly](http://www.oschina.net/p/wildfly) 默认的 Web 服务器。
+nutz-plugins-undertow 是一个集成了JBOSS Undertow内嵌式高性能web服务器插件。Undertow 是红帽公司的开源产品，是 [Wildfly](http://www.oschina.net/p/wildfly) 默认的 web 服务器。
 
-Undertow 基于java nio开发，非常轻量，将本插件、nutz及所有依赖包全算上，也仅有4.93M，尚不及apache-tomcat-embed包自身的大小。
+Undertow 基于java nio开发，非常轻量，将本插件、nutz及所有依赖包全算上，也仅有4.93M，尚不及apache-tomcat-embed自身的大小。
 
 同时，各方面压测结果显示，Undertow性能秒杀tomcat、jetty，甚至直追netty 。
 
@@ -58,8 +57,9 @@ public class MainLauncher extends WebLauncher {
 
 + 命令行参数
 + 配置文件
++ 通过代码直接指定参数
 
-两种方式配置的属性是一致的。下面以配置文件方式进行说明。在源码根目示新建一个配置文件web.properties：
+几种方式配置的属性是一致的。下面以配置文件为例说明。在源码根目示新建一个配置文件web.properties：
 
 ```
 # 绑定请求的IP，默认 0.0.0.0
@@ -76,9 +76,20 @@ web.modules=org.nutz.plugins.undertow.welcome.DefaultModule
 web.session=20
 # 应用的运行模式，默认 dev ，暂时没有实际使用
 web.runmode=dev
-# web.thread.io 指定 io 线程数，用于性能调优，可不设置
-# web.thread.worker 指定应用工作线程数，用于性能调优，可不设置
+# web.thread.io 指定 io 线程数，用于性能调优，可选
+# web.thread.worker 指定应用工作线程数，用于性能调优，可选
 ```
+
+当然，您也可以直接通过代码的方式设置各种参数而无需任何配置文件。
+
+~~~java
+public static void main(String[] args) {
+	WebConfig conf = new WebConfig();
+	conf.setPort(9090);
+	
+	WebLauncher.start(conf);
+}
+~~~
 
 
 
@@ -121,11 +132,50 @@ public static void main(String[] args) {
 
 
 
-## 注意
+## 其它
 
-undertow 与传统的web容器不同，不支持web.xml加载filter、servlet，需要通过编程的方式加载。插件已默认加载了nutz mvc的filter。如需加载自定义的filter，可通过getDefaultServletBuilder()方法获取DeploymentInfo的实例，然后自行织入。
+### websocket 的支持
+
+Undertow提供开箱即用的websocket支持，提供了JSR-356的完整实现。要使用此项功能，请将以下片段添加到您的pom.xml中：
+
+~~~
+<dependency>
+  <groupId>io.undertow</groupId>
+  <artifactId>undertow-websockets-jsr</artifactId>
+  <version>1.4.12.Final</version>
+</dependency>
+~~~
 
 
 
+### JSP的支持
 
+Undertow可以通过引入 [Jastow](https://github.com/undertow-io/jastow) 来实现 JSP的功能。
+
+Jasper 通过 Servlet 方式实现，因此需要手工获得DeploymentInfo的实例，并通过addServlet方法将其添加到标准的Undertow servlet部署中:
+
+~~~
+Builder builder = WebLauncher.getDefaultBuilder();
+DeploymentInfo deploy = WebLauncher.getDefaultServletBuilder();
+deploy.addServlet(JspServletBuilder.createServlet("Default Jsp Servlet", "*.jsp"));
+WebLauncher.start(args, builder, deploy);
+~~~
+
+
+
+不过更推荐的方式是引用其它高质量的模板引擎。nutz-plugins-views插件提供了freemarker/velocity/thymeleaf/pdf 几种常见的模板引擎支持，您也可以使用beetl模板，它自带对nutz支持。
+
+
+
+### 引用自定义filter、servlet
+
+undertow 与传统的web容器不同，不支持web.xml加载filter、servlet，需要通过编程的方式加载。插件已默认加载了nutz mvc的filter。如需加载自定义的filter、servlet，可通过getDefaultServletBuilder()方法获取DeploymentInfo的实例，然后自行织入。
+
+~~~java
+Builder builder = WebLauncher.getDefaultBuilder();
+DeploymentInfo deploy = WebLauncher.getDefaultServletBuilder();
+deploy.addServlet(Servlets.servlet("verifycode", VerifyCodeServlet.class).addInitParam("chars", "23456789abcdefghmnpqrstwxyz").addMapping("/verifycode.jpg"));
+
+WebLauncher.start(args, builder, deploy);
+~~~
 
