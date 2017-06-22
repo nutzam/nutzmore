@@ -93,7 +93,7 @@ public class SlogAopInterceptor implements MethodInterceptor {
                             e);
         }
         catch (Exception e1) {
-            log.debug("slog fail", e);
+            log.debug("slog fail", e1);
         }
     }
 }

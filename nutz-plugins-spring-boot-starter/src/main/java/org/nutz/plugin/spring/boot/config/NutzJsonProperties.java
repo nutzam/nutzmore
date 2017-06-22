@@ -16,30 +16,22 @@ public class NutzJsonProperties {
 	}
 
 	/**
-	 * json模式
+	 * json模式,配置此模式意味着其他属性失效
 	 */
-	private Mode mode = Mode.COMPACT;
-
-	/**
-	 * 时间格式
-	 */
-	private String dateFormat = "yyyy-MM-dd HH:mm:ss";
-
-	/**
-	 * 输出的key筛选正则表达式
-	 */
-	private String actived;
-
-	/**
-	 * 自动Unicode转码
-	 */
-	private boolean autoUnicode = false;
+	private Mode mode;
 
 	/**
 	 * 缩进
 	 */
-	private int indent = 4;
-
+	private int indent;
+	/**
+	 * 缩进时用的字符串
+	 */
+	private String indentBy;
+	/**
+	 * 是否使用紧凑模式输出
+	 */
+	private boolean compact;
 	/**
 	 * 是否给字段添加双引号
 	 */
@@ -48,16 +40,35 @@ public class NutzJsonProperties {
 	 * 是否忽略null值
 	 */
 	private boolean ignoreNull;
-
+	/**
+	 * 仅输出的字段的正则表达式
+	 */
+	private String actived;
 	/**
 	 * 不输出的字段的正则表达式
 	 */
 	private String locked;
 
 	/**
+	 * 分隔符
+	 */
+	private char separator = '\"';
+	/**
+	 * 是否自动将值应用Unicode编码
+	 */
+	private boolean autoUnicode;
+	/**
 	 * unicode编码用大写还是小写
 	 */
 	private boolean unicodeLower;
+	/**
+	 * 日期格式
+	 */
+	private String dateFormat;
+	/**
+	 * 数字格式
+	 */
+	private String numberFormat;
 
 	/**
 	 * 遇到空值的时候写入字符串
@@ -65,175 +76,190 @@ public class NutzJsonProperties {
 	private boolean nullAsEmtry;
 
 	/**
-	 * 缩进字符串
+	 * 列表空值的时候写入字符串
 	 */
-	private String indentBy = "\t";
+	private boolean nullListAsEmpty;
 
 	/**
-	 * @return the quoteName
+	 * 字符串空值的时候写入字符串
 	 */
-	public boolean isQuoteName() {
-		return quoteName;
+	private boolean nullStringAsEmpty;
+
+	/**
+	 * Boolean空值作为false
+	 */
+	private boolean nullBooleanAsFalse;
+
+	/**
+	 * Number空值作0
+	 */
+	private boolean nullNumberAsZero;
+
+	/**
+	 * 不使用nutzjson解析的类的全限定名正则表达式,比如 .*springfox.*
+	 */
+	private String ignoreType;
+
+	public String getIgnoreType() {
+		return ignoreType;
 	}
 
-	/**
-	 * @param quoteName
-	 *            the quoteName to set
-	 */
-	public void setQuoteName(boolean quoteName) {
-		this.quoteName = quoteName;
+	public void setIgnoreType(String ignoreType) {
+		this.ignoreType = ignoreType;
 	}
 
-	/**
-	 * @return the ignoreNull
-	 */
-	public boolean isIgnoreNull() {
-		return ignoreNull;
-	}
+	private String timeZone;
 
-	/**
-	 * @param ignoreNull
-	 *            the ignoreNull to set
-	 */
-	public void setIgnoreNull(boolean ignoreNull) {
-		this.ignoreNull = ignoreNull;
-	}
-
-	/**
-	 * @return the locked
-	 */
-	public String getLocked() {
-		return locked;
-	}
-
-	/**
-	 * @param locked
-	 *            the locked to set
-	 */
-	public void setLocked(String locked) {
-		this.locked = locked;
-	}
-
-
-	/**
-	 * @return the unicodeLower
-	 */
-	public boolean isUnicodeLower() {
-		return unicodeLower;
-	}
-
-	/**
-	 * @param unicodeLower
-	 *            the unicodeLower to set
-	 */
-	public void setUnicodeLower(boolean unicodeLower) {
-		this.unicodeLower = unicodeLower;
-	}
-
-
-	/**
-	 * @return the nullAsEmtry
-	 */
-	public boolean isNullAsEmtry() {
-		return nullAsEmtry;
-	}
-
-	/**
-	 * @param nullAsEmtry
-	 *            the nullAsEmtry to set
-	 */
-	public void setNullAsEmtry(boolean nullAsEmtry) {
-		this.nullAsEmtry = nullAsEmtry;
-	}
-
-	/**
-	 * @return the indent
-	 */
-	public int getIndent() {
-		return indent;
-	}
-
-	/**
-	 * @param indent
-	 *            the indent to set
-	 */
-	public void setIndent(int indent) {
-		this.indent = indent;
-	}
-
-	/**
-	 * @return the indentBy
-	 */
-	public String getIndentBy() {
-		return indentBy;
-	}
-
-	/**
-	 * @param indentBy
-	 *            the indentBy to set
-	 */
-	public void setIndentBy(String indentBy) {
-		this.indentBy = indentBy;
-	}
-
-	/**
-	 * @return the autoUnicode
-	 */
-	public boolean isAutoUnicode() {
-		return autoUnicode;
-	}
-
-	/**
-	 * @param autoUnicode
-	 *            the autoUnicode to set
-	 */
-	public void setAutoUnicode(boolean autoUnicode) {
-		this.autoUnicode = autoUnicode;
-	}
-
-	/**
-	 * @return the actived
-	 */
-	public String getActived() {
-		return actived;
-	}
-
-	/**
-	 * @param actived
-	 *            the actived to set
-	 */
-	public void setActived(String actived) {
-		this.actived = actived;
-	}
-
-	/**
-	 * @return the dateFormat
-	 */
-	public String getDateFormat() {
-		return dateFormat;
-	}
-
-	/**
-	 * @param dateFormat
-	 *            the dateFormat to set
-	 */
-	public void setDateFormat(String dateFormat) {
-		this.dateFormat = dateFormat;
-	}
-
-	/**
-	 * @return the mode
-	 */
 	public Mode getMode() {
 		return mode;
 	}
 
-	/**
-	 * @param mode
-	 *            the mode to set
-	 */
 	public void setMode(Mode mode) {
 		this.mode = mode;
+	}
+
+	public int getIndent() {
+		return indent;
+	}
+
+	public void setIndent(int indent) {
+		this.indent = indent;
+	}
+
+	public String getIndentBy() {
+		return indentBy;
+	}
+
+	public void setIndentBy(String indentBy) {
+		this.indentBy = indentBy;
+	}
+
+	public boolean isCompact() {
+		return compact;
+	}
+
+	public void setCompact(boolean compact) {
+		this.compact = compact;
+	}
+
+	public boolean isQuoteName() {
+		return quoteName;
+	}
+
+	public void setQuoteName(boolean quoteName) {
+		this.quoteName = quoteName;
+	}
+
+	public boolean isIgnoreNull() {
+		return ignoreNull;
+	}
+
+	public void setIgnoreNull(boolean ignoreNull) {
+		this.ignoreNull = ignoreNull;
+	}
+
+	public String getActived() {
+		return actived;
+	}
+
+	public void setActived(String actived) {
+		this.actived = actived;
+	}
+
+	public String getLocked() {
+		return locked;
+	}
+
+	public void setLocked(String locked) {
+		this.locked = locked;
+	}
+
+	public char getSeparator() {
+		return separator;
+	}
+
+	public void setSeparator(char separator) {
+		this.separator = separator;
+	}
+
+	public boolean isAutoUnicode() {
+		return autoUnicode;
+	}
+
+	public void setAutoUnicode(boolean autoUnicode) {
+		this.autoUnicode = autoUnicode;
+	}
+
+	public boolean isUnicodeLower() {
+		return unicodeLower;
+	}
+
+	public void setUnicodeLower(boolean unicodeLower) {
+		this.unicodeLower = unicodeLower;
+	}
+
+	public String getDateFormat() {
+		return dateFormat;
+	}
+
+	public void setDateFormat(String dateFormat) {
+		this.dateFormat = dateFormat;
+	}
+
+	public String getNumberFormat() {
+		return numberFormat;
+	}
+
+	public void setNumberFormat(String numberFormat) {
+		this.numberFormat = numberFormat;
+	}
+
+	public boolean isNullAsEmtry() {
+		return nullAsEmtry;
+	}
+
+	public void setNullAsEmtry(boolean nullAsEmtry) {
+		this.nullAsEmtry = nullAsEmtry;
+	}
+
+	public boolean isNullListAsEmpty() {
+		return nullListAsEmpty;
+	}
+
+	public void setNullListAsEmpty(boolean nullListAsEmpty) {
+		this.nullListAsEmpty = nullListAsEmpty;
+	}
+
+	public boolean isNullStringAsEmpty() {
+		return nullStringAsEmpty;
+	}
+
+	public void setNullStringAsEmpty(boolean nullStringAsEmpty) {
+		this.nullStringAsEmpty = nullStringAsEmpty;
+	}
+
+	public boolean isNullBooleanAsFalse() {
+		return nullBooleanAsFalse;
+	}
+
+	public void setNullBooleanAsFalse(boolean nullBooleanAsFalse) {
+		this.nullBooleanAsFalse = nullBooleanAsFalse;
+	}
+
+	public boolean isNullNumberAsZero() {
+		return nullNumberAsZero;
+	}
+
+	public void setNullNumberAsZero(boolean nullNumberAsZero) {
+		this.nullNumberAsZero = nullNumberAsZero;
+	}
+
+	public String getTimeZone() {
+		return timeZone;
+	}
+
+	public void setTimeZone(String timeZone) {
+		this.timeZone = timeZone;
 	}
 
 }

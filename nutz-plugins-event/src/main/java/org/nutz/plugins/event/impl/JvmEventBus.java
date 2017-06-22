@@ -40,6 +40,9 @@ public class JvmEventBus implements EventBus {
 			}
 		}
 	}
+	
+	public void depose() {
+	}
 
 	/**
 	 * 派发事件。事件处理器中的getGroupName方法的值与事件的groupName相同时，事件将被处理。

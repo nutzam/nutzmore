@@ -32,9 +32,9 @@ public class EventIocLoader implements IocLoader {
 	 * @param busType 事件总线类型，目前支持 jvm 和 redis 
 	 */
 	public EventIocLoader(String busType) {
-		String json = "{eventBus:{type:'org.nutz.plugins.event.impl.JvmEventBus',events:{create:'init'},fields:{'ioc':{refer:'$ioc'}}}}";
+		String json = "{eventBus:{type:'org.nutz.plugins.event.impl.JvmEventBus',events:{create:'init', depose:'depose'},fields:{'ioc':{refer:'$ioc'}}}}";
 		if ("redis".equalsIgnoreCase(busType)) {
-			json = "{eventBus:{type:'org.nutz.plugins.event.impl.RedisEventBus',events:{create:'init'},fields:{'ioc':{refer:'$ioc'}, 'redisService':{refer:'redisService'}}}}";
+			json = "{eventBus:{type:'org.nutz.plugins.event.impl.RedisEventBus',events:{create:'init', depose:'depose'},fields:{'ioc':{refer:'$ioc'}, 'redisService':{refer:'redisService'}}}}";
 		}
 		loader = new JsonLoader( new StringReader(json));
 	}

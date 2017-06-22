@@ -20,4 +20,8 @@ public interface EventBus {
 	 */
 	void fireEvent(Event event);
 
+	/**
+	 * 销毁操作
+	 */
+	void depose();
 }

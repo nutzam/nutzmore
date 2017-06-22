@@ -138,6 +138,12 @@
 		<module>nutz-integration-rabbitmq</module>
 		<module>nutz-integration-grpc</module>
 		<module>nutz-plugins-ml</module>
+		<module>nutz-plugins-zdoc</module>
+		<module>nutz-plugins-profiler</module>
+		<module>nutz-integration-neo4j</module>
+		<module>nutz-plugins-wkcache</module>
+		<module>nutz-plugins-event</module>
+    <module>nutz-integration-bex5</module>
 	</modules>
 	<distributionManagement>
 		<snapshotRepository>

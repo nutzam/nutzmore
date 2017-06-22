@@ -21,6 +21,7 @@ public class JvmEventBusTest {
 			Event e1 = new Event("log-event", i);
 			eventBus.fireEvent(e1);
 		}
+		ioc.depose();
 	}
 
 	// 异步事件处理
@@ -33,6 +34,7 @@ public class JvmEventBusTest {
 			eventBus.fireEvent(e1);
 		}
 		Lang.sleep(5 * 1000);
+		ioc.depose();
 	}
 
 }

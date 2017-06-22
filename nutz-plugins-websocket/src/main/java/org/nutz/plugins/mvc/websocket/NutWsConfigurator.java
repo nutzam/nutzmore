@@ -9,6 +9,7 @@ import org.nutz.mvc.Mvcs;
 
 /**
  * 为WebSocket服务类提供Ioc支持
+ * 
  * @author wendal
  *
  */
@@ -20,12 +21,13 @@ public class NutWsConfigurator extends ServerEndpointConfig.Configurator {
             ioc = Mvcs.ctx().getDefaultIoc();
         return ioc.get(endpointClass);
     }
-    
+
     public void modifyHandshake(ServerEndpointConfig sec,
                                 HandshakeRequest request,
                                 HandshakeResponse response) {
         super.modifyHandshake(sec, request, response);
-        sec.getUserProperties().put("HttpSession", request.getHttpSession());
+        javax.servlet.http.HttpSession session = (javax.servlet.http.HttpSession) request.getHttpSession();
+        if (session != null)
+            sec.getUserProperties().put("HttpSession", session);
     }
 }
-

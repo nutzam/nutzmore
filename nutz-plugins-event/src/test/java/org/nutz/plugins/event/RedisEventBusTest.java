@@ -23,6 +23,7 @@ public class RedisEventBusTest {
 		}
 
 		Lang.sleep(10 * 1000);
+		ioc.depose();
 	}
 
 }

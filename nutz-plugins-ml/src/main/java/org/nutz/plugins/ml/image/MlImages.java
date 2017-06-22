@@ -3,8 +3,32 @@ package org.nutz.plugins.ml.image;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.nutz.plugins.ml.image.bean.SubImage;
 
 public class MlImages {
+
+    public static int[][] toARGB(BufferedImage image, int[][] argb) {
+        int w = image.getWidth();
+        int h = image.getHeight();
+        if (image.getType() != BufferedImage.TYPE_INT_ARGB) {
+            BufferedImage dst = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2d = dst.createGraphics();
+            g2d.drawImage(image, 0, 0, null);
+            g2d.dispose();
+            image = dst;
+        }
+        if (argb == null)
+            argb = new int[image.getWidth()][image.getHeight()];
+        for (int i = 0; i < w; i++) {
+            for (int j = 0; j < h; j++) {
+                argb[i][j] = image.getRGB(i, j);
+            }
+        }
+        return argb;
+    }
 
     /**
      * 将图片变成灰度矩阵
@@ -16,11 +40,11 @@ public class MlImages {
      * @return 灰度矩阵
      */
     public static int[][] toGray(BufferedImage image, int x, int y, int w, int h) {
+        int[][] argb = toARGB(image, null);
         int[][] buf = new int[w][h];
         for (int i = x; i < image.getWidth() && i < w; i++) {
             for (int j = y; j < image.getHeight() && j < h; j++) {
-                int tmp = image.getRGB(i, j);
-                buf[i - x][j - y] = rgb2gray(tmp);
+                buf[i - x][j - y] = rgb2gray(argb[i][j]);
             }
         }
         return buf;
@@ -121,10 +145,8 @@ public class MlImages {
         // 按4条边走一遍
         for (int i = 0; i < gray_bol.length; i++) {
             for (int j = 0; j < gray_bol[0].length; j++) {
-                if (i == 0 || i == gray_bol.length - 1) {
-                    if (j == 0 || j == gray_bol[0].length - 1) {
-                        _gray_bol_sell(i, j, gray_bol_ci, gray_walked, gray_bol);
-                    }
+                if ((i == 0 || i == gray_bol.length - 1) || (j == 0 || j == gray_bol[0].length - 1)) {
+                    _gray_bol_sell(i, j, gray_bol_ci, gray_walked, gray_bol);
                 }
             }
         }
@@ -169,17 +191,6 @@ public class MlImages {
         _gray_bol_sell(x-1, y, gray_bol_ci, gray_walked, gray_bol);
         _gray_bol_sell(x, y+1, gray_bol_ci, gray_walked, gray_bol);
         _gray_bol_sell(x, y-1, gray_bol_ci, gray_walked, gray_bol);
-//        for (int i = -1; i < 2; i++) {
-//            for (int j = -1; j < 2; j++) {
-//                int nowX = x + i;
-//                int nowY = y + j;
-//                if (nowX < 0 || nowX >= gray_bol.length)
-//                    continue;
-//                if (nowY < 0 || nowY >= gray_bol[0].length)
-//                    continue;
-//                _gray_bol_sell(nowX, nowY, gray_bol_ci, gray_walked, gray_bol);
-//            }
-//        }
     }
     
     public static BufferedImage draw(boolean[][] gray_bol, int[][] gray_avg, int x, int y, int block_w, int block_h, BufferedImage in) {
@@ -199,6 +210,83 @@ public class MlImages {
         }
         g2d.dispose();
         
+        return out;
+    }
+
+    public static List<SubImage> getSubImages(BufferedImage origin,
+                                              boolean[][] gray_bol,
+                                              int block_w,
+                                              int block_h) {
+        List<SubImage> list = new ArrayList<>();
+        boolean[][] walked = new boolean[gray_bol.length][gray_bol[0].length];
+        for (int x = 0; x < walked.length; x++) {
+            for (int y = 0; y < walked[0].length; y++) {
+                if (walked[x][y])
+                    continue;
+                if (gray_bol[x][y]) {
+                    walked[x][y] = true;
+                    continue;
+                }
+                SubImage sub = new SubImage();
+                sub.x_top = x;
+                sub.y_top = y;
+                sub.x_bottom = x + 1;
+                sub.y_bottom = y + 1;
+                scanSubImage(origin, gray_bol, walked, x, y, block_w, block_h, sub);
+                list.add(sub);
+            }
+        }
+
+        return list;
+    }
+
+    protected static void scanSubImage(BufferedImage origin,
+                                          boolean[][] gray_bol,
+                                          boolean[][] walked,
+                                          int x,
+                                          int y,
+                                          int block_w,
+                                          int block_h,
+                                          SubImage sub) {
+        if (_isBlank(x, y, gray_bol, walked)) {
+            return;
+        }
+        if (walked[x][y])
+            return;
+        walked[x][y] = true;
+        if (sub.x_top > x)
+            sub.x_top = x;
+        if (sub.y_top > y)
+            sub.y_top = y;
+        if (sub.x_bottom < x)
+            sub.x_bottom = x + 1;
+        if (sub.y_bottom < y)
+            sub.y_bottom = y + 1;
+        scanSubImage(origin, gray_bol, walked, x - 1, y, block_w, block_h, sub);
+        scanSubImage(origin, gray_bol, walked, x + 1, y, block_w, block_h, sub);
+        scanSubImage(origin, gray_bol, walked, x, y - 1, block_w, block_h, sub);
+        scanSubImage(origin, gray_bol, walked, x, y + 1, block_w, block_h, sub);
+    }
+
+    protected static boolean _isBlank(int x, int y, boolean[][] gray_bol, boolean[][] walked) {
+        if (x < 0 || x >= gray_bol.length)
+            return true;
+        if (y < 0 || y >= gray_bol[0].length)
+            return true;
+        if (gray_bol[x][y]) {
+            walked[x][y] = true;
+            return true;
+        }
+        return false;
+    }
+
+    public static BufferedImage dup(BufferedImage source) {
+        BufferedImage out = new BufferedImage(source.getWidth(),
+                                              source.getHeight(),
+                                              BufferedImage.TYPE_3BYTE_BGR);
+        Graphics2D g2d = out.createGraphics();
+        g2d.drawImage(source, 0, 0, null);
+        g2d.dispose();
         return out;
     }
 }
