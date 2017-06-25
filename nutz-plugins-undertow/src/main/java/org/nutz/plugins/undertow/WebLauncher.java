@@ -136,7 +136,7 @@ public class WebLauncher {
 	 * @param servletBuilder
 	 */
 	public static DeploymentInfo getDefaultServletBuilder() {
-		return Servlets.deployment().setClassLoader(DeploymentInfo.class.getClassLoader());
+		return Servlets.deployment().setClassLoader(DeploymentInfo.class.getClassLoader()).setEagerFilterInit(true);
 	}
 
 	/**
