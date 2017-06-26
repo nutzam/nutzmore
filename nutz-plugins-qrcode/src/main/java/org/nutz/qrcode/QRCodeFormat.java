@@ -118,7 +118,9 @@ public class QRCodeFormat {
      * @return QRCode生成器的格式
      */
     public QRCodeFormat setEncode(String encode) {
-        this.encode = encode;
+        if (null != encode) {
+            this.encode = encode.toLowerCase();
+        }
         return this;
     }
 
