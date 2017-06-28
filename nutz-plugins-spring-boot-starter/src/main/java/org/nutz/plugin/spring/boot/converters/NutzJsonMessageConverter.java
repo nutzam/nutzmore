@@ -45,7 +45,7 @@ public class NutzJsonMessageConverter extends AbstractGenericHttpMessageConverte
 	}
 
 	{
-		setSupportedMediaTypes(Lang.array2list(new MediaType[] { MediaType.APPLICATION_JSON }));
+		setSupportedMediaTypes(Lang.array2list(new MediaType[] { MediaType.APPLICATION_JSON_UTF8 }));
 	}
 
 	@Override

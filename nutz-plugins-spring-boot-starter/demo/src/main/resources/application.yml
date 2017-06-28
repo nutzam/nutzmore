@@ -2,9 +2,9 @@ spring:
     datasource:
         name: test
         #url: jdbc:h2:~/.h2db/nutz-starter;MODE=MYSQL
-        url: jdbc:mysql://127.0.0.1:3306/test?useUnicode=true&characterEncoding=utf-8&useSSL=false
+        url: jdbc:mysql://139.159.228.38:3306/demo?useUnicode=true&characterEncoding=utf-8&useSSL=false
         username: root
-        password: 123456
+        password: G00dl^ck
         # 使用druid数据源
         type: org.nutz.dao.impl.SimpleDataSource
         #driver-class-name: org.h2.Driver
