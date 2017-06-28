@@ -86,17 +86,22 @@ public class JedisAgent {
     public synchronized Ioc ioc() {
         if (ioc == null) {
             ioc = Mvcs.ctx().getDefaultIoc();
-            if (conf == null)
-                conf = ioc.get(PropertiesProxy.class, "conf");
         }
+        if (ioc != null && conf == null)
+            conf = ioc.get(PropertiesProxy.class, "conf");
         return ioc;
     }
     
     public boolean isReady() {
-        if (jedisPool != null || jedisClusterWrapper != null)
-            return true;
-        if (ioc != null)
-            return true;
-        return Mvcs.ctx().getDefaultIoc() != null;
+        try {
+            if (jedisPool != null || jedisClusterWrapper != null)
+                return true;
+            if (ioc() != null)
+                return true;
+            return Mvcs.ctx().getDefaultIoc() != null;
+        }
+        catch (Throwable e) {
+            return false;
+        }
     }
 }
