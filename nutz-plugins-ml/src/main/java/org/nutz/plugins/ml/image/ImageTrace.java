@@ -31,6 +31,7 @@ public class ImageTrace {
     public Map<String, SubImage> subs = new LinkedHashMap<>();
     public AtomicLong objIdSeq = new AtomicLong();
     public ImageTraceCallback callback;
+    public int diffMax = 3;
 
     public void update(int index, BufferedImage img) {
         if (img.getWidth() != w || img.getHeight() != h) {
@@ -83,7 +84,7 @@ public class ImageTrace {
                   for (int j = y_start; j < y_end; j++) {
                       int prev_pix = sub.gray_finger[i][j];
                       int cur_pix = next.gray[i + x][j];
-                      if (prev_pix != cur_pix) {
+                      if (Math.abs(prev_pix - cur_pix) > diffMax) {
                           flag = false;
                           break OUT;
                       }
