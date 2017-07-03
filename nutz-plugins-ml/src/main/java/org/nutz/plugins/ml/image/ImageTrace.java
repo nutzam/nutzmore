@@ -76,6 +76,8 @@ public class ImageTrace {
         int y_end = next.image.getHeight() - 60;
         for (Entry<String, SubImage> en : new HashSet<>(subs.entrySet())) {
             SubImage sub = en.getValue();
+            y_start = sub.getRealTopY();
+            y_end = sub.getRealBottomY();
             boolean flag = true;
             int x = 0;
             for (; x < image_w - offset_detect_size; x++) {
@@ -98,7 +100,7 @@ public class ImageTrace {
             if (flag) {
                 sub.cur_x_top = x + (offset_detect_size /2) - sub.getRealW()/2 ;
                 offsets.add(sub.cur_x_top - sub.getRealTopX());
-                log.debugf("%06d 物品(id=%s) 原顶点x=%d 现顶点x=%d", next.index, en.getKey(), sub.getRealTopX(), sub.cur_x_top);
+                log.debugf("%06d 物品(id=%s) 原顶点x=%04d 现顶点x=%04d", next.index, en.getKey(), sub.getRealTopX(), sub.cur_x_top);
                 // 看看新图像中的哪些物品就是当前物品, 判断标准是
                 // 原物品的中心坐标,是否在待检测物品的范围之内
                 int cur_center_x = sub.cur_x_top + sub.getRealW()/2;
@@ -170,7 +172,7 @@ public class ImageTrace {
     public void newObject(ImageFrame frame, SubImage sub) {
         String id = ""+ objIdSeq.incrementAndGet();
         int finger_start = sub.getRealTopX() + (sub.getRealW()/2) -(offset_detect_size/2);
-        log.debugf("%06d 新增物品 id=%s %s 指纹区域: [%d, %d] ", frame.index, id, sub.toString(this), finger_start, finger_start+offset_detect_size);
+        log.debugf("%06d 新增物品 id=%s %s 指纹区域: [%04d, %04d] ", frame.index, id, sub.toString(this), finger_start, finger_start+offset_detect_size);
         // 摘取物品图像
         BufferedImage obj_image = frame.image.getSubimage(sub.getRealTopX(), sub.getRealTopY(), sub.getRealW(), sub.getRealH());
         sub.image = MlImages.dup(obj_image);
