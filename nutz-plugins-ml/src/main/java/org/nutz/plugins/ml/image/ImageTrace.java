@@ -114,6 +114,8 @@ public class ImageTrace {
                         }
                     }
                 }
+                if (callback != null)
+                    callback.updateTopX(this, sub.id, sub, sub.getRealTopX());
             } else {
                 log.debugf("%06d 物品(id=%s)已消失? 移除之", next.index,  en.getKey());
                 removeObject(en.getKey(), en.getValue());
@@ -180,6 +182,7 @@ public class ImageTrace {
         sub.gray_finger = new int[offset_detect_size][frame.image.getHeight()];
         System.arraycopy(frame.gray, finger_start, sub.gray_finger, 0, offset_detect_size);
         subs.put(id, sub);
+        sub.id = id;
         if (callback != null)
             callback.newObject(this, frame, id, sub);
     }

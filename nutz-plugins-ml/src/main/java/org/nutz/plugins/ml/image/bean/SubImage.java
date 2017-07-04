@@ -17,6 +17,7 @@ public class SubImage {
     
     public int block_w;
     public int block_h;
+    public String id;
     
     public boolean equals(Object obj) {
         SubImage next = (SubImage)obj;
