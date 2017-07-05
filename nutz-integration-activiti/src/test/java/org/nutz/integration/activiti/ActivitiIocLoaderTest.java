@@ -1,10 +1,7 @@
 package org.nutz.integration.activiti;
 
-import static org.junit.Assert.*;
-
 import java.util.List;
 
-import org.activiti.engine.ActivitiObjectNotFoundException;
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;

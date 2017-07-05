@@ -1,7 +1,5 @@
 package org.nutz.integration.grpc;
 
-import static org.junit.Assert.*;
-
 import org.junit.Test;
 
 public class GrpcProtoMakerTest {
