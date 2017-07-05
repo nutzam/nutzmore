@@ -43,7 +43,7 @@ public class FileSqlManagerAutoConfiguration extends ApplicationObjectSupport {
 
 		@Override
 		public InputStream getInputStream() throws IOException {
-			log.debugf("spring-resource-->%s" + resource.getFilename());
+			log.debugf("spring-resource-->%s", resource.getFilename());
 			return resource.getInputStream();
 		}
 
