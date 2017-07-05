@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
-import javax.servlet.ServletContext;
 
 import org.nutz.dao.SqlManager;
 import org.nutz.dao.impl.FileSqlManager;
@@ -24,21 +23,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ApplicationObjectSupport;
 import org.springframework.core.io.Resource;
-import org.springframework.web.context.ServletContextAware;
 
 @Configuration
 @ConditionalOnClass(SqlManager.class)
 @EnableConfigurationProperties(SqlManagerProperties.class)
-public class FileSqlManagerAutoConfiguration extends ApplicationObjectSupport implements ServletContextAware {
-
-	private ServletContext servletContext;
+public class FileSqlManagerAutoConfiguration extends ApplicationObjectSupport {
 
 	Log log = Logs.get();
-
-	@Override
-	public void setServletContext(ServletContext sc) {
-		this.servletContext = sc;
-	}
 
 	public FileSqlManagerAutoConfiguration() {
 	}
@@ -52,7 +43,7 @@ public class FileSqlManagerAutoConfiguration extends ApplicationObjectSupport im
 
 		@Override
 		public InputStream getInputStream() throws IOException {
-			log.debug("spring-resource-->%s" + resource.getFilename());
+			log.debugf("spring-resource-->%s" + resource.getFilename());
 			return resource.getInputStream();
 		}
 
@@ -60,38 +51,37 @@ public class FileSqlManagerAutoConfiguration extends ApplicationObjectSupport im
 
 	@PostConstruct
 	public void init() {// 初始化一下nutz的扫描
-		if (servletContext != null)
-			Scans.me().init(servletContext).addResourceLocation(new ResourceLocation() {// spring的classpath下的也扫进来
+		Scans.me().addResourceLocation(new ResourceLocation() {// spring的classpath下的也扫进来
 
-				@Override
-				public void scan(String base, Pattern pattern, List<NutResource> list) {
-					base = pattern.matcher(base).find() ? "classpath*:" + base : "classpath*:" + base + "/**";
-					log.debug(base);
-					try {
-						Resource[] tmp = getApplicationContext().getResources(base);
-						for (Resource resource : tmp) {
-							log.debug(resource.getFilename());
-							if (resource.getFilename() == null)
-								continue;
-							if (pattern != null && !pattern.matcher(resource.getFilename()).find()) {
-								continue;
-							}
-							SpringResource sr = new SpringResource();
-							sr.resource = resource;
-							sr.setName(resource.getFilename());
-							sr.setSource("spring");
-							list.add(sr);
+			@Override
+			public void scan(String base, Pattern pattern, List<NutResource> list) {
+				base = pattern.matcher(base).find() ? "classpath*:" + base : "classpath*:" + base + "/**";
+				log.debug(base);
+				try {
+					Resource[] tmp = getApplicationContext().getResources(base);
+					for (Resource resource : tmp) {
+						log.debug(resource.getFilename());
+						if (resource.getFilename() == null)
+							continue;
+						if (pattern != null && !pattern.matcher(resource.getFilename()).find()) {
+							continue;
 						}
-					} catch (IOException e) {
-						e.printStackTrace();
+						SpringResource sr = new SpringResource();
+						sr.resource = resource;
+						sr.setName(resource.getFilename());
+						sr.setSource("spring");
+						list.add(sr);
 					}
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
+			}
 
-				@Override
-				public String id() {
-					return "spring";
-				}
-			});
+			@Override
+			public String id() {
+				return "spring";
+			}
+		});
 	}
 
 	@Bean
