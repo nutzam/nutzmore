@@ -52,6 +52,7 @@ public class FileSqlManagerAutoConfiguration extends ApplicationObjectSupport im
 
 		@Override
 		public InputStream getInputStream() throws IOException {
+			log.debug("spring-resource-->%s" + resource.getFilename());
 			return resource.getInputStream();
 		}
 
@@ -65,9 +66,11 @@ public class FileSqlManagerAutoConfiguration extends ApplicationObjectSupport im
 				@Override
 				public void scan(String base, Pattern pattern, List<NutResource> list) {
 					base = pattern.matcher(base).find() ? "classpath*:" + base : "classpath*:" + base + "/**";
+					log.debug(base);
 					try {
 						Resource[] tmp = getApplicationContext().getResources(base);
 						for (Resource resource : tmp) {
+							log.debug(resource.getFilename());
 							if (resource.getFilename() == null)
 								continue;
 							if (pattern != null && !pattern.matcher(resource.getFilename()).find()) {

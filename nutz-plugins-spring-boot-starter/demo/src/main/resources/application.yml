@@ -48,5 +48,5 @@ nutz:
           basepackage: demo
         sqlmanager:
           paths:
-            - sqls/acl/user.sql
+            - sqls
         
