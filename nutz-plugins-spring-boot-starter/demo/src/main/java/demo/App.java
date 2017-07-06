@@ -16,7 +16,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -295,6 +297,13 @@ public class App {
 
 	public static void main(String[] args) {
 		SpringApplication application = new SpringApplication(App.class);
+		application.addListeners(new ApplicationListener<ContextRefreshedEvent>() {
+
+			@Override
+			public void onApplicationEvent(ContextRefreshedEvent event) {
+				System.err.println(1);
+			}
+		});
 		application.run(args);
 	}
 }
