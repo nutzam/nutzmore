@@ -49,7 +49,6 @@ public class ImageTrace {
         if (next_obj_count == 0) {
             log.debugf("%06d 下一帧图像没有任何物品!! 重置所有东西!!", next.index);
             this.prev = null;
-            subs.clear(); // 清除已知物品列表
             for (String id : new HashSet<>(subs.keySet())) {
                 removeObject(id, subs.get(id));
             }
@@ -78,24 +77,24 @@ public class ImageTrace {
             SubImage sub = en.getValue();
             y_start = sub.getRealTopY();
             y_end = sub.getRealBottomY();
-            boolean flag = true;
+            boolean flag = false;
             int x = 0;
             for (; x < image_w - offset_detect_size; x++) {
-                flag = true; // 重置标志位
-              OUT: for (int i = 0; i < offset_detect_size; i++) {
+                boolean flag2 = true; // 重置标志位
+                OUT: for (int i = 0; i < offset_detect_size; i++) {
                   for (int j = y_start; j < y_end; j++) {
                       int prev_pix = sub.gray_finger[i][j];
                       int cur_pix = next.gray[i + x][j];
                       if (Math.abs(prev_pix - cur_pix) > diffMax) {
-                          flag = false;
+                          flag2 = false;
                           break OUT;
                       }
                   }
-              }
-              if (flag) {
-                  //log.debugf("物品(id=%s) 的指纹区域在 x=%d 找到", en.getKey(), x);
-                  break;
-              }
+                }
+                if (flag2) {
+                    flag = true;
+                    break;
+                }
             }
             if (flag) {
                 sub.cur_x_top = x + (offset_detect_size /2) - sub.getRealW()/2 ;

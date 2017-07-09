@@ -53,9 +53,9 @@ public class MlImagesTest {
         int block_w = 32;
         int block_h = 32;
         // 定义阀值, 数字越大,代表越白
-        int gray_min = 248;
+        int gray_min = 225;
         // 读取图片
-        InputStream ins = getClass().getClassLoader().getResourceAsStream("snap.jpg");
+        InputStream ins = getClass().getClassLoader().getResourceAsStream("id-49jmldjau2h1do5j1ot7m55n9r.jpg");
         BufferedImage image = Images.read(ins);
         assertNotNull(image);
         // 全图转灰度
@@ -79,15 +79,15 @@ public class MlImagesTest {
                             image);
         Images.write(out, new File("out_color_bol_ci.png"));
 
-        // 直接标注空白区域,并且转为灰度
-        // out = MlImages.draw(gray_bol, gray_avg, 0, 0, block_w, block_h,
-        // Images.read(new File("out.png")));
-        // Images.write(out, new File("out_gray_bol.png"));
-
-        // 标注连续的空白区域,并且转为灰度
-        // out = MlImages.draw(MlImages.gray_bol_ci(gray_bol), gray_avg, 0, 0,
-        // block_w, block_h, Images.read(new File("out.png")));
-        // Images.write(out, new File("out_gray_bol_ci.png"));
+//        // 直接标注空白区域,并且转为灰度
+//         out = MlImages.draw(gray_bol, gray_avg, 0, 0, block_w, block_h,
+//         Images.read(new File("out.png")));
+//         Images.write(out, new File("out_gray_bol.png"));
+//
+//        // 标注连续的空白区域,并且转为灰度
+//         out = MlImages.draw(MlImages.gray_bol_ci(gray_bol), gray_avg, 0, 0,
+//         block_w, block_h, Images.read(new File("out.png")));
+//         Images.write(out, new File("out_gray_bol_ci.png"));
     }
 
     @Test
@@ -263,14 +263,32 @@ public class MlImagesTest {
 
     @Test
     public void test_trace() {
-        String prev_path = "E:\\ximage\\seqs\\000100.png";
-        String next_path = "E:\\ximage\\seqs\\000101.png";
+        String prev_path = "E:\\id-49jmldjau2h1do5j1ot7m55n9r.jpg";
+        String next_path = "E:\\id-49jmldjau2h1do5j1ot7m55n9r.jpg";
         ImageTrace trace = new ImageTrace();
+        trace.gray_limit = 230;
         ImageFrame prev = trace.buildFrame(Images.read(new File(prev_path)));
         ImageFrame next = trace.buildFrame(Images.read(new File(next_path)));
         trace.update(prev);
         trace.update(prev);
         trace.update(next);
+
+    }
+    
+    @Test
+    public void test_trace2() {
+        ImageTrace trace = new ImageTrace();
+        trace.gray_limit = 225;
+        trace.diffMax = 25;
+        for (int i = 1; i < 10000; i++) {
+            String path = String.format("D:\\ximage\\real\\%06d.jpg", i);
+            File f = new File(path);
+            if (!f.exists())
+                break;
+            ImageFrame prev = trace.buildFrame(Images.read(new File(path)));
+            prev.index = i;
+            trace.update(prev);
+        }
 
     }
 }
