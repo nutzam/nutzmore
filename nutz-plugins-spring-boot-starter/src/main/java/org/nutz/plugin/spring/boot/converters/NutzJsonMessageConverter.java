@@ -68,10 +68,16 @@ public class NutzJsonMessageConverter extends AbstractGenericHttpMessageConverte
 		/**
 		 * 放过swagger
 		 */
-		if (Pattern.matches(".*springfox.*", type.getTypeName())) {
+		if (Pattern.matches(".*springfox.*", clazz.getName())) {
 			return false;
 		}
-		return ignoreType == null || !ignoreType.matcher(type.getTypeName()).matches();
+		/**
+		 * 放过spring 本身的各种玩意儿
+		 */
+		if (Pattern.matches("org.springframework.*", clazz.getName())) {
+			return false;
+		}
+		return ignoreType == null || !ignoreType.matcher(clazz.getName()).matches();
 	}
 
 	@Override
