@@ -27,6 +27,12 @@ public class MockHttpServletRequest extends HttpServletRequestWrapper {
     protected String contextPath;
 
     protected String[] dispatcherTarget;
+    
+    protected String remoteAddr = "127.0.0.1";
+    
+    protected String remoteHost = "localhost";
+    
+    protected int remotePort = 12345;
 
     public MockHttpServletRequest() {
         super(Mock.EmtryHttpServletRequest);
@@ -306,5 +312,29 @@ public class MockHttpServletRequest extends HttpServletRequestWrapper {
 
     public ServletContext getServletContext() {
         return this.session.getServletContext();
+    }
+    
+    public String getRemoteAddr() {
+        return remoteAddr;
+    }
+    
+    public void setRemoteAddr(String remoteAddr) {
+        this.remoteAddr = remoteAddr;
+    }
+    
+    public String getRemoteHost() {
+        return remoteHost;
+    }
+    
+    public void setRemoteHost(String remoteHost) {
+        this.remoteHost = remoteHost;
+    }
+    
+    public int getRemotePort() {
+        return remotePort;
+    }
+    
+    public void setRemotePort(int remotePort) {
+        this.remotePort = remotePort;
     }
 }

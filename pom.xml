@@ -101,14 +101,14 @@
 	<modules>
 		<module>nutz-integration-activiti</module>
 		<module>nutz-integration-spring</module>
-		<module>nutz-integration-jcache</module>
-		<module>nutz-integration-jsr303</module>
+		
+		
 		<module>nutz-integration-quartz</module>
 		<module>nutz-integration-dwr</module>
-		<module>nutz-integration-jsf</module>
+		
 		<module>nutz-integration-shiro</module>
 		<module>nutz-integration-dubbo</module>
-		<module>nutz-integration-struts2</module>
+		
 		<module>nutz-integration-zbus</module>
 		<module>nutz-integration-hessian</module>
 		<module>nutz-integration-jedis</module>
@@ -117,7 +117,7 @@
 		<module>nutz-plugins-views</module>
 		<module>nutz-plugins-multiview</module>
 		<module>nutz-plugins-xmlentitymaker</module>
-		<module>nutz-plugins-iocloader</module>
+		
 		<module>nutz-plugins-daocache</module>
 		<module>nutz-plugins-protobuf</module>
 		<module>nutz-plugins-sqltpl</module>
@@ -137,7 +137,7 @@
 		<module>nutz-integration-json4excel</module>
 		<module>nutz-integration-rabbitmq</module>
 		<module>nutz-integration-grpc</module>
-		<module>nutz-plugins-ml</module>
+		
 		<module>nutz-plugins-zdoc</module>
 		<module>nutz-plugins-profiler</module>
 		<module>nutz-integration-neo4j</module>

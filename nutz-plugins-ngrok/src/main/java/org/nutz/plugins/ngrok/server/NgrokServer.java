@@ -29,6 +29,7 @@ import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
+import org.nutz.lang.Lang;
 import org.nutz.lang.Streams;
 import org.nutz.lang.Strings;
 import org.nutz.lang.random.R;
@@ -121,8 +122,13 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
     @Override
     public Object call() throws Exception {
         while (status == 1) {
-            Socket socket = mainCtlSS.accept();
-            executorService.submit(new NgrokServerClient(socket));
+            try {
+                executorService.submit(new NgrokServerClient(mainCtlSS.accept()));
+            }
+            catch (Throwable e) {
+                log.warn("something happen", e);
+                Lang.quiteSleep(1000);
+            }
         }
         return null;
     }
@@ -211,34 +217,13 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
                             NgrokMsg.newTunnel("", "", "", "pls check your token").write(out);
                             break;
                         }
-                        for (String host : mapping) {
-                            String prevClientId = hostmap.get(host);
-                            if (prevClientId != null) {
-                                NgrokServerClient prevClient = clients.get(prevClientId);
-                                if (prevClient != null) {
-                                    if (prevClient.socket.isConnected()) {
-                                        log.debug("dup connect!!! host=" + host);
-                                        NgrokMsg.newTunnel("",
-                                                           "",
-                                                           "",
-                                                           "host="
-                                                               + host
-                                                               + " is used by another client!!!")
-                                                .write(out);
-                                        break;
-                                    } else {
-                                        prevClient.clean();
-                                    }
-                                }
-                            }
-                        }
                         String reqId = msg.getString("ReqId");
                         for (String host : mapping) {
 
                             NgrokMsg.newTunnel(reqId, "http://" + host, "http", "").write(out);
                             hostmap.put(host, id); // 冲突了怎么办?
                             reqIdMap.put(host, reqId);
-                            reqProxy(host);
+//                            reqProxy(host);
                         }
                     } else if ("Ping".equals(type)) {
                         NgrokMsg.pong().write(out);
@@ -260,6 +245,9 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
                         break;
                     }
                 }
+            }
+            catch (Throwable e) {
+                log.info("something happen!!!", e);
             }
             finally {
                 if (!proxyMode) {
