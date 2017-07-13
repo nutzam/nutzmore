@@ -6,7 +6,7 @@
 		<artifactId>nutzmore</artifactId>
 		<version>1.r.62-SNAPSHOT</version>
 	</parent>
-	<artifactId>nutz-plugins-recur</artifactId>
+	<artifactId>nutz-plugins-zcron</artifactId>
 
 	<dependencies>
 	</dependencies>

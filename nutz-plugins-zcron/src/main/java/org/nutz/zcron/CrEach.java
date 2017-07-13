@@ -1,4 +1,4 @@
-package org.nutz.quartz;
+package org.nutz.zcron;
 
 /**
  * 迭代回调接口
@@ -7,7 +7,7 @@ package org.nutz.quartz;
  * @param <T>
  *            被填充的数组元素类型
  */
-public interface QzEach<T> {
+public interface CrEach<T> {
 
 	/**
 	 * 迭代回调函数

@@ -1,4 +1,4 @@
-package org.nutz.quartz;
+package org.nutz.zcron;
 
 import java.util.Calendar;
 
@@ -24,7 +24,7 @@ import org.nutz.lang.Lang;
  * 
  * @author zozoh(zozohtnt@gmail.com)
  */
-public class QzItem_ww extends QzDateItem {
+public class CrItem_ww extends CrDateItem {
 
     private final static int MOD_ww = 1000;
 
@@ -78,7 +78,7 @@ public class QzItem_ww extends QzDateItem {
             str = str.substring(0, pos);
             breakWeek = true;
         }
-        int v = super.eval(str, QzItem.DAYS_OF_WEEK, 1);
+        int v = super.eval(str, CrItem.DAYS_OF_WEEK, 1);
         return v + MOD_ww * n;
     }
 

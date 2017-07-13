@@ -1,0 +1,18 @@
+package org.nutz.zcron;
+
+import java.util.Calendar;
+
+public class CrItem_yy extends CrDateItem {
+
+    @Override
+    protected int eval4override(String str) {
+        return super.eval(str, null, 1);
+    }
+
+    @Override
+    boolean match(Calendar c) {
+        int yy = c.get(Calendar.YEAR);
+        return super._match_(yy, super.prepare(0));
+    }
+
+}

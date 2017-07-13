@@ -1,4 +1,4 @@
-package org.nutz.quartz;
+package org.nutz.zcron;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -12,64 +12,12 @@ import org.nutz.lang.Times;
 import org.nutz.lang.born.Borning;
 import org.nutz.lang.util.NutMap;
 
-/**
- * 封装 Quartz 表达式的解析，和解释
- * <ul>
- * <li>解析 : 将字符串格式化
- * <li>解释 : 根据解释结果，填充一个执行数组
- * </ul>
- * 
- * <h4>关于 Quartz 的简要说明</h4>
- * 
- * <pre>
- * 表达式是一个字符串，它有六个子表达式构成。这些子表达式用空格来分隔。 
- *  # 子表达式描述如下： 
- *     0) 秒（0~59） 
- *     1) 分钟（0~59） 
- *     2) 小时（0~23） 
- *     3) 天（月）（1~31，但是你需要考虑你月的天数） 
- *     4) 月（1~12） 
- *     5) 天（星期）（1~7 1=SUN 或 SUN，MON，TUE，WED，THU，FRI，SAT）
- *  # 特殊符号
- *     '-' : 范围， 比如在子表达式（月），"1-4" 表示 2月到5月
- *     "," : 列表分隔, 比如在子表达式（天－星期），"1,3" 表示 周日和周二
- *     "*" : 代表所有可能的值
- *     "/" : 用来指定数值的增量
- *            > 例如: 在子表达式（分钟）里的 "0/15" 表示从第0分钟开始，每15分钟
- *            > 又如: 在子表达式（分钟）里的 "3/20" 表示从第3分钟开始，每20分钟
- *                   （它和 "3，23，43" ）的含义一样 
- *     "?" : 仅被用于天（月）和天（星期）两个子表达式，表示不指定值 
- *     "L" : 仅被用于天（月）和天（星期）两个子表达式，它是单词“last”的缩写
- *            > 在天（月）子表达式中，“L”表示一个月的最后一天
- *                >> 6L”表示这个月的倒数第６天
- *            > 在天（星期）自表达式中，“L”表示一个星期的最后一天，也就是SAT
- *                >> “FRIL”表示这个月的最一个星期五
- *     "W" : 仅被用于天（月）子表达式，表示工作日
- *            > "W" 为所有工作日
- *            > "4W" 为距离本月第5日最近的工作日
- *            > "4LW" 为距离当月倒数第4日最近的工作日
- *     "#" : 仅用在天（星期）表示第几个
- *            > 3#1 表示 第1个周二
- *            > FRI#2 第2个周五
- * 
- * 
- * </pre>
- * 
- * 
- * 
- * @author zozoh(zozohtnt@gmail.com)
- */
-// TODO 还未支持年
-public class Quartz {
+public class ZCron {
 
-    public static Quartz NEW(String qzs) {
-        Quartz qs = NEW();
-        qs.valueOf(qzs);
-        return qs;
-    }
-
-    public static Quartz NEW() {
-        return new Quartz();
+    public static ZCron parse(String cron) {
+        ZCron cr = new ZCron();
+        cr.valueOf(cron);
+        return cr;
     }
 
     /**
@@ -81,7 +29,7 @@ public class Quartz {
      * 
      * @param <T>
      * @param array
-     *            Quartz 填充的数组
+     *            填充的数组
      * @return 紧凑的数组（下标信息丢失）
      */
     @SuppressWarnings("unchecked")
@@ -99,51 +47,56 @@ public class Quartz {
      * 
      * @param <T>
      * @param array
-     *            Quartz 填充的数组
+     *            填充的数组
      * @return 紧凑的列表（下标信息保留）
      */
-    public static <T> ArrayList<QzObj<T>> compactAll(T[] array) {
-        ArrayList<QzObj<T>> list = new ArrayList<QzObj<T>>(array.length);
+    public static <T> ArrayList<CronObj<T>> compactAll(T[] array) {
+        ArrayList<CronObj<T>> list = new ArrayList<CronObj<T>>(array.length);
         for (int i = 0; i < array.length; i++)
             if (null != array[i])
-                list.add(new QzObj<T>(array[i], i));
+                list.add(new CronObj<T>(array[i], i));
         list.trimToSize();
         return list;
     }
 
-    /*-------------------------------子表达式下标的含义----*/
     private String str; // 原始信息
-    private QzItem iss;
-    private QzItem imm;
-    private QzItem iHH;
-    private QzDateItem idd;
-    private QzDateItem iMM;
-    private QzDateItem iww;
+
+    /*-------------------------标准 Cron 表达式部分----*/
+    private CrItem iss;
+    private CrItem imm;
+    private CrItem iHH;
+    private CrDateItem idd;
+    private CrDateItem iMM;
+    private CrDateItem iww;
+    private CrDateItem iyy;
+
+    /*---------------------------------------扩展部分----*/
 
     /*---------------------------------------构造函数----*/
-    public Quartz() {
-        iss = new QzItem();
-        imm = new QzItem();
-        iHH = new QzItem();
-        idd = new QzItem_dd();
-        iMM = new QzItem_MM();
-        iww = new QzItem_ww();
+    public ZCron() {
+        iss = new CrItem();
+        imm = new CrItem();
+        iHH = new CrItem();
+        idd = new CrItem_dd();
+        iMM = new CrItem_MM();
+        iww = new CrItem_ww();
+        iyy = null;
     }
 
     /**
-     * 根据字符串，重新解析一个 Quartz 表达式
+     * 根据字符串，重新解析一个表达式
      * 
-     * @param qzs
-     *            Quartz 表达式字符串
+     * @param cron
+     *            表达式字符串
      * @return 自身以便链式使用
      */
-    public Quartz valueOf(String qzs) {
-        this.str = qzs;
+    public ZCron valueOf(String cron) {
+        this.str = cron;
         // 拆
-        String[] ss = Strings.splitIgnoreBlank(qzs, "[ ]");
+        String[] ss = Strings.splitIgnoreBlank(cron, "[ ]");
         // 验证
-        if (6 != ss.length)
-            throw Lang.makeThrow("Wrong format '%s': expect %d items but %d", qzs, 6, ss.length);
+        if (ss.length < 6)
+            throw Lang.makeThrow("Wrong format '%s': expect %d items but %d", cron, 6, ss.length);
         // 解析子表达式
         iss.valueOf(ss[0]);
         imm.valueOf(ss[1]);
@@ -151,6 +104,10 @@ public class Quartz {
         idd.valueOf(ss[3]);
         iMM.valueOf(ss[4]);
         iww.valueOf(ss[5]);
+        if (ss.length >= 7) {
+            iyy = new CrItem_yy();
+            iyy.valueOf(ss[6]);
+        }
         // 返回
         return this;
     }
@@ -163,6 +120,9 @@ public class Quartz {
      * @return 是否匹配
      */
     public boolean matchDate(Calendar c) {
+        if (null != iyy && !iyy.match(c))
+            return false;
+
         if (!idd.match(c))
             return false;
 
@@ -231,6 +191,19 @@ public class Quartz {
     }
 
     /**
+     * 匹配年
+     * 
+     * @param year
+     *            年份，2017 等
+     * @return 是否匹配
+     */
+    public boolean matchYear(int year) {
+        if (null == this.iyy)
+            return true;
+        return this.iyy._match_(year, this.iyy.prepare(0));
+    }
+
+    /**
      * 根据给定的秒数，判断是否匹配本表达式
      * 
      * @param sec
@@ -279,23 +252,23 @@ public class Quartz {
     }
 
     /**
-     * @see #each(Object[], QzEach, Calendar)
+     * @see #each(Object[], CrEach, Calendar)
      */
-    public <T> void each(T[] array, QzEach<T> callback, String ds) {
+    public <T> void each(T[] array, CrEach<T> callback, String ds) {
         this.each(array, callback, Times.C(ds));
     }
 
     /**
-     * @see #each(Object[], QzEach, Calendar)
+     * @see #each(Object[], CrEach, Calendar)
      */
-    public <T> void each(T[] array, QzEach<T> callback, Date d) {
+    public <T> void each(T[] array, CrEach<T> callback, Date d) {
         this.each(array, callback, Times.C(d));
     }
 
     /**
-     * @see #each(Object[], int, int, int, Calendar, QzEach)
+     * @see #each(Object[], int, int, int, Calendar, CrEach)
      */
-    public <T> void each(T[] array, QzEach<T> callback, Calendar c) {
+    public <T> void each(T[] array, CrEach<T> callback, Calendar c) {
         if (null != array && array.length > 0)
             each(array, callback, c, 0, array.length, 86400 / array.length);
     }
@@ -307,11 +280,11 @@ public class Quartz {
      * 根据你给定的日期，本函数来决定具体哪个一数组项目要被执行回调<br>
      * 当然，如果你给定日期不能匹配表达式，本函数会直接跳过执行，如果你不给定日期，则本函数一定会执行
      * <p>
-     * 关于数组的长度涉及到一个时间的缩放问题，Quartz 实际上是声明了一天中的一系列启动点<br>
+     * 关于数组的长度涉及到一个时间的缩放问题，NutzCron 实际上是声明了一天中的一系列启动点<br>
      * 这些点，我们可以用秒来表示，从 0－86399 分别表示一天中的任何一秒。 <br>
      * <b style="color:red">因此，给定的数组的长度最好能把 86400 整除 否则一天中最后一段时间会被忽略掉</b>
      * <p>
-     * 根据数组的长度，我就能知道，你所关心的 Quartz 表达式精细程度，<br>
+     * 根据数组的长度，我就能知道，你所关心的 Cron 表达式精细程度，<br>
      * 比如 如果长度为 24 则，你其实仅仅关心到一个小时，如果 1440 你仅仅关心到1分钟
      * <p>
      * 同时，你可以自由的定义，比如你给定一个 400 长度的数组，那么 86400/400=216。<br>
@@ -327,10 +300,10 @@ public class Quartz {
      * @param <T>
      * @param array
      *            要被访问数组
-     * 
      * @param callback
-     *            如果数组下标被匹配，则要执行的回调 * @param off 从数组的哪个下标开始访问
-     * 
+     *            如果数组下标被匹配，则要执行的回调
+     * @param off
+     *            从数组的哪个下标开始访问
      * @param c
      *            日期对象。空的话，一定会执行迭代
      * @param len
@@ -338,7 +311,7 @@ public class Quartz {
      * @param unit
      *            一个数组元素表示多少秒
      */
-    public <T> void each(T[] array, QzEach<T> callback, Calendar c, int off, int len, int unit) {
+    public <T> void each(T[] array, CrEach<T> callback, Calendar c, int off, int len, int unit) {
         // 填充数组为空，每必要填充
         if (null == array || array.length == 0)
             return;
@@ -390,20 +363,20 @@ public class Quartz {
      *            一个数组元素表示多少秒
      * 
      * @return 数组本身以便链式赋值
-     * @see #each(Object[], QzEach, Calendar)
+     * @see #each(Object[], CrEach, Calendar)
      */
     @SuppressWarnings("unchecked")
-    public <T extends QzOverlapor> T[] overlap(T[] array,
-                                               final Object obj,
-                                               Calendar c,
-                                               int off,
-                                               int len,
-                                               int unit) {
+    public <T extends CronOverlapor> T[] overlap(T[] array,
+                                                 final Object obj,
+                                                 Calendar c,
+                                                 int off,
+                                                 int len,
+                                                 int unit) {
         if (null != array && array.length > 0) {
             Mirror<?> mi = Mirror.me(array.getClass().getComponentType());
             final Borning<T> borning = (Borning<T>) mi.getBorning();
             final Object[] args = new Object[0];
-            this.each(array, new QzEach<T>() {
+            this.each(array, new CrEach<T>() {
                 public void invoke(T[] array, int i) {
                     // 增加一个叠加器
                     if (null == array[i])
@@ -417,9 +390,9 @@ public class Quartz {
     }
 
     /**
-     * @see #overlap(QzOverlapor[], Object, Calendar, int, int, int)
+     * @see #overlap(CronOverlapor[], Object, Calendar, int, int, int)
      */
-    public <T extends QzOverlapor> T[] overlap(T[] array, final Object obj, Calendar c) {
+    public <T extends CronOverlapor> T[] overlap(T[] array, final Object obj, Calendar c) {
         if (null == array || array.length == 0)
             return array;
         return this.overlap(array, obj, c, 0, array.length, 86400 / array.length);
@@ -428,9 +401,9 @@ public class Quartz {
     /**
      * 根据当前时间的毫秒数叠加数组
      * 
-     * @see #overlap(QzOverlapor[], Object, Calendar)
+     * @see #overlap(CronOverlapor[], Object, Calendar)
      */
-    public <T extends QzOverlapor> T[] overlapByToday(T[] array, T obj) {
+    public <T extends CronOverlapor> T[] overlapByToday(T[] array, T obj) {
         return overlap(array, obj, Calendar.getInstance());
     }
 
@@ -445,9 +418,9 @@ public class Quartz {
      * @param ms
      *            毫秒数，但是仅仅其中的天这部分有意义
      * @return 数组本身以便链式赋值
-     * @see #overlap(QzOverlapor[], Object, Calendar)
+     * @see #overlap(CronOverlapor[], Object, Calendar)
      */
-    public <T extends QzOverlapor> T[] overlapBy(T[] array, T obj, long ms) {
+    public <T extends CronOverlapor> T[] overlapBy(T[] array, T obj, long ms) {
         return overlap(array, obj, Times.C(ms));
     }
 
@@ -462,9 +435,9 @@ public class Quartz {
      * @param ds
      *            日期字符串，格式为 yyyy-MM-dd 的字符串
      * @return 数组本身以便链式赋值
-     * @see #overlap(QzOverlapor[], Object, Calendar)
+     * @see #overlap(CronOverlapor[], Object, Calendar)
      */
-    public <T extends QzOverlapor> T[] overlapBy(T[] array, Object obj, String ds) {
+    public <T extends CronOverlapor> T[] overlapBy(T[] array, Object obj, String ds) {
         return overlap(array, obj, Times.C(ds));
     }
 
@@ -479,9 +452,9 @@ public class Quartz {
      * @param d
      *            时间，但是仅仅其中的天这部分有意义
      * @return 数组本身以便链式赋值
-     * @see #overlap(QzOverlapor[], Object, Calendar)
+     * @see #overlap(CronOverlapor[], Object, Calendar)
      */
-    public <T extends QzOverlapor> T[] overlapBy(T[] array, T obj, Date d) {
+    public <T extends CronOverlapor> T[] overlapBy(T[] array, T obj, Date d) {
         return overlap(array, obj, Times.C(d.getTime()));
     }
 
@@ -528,7 +501,7 @@ public class Quartz {
      * 它将调用 each 函数，填充数组中的匹配项。
      * <p>
      * 所谓填充，就是数组每个元素都是一个 T，匹配的数组项，被设置成填充对象。 <br>
-     * 与之不同的，{@link #overlap(QzOverlapor[], Object, Calendar)} 是叠加到一个 QzList
+     * 与之不同的，{@link #overlap(CronOverlapor[], Object, Calendar)} 是叠加到一个 QzList
      * 
      * @param <T>
      * @param array
@@ -545,10 +518,10 @@ public class Quartz {
      *            一个数组元素表示多少秒
      * 
      * @return 数组本身以便链式赋值
-     * @see #each(Object[], QzEach, Calendar)
+     * @see #each(Object[], CrEach, Calendar)
      */
     public <T> T[] fill(T[] array, final T obj, Calendar c, int off, int len, int unit) {
-        this.each(array, new QzEach<T>() {
+        this.each(array, new CrEach<T>() {
             public void invoke(T[] array, int i) {
                 array[i] = obj;
             }

@@ -1,4 +1,4 @@
-package org.nutz.quartz;
+package org.nutz.zcron;
 
 import java.util.ArrayList;
 
@@ -9,7 +9,7 @@ import org.nutz.lang.Lang;
  * 
  * @author zozoh(zozohtnt@gmail.com)
  */
-class QzItem {
+class CrItem {
 
     /*---------------------------------------常量表-----*/
     /**

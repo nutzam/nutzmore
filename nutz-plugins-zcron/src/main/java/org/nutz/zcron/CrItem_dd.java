@@ -1,4 +1,4 @@
-package org.nutz.quartz;
+package org.nutz.zcron;
 
 import java.util.Calendar;
 
@@ -26,11 +26,11 @@ import org.nutz.lang.Strings;
  * 
  * @author zozoh(zozohtnt@gmail.com)
  */
-public class QzItem_dd extends QzDateItem {
+public class CrItem_dd extends CrDateItem {
 
     private final static int MOD_dd = 100;
 
-    public QzItem_dd() {
+    public CrItem_dd() {
         this.supportLast = true;
     }
 

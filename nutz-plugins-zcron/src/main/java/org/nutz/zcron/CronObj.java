@@ -1,4 +1,4 @@
-package org.nutz.quartz;
+package org.nutz.zcron;
 
 /**
  * 让一个数组变成紧凑数组的时候，用来保留下标信息的对象
@@ -6,9 +6,9 @@ package org.nutz.quartz;
  * @author zozoh(zozohtnt@gmail.com)
  * @param <T>
  */
-public class QzObj<T> {
+public class CronObj<T> {
 
-	public QzObj(T obj, int index) {
+	public CronObj(T obj, int index) {
 		this.obj = obj;
 		this.index = index;
 	}

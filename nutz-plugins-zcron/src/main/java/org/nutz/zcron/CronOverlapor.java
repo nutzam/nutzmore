@@ -1,4 +1,4 @@
-package org.nutz.quartz;
+package org.nutz.zcron;
 
 import java.lang.reflect.Array;
 import java.util.LinkedList;
@@ -11,11 +11,11 @@ import org.nutz.lang.Lang;
  * 
  * @author zozoh(zozohtnt@gmail.com)
  */
-public class QzOverlapor {
+public class CronOverlapor {
 
 	private List<Object> list;
 
-	public QzOverlapor() {
+	public CronOverlapor() {
 		list = new LinkedList<Object>();
 	}
 

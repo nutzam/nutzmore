@@ -1,10 +1,10 @@
-package org.nutz.quartz;
+package org.nutz.zcron;
 
 import java.util.Calendar;
 
 import org.nutz.lang.Lang;
 
-abstract class QzDateItem extends QzItem {
+abstract class CrDateItem extends CrItem {
 
 	/**
 	 * 是否匹配一个日期

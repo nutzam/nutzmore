@@ -1,4 +1,4 @@
-package org.nutz.quartz;
+package org.nutz.zcron;
 
 import java.util.Calendar;
 
@@ -7,7 +7,7 @@ import java.util.Calendar;
  * 
  * @author zozoh(zozohtnt@gmail.com)
  */
-public class QzItem_MM extends QzDateItem {
+public class CrItem_MM extends CrDateItem {
 
 	@Override
 	protected int eval4override(String str) {
