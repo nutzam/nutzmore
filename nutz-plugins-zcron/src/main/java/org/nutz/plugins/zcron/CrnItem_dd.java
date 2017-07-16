@@ -1,4 +1,4 @@
-package org.nutz.zcron;
+package org.nutz.plugins.zcron;
 
 import java.util.Calendar;
 
@@ -26,12 +26,12 @@ import org.nutz.lang.Strings;
  * 
  * @author zozoh(zozohtnt@gmail.com)
  */
-public class CrItem_dd extends CrDateItem {
+public class CrnItem_dd extends CrnDateItem {
 
-    private final static int MOD_dd = 100;
-
-    public CrItem_dd() {
+    public CrnItem_dd(CrnStdItem... prevs) {
+        super(prevs);
         this.supportLast = true;
+        this.supportMOD = true;
     }
 
     public boolean isAllWorkingDay() {

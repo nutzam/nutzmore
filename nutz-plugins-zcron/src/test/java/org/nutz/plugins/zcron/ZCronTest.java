@@ -1,19 +1,114 @@
-package org.nutz.zcron;
+package org.nutz.plugins.zcron;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.List;
 
 import org.junit.Test;
+import org.nutz.json.Json;
+import org.nutz.lang.Files;
 import org.nutz.lang.Lang;
 import org.nutz.lang.Times;
-import org.nutz.zcron.ZCron;
-import org.nutz.zcron.CronObj;
-import org.nutz.zcron.CronOverlapor;
+import org.nutz.plugins.zcron.CronObj;
+import org.nutz.plugins.zcron.CronOverlapor;
+import org.nutz.plugins.zcron.ZCron;
 
 public class ZCronTest {
+
+    @Test
+    public void test_text_ext_0() {
+        aeT("D[20170725,20170921) T[12:23,18:32]{0/30m}",
+            "在2017年7月25日（包含）至9月21日（不包含）期间，每天的12:23（包含）到18:32（包含），每隔30分钟");
+        aeT("D(20170725,20170921] T(12:23,18:32]{4/30m}",
+                "在2017年7月25日（不包含）至9月21日（包含）期间，每天的12:23（不包含）到18:32（包含），经过4分钟后开始，每隔30分钟");
+        aeT("D(20170725,20170921] T(12:23,18:32]{4s/2h}",
+                "在2017年7月25日（不包含）至9月21日（包含）期间，每天的12:23（不包含）到18:32（包含），经过4秒钟后开始，每隔2小时");
+        aeT("D(20170725,20170921] T(12:23,18:32]{>1/2h}",
+                "在2017年7月25日（不包含）至9月21日（包含）期间，每天的12:23（不包含）到18:32（包含），起始时间按1小时全天对齐，每隔2小时");
+        aeT("D(20170725,20170921] T{1:20,2:3,18:05}",
+                "在2017年7月25日（不包含）至9月21日（包含）期间，每天的01:20,02:03,18:05");
+    }
+
+    @Test
+    public void test_text_std_1() {
+        aeT("0 0 ? * * ? *", "每天的每小时的0分0秒");
+        aeT("0 0 ? * * ? 2017-2020", "2017年至2020年的每天的每小时的0分0秒");
+        aeT("0 0 ? * * ? 2017/2", "从2017年开始每隔2年的每天的每小时的0分0秒");
+        aeT("0 0 ? * * ? 2017,2019,2034", "2017年,2019年,2034年的每天的每小时的0分0秒");
+    }
+
+    @Test
+    public void test_text_std_0() {
+        aeT("0 0 0 * * ?", "每天的0点0分0秒");
+        aeT("0 0 ? * * ?", "每天的每小时的0分0秒");
+        aeT("0 ? ? * * ?", "每天的每小时的每分钟的0秒");
+        aeT("0 0 8-11,13-18 * * ?", "每天的8点至11点,13点至18点0分0秒");
+        aeT("0 0 0 7-13 JUL ?", "每年的七月的7号至13号的0点0分0秒");
+        aeT("0 0 0 1,3,5 * ?", "每月的1号,3号,5号的0点0分0秒");
+        aeT("0 0 8/3 * * ?", "每天的从8点开始每3小时0分0秒");
+        aeT("0 0 0 4L * ?", "每月的倒数第4日的0点0分0秒");
+        aeT("0 0 0 W * ?", "每月的所有工作日的0点0分0秒");
+        aeT("0 0 0 1LW * ?", "每月的最后一日最近的工作日的0点0分0秒");
+        aeT("0 0 0 6LW * ?", "每月的倒数第6日最近的工作日的0点0分0秒");
+        aeT("0 0 0 * * 1-3", "每月的周日至周二的每天0点0分0秒");
+        aeT("0 0 0 * * 1,2-4,7", "每月的周日,周一至周三,周六的每天0点0分0秒");
+        aeT("0 0 0 * * FRI#2", "每月的第2个周五的每天0点0分0秒");
+        aeT("0 0 0 * * 2#4", "每月的第4个周一的每天0点0分0秒");
+        aeT("0 0/5 8,10-14,23 * * ?", "每天的8点,10点至14点,23点从0分开始每5分钟");
+        aeT("0 0 0,1 * * ?", "每天的0点,1点0分0秒");
+    }
+
+    @Test
+    public void test_ext_normal() {
+        ZCron cr;
+        // ............................................
+        cr = ZCron.parse("D[20170725,20170921] T[12:23,18:32]{0/30m}");
+        assertTrue(cr.matchDate("2017-07-25"));
+        assertTrue(cr.matchDate("2017-09-21"));
+        assertFalse(cr.matchDate("2017-07-24"));
+        assertFalse(cr.matchDate("2015-09-22"));
+
+        assertFalse(cr.matchTime("11:53"));
+        assertTrue(cr.matchTime("12:23"));
+        assertTrue(cr.matchTime("12:53"));
+        assertTrue(cr.matchTime("13:23"));
+        assertTrue(cr.matchTime("13:53"));
+        assertTrue(cr.matchTime("14:23"));
+        assertTrue(cr.matchTime("14:53"));
+        assertTrue(cr.matchTime("16:23"));
+        assertTrue(cr.matchTime("16:53"));
+        assertTrue(cr.matchTime("17:23"));
+        assertTrue(cr.matchTime("17:53"));
+        assertTrue(cr.matchTime("18:23"));
+        assertFalse(cr.matchTime("18:53"));
+
+    }
+
+    @Test
+    public void test_year() throws Exception {
+        ZCron cr;
+        // ............................................
+        cr = ZCron.parse("0 0 ? * * ? 2017-2020");
+        assertFalse(cr.matchDate("2016-12-31"));
+        assertTrue(cr.matchDate("2017-12-20"));
+        assertTrue(cr.matchDate("2018-01-12"));
+        assertTrue(cr.matchDate("2019-08-29"));
+        assertTrue(cr.matchDate("2020-11-18"));
+        assertFalse(cr.matchDate("2021-01-01"));
+
+        // ............................................
+        cr = ZCron.parse("0 0 ? * * ? 2017/2");
+        assertFalse(cr.matchDate("2016-12-31"));
+        assertTrue(cr.matchDate("2017-01-01"));
+        assertFalse(cr.matchDate("2018-12-31"));
+        assertTrue(cr.matchDate("2019-01-01"));
+        assertFalse(cr.matchDate("2020-12-31"));
+        assertTrue(cr.matchDate("2021-01-01"));
+        assertFalse(cr.matchDate("2022-12-31"));
+        assertTrue(cr.matchDate("2023-01-01"));
+        assertFalse(cr.matchDate("2024-12-31"));
+        assertTrue(cr.matchDate("2025-01-01"));
+    }
 
     @Test
     public void test_month_XXX_1_5() throws Exception {
@@ -235,7 +330,20 @@ public class ZCronTest {
         ZCron.parse("0 0 0 7-13 JUL ?");
     }
 
+    /*----------------------------------------------------------读取i18n-------*/
+    private static ZCroni18n i18n;
+
+    static {
+        i18n = Json.fromJsonFile(ZCroni18n.class,
+                                 Files.findFile("org/nutz/plugins/zcron/i18n/zh_cn.js"));
+    }
+
     /*----------------------------------------------------------帮助函数们-------*/
+    private static void aeT(String cron, String expect) {
+        ZCron cr = ZCron.parse(cron);
+        String txt = cr.toText(i18n);
+        assertEquals(expect, txt);
+    }
 
     private static void Fhh(String ds, String rus, String... expect) {
         FILL(hh(), ds, rus, expect);

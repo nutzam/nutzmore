@@ -1,4 +1,4 @@
-package org.nutz.zcron;
+package org.nutz.plugins.zcron;
 
 import java.util.Calendar;
 
@@ -24,9 +24,12 @@ import org.nutz.lang.Lang;
  * 
  * @author zozoh(zozohtnt@gmail.com)
  */
-public class CrItem_ww extends CrDateItem {
+public class CrnItem_ww extends CrnDateItem {
 
-    private final static int MOD_ww = 1000;
+    public CrnItem_ww(CrnStdItem... prevs) {
+        super(prevs);
+        this.supportMOD = true;
+    }
 
     protected boolean match(Calendar c) {
         // 忽略 ANY
@@ -78,7 +81,7 @@ public class CrItem_ww extends CrDateItem {
             str = str.substring(0, pos);
             breakWeek = true;
         }
-        int v = super.eval(str, CrItem.DAYS_OF_WEEK, 1);
+        int v = super.eval(str, CrnStdItem.DAYS_OF_WEEK, 1);
         return v + MOD_ww * n;
     }
 

@@ -1,15 +1,17 @@
-package org.nutz.zcron;
+package org.nutz.plugins.zcron;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.nutz.lang.Lang;
+import org.nutz.lang.Strings;
 
 /**
- * 表达式的每个项目
+ * 标准 Cron 表达式的项目
  * 
  * @author zozoh(zozohtnt@gmail.com)
  */
-class CrItem {
+class CrnStdItem implements CrnItem {
 
     /*---------------------------------------常量表-----*/
     /**
@@ -37,11 +39,25 @@ class CrItem {
      */
     final static int ONE = 4;
 
+    final static int MOD_dd = 100;
+    final static int MOD_ww = 1000;
+
+    public CrnStdItem(CrnStdItem... prevs) {
+        this.prevItems = prevs;
+    }
+
+    /**
+     * 指向前一个逻辑上的表达式，比如，年前面应该是月，月前面应该是日和周
+     * <p>
+     * 这个主要用来<code>joinText</code>好缩减输入的 ANY 文字
+     */
+    protected CrnStdItem[] prevItems;
+
     /**
      * 数组表示一个值的范围:
      * 
      * <pre>
-     *   [类型(ANY|RANGE|LIST|ONE)], [值1], [值2] ...
+     *   [类型(ANY|RANGE|LIST|SPAN|ONE)], [值1], [值2] ...
      * </pre>
      * 
      * 值支持 -1，表示表达式中的 "L" 修饰符
@@ -52,6 +68,31 @@ class CrItem {
      * 是否支持 "L" 标记
      */
     protected boolean supportLast;
+
+    /**
+     * 如果前面有 SPAN 类型，是否输出文本时是否忽略 0 值
+     */
+    protected boolean ignoreZeroWhenPrevHasSpan;
+
+    public CrnStdItem setIgnoreZeroWhenPrevHasSpan(boolean ignore) {
+        this.ignoreZeroWhenPrevHasSpan = ignore;
+        return this;
+    }
+
+    /**
+     * 如果前面都是 ANY 类型，是否输出文本时是否忽略 ANY 值
+     */
+    protected boolean ignoreAnyWhenPrevAllAny;
+
+    public CrnStdItem setIgnoreAnyWhenPrevAllAny(boolean ignore) {
+        this.ignoreAnyWhenPrevAllAny = ignore;
+        return this;
+    }
+
+    /**
+     * 支持从后面数，等特殊标示的值
+     */
+    protected boolean supportMOD;
 
     protected void valueOf(String str) {
         // 看看是不是 ANY
@@ -101,21 +142,133 @@ class CrItem {
         values = new int[]{ONE, eval4override(str)};
     }
 
+    public boolean isANY() {
+        return ANY == this.values[0];
+    }
+
+    public boolean isSPAN() {
+        return SPAN == this.values[0];
+    }
+
+    public boolean isPrevAllAny() {
+        if (prevItems.length == 0)
+            return false;
+        for (CrnStdItem prev : prevItems)
+            if (!prev.isANY())
+                return false;
+        return true;
+    }
+
+    public boolean isPrevHasSpan() {
+        for (CrnStdItem prev : prevItems)
+            if (prev.isSPAN())
+                return true;
+        return false;
+    }
+
+    private String _T(ZCroni18n.Item lc, ZCroni18n i18n, int n) {
+        // 特殊的周 FRI#3
+        if (this.supportMOD && n > MOD_ww) {
+            int n0 = n % MOD_ww;
+            int n1 = (n - n0) / MOD_ww;
+            String s = lc.hasDict() ? lc.dict[n0 - 1] : lc.tmpl.replace("?", n0 + "");
+            return i18n.N.replace("?", n1 + "") + s;
+        }
+        // 特殊值:工作日 W
+        else if (this.supportMOD && n > (MOD_dd / 2)) {
+            int n0 = n - MOD_dd;
+            return n0 == 0 ? lc.Wonly : _T(lc, i18n, n0) + lc.W;
+        }
+        // 正常值
+        else if (n >= 0) {
+            return lc.hasDict() ? lc.dict[n - 1] : lc.tmpl.replace("?", n + "");
+        }
+        // 那么就表示倒数
+        if (-1 == n) {
+            return i18n.L1 + lc.unit;
+        }
+        return i18n.Ln.replace("?", Math.abs(n) + "") + lc.unit;
+    };
+
+    @Override
+    public void joinText(List<String> ary, ZCroni18n i18n, String key) {
+        joinText(ary, i18n, key, 0, false);
+    }
+
     /**
-     * 判断给定值是否匹配, 给出一个值的范围，以便解析 -1 的值
+     * 将自身的描述，添加到一个列表里
      * 
-     * @param v
-     *            被判断的值
-     * 
-     * @param min
-     *            最小值(包括) , -1 表示不限制
-     * 
-     * @param max
-     *            最大值(不包括) , -1 表示不限制
-     * 
-     * @param c
-     *            参考时间
+     * @param ary
+     *            要添加的列表
+     * @param i18n
+     *            字典
+     * @param key
+     *            自己对应到字典里的键
+     * @param off
+     *            读取自己值<code>(this.values)</code>的偏移量
+     * @param ignoreSuffix
+     *            是否忽略后缀
+     * @return 指向下一个值的下标<code>(this.values)</code>
      */
+    public int joinText(List<String> ary,
+                        ZCroni18n i18n,
+                        String key,
+                        int off,
+                        boolean ignoreSuffix) {
+        if (off >= this.values.length)
+            return -1;
+        ZCroni18n.Item lc = i18n.getItem(key);
+
+        switch (this.values[off++]) {
+        case ANY:
+            // 忽略输出
+            if (this.ignoreAnyWhenPrevAllAny && this.isANY() && this.isPrevAllAny()) {}
+            // 输出
+            else if (lc.hasANY()) {
+                ary.add(lc.ANY);
+                if (!ignoreSuffix && lc.hasSuffix())
+                    ary.add(lc.suffix);
+            }
+            break;
+        case RANGE:
+            ary.add(_T(lc, i18n, this.values[off++]) + i18n.to + _T(lc, i18n, this.values[off++]));
+            if (!ignoreSuffix && lc.hasSuffix())
+                ary.add(lc.suffix);
+            break;
+        case LIST:
+            List<String> list = new ArrayList<>();
+            while (-1 != (off = this.joinText(list, i18n, key, off, true))) {}
+            ary.add(Strings.join(",", list));
+            if (!ignoreSuffix && lc.hasSuffix())
+                ary.add(lc.suffix);
+            break;
+        case SPAN:
+            String s0 = _T(lc, i18n, this.values[off++]);
+            ary.add(i18n.start.replace("?", s0));
+            ary.add(lc.span.replace("?", this.values[off++] + ""));
+            if (!ignoreSuffix && lc.hasSuffix())
+                ary.add(lc.suffix);
+            break;
+        case ONE:
+            int n = this.values[off++];
+
+            // 忽略输出
+            if (n == 0 && this.ignoreZeroWhenPrevHasSpan && this.isPrevHasSpan()) {}
+            // 输出
+            else {
+                ary.add(_T(lc, i18n, n));
+                if (!ignoreSuffix && lc.hasSuffix())
+                    ary.add(lc.suffix);
+            }
+            break;
+        default:
+            throw Lang.makeThrow("Unknown type : %d", this.values[0]);
+        }
+        // 返回指向下一个位置的下标
+        return off;
+    }
+
+    @Override
     public boolean match(int v, int min, int max) {
         // 如果值不在范围中
         if (v < min || v >= max)

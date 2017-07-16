@@ -1,4 +1,4 @@
-package org.nutz.zcron;
+package org.nutz.plugins.zcron;
 
 import java.lang.reflect.Array;
 import java.util.LinkedList;

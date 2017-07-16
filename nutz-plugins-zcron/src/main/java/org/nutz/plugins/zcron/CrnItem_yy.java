@@ -1,8 +1,12 @@
-package org.nutz.zcron;
+package org.nutz.plugins.zcron;
 
 import java.util.Calendar;
 
-public class CrItem_yy extends CrDateItem {
+public class CrnItem_yy extends CrnDateItem {
+
+    public CrnItem_yy(CrnStdItem... prevs) {
+        super(prevs);
+    }
 
     @Override
     protected int eval4override(String str) {

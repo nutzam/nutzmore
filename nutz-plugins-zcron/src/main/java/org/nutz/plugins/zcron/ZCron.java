@@ -1,16 +1,24 @@
-package org.nutz.zcron;
+package org.nutz.plugins.zcron;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.nutz.lang.Lang;
 import org.nutz.lang.Mirror;
 import org.nutz.lang.Strings;
 import org.nutz.lang.Times;
 import org.nutz.lang.born.Borning;
+import org.nutz.lang.tmpl.Tmpl;
+import org.nutz.lang.util.DateRegion;
 import org.nutz.lang.util.NutMap;
+import org.nutz.lang.util.Region;
+import org.nutz.lang.util.TimeRegion;
 
 public class ZCron {
 
@@ -62,26 +70,56 @@ public class ZCron {
     private String str; // 原始信息
 
     /*-------------------------标准 Cron 表达式部分----*/
-    private CrItem iss;
-    private CrItem imm;
-    private CrItem iHH;
-    private CrDateItem idd;
-    private CrDateItem iMM;
-    private CrDateItem iww;
-    private CrDateItem iyy;
+    private CrnStdItem iss;
+    private CrnStdItem imm;
+    private CrnStdItem iHH;
+    private CrnDateItem idd;
+    private CrnDateItem iMM;
+    private CrnDateItem iww;
+    private CrnDateItem iyy; // 「可选」
 
-    /*---------------------------------------扩展部分----*/
+    /*--------------------------扩展部分「均为可选」----*/
 
-    /*---------------------------------------构造函数----*/
+    /**
+     * 限定日期区间: D[20170801,20170822)
+     */
+    private DateRegion rgDate;
+
+    /**
+     * 限定时间区间: T[08:12,09:16]
+     */
+    private TimeRegion rgTime;
+
+    /**
+     * 固定时间点从限定时间区间获取的方式: T[12:23,18:32]{0/30m}
+     * <p>
+     * 如果不为 null，那么 <code>timePoints</code> 段的值就来自本类的<code>genTimePoints</code>
+     * 函数
+     */
+    private TimePointRepeater timeRepeater;
+
+    /**
+     * 声明了固定时间点（秒）
+     * <p>
+     * 本项目优先于 `timeOffset/timeStep`
+     * <p>
+     * !!! 注意，本字段的时间点必须是经过排序的（从小到大）
+     */
+    private int[] timePoints;
+
+    /*------------------------------------构造函数----*/
     public ZCron() {
-        iss = new CrItem();
-        imm = new CrItem();
-        iHH = new CrItem();
-        idd = new CrItem_dd();
-        iMM = new CrItem_MM();
-        iww = new CrItem_ww();
+        iHH = new CrnStdItem();
+        imm = new CrnStdItem(iHH);
+        iss = new CrnStdItem(imm).setIgnoreZeroWhenPrevHasSpan(true);
+
+        idd = new CrnItem_dd();
+        iww = new CrnItem_ww(idd).setIgnoreAnyWhenPrevAllAny(true);
+        iMM = new CrnItem_MM(idd, iww).setIgnoreAnyWhenPrevAllAny(true);
         iyy = null;
     }
+
+    private static final Pattern _P_TIME_REGION = Pattern.compile("^T([\\[\\(][\\d:,-]+[\\]\\)])?([{]([^}]+)[}])?$");
 
     /**
      * 根据字符串，重新解析一个表达式
@@ -93,20 +131,121 @@ public class ZCron {
     public ZCron valueOf(String cron) {
         this.str = cron;
         // 拆
-        String[] ss = Strings.splitIgnoreBlank(cron, "[ ]");
-        // 验证
-        if (ss.length < 6)
-            throw Lang.makeThrow("Wrong format '%s': expect %d items but %d", cron, 6, ss.length);
+        String[] items = Strings.splitIgnoreBlank(cron, "[ \t]");
+        ArrayList<String> stdList = new ArrayList<String>(items.length);
+
+        // 先找一遍,处理扩展表达式项目，剩下的归到标准表达式里面
+        int i = 0;
+        for (String s : items) {
+            // 为日期范围
+            if (s.startsWith("D")) {
+                rgDate = Region.Date(s.substring(1));
+            }
+            // 为时间范围
+            else if (s.startsWith("T")) {
+                // 是否声明了时间点
+                Matcher m = _P_TIME_REGION.matcher(s);
+                if (!m.find())
+                    throw Lang.makeThrow("Wrong format '%s': ", cron);
+
+                // 有时间范围：
+                String tmrg = m.group(1);
+                if (!Strings.isBlank(tmrg))
+                    rgTime = Region.Time(tmrg);
+
+                String tps = m.group(3);
+                if (!Strings.isBlank(tps)) {
+                    // 间隔时间点
+                    timeRepeater = TimePointRepeater.tryParse(tps);
+
+                    // 根据间隔时间点生成固定时间点
+                    if (null != timeRepeater) {
+                        timePoints = timeRepeater.genTimePoints(rgTime);
+                    }
+                    // 直接解析固定时间点
+                    else {
+                        String[] timeList = Strings.splitIgnoreBlank(tps);
+                        timePoints = new int[timeList.length];
+                        for (int x = 0; x < timeList.length; x++) {
+                            timePoints[x] = Times.T(timeList[x]);
+                        }
+                    }
+                }
+            }
+            // 标准表达式项
+            else {
+                stdList.add(s);
+            }
+        }
+
+        // 默认标准表达式
+        String[] stds = Lang.array("0", "0", "0", "*", "*", "?", "*");
+
+        // 如果标准表达式项目不足，试图补上
+        int stdIC = stdList.size();
+        int stdN;
+
+        /**
+         * <pre>
+         * 输入没有年:
+         *  - 0 0 0 * * ?   <- 6
+         *  - * * ?         <- 3
+         * 输入有年
+         *  - 0 0 0 * * ? * <- 7
+         *  - * * ? *       <- 4
+         * 其他长度不正确
+         *  - !!! 抛出异常
+         * </pre>
+         */
+
+        switch (stdIC) {
+        // 什么都没给，必须有 timePoints 和 rgDate
+        case 0:
+            if (null == timePoints)
+                throw Lang.makeThrow("No TimePoints '%s': ", cron);
+            if (null == rgDate)
+                throw Lang.makeThrow("No DateRange '%s': ", cron);
+            stdN = 0;
+            break;
+        // 给了 `日 月 周` 必须还要给定 timePoints
+        case 3:
+            if (null == timePoints)
+                throw Lang.makeThrow("No TimePoints '%s': ", cron);
+            stdN = 1;
+            break;
+        // 给了 `日 月 周 年` 必须还要给定 timePoints
+        case 4:
+            if (null == timePoints)
+                throw Lang.makeThrow("No TimePoints '%s': ", cron);
+            stdN = 0;
+            break;
+        // 给了 `秒 分 时 日 月 周`
+        case 6:
+            stdN = 1;
+            break;
+        // 给了 `秒 分 时 日 月 周 年`
+        case 7:
+            stdN = 0;
+            break;
+        default:
+            throw Lang.makeThrow("Wrong format '%s': ", cron);
+        }
+
+        // 补上标准表达式项
+        for (i = 1; i <= stdIC; i++) {
+            stds[stds.length - i - stdN] = stdList.get(stdIC - i);
+        }
+
         // 解析子表达式
-        iss.valueOf(ss[0]);
-        imm.valueOf(ss[1]);
-        iHH.valueOf(ss[2]);
-        idd.valueOf(ss[3]);
-        iMM.valueOf(ss[4]);
-        iww.valueOf(ss[5]);
-        if (ss.length >= 7) {
-            iyy = new CrItem_yy();
-            iyy.valueOf(ss[6]);
+        iss.valueOf(stds[0]);
+        imm.valueOf(stds[1]);
+        iHH.valueOf(stds[2]);
+        idd.valueOf(stds[3]);
+        iMM.valueOf(stds[4]);
+        iww.valueOf(stds[5]);
+        if (stds.length >= 7) {
+            iyy = new CrnItem_yy(iMM).setIgnoreAnyWhenPrevAllAny(true);
+            iyy.valueOf(stds[6]);
         }
         // 返回
         return this;
@@ -120,6 +259,9 @@ public class ZCron {
      * @return 是否匹配
      */
     public boolean matchDate(Calendar c) {
+        if (null != rgDate && !rgDate.match(c.getTime()))
+            return false;
+
         if (null != iyy && !iyy.match(c))
             return false;
 
@@ -211,19 +353,8 @@ public class ZCron {
      * @return 是否匹配
      */
     public boolean matchTime(int sec) {
-        int HH = sec / 3600;
-        if (!iHH.match(HH, 0, 24))
-            return false;
-
-        int mm = (sec - (HH * 3600)) / 60;
-        if (!imm.match(mm, 0, 60))
-            return false;
-
-        int ss = sec - (HH * 3600) - (mm * 60);
-        if (!iss.match(ss, 0, 60))
-            return false;
-
-        return true;
+        Times.TmInfo ti = Times.Ti(sec);
+        return matchTime(ti);
     }
 
     /**
@@ -234,41 +365,59 @@ public class ZCron {
      * @return 是否匹配
      */
     public boolean matchTime(String ts) {
-        String[] ary = ts.split(":");
+        Times.TmInfo ti = Times.Ti(ts);
+        return matchTime(ti);
+    }
 
-        int HH = Integer.parseInt(ary[0]);
-        if (!iHH.match(HH, 0, 24))
+    /**
+     * 根据给定的时间，判断是否匹配本表达式
+     * 
+     * @param ti
+     *            时间对象
+     * @return 是否匹配
+     */
+    public boolean matchTime(Times.TmInfo ti) {
+        // 指定了固定的时间点
+        if (null != timePoints) {
+            return Arrays.binarySearch(timePoints, ti.value) >= 0;
+        }
+
+        // 是否在给定时间范围内
+        if (null != rgTime && !rgTime.match(ti.value)) {
+            return false;
+        }
+
+        // 依次对于表达式求职
+        if (!iHH.match(ti.hour, 0, 24))
             return false;
 
-        int mm = Integer.parseInt(ary[1]);
-        if (!imm.match(mm, 0, 60))
+        if (!imm.match(ti.minute, 0, 60))
             return false;
 
-        int ss = Integer.parseInt(ary[2]);
-        if (!iss.match(ss, 0, 60))
+        if (!iss.match(ti.second, 0, 60))
             return false;
 
         return true;
     }
 
     /**
-     * @see #each(Object[], CrEach, Calendar)
+     * @see #each(Object[], CronEach, Calendar)
      */
-    public <T> void each(T[] array, CrEach<T> callback, String ds) {
+    public <T> void each(T[] array, CronEach<T> callback, String ds) {
         this.each(array, callback, Times.C(ds));
     }
 
     /**
-     * @see #each(Object[], CrEach, Calendar)
+     * @see #each(Object[], CronEach, Calendar)
      */
-    public <T> void each(T[] array, CrEach<T> callback, Date d) {
+    public <T> void each(T[] array, CronEach<T> callback, Date d) {
         this.each(array, callback, Times.C(d));
     }
 
     /**
-     * @see #each(Object[], int, int, int, Calendar, CrEach)
+     * @see #each(Object[], int, int, int, Calendar, CronEach)
      */
-    public <T> void each(T[] array, CrEach<T> callback, Calendar c) {
+    public <T> void each(T[] array, CronEach<T> callback, Calendar c) {
         if (null != array && array.length > 0)
             each(array, callback, c, 0, array.length, 86400 / array.length);
     }
@@ -311,7 +460,7 @@ public class ZCron {
      * @param unit
      *            一个数组元素表示多少秒
      */
-    public <T> void each(T[] array, CrEach<T> callback, Calendar c, int off, int len, int unit) {
+    public <T> void each(T[] array, CronEach<T> callback, Calendar c, int off, int len, int unit) {
         // 填充数组为空，每必要填充
         if (null == array || array.length == 0)
             return;
@@ -363,7 +512,7 @@ public class ZCron {
      *            一个数组元素表示多少秒
      * 
      * @return 数组本身以便链式赋值
-     * @see #each(Object[], CrEach, Calendar)
+     * @see #each(Object[], CronEach, Calendar)
      */
     @SuppressWarnings("unchecked")
     public <T extends CronOverlapor> T[] overlap(T[] array,
@@ -376,7 +525,7 @@ public class ZCron {
             Mirror<?> mi = Mirror.me(array.getClass().getComponentType());
             final Borning<T> borning = (Borning<T>) mi.getBorning();
             final Object[] args = new Object[0];
-            this.each(array, new CrEach<T>() {
+            this.each(array, new CronEach<T>() {
                 public void invoke(T[] array, int i) {
                     // 增加一个叠加器
                     if (null == array[i])
@@ -518,10 +667,10 @@ public class ZCron {
      *            一个数组元素表示多少秒
      * 
      * @return 数组本身以便链式赋值
-     * @see #each(Object[], CrEach, Calendar)
+     * @see #each(Object[], CronEach, Calendar)
      */
     public <T> T[] fill(T[] array, final T obj, Calendar c, int off, int len, int unit) {
-        this.each(array, new CrEach<T>() {
+        this.each(array, new CronEach<T>() {
             public void invoke(T[] array, int i) {
                 array[i] = obj;
             }
@@ -537,63 +686,108 @@ public class ZCron {
      * 将表达式转换成人类可以读懂的文字
      *
      * @param i18n
-     *            为多国语言参数，结构如下:
-     * 
-     *            <pre>
-        {
-            start : "从?开始",
-            to    : "至",
-            L1    : "最后一",
-            Ln    : "倒数第?",
-            N     : "第?个",
-            month : {
-                span : "每?个月",
-                ANY  : "每月的",
-                dict : ["一月","二月","三月","四月","五月","六月","七月","八月","九月","十月","十一月","十二月"],
-                suffix : "之中的"
-            },
-            day : {
-                unit   : "日",
-                span   : "每?天",
-                ANY    : "每天",
-                tmpl   : "?号",
-                suffix : "的",
-                W      : "最近的工作日",
-                Wonly  : "所有工作日"
-            },
-            week : {
-                unit : "周",
-                span : "每隔?周", 
-                ANY  : "每周",
-                dict : ["周日","周一","周二","周三","周四","周五","周六"],
-                suffix : "的每天"
-            },
-            hour : {
-                span  : "每?小时",
-                ANY   : "",
-                tmpl  : "?点",
-                suffix : "的"
-            },
-            minute : {
-                scope : ", 的",
-                span  : "每?分钟",
-                ANY   : "",
-                tmpl  : "?分",
-                suffix : "的"
-            },
-            second : {
-                scope : ", 其中每分钟的",
-                span  : "每?秒钟",
-                ANY   : "",
-                tmpl  : "?秒"
-            }
-        }
-     *            </pre>
+     *            为多国语言参数，结构参见
+     *            <code>src/main/resources/org/nutz/plugins/zcron/i18n/zh_cn.js</code>
      * 
      * @return 人类可以读懂的字符串
      */
-    public String toText(NutMap i18n) {
-        throw Lang.noImplement();
+    public String toText(ZCroni18n i18n) {
+        List<String> ary = new ArrayList<>();
+        // ............................................
+        // 增加日期范围
+        if (null != rgDate) {
+            __join_date_region(i18n, ary);
+        }
+
+        // ............................................
+        // 增加标准表达式的年/月
+        this.iyy.joinText(ary, i18n, "year");
+        this.iMM.joinText(ary, i18n, "month");
+        // ............................................
+        // 没限制日期，看看是否用周
+        if (this.idd.isANY()) {
+            if (this.iww.isANY())
+                this.idd.joinText(ary, i18n, "day");
+            else
+                this.iww.joinText(ary, i18n, "week");
+        }
+        // 限制了日期，那么就用日期
+        else {
+            this.idd.joinText(ary, i18n, "day");
+        }
+
+        // ............................................
+        // 增加时间范围
+        if (null != rgTime) {
+            __join_time_region(i18n, ary);
+        }
+
+        // ............................................
+        // 指定了时间区间的重复
+        if (null != timeRepeater) {
+            ary.add(timeRepeater.toText(i18n));
+        }
+        // ............................................
+        // 指定了固定时间点
+        else if (null != timePoints) {
+            List<String> list = new ArrayList<>(timePoints.length);
+            for (int sec : timePoints) {
+                list.add(Times.Ti(sec).toString(true));
+            }
+            ary.add(Strings.join(",", list));
+        }
+        // ............................................
+        // 默认采用标准表达式的时间
+        else {
+            this.iHH.joinText(ary, i18n, "hour");
+            this.imm.joinText(ary, i18n, "minute");
+            this.iss.joinText(ary, i18n, "second");
+        }
+
+        // 返回字符串
+        return Strings.join("", ary);
+    }
+
+    private void __join_time_region(ZCroni18n i18n, List<String> ary) {
+        Times.TmInfo tFrom = Times.Ti(rgTime.left());
+        Times.TmInfo tTo = Times.Ti(rgTime.right());
+        // 解析模板
+        Tmpl tmpl = Tmpl.parse(i18n.times.region);
+
+        // 准备上下文
+        NutMap c = new NutMap();
+        c.put("ieF", rgTime.isLeftOpen() ? i18n.EXC : i18n.INV);
+        c.put("ieT", rgTime.isRightOpen() ? i18n.EXC : i18n.INV);
+        c.put("from", tFrom.toString(true));
+        c.put("to", tTo.toString(true));
+
+        // 渲染
+        String str = tmpl.render(c);
+        ary.add(str);
+    }
+
+    private void __join_date_region(ZCroni18n i18n, List<String> ary) {
+        Calendar dFrom = Times.C(rgDate.left());
+        Calendar dTo = Times.C(rgDate.right());
+        // 解析模板
+        Tmpl tmpl = Tmpl.parse(i18n.dates.region);
+
+        // 准备上下文
+        NutMap c = new NutMap();
+        c.put("ieF", rgDate.isLeftOpen() ? i18n.EXC : i18n.INV);
+        c.put("ieT", rgDate.isRightOpen() ? i18n.EXC : i18n.INV);
+        c.put("from", Times.format(i18n.dates.full, rgDate.left()));
+        // 同年
+        if (dFrom.get(Calendar.YEAR) == dTo.get(Calendar.YEAR)) {
+            c.put("to", Times.format(i18n.dates.same, rgDate.right()));
+        }
+        // 跨年
+        else {
+            c.put("to", Times.format(i18n.dates.full, rgDate.right()));
+        }
+        // 渲染
+        String str = tmpl.render(c);
+        ary.add(str);
     }
 
     public static void main(String[] args) {

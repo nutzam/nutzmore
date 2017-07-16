@@ -1,4 +1,4 @@
-package org.nutz.zcron;
+package org.nutz.plugins.zcron;
 
 /**
  * 让一个数组变成紧凑数组的时候，用来保留下标信息的对象

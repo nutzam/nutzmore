@@ -35,10 +35,10 @@ var DAYS_OF_WEEK  = [null,"SUN","MON","TUE","WED","THU","FRI","SAT"];
 var MONTH_OF_YEAR = [null, "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 //================================================================
 // 表达式项的构造函数
-var QzItem = function(){};
+var CrnItem = function(){};
 //................................................................
 // Methods & Properties
-QzItem.prototype = {
+CrnItem.prototype = {
     __eval : function(str, dict, dictOffset) {
         var x = 1;
 
@@ -218,10 +218,10 @@ QzItem.prototype = {
 };
 //
 //================================================================
-var QzItem_dd = function(){this.supportLast = true;};
-QzItem_dd.prototype = new QzItem();
+var CrnItem_dd = function(){this.supportLast = true;};
+CrnItem_dd.prototype = new CrnItem();
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-QzItem_dd.prototype.eval4override = function(str){
+CrnItem_dd.prototype.eval4override = function(str){
     var workingDay = 0;
 
     if (/W$/.test(str)) {
@@ -235,7 +235,7 @@ QzItem_dd.prototype.eval4override = function(str){
 
     return this.__eval(str) + workingDay;
 };
-QzItem_dd.prototype.matchDate = function(c){
+CrnItem_dd.prototype.matchDate = function(c){
     // 忽略 ANY
     if ("ANY" == this.values[0])
         return true;
@@ -307,22 +307,22 @@ QzItem_dd.prototype.matchDate = function(c){
 };
 //
 //================================================================
-var QzItem_MM = function(){};
-QzItem_MM.prototype = new QzItem();
+var CrnItem_MM = function(){};
+CrnItem_MM.prototype = new CrnItem();
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-QzItem_MM.prototype.eval4override = function(str){
+CrnItem_MM.prototype.eval4override = function(str){
     return this.__eval(str, MONTH_OF_YEAR, 1)
 };
-QzItem_MM.prototype.matchDate = function(c){
+CrnItem_MM.prototype.matchDate = function(c){
     var MM = c.getMonth() + 1;
     return this._match_(MM, this.prepare(13));
 };
 //
 //================================================================
-var QzItem_ww = function(){};
-QzItem_ww.prototype = new QzItem();
+var CrnItem_ww = function(){};
+CrnItem_ww.prototype = new CrnItem();
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-QzItem_ww.prototype.eval4override = function(str){
+CrnItem_ww.prototype.eval4override = function(str){
     if (/L$/.test(str))
         throw "Week item don's support 'L' : '"+str+"'";
 
@@ -339,7 +339,7 @@ QzItem_ww.prototype.eval4override = function(str){
     var v = this.__eval(str, DAYS_OF_WEEK, 1);
     return v + MOD_ww * n;
 };
-QzItem_ww.prototype.matchDate = function(c){
+CrnItem_ww.prototype.matchDate = function(c){
     // 忽略 ANY
     if ("ANY" == this.values[0])
         return true;
@@ -370,23 +370,23 @@ QzItem_ww.prototype.matchDate = function(c){
 };
 //================================================================
 // 主要构造函数
-var QuartzObj = function(str) {
-    this.iss = new QzItem();
-    this.imm = new QzItem();
-    this.iHH = new QzItem();
-    this.idd = new QzItem_dd();
-    this.iMM = new QzItem_MM();
-    this.iww = new QzItem_ww();
+var ZCronObj = function(str) {
+    this.iss = new CrnItem();
+    this.imm = new CrnItem();
+    this.iHH = new CrnItem();
+    this.idd = new CrnItem_dd();
+    this.iMM = new CrnItem_MM();
+    this.iww = new CrnItem_ww();
     // 解析
     if(typeof str == "string")
         this.parse(str);
-    // 是一个其他的 Quartz
+    // 是一个其他的 ZCron
     if(str.__str && str.iss && str.imm && str.iHH && str.idd && str.iMM && str.iww )
         this.parse(str.__str);
 };
 //................................................................
 // Methods & Properties
-QuartzObj.prototype = {
+ZCronObj.prototype = {
     //............................................................
     parse : function(s){
         if(!s)
@@ -564,16 +564,16 @@ QuartzObj.prototype = {
     }
 };
 //............................................................
-// 下面两个是静态方法，可直接 Quartz.xxx 调用
+// 下面两个是静态方法，可直接 ZCron.xxx 调用
 //............................................................
-var Quartz = function(qz){
+var ZCron = function(qz){
     if(typeof qz == "string")
-        return new QuartzObj(qz);
+        return new ZCronObj(qz);
     if(qz.iss && qz.imm && qz.iHH && qz.idd && qz.iMM && qz.iww)
         return qz;
-    throw "Quartz can not wrap : " + qz;
+    throw "ZCron can not wrap : " + qz;
 };
-Quartz.compact = function(array) {
+ZCron.compact = function(array) {
     var list = [];
     for (var i=0; i<array.length; i++){
         var ele = array[i];
@@ -582,7 +582,7 @@ Quartz.compact = function(array) {
     }
     return list;
 };
-Quartz.compactAll = function(array) {
+ZCron.compactAll = function(array) {
     var list = [];
     for (var i = 0; i < array.length; i++){
         var ele = array[i];
@@ -597,20 +597,20 @@ Quartz.compactAll = function(array) {
 
 // 挂载到 window 对象
 // 
-window.Quartz = Quartz;
+window.ZCron = ZCron;
 // TODO 支持 AMD | CMD 
 //===============================================================
 if (typeof define === "function") {
     // CMD
     if(define.cmd) {
         define(function (require, exports, module) {
-            module.exports = Quartz;
+            module.exports = ZCron;
         });
     }
     // AMD
     else {
-        define("quartz", [], function () {
-            return Quartz;
+        define("zcron", [], function () {
+            return ZCron;
         });
     }
 }
