@@ -34,7 +34,7 @@ public class SlogBean implements Serializable {
     protected String ip;
 
     @Column
-    @ColDefine(width = 8192)
+    @ColDefine(width = 4000)
     protected String msg;
 
     @Column("ct")
