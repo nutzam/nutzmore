@@ -7,7 +7,7 @@ public interface NgrokAuthProvider {
 
     boolean check(NgrokServer srv, NgrokMsg auth);
     
-    String[] mapping(NgrokServer srv, NgrokServer.NgrokServerClient client, NgrokMsg req);
+    String[] mapping(NgrokServer srv, String id, NgrokMsg authMsg, NgrokMsg req);
     
     void record(String host, long in, long out);
 }

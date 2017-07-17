@@ -61,6 +61,27 @@ public class NgrokAgent {
         msg.putAll(payload);
         return msg;
     }
+    
+    public static int readLen(InputStream ins) throws IOException {
+        DataInputStream dis = new DataInputStream(ins);
+        byte[] lenBuf = new byte[8];
+        dis.readFully(lenBuf);
+        return (int) bytes2long(leTobe(lenBuf, 8), 0);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static NgrokMsg readMsg(String cnt) throws IOException {
+        NutMap map = Json.fromJson(NutMap.class, cnt);
+        NgrokMsg msg = new NgrokMsg();
+        msg.setv("Type", map.getString("Type"));
+        Map<String, Object> payload = map.getAs("Payload", Map.class);
+        if (payload == null)
+            payload = new HashMap<String, Object>();
+        if (log.isDebugEnabled() && !"Pong".equals(msg.get("Type")) && !"Ping".equals(msg.get("Type")))
+            log.debug("read msg = " + cnt);
+        msg.putAll(payload);
+        return msg;
+    }
 
     // 下面几个方法来自 https://github.com/dosgo/ngrok-java
 
