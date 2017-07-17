@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.r.62</version>
+		<version>1.r.63-SNAPSHOT</version>
 	</parent>
 	<artifactId>nutz-integration-jcache</artifactId>
 	<url>https://nutzam.com</url>

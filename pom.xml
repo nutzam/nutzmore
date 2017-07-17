@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.nutz</groupId>
 	<artifactId>nutzmore</artifactId>
-	<version>1.r.62</version>
+	<version>1.r.63-SNAPSHOT</version>
 	<name>nutzmore</name>
 	<description>Nutz, which is a collections of lightweight frameworks, each of them can be used independently</description>
 
@@ -59,7 +59,7 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz</artifactId>
-			<version>1.r.62</version>
+			<version>1.r.63-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 
@@ -101,8 +101,6 @@
 	<modules>
 		<module>nutz-integration-activiti</module>
 		<module>nutz-integration-spring</module>
-		
-		
 		<module>nutz-integration-quartz</module>
 		<module>nutz-integration-dwr</module>
 		
@@ -129,7 +127,6 @@
 		<module>nutz-plugins-apidoc</module>
 		<module>nutz-plugins-websocket</module>
 		<module>nutz-plugins-slog</module>
-		<module>nutz-plugins-spring-boot-starter</module>
 		<module>nutz-plugins-cache</module>
 		<module>nutz-plugins-hotplug</module>
 		<module>nutz-plugins-daomapping</module>
