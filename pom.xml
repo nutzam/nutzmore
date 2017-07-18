@@ -141,6 +141,7 @@
 		<module>nutz-plugins-wkcache</module>
 		<module>nutz-plugins-event</module>
     <module>nutz-integration-bex5</module>
+    <module>nutz-plugins-spring-boot-starter</module>
 	</modules>
 	<distributionManagement>
 		<snapshotRepository>
