@@ -342,8 +342,7 @@ public class NgrokNettyServer extends AbstractNgrokServer {
             if (proxy != null) {
                 // 是的啊, 那就把写数据到隧道啦
                 log.debug("Proxy链接已建立,桥接数据");
-                proxy.writeAndFlush(in);
-                in.retain();
+                proxy.writeAndFlush(proxy.alloc().buffer().writeBytes(in));
                 return;
             }
 
@@ -436,6 +435,13 @@ public class NgrokNettyServer extends AbstractNgrokServer {
             ctx.close();
         }
 
+        @Override
+        public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+            if (proxy != null) {
+                log.debug("[浏览器<-->服务器] 的链路已经关闭,那么,关闭[服务器<-->客户端]的链路吧");
+                proxy.close();
+            }
+        }
     }
 
     /**
@@ -452,21 +458,18 @@ public class NgrokNettyServer extends AbstractNgrokServer {
         }
 
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-            target.writeAndFlush(msg);
-            ((ByteBuf)msg).retain();
+            target.writeAndFlush(target.alloc().buffer().writeBytes((ByteBuf)msg));
         }
 
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
             log.debug("close?", cause);
-            target.close();
             ctx.close();
         }
         
-        public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-            log.debug("ChannelHandlerContext close?"); // 其中一端关闭,那就全部关闭
-            target.close();
-            ctx.close();
-        }
+//        public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+//            log.debug("[服务器<-->客户端] 的链路已经关闭,那么,关闭[浏览器<-->服务器]的链路吧");
+//            target.close();
+//        }
     }
 
     public void startProxy(final ChannelHandlerContext ctx,
