@@ -1,15 +1,15 @@
 package org.nutz.plugins.ngrok.server.auth;
 
 import org.nutz.plugins.ngrok.common.NgrokMsg;
-import org.nutz.plugins.ngrok.server.NgrokServer;
+import org.nutz.plugins.ngrok.server.AbstractNgrokServer;
 
 public class DefaultNgrokAuthProvider implements NgrokAuthProvider {
 
-    public boolean check(NgrokServer srv, NgrokMsg auth) {
+    public boolean check(AbstractNgrokServer srv, NgrokMsg auth) {
         return true;
     }
 
-    public String[] mapping(NgrokServer srv, String id, NgrokMsg authMsg, NgrokMsg req) {
+    public String[] mapping(AbstractNgrokServer srv, String id, NgrokMsg authMsg, NgrokMsg req) {
         return new String[]{id.substring(0, 6) + "." + srv.srv_host};
     }
 

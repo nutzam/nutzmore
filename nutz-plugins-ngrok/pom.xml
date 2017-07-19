@@ -52,6 +52,12 @@
 		<artifactId>netty-all</artifactId>
 		<version>4.1.13.Final</version>
 	</dependency>
+	<dependency>
+		<groupId>org.nutz</groupId>
+		<artifactId>nutz-web</artifactId>
+		<version>1.r.63-SNAPSHOT</version>
+		<scope>provided</scope>
+	</dependency>
 	</dependencies>
 	<build>
 		<plugins>
