@@ -14,6 +14,7 @@ import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
+import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.plugins.ngrok.server.auth.DefaultNgrokAuthProvider;
@@ -23,18 +24,20 @@ import org.nutz.plugins.ngrok.server.auth.SimpleRedisAuthProvider;
 public abstract class AbstractNgrokServer {
     
     private static final Log log = Logs.get();
-    public String ssl_jks_password = "123456";
+    public Map<String, String> hostmap = new ConcurrentHashMap<String, String>();
+    public Map<String, String> reqIdMap = new ConcurrentHashMap<String, String>();
     public byte[] ssl_jks;
+    public NgrokAuthProvider auth;
+    
+    public PropertiesProxy conf;
+    public String ssl_jks_password = "123456";
     public String ssl_jks_path;
     public int srv_port = 4443;
     public int http_port = 9080;
     public int status;
-    public NgrokAuthProvider auth;
     public String srv_host = "wendal.cn";
     public int client_proxy_init_size = 1;
     public int client_proxy_wait_timeout = 30 * 1000;
-    public Map<String, String> hostmap = new ConcurrentHashMap<String, String>();
-    public Map<String, String> reqIdMap = new ConcurrentHashMap<String, String>();
     public int bufSize = 8192;
     public boolean redis;
     public String redis_host = "127.0.0.1";

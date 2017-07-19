@@ -140,6 +140,7 @@
 		<module>nutz-integration-neo4j</module>
 		<module>nutz-plugins-wkcache</module>
 		<module>nutz-plugins-event</module>
+		<module>nutz-plugins-undertow</module>
     <module>nutz-integration-bex5</module>
     <module>nutz-plugins-spring-boot-starter</module>
 	</modules>

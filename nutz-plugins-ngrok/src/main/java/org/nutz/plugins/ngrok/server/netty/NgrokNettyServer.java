@@ -3,9 +3,6 @@ package org.nutz.plugins.ngrok.server.netty;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -25,24 +22,9 @@ import org.nutz.lang.random.R;
 import org.nutz.lang.util.NutMap;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
-import org.nutz.mvc.ActionContext;
-import org.nutz.mvc.ActionFilter;
-import org.nutz.mvc.NutConfig;
-import org.nutz.mvc.Setup;
-import org.nutz.mvc.View;
-import org.nutz.mvc.annotation.At;
-import org.nutz.mvc.annotation.By;
-import org.nutz.mvc.annotation.Fail;
-import org.nutz.mvc.annotation.Filters;
-import org.nutz.mvc.annotation.IocBy;
-import org.nutz.mvc.annotation.Modules;
-import org.nutz.mvc.annotation.Ok;
-import org.nutz.mvc.annotation.SetupBy;
-import org.nutz.mvc.view.HttpStatusView;
 import org.nutz.plugins.ngrok.common.NgrokAgent;
 import org.nutz.plugins.ngrok.common.NgrokMsg;
 import org.nutz.plugins.ngrok.server.AbstractNgrokServer;
-import org.nutz.repo.Base64;
 import org.nutz.web.NutOnlyWebServer;
 import org.nutz.web.WebConfig;
 import org.nutz.web.WebServer;
@@ -71,14 +53,9 @@ import io.netty.util.AttributeKey;
  * @author wendal
  *
  */
-@Modules
-@IocBy(args={"*anno", "org.nutz.plugins.ngrok.server.netty"})
+
 @IocBean(factory="org.nutz.plugins.ngrok.server.netty.NgrokNettyServer#me")
-@Ok("json")
-@Fail("http:500")
-@SetupBy(value=NgrokNettyServer.class, args="ioc:ngrokNettyServer")
-@Filters(@By(type=NgrokNettyServer.class, args="ioc:ngrokNettyServer"))
-public class NgrokNettyServer extends AbstractNgrokServer implements Setup, ActionFilter {
+public class NgrokNettyServer extends AbstractNgrokServer {
 
     private static final Log log = Logs.get();
 
@@ -614,63 +591,9 @@ public class NgrokNettyServer extends AbstractNgrokServer implements Setup, Acti
         }
     }
     
-    // ---------------------------------------------------
-    //                   WebAdmin相关的代码
-    // ---------------------------------------------------
-    
     public static NgrokNettyServer one;
     public static NgrokNettyServer me() {
         return one;
-    }
-    
-    @Ok("json:full")
-    @At("/client/list")
-    public Object clientList() {
-        List<NutMap> clients = new ArrayList<NutMap>();
-        for (NgrokContrlHandler handler : clientHanlders.values()) {
-            try {
-                clients.add(handler.asMap());
-            } catch (Throwable e) {
-                log.debug("fail at NgrokContrlHandler.asMap", e);
-            }
-        }
-        Collections.sort(clients, new Comparator<NutMap>() {
-            public int compare(NutMap prev, NutMap next) {
-                return prev.getString("id").compareTo(next.getString("id"));
-            }
-        });
-        return clients;
-    }
-    
-    public void init(NutConfig nc) {
-        new Thread("ngrok.server") {
-            public void run() {
-                try {
-                    NgrokNettyServer.this.start();
-                }
-                catch (Throwable e) {
-                    log.debug("something happen", e);
-                }
-            }
-        }.start();
-    }
-    
-    public void destroy(NutConfig nc) {
-    }
-
-    public View match(ActionContext ac) {
-        String auth = ac.getRequest().getHeader("Authorization");
-        if (Strings.isBlank(auth) || !auth.startsWith("Basic ")) {
-            ac.getResponse().setHeader("WWW-Authenticate", "Basic realm=\"Nutz Ngrok Web Admin\"");
-            return new HttpStatusView(401);
-        }
-        auth = new String(Base64.decode(auth.substring("Basic ".length())));
-        String[] tmp = auth.split(":", 2);
-        if (!webadmin_password.equals(tmp[1])) {
-            ac.getResponse().setHeader("WWW-Authenticate", "Basic realm=\"Nutz Ngrok Web Admin\"");
-            return new HttpStatusView(401);
-        }
-        return null;
     }
     
     // ---------------------------------------------------
@@ -687,7 +610,7 @@ public class NgrokNettyServer extends AbstractNgrokServer implements Setup, Acti
             server.start();
         } else {
             StringBuilder props = new StringBuilder();
-            props.append("mainModuleClassName=" + NgrokNettyServer.class.getName() + "\r\n");
+            props.append("mainModuleClassName=" + NgrokWebAdmin.class.getName() + "\r\n");
             props.append("app-port=" + server.webadmin_port + "\r\n");
             props.append("app-root=webadmin\r\n");
             final WebServer web = new NutOnlyWebServer(new WebConfig(new StringReader(props.toString())));
