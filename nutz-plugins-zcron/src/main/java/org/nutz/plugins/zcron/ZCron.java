@@ -22,12 +22,6 @@ import org.nutz.lang.util.TimeRegion;
 
 public class ZCron {
 
-    public static ZCron parse(String cron) {
-        ZCron cr = new ZCron();
-        cr.valueOf(cron);
-        return cr;
-    }
-
     /**
      * 让数组更紧凑
      * <p>
@@ -116,7 +110,12 @@ public class ZCron {
         idd = new CrnItem_dd();
         iww = new CrnItem_ww(idd).setIgnoreAnyWhenPrevAllAny(true);
         iMM = new CrnItem_MM(idd, iww).setIgnoreAnyWhenPrevAllAny(true);
-        iyy = null;
+        iyy = new CrnItem_yy(iMM).setIgnoreAnyWhenPrevAllAny(true);
+    }
+
+    public ZCron(String cron) {
+        this();
+        this.parse(cron);
     }
 
     private static final Pattern _P_TIME_REGION = Pattern.compile("^T([\\[\\(][\\d:,-]+[\\]\\)])?([{]([^}]+)[}])?$");
@@ -128,14 +127,87 @@ public class ZCron {
      *            表达式字符串
      * @return 自身以便链式使用
      */
-    public ZCron valueOf(String cron) {
+    public ZCron parse(String cron) {
         this.str = cron;
         // 拆
-        String[] items = Strings.splitIgnoreBlank(cron, "[ \t]");
+        String[] items = cron.trim().split("[ \t]+");
         ArrayList<String> stdList = new ArrayList<String>(items.length);
 
         // 先找一遍,处理扩展表达式项目，剩下的归到标准表达式里面
-        int i = 0;
+        __parse_for_ext(cron, items, stdList);
+
+        // 默认标准表达式
+        String[] stds = Lang.array("0", "0", "0", "*", "*", "?", "*");
+
+        // 如果标准表达式项目不足，试图补上
+        int stdIC = stdList.size();
+        int stdN;
+
+        /**
+         * <pre>
+         * 输入没有年:
+         *  - 0 0 0 * * ?   <- 6
+         *  - * * ?         <- 3
+         * 输入有年
+         *  - 0 0 0 * * ? * <- 7
+         *  - * * ? *       <- 4
+         * 其他长度不正确
+         *  - !!! 抛出异常
+         * </pre>
+         */
+
+        switch (stdIC) {
+        // 什么都没给，必须有 timePoints 和 rgDate
+        case 0:
+            if (null == timePoints)
+                throw Lang.makeThrow("No TimePoints : " + cron);
+            if (null == rgDate)
+                throw Lang.makeThrow("No DateRange : " + cron);
+            stdN = 0;
+            break;
+        // 给了 `日 月 周` 必须还要给定 timePoints
+        case 3:
+            if (null == timePoints)
+                throw Lang.makeThrow("No TimePoints : " + cron);
+            stdN = 1;
+            break;
+        // 给了 `日 月 周 年` 必须还要给定 timePoints
+        case 4:
+            if (null == timePoints)
+                throw Lang.makeThrow("No TimePoints : " + cron);
+            stdN = 0;
+            break;
+        // 给了 `秒 分 时 日 月 周`
+        case 6:
+            stdN = 1;
+            break;
+        // 给了 `秒 分 时 日 月 周 年`
+        case 7:
+            stdN = 0;
+            break;
+        default:
+            throw Lang.makeThrow("Wrong format : " + cron);
+        }
+
+        // 补上标准表达式项
+        for (int i = 1; i <= stdIC; i++) {
+            stds[stds.length - i - stdN] = stdList.get(stdIC - i);
+        }
+
+        // 解析子表达式
+        iss.parse(stds[0]);
+        imm.parse(stds[1]);
+        iHH.parse(stds[2]);
+        idd.parse(stds[3]);
+        iMM.parse(stds[4]);
+        iww.parse(stds[5]);
+        iyy.parse(stds[6]);
+
+        // 返回
+        return this;
+    }
+
+    private void __parse_for_ext(String cron, String[] items, ArrayList<String> stdList) {
         for (String s : items) {
             // 为日期范围
             if (s.startsWith("D")) {
@@ -170,6 +242,8 @@ public class ZCron {
                             timePoints[x] = Times.T(timeList[x]);
                         }
                     }
+                    // 确保顺序
+                    Arrays.sort(timePoints);
                 }
             }
             // 标准表达式项
@@ -177,78 +251,6 @@ public class ZCron {
                 stdList.add(s);
             }
         }
-
-        // 默认标准表达式
-        String[] stds = Lang.array("0", "0", "0", "*", "*", "?", "*");
-
-        // 如果标准表达式项目不足，试图补上
-        int stdIC = stdList.size();
-        int stdN;
-
-        /**
-         * <pre>
-         * 输入没有年:
-         *  - 0 0 0 * * ?   <- 6
-         *  - * * ?         <- 3
-         * 输入有年
-         *  - 0 0 0 * * ? * <- 7
-         *  - * * ? *       <- 4
-         * 其他长度不正确
-         *  - !!! 抛出异常
-         * </pre>
-         */
-
-        switch (stdIC) {
-        // 什么都没给，必须有 timePoints 和 rgDate
-        case 0:
-            if (null == timePoints)
-                throw Lang.makeThrow("No TimePoints '%s': ", cron);
-            if (null == rgDate)
-                throw Lang.makeThrow("No DateRange '%s': ", cron);
-            stdN = 0;
-            break;
-        // 给了 `日 月 周` 必须还要给定 timePoints
-        case 3:
-            if (null == timePoints)
-                throw Lang.makeThrow("No TimePoints '%s': ", cron);
-            stdN = 1;
-            break;
-        // 给了 `日 月 周 年` 必须还要给定 timePoints
-        case 4:
-            if (null == timePoints)
-                throw Lang.makeThrow("No TimePoints '%s': ", cron);
-            stdN = 0;
-            break;
-        // 给了 `秒 分 时 日 月 周`
-        case 6:
-            stdN = 1;
-            break;
-        // 给了 `秒 分 时 日 月 周 年`
-        case 7:
-            stdN = 0;
-            break;
-        default:
-            throw Lang.makeThrow("Wrong format '%s': ", cron);
-        }
-
-        // 补上标准表达式项
-        for (i = 1; i <= stdIC; i++) {
-            stds[stds.length - i - stdN] = stdList.get(stdIC - i);
-        }
-
-        // 解析子表达式
-        iss.valueOf(stds[0]);
-        imm.valueOf(stds[1]);
-        iHH.valueOf(stds[2]);
-        idd.valueOf(stds[3]);
-        iMM.valueOf(stds[4]);
-        iww.valueOf(stds[5]);
-        if (stds.length >= 7) {
-            iyy = new CrnItem_yy(iMM).setIgnoreAnyWhenPrevAllAny(true);
-            iyy.valueOf(stds[6]);
-        }
-        // 返回
-        return this;
     }
 
     /**
@@ -262,7 +264,7 @@ public class ZCron {
         if (null != rgDate && !rgDate.match(c.getTime()))
             return false;
 
-        if (null != iyy && !iyy.match(c))
+        if (!iyy.match(c))
             return false;
 
         if (!idd.match(c))
@@ -776,14 +778,14 @@ public class ZCron {
         NutMap c = new NutMap();
         c.put("ieF", rgDate.isLeftOpen() ? i18n.EXC : i18n.INV);
         c.put("ieT", rgDate.isRightOpen() ? i18n.EXC : i18n.INV);
-        c.put("from", Times.format(i18n.dates.full, rgDate.left()));
+        c.put("from", Times.format(i18n.dates.full, dFrom.getTime()));
         // 同年
         if (dFrom.get(Calendar.YEAR) == dTo.get(Calendar.YEAR)) {
-            c.put("to", Times.format(i18n.dates.same, rgDate.right()));
+            c.put("to", Times.format(i18n.dates.same, dTo.getTime()));
         }
         // 跨年
         else {
-            c.put("to", Times.format(i18n.dates.full, rgDate.right()));
+            c.put("to", Times.format(i18n.dates.full, dTo.getTime()));
         }
         // 渲染
         String str = tmpl.render(c);

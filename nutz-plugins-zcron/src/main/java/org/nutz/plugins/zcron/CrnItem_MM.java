@@ -15,7 +15,7 @@ public class CrnItem_MM extends CrnDateItem {
 
     @Override
     protected int eval4override(String str) {
-        return super.eval(str, MONTH_OF_YEAR, 1);
+        return super.__eval(str, MONTH_OF_YEAR, 1);
     }
 
     @Override

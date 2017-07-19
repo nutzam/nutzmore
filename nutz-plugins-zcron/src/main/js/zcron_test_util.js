@@ -6,10 +6,12 @@ function log() {
 }
 //-------------------------------------------------------
 function explain(cr) {
-	var str = "<b>" + cr + "</b>";
+	var str = "<b>" + cr.toString() + "</b>";
 	for (var i = cr.length; i < 22; i++)
 		str += " ";
-	log(str + " : " + ZCron(cr).toText(i18n));
+	log(str + " : " 
+		 + (str.length > 32 ? "\n   " : "")
+		 + ZCron(cr).toText(i18n));
 }
 //-------------------------------------------------------
 var __cr;

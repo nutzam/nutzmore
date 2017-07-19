@@ -94,7 +94,7 @@ class CrnStdItem implements CrnItem {
      */
     protected boolean supportMOD;
 
-    protected void valueOf(String str) {
+    protected void parse(String str) {
         // 看看是不是 ANY
         if ("?".equals(str) || "*".equals(str)) {
             values = new int[]{ANY};
@@ -353,7 +353,7 @@ class CrnStdItem implements CrnItem {
      *            从字典的哪个下标开始查
      * @return
      */
-    protected int eval(String str, String[] dict, int dictOffset) {
+    protected int __eval(String str, String[] dict, int dictOffset) {
         int x = 1;
 
         if (this.supportLast && str.endsWith("L")) {
@@ -379,7 +379,7 @@ class CrnStdItem implements CrnItem {
 
     // 子类重载它，可以支持更丰富的值
     protected int eval4override(String str) {
-        return eval(str, null, -1);
+        return __eval(str, null, -1);
     }
 
     /*--------------------------------------快捷名称-----*/

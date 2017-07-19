@@ -41,7 +41,8 @@
 @Date : 2017..           <- 输出一个日期
 
 // 解析并执行
-ZCron.parse(@Str).fill(@Arr, @Obj, @Date)
+js:    ZCron(@Str).fill(@Arr, @Obj, @Date)
+java:  new ZCron(@Str).fill(@Arr, @Obj, @Date)
 
 // 你输入的 @Arr 会变成
 [ ][ ][ ][Obj][ ]...[ ][Obj][ ][ ][ ]
