@@ -5,6 +5,7 @@ import javax.sql.DataSource;
 import org.nutz.dao.Dao;
 import org.nutz.dao.SqlManager;
 import org.nutz.dao.impl.NutDao;
+import org.nutz.plugin.spring.boot.runner.SpringDaoRunner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -28,7 +29,9 @@ public class NutzDaoAutoConfiguration {
 
 	@Bean
 	public Dao dao() {
-		return new NutDao(dataSource, sqlManager);
+		NutDao dao = new NutDao(dataSource, sqlManager);
+		dao.setRunner(new SpringDaoRunner());
+		return dao;
 	}
 
 }
