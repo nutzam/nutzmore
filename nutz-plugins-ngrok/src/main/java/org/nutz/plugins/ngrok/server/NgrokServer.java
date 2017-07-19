@@ -1,16 +1,11 @@
 package org.nutz.plugins.ngrok.server;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.security.KeyStore;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,12 +17,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
 
 import org.nutz.lang.Lang;
 import org.nutz.lang.Streams;
@@ -38,39 +29,18 @@ import org.nutz.log.Logs;
 import org.nutz.plugins.ngrok.common.NgrokAgent;
 import org.nutz.plugins.ngrok.common.NgrokMsg;
 import org.nutz.plugins.ngrok.common.PipedStreamThread;
-import org.nutz.plugins.ngrok.common.StatusProvider;
 import org.nutz.plugins.ngrok.server.NgrokServer.NgrokServerClient.ProxySocket;
-import org.nutz.plugins.ngrok.server.auth.DefaultNgrokAuthProvider;
-import org.nutz.plugins.ngrok.server.auth.NgrokAuthProvider;
-import org.nutz.plugins.ngrok.server.auth.SimpleRedisAuthProvider;
 
-public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
+public class NgrokServer extends AbstractNgrokServer implements Callable<Object> {
 
     private static final Log log = Logs.get();
 
     public transient SSLServerSocket mainCtlSS;
     public transient ServerSocket httpSS;
     public transient SSLServerSocketFactory sslServerSocketFactory;
-    public String ssl_jks_password = "123456";
-    public byte[] ssl_jks;
-    public String ssl_jks_path;
-    public int srv_port = 4443;
-    public int http_port = 9080;
-    public ExecutorService executorService;
-    public int status;
+    
     public Map<String, NgrokServerClient> clients = new ConcurrentHashMap<String, NgrokServerClient>();
-    public NgrokAuthProvider auth;
-    public String srv_host = "wendal.cn";
-    public int client_proxy_init_size = 1;
-    public int client_proxy_wait_timeout = 30 * 1000;
-    public Map<String, String> hostmap = new ConcurrentHashMap<String, String>();
-    public Map<String, String> reqIdMap = new ConcurrentHashMap<String, String>();
-    public int bufSize = 8192;
-    public boolean redis;
-    public String redis_host = "127.0.0.1";
-    public int redis_port = 6379;
-    public String redis_key = "ngrok";
-    public String redis_rkey;
+    public ExecutorService executorService;
 
     public void start() throws Exception {
         log.debug("NgrokServer start ...");
@@ -80,17 +50,7 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
             log.debug("using default CachedThreadPool");
             executorService = Executors.newCachedThreadPool();
         }
-        if (auth == null) {
-            if (redis) {
-                log.debug("using redis auth provider");
-                auth = new SimpleRedisAuthProvider(redis_host, redis_port, redis_key);
-            } else {
-                log.debug("using default ngrok auth provider");
-                auth = new DefaultNgrokAuthProvider();
-            }
-        } else {
-            log.debug("using custom auth provider class=" + auth.getClass().getName());
-        }
+        init();
         status = 1;
 
         // 先创建监听,然后再启动哦,
@@ -131,33 +91,6 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
             }
         }
         return null;
-    }
-
-    public SSLServerSocketFactory buildSSL() throws Exception {
-        log.debug("try to load Java KeyStore File ...");
-        KeyStore ks = KeyStore.getInstance("JKS");
-        if (ssl_jks != null)
-            ks.load(new ByteArrayInputStream(ssl_jks), ssl_jks_password.toCharArray());
-        else if (ssl_jks_path != null) {
-            log.debug("load jks from " + this.ssl_jks_path);
-            ks.load(new FileInputStream(this.ssl_jks_path), ssl_jks_password.toCharArray());
-        } else if (new File(srv_host + ".jks").exists()) {
-            log.debug("load jks from " + srv_host + ".jks");
-            ks.load(new FileInputStream(srv_host + ".jks"), ssl_jks_password.toCharArray());
-        } else
-            throw new RuntimeException("must set ssl_jks_path or ssl_jks");
-
-        TrustManagerFactory tmfactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-        tmfactory.init(ks);
-        TrustManager[] tms = tmfactory.getTrustManagers();
-
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-        kmf.init(ks, ssl_jks_password.toCharArray());
-
-        SSLContext sc = SSLContext.getInstance("SSL");
-        sc.init(kmf.getKeyManagers(), tms, new SecureRandom());
-
-        return sc.getServerSocketFactory();
     }
 
     public class NgrokServerClient implements Callable<Object> {
@@ -211,7 +144,7 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
                             break;
                         }
                         String[] mapping = auth.mapping(NgrokServer.this,
-                                                        NgrokServerClient.this,
+                                                        id, authMsg,
                                                         msg);
                         if (mapping == null || mapping.length == 0) {
                             NgrokMsg.newTunnel("", "", "", "pls check your token").write(out);
@@ -449,11 +382,6 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
 
     }
 
-    @Override
-    public Integer getStatus() {
-        return status;
-    }
-
     public static class HttpBuf extends ByteArrayOutputStream {
         public HttpBuf() {
             super(512);
@@ -469,7 +397,7 @@ public class NgrokServer implements Callable<Object>, StatusProvider<Integer> {
 
         NgrokServer server = new NgrokServer();
         if (!NgrokAgent.fixFromArgs(server, args)) {
-            log.debug("usage : -srv_host=wendal.cn -srv_port=4443 -http_port=9080 -ssl_jks=wendal.cn.jks -ssl_jks_password=123456 -conf_file=xxx.properties");
+            log.debug("usage : -srv_host=wendal.cn -srv_port=4443 -http_port=9080 -ssl_jks_path=wendal.cn.jks -ssl_jks_password=123456 -conf_file=xxx.properties");
         }
         server.start();
     }

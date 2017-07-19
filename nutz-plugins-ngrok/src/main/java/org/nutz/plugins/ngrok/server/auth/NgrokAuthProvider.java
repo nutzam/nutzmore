@@ -1,13 +1,13 @@
 package org.nutz.plugins.ngrok.server.auth;
 
 import org.nutz.plugins.ngrok.common.NgrokMsg;
-import org.nutz.plugins.ngrok.server.NgrokServer;
+import org.nutz.plugins.ngrok.server.AbstractNgrokServer;
 
 public interface NgrokAuthProvider {
 
-    boolean check(NgrokServer srv, NgrokMsg auth);
+    boolean check(AbstractNgrokServer srv, NgrokMsg auth);
     
-    String[] mapping(NgrokServer srv, NgrokServer.NgrokServerClient client, NgrokMsg req);
+    String[] mapping(AbstractNgrokServer srv, String id, NgrokMsg authMsg, NgrokMsg req);
     
     void record(String host, long in, long out);
 }

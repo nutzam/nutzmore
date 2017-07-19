@@ -9,8 +9,7 @@ import org.nutz.integration.jedis.JedisAgent;
 import org.nutz.lang.Streams;
 import org.nutz.lang.Strings;
 import org.nutz.plugins.ngrok.common.NgrokMsg;
-import org.nutz.plugins.ngrok.server.NgrokServer;
-import org.nutz.plugins.ngrok.server.NgrokServer.NgrokServerClient;
+import org.nutz.plugins.ngrok.server.AbstractNgrokServer;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -29,7 +28,7 @@ public class SimpleRedisAuthProvider implements NgrokAuthProvider {
     }
 
     @Override
-    public boolean check(NgrokServer srv, NgrokMsg auth) {
+    public boolean check(AbstractNgrokServer srv, NgrokMsg auth) {
         String token = auth.getString("User");
         if (Strings.isBlank(token))
             return false;
@@ -50,14 +49,14 @@ public class SimpleRedisAuthProvider implements NgrokAuthProvider {
     }
 
     @Override
-    public String[] mapping(NgrokServer srv, NgrokServerClient client, NgrokMsg req) {
+    public String[] mapping(AbstractNgrokServer srv, String id, NgrokMsg authMsg, NgrokMsg req) {
         Jedis jedis = null;
         try {
             jedis = jedis();
             List<String> hosts = new ArrayList<String>();
-            String token = client.authMsg.getString("User");
+            String token = authMsg.getString("User");
             if (token.equals(srv.redis_rkey)) {
-                hosts.add(client.id.substring(0, 6) + "." + srv.srv_host);
+                hosts.add(id.substring(0, 6) + "." + srv.srv_host);
             } else {
                 String map = jedis.hget(key, token);
                 if ("nil".equals(map))

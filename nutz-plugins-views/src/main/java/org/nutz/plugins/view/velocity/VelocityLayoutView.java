@@ -64,7 +64,10 @@ public class VelocityLayoutView extends AbstractPathView {
 	 * 初始化,当然提供了一组默认值
 	 */
 	public void init() {
-		PropertiesProxy propertiesProxy = new PropertiesProxy(Mvcs.getNutConfig().getInitParameter("org.apache.velocity.properties"));
+	    String properties_path = Mvcs.getNutConfig().getInitParameter("org.apache.velocity.properties");
+	    if (properties_path == null)
+	        properties_path = "org.apache.velocity.properties";
+		PropertiesProxy propertiesProxy = new PropertiesProxy(properties_path);
 		this.errorTemplate = propertiesProxy.get("tools.view.servlet.error.template", "Error.vm").trim();
 		this.layoutDir = propertiesProxy.get("tools.view.servlet.layout.directory", "layout/").trim();
 		this.defaultLayout = propertiesProxy.get("tools.view.servlet.layout.default.template", "Default.vm").trim();
