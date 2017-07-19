@@ -2,23 +2,50 @@ package org.nutz.plugins.ngrok.server.netty;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
+import org.nutz.ioc.loader.annotation.IocBean;
 import org.nutz.lang.Encoding;
+import org.nutz.lang.Lang;
 import org.nutz.lang.Streams;
 import org.nutz.lang.Strings;
 import org.nutz.lang.random.R;
+import org.nutz.lang.util.NutMap;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
+import org.nutz.mvc.ActionContext;
+import org.nutz.mvc.ActionFilter;
+import org.nutz.mvc.NutConfig;
+import org.nutz.mvc.Setup;
+import org.nutz.mvc.View;
+import org.nutz.mvc.annotation.At;
+import org.nutz.mvc.annotation.By;
+import org.nutz.mvc.annotation.Fail;
+import org.nutz.mvc.annotation.Filters;
+import org.nutz.mvc.annotation.IocBy;
+import org.nutz.mvc.annotation.Modules;
+import org.nutz.mvc.annotation.Ok;
+import org.nutz.mvc.annotation.SetupBy;
+import org.nutz.mvc.view.HttpStatusView;
 import org.nutz.plugins.ngrok.common.NgrokAgent;
 import org.nutz.plugins.ngrok.common.NgrokMsg;
 import org.nutz.plugins.ngrok.server.AbstractNgrokServer;
+import org.nutz.repo.Base64;
+import org.nutz.web.NutOnlyWebServer;
+import org.nutz.web.WebConfig;
+import org.nutz.web.WebServer;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
@@ -44,13 +71,26 @@ import io.netty.util.AttributeKey;
  * @author wendal
  *
  */
-public class NgrokNettyServer extends AbstractNgrokServer {
+@Modules
+@IocBy(args={"*anno", "org.nutz.plugins.ngrok.server.netty"})
+@IocBean(factory="org.nutz.plugins.ngrok.server.netty.NgrokNettyServer#me")
+@Ok("json")
+@Fail("http:500")
+@SetupBy(value=NgrokNettyServer.class, args="ioc:ngrokNettyServer")
+@Filters(@By(type=NgrokNettyServer.class, args="ioc:ngrokNettyServer"))
+public class NgrokNettyServer extends AbstractNgrokServer implements Setup, ActionFilter {
 
     private static final Log log = Logs.get();
 
     public static AttributeKey<Integer> Attr_Message_Length = AttributeKey.valueOf("MessageLength");
 
-    public Map<String, NgrokContrlHandler> clientHanlders = new HashMap<String, NgrokNettyServer.NgrokContrlHandler>();
+    public Map<String, NgrokContrlHandler> clientHanlders = new ConcurrentHashMap<String, NgrokNettyServer.NgrokContrlHandler>();
+    
+    public Thread clientCheckThread;
+    
+    public String webadmin_password;
+    
+    public int webadmin_port = 9081;
     
     public void start() throws Exception {
         // 首先,继续基本的初始化操作
@@ -86,8 +126,10 @@ public class NgrokNettyServer extends AbstractNgrokServer {
              .option(ChannelOption.SO_BACKLOG, 8192) // (5)
              .childOption(ChannelOption.SO_KEEPALIVE, true); // (6)
 
+            log.debug("start Contrl Port=" + srv_port);
             // 绑定端口,开始启动
             ChannelFuture f = b.bind(srv_port).sync(); // (7)
+            log.debug("start Contrl Port=" + srv_port + " OK.");
 
             // 再启动一个端口, 监听http请求
             ServerBootstrap b2 = new ServerBootstrap(); // (2)
@@ -105,7 +147,17 @@ public class NgrokNettyServer extends AbstractNgrokServer {
               .childOption(ChannelOption.SO_KEEPALIVE, true); // (6)
 
             // 绑定端口,启动Http服务
+            log.debug("start Http Port=" + http_port);
             ChannelFuture f2 = b2.bind(http_port).sync(); // (7)
+            log.debug("start Http Port=" + http_port + " OK.");
+            
+            // 启动客户端检查线程
+            clientCheckThread = new Thread() {
+                public void run() {
+                    checkClientStatus();
+                }
+            };
+            clientCheckThread.start();
 
             // 然后就是瞎等.
             // Wait until the server socket is closed.
@@ -203,6 +255,9 @@ public class NgrokNettyServer extends AbstractNgrokServer {
 
         public ArrayBlockingQueue<ChannelHandlerContext> idleProxys;
         public ArrayBlockingQueue<NgrokHttpHandler> waitProxys;
+        
+        Set<String> reqIds;
+        Set<String> hosts;
 
         public void channelRead(ChannelHandlerContext ctx, Object _msg) throws Exception {
             this.ctx = ctx;
@@ -225,13 +280,15 @@ public class NgrokNettyServer extends AbstractNgrokServer {
                 // 登录成功, 把两个队列准备好, 分别缓存通往客户端和浏览器的链接
                 idleProxys = new ArrayBlockingQueue<ChannelHandlerContext>(128);
                 waitProxys = new ArrayBlockingQueue<NgrokHttpHandler>(128);
+                reqIds = new HashSet<String>();
+                hosts = new HashSet<String>();
                 // 若客户端指定了id,那就给它吧
                 id = msg.getString("ClientId");
                 if (Strings.isBlank(id))
                     id = R.UU32(); // 否则,生成一个新的
                 // 预留压缩支持
                 gzip_proxy = msg.getBoolean("GzipProxy", false);
-                if (log.isDebugEnabled())
+                if (debug)
                     log.debugf("New Client >> id=%s gzip_proxy=%s", id, gzip_proxy);
                 // 告诉客户端, 登录成功了
                 ctx.writeAndFlush(NgrokMsg.authResp(id, ""));
@@ -257,6 +314,8 @@ public class NgrokNettyServer extends AbstractNgrokServer {
                 // 需要把客户端提供的ReqId与映射地址一一对应起来
                 String reqId = msg.getString("ReqId");
                 for (String host : mapping) {
+                    reqIds.add(reqId);
+                    hosts.add(host);
                     // 逐个下发通知,并要求上来一个Proxy链接
                     ctx.writeAndFlush(NgrokMsg.newTunnel(reqId, "http://" + host, "http", ""));
                     ctx.writeAndFlush(NgrokMsg.reqProxy(reqId, "http://" + host, "http", ""));
@@ -312,6 +371,37 @@ public class NgrokNettyServer extends AbstractNgrokServer {
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
             log.debug("handle ngrok message fail?", cause);
             ctx.close();
+        }
+        
+        @Override
+        public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+            shutdown(false);
+        }
+        
+        public void shutdown(boolean closeForce) {
+            if (id == null)
+                return;
+            if (clientHanlders.get(id) == this) {
+                clientHanlders.remove(id);
+            }
+            if (closeForce) {
+                try {
+                    ctx.close();
+                } catch (Throwable e) {
+                }
+            }
+        }
+        
+        public NutMap asMap() {
+            NutMap map = new NutMap();
+            map.put("id", id);
+            map.put("lastPing", lastPing);
+            if (idleProxys != null && hosts != null && waitProxys != null) {
+                map.put("idleProxyCount", idleProxys.size());
+                map.put("waitProxyCount", waitProxys.size());
+                map.put("hosts", new HashSet<String>(hosts));
+            }
+            return map;
         }
     }
 
@@ -491,12 +581,120 @@ public class NgrokNettyServer extends AbstractNgrokServer {
         // 刷新出去,不然还得等缓存区满,那是挂的节奏
         proxy.flush();
     }
+    
+    public void checkClientStatus() {
+        while (true) {
+            Lang.quiteSleep(30000);
+            if (clientHanlders.isEmpty())
+                continue;
+            try {
+                Set<String> keys = new HashSet<String>(clientHanlders.keySet());
+                for (String clientId : keys) {
+                    NgrokContrlHandler handler = clientHanlders.get(clientId);
+                    if (handler == null) {
+                        log.infof("ClientId=%s but handler is NULL?! WTF", clientId);
+                        clientHanlders.remove(clientId);
+                        continue;
+                    }
+                    // 如果5分钟没心跳,那就再见吧
+                    long t = System.currentTimeMillis() - handler.lastPing;
+                    if (t > 5*60*1000) {
+                        try {
+                            log.infof("drop client=%s, last ping %d ms ago", clientId, t);
+                            handler.shutdown(true);
+                        }
+                        catch (Throwable e) {
+                            log.debug("something happen", e);
+                        }
+                    };
+                }
+            } catch (Throwable e) {
+                log.debug("something happen", e);
+            }
+        }
+    }
+    
+    // ---------------------------------------------------
+    //                   WebAdmin相关的代码
+    // ---------------------------------------------------
+    
+    public static NgrokNettyServer one;
+    public static NgrokNettyServer me() {
+        return one;
+    }
+    
+    @Ok("json:full")
+    @At("/client/list")
+    public Object clientList() {
+        List<NutMap> clients = new ArrayList<NutMap>();
+        for (NgrokContrlHandler handler : clientHanlders.values()) {
+            try {
+                clients.add(handler.asMap());
+            } catch (Throwable e) {
+                log.debug("fail at NgrokContrlHandler.asMap", e);
+            }
+        }
+        Collections.sort(clients, new Comparator<NutMap>() {
+            public int compare(NutMap prev, NutMap next) {
+                return prev.getString("id").compareTo(next.getString("id"));
+            }
+        });
+        return clients;
+    }
+    
+    public void init(NutConfig nc) {
+        new Thread("ngrok.server") {
+            public void run() {
+                try {
+                    NgrokNettyServer.this.start();
+                }
+                catch (Throwable e) {
+                    log.debug("something happen", e);
+                }
+            }
+        }.start();
+    }
+    
+    public void destroy(NutConfig nc) {
+    }
+
+    public View match(ActionContext ac) {
+        String auth = ac.getRequest().getHeader("Authorization");
+        if (Strings.isBlank(auth) || !auth.startsWith("Basic ")) {
+            ac.getResponse().setHeader("WWW-Authenticate", "Basic realm=\"Nutz Ngrok Web Admin\"");
+            return new HttpStatusView(401);
+        }
+        auth = new String(Base64.decode(auth.substring("Basic ".length())));
+        String[] tmp = auth.split(":", 2);
+        if (!webadmin_password.equals(tmp[1])) {
+            ac.getResponse().setHeader("WWW-Authenticate", "Basic realm=\"Nutz Ngrok Web Admin\"");
+            return new HttpStatusView(401);
+        }
+        return null;
+    }
+    
+    // ---------------------------------------------------
+    //                   启动相关的代码
+    // ---------------------------------------------------
 
     public static void main(String[] args) throws Exception {
         NgrokNettyServer server = new NgrokNettyServer();
         if (!NgrokAgent.fixFromArgs(server, args)) {
             log.debug("usage : -srv_host=wendal.cn -srv_port=4443 -http_port=9080 -ssl_jks_path=wendal.cn.jks -ssl_jks_password=123456 -conf_file=xxx.properties");
         }
-        server.start();
+        one = server;
+        if (Strings.isBlank(server.webadmin_password)) {
+            server.start();
+        } else {
+            StringBuilder props = new StringBuilder();
+            props.append("mainModuleClassName=" + NgrokNettyServer.class.getName() + "\r\n");
+            props.append("app-port=" + server.webadmin_port + "\r\n");
+            props.append("app-root=webadmin\r\n");
+            final WebServer web = new NutOnlyWebServer(new WebConfig(new StringReader(props.toString())));
+
+            web.run();
+
+            log.info("Server is down!");
+        }
     }
 }
