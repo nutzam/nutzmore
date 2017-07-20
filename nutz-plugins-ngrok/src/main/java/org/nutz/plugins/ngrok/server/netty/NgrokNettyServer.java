@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
@@ -188,7 +189,6 @@ public class NgrokNettyServer extends AbstractNgrokServer {
 
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
             log.debug("bad ngrok message?", cause);
-            ctx.close();
         }
 
     }
@@ -207,7 +207,6 @@ public class NgrokNettyServer extends AbstractNgrokServer {
 
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
             log.debug("encode ngrok message fail?", cause);
-            ctx.close();
         }
     }
 
@@ -237,6 +236,9 @@ public class NgrokNettyServer extends AbstractNgrokServer {
         
         Set<String> reqIds;
         Set<String> hosts;
+        
+        public AtomicLong httpChannelCounter;
+        public AtomicLong httpActiveCounter;
 
         public void channelRead(ChannelHandlerContext ctx, Object _msg) throws Exception {
             this.ctx = ctx;
@@ -261,6 +263,8 @@ public class NgrokNettyServer extends AbstractNgrokServer {
                 waitProxys = new ArrayBlockingQueue<NgrokHttpHandler>(128);
                 reqIds = new HashSet<String>();
                 hosts = new HashSet<String>();
+                httpChannelCounter = new AtomicLong();
+                httpActiveCounter = new AtomicLong();
                 // 若客户端指定了id,那就给它吧
                 id = msg.getString("ClientId");
                 if (Strings.isBlank(id))
@@ -334,14 +338,15 @@ public class NgrokNettyServer extends AbstractNgrokServer {
                     // 有, 立马同步,写入数据,建立隧道
                     log.debug("有NgrokHttpHandler正在等待,启动代理线程. CliendId=" + client.id);
                     synchronized (httpHandler.lock) {
-                        httpHandler.proxy = ctx;
-                        httpHandler.wait = false;
-                        
                         startProxy(httpHandler.ctx,
                                    ctx,
                                    httpHandler.host,
                                    httpHandler.bao.toByteArray(),
                                    null);
+                        client.httpActiveCounter.incrementAndGet();
+                        client.httpChannelCounter.incrementAndGet();
+                        httpHandler.proxy = ctx;
+                        httpHandler.wait = false;
                         httpHandler.bao = null; // 清理数据
                     }
                 }
@@ -353,10 +358,8 @@ public class NgrokNettyServer extends AbstractNgrokServer {
 
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
             log.debug("handle ngrok message fail?", cause);
-            ctx.close();
         }
         
-        @Override
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
             shutdown(false);
         }
@@ -372,6 +375,11 @@ public class NgrokNettyServer extends AbstractNgrokServer {
                     ctx.close();
                 } catch (Throwable e) {
                 }
+                if (waitProxys != null && !waitProxys.isEmpty()) {
+                    while (waitProxys.isEmpty()) {
+                        waitProxys.poll().ctx.close();
+                    }
+                }
             }
         }
         
@@ -379,16 +387,18 @@ public class NgrokNettyServer extends AbstractNgrokServer {
             NutMap map = new NutMap();
             map.put("id", id);
             map.put("lastPing", lastPing);
-            if (idleProxys != null && hosts != null && waitProxys != null) {
+            if (hosts != null) {
                 map.put("idleProxyCount", idleProxys.size());
                 map.put("waitProxyCount", waitProxys.size());
                 map.put("hosts", new HashSet<String>(hosts));
+                map.put("httpActiveCount", httpActiveCounter.get());
+                map.put("httpChannelCount", httpActiveCounter.get());
             }
             return map;
         }
     }
 
-    class NgrokHttpHandler extends ByteToMessageDecoder {
+    class NgrokHttpHandler extends ChannelInboundHandlerAdapter {
 
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
 
@@ -397,27 +407,25 @@ public class NgrokNettyServer extends AbstractNgrokServer {
         boolean wait;
         String host;
         Object lock = new Object();
-
-        @Override
-        protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out)
-                throws Exception {
+        NgrokContrlHandler handler;
+        
+        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+            ByteBuf in = (ByteBuf)msg;
             // 正在等Proxy链接吗?
-            if (wait) { // 是的, 立马同步之
-                synchronized (lock) {
-                    if (wait) { // 还在等? 那把数据缓存一下吧
-                        log.debug("有数据传入,但Proxy链接尚未建立,将数据放入缓存");
-                        Streams.write(bao, new ByteBufInputStream(in));
-                        return;
-                    }
+            synchronized (lock) { // 强制同步
+                if (wait) { // 还在等? 那把数据缓存一下吧
+                    log.debug("有数据传入,但Proxy链接尚未建立,将数据放入缓存");
+                    Streams.write(bao, new ByteBufInputStream(in));
+                    return;
                 }
-            }
-            // 没在等,看看Proxy链接是不是已经建立了?
-            if (proxy != null) {
-                // 是的啊, 那就把写数据到隧道啦
-                log.debug("Proxy链接已建立,桥接数据");
-                //proxy.writeAndFlush(proxy.alloc().buffer().writeBytes(in));
-                write2Another(ctx, proxy, in, false);
-                return;
+                // 没在等,看看Proxy链接是不是已经建立了?
+                if (proxy != null) {
+                    // 是的啊, 那就把写数据到隧道啦
+                    log.debug("Proxy链接已建立,桥接数据");
+                    //proxy.writeAndFlush(proxy.alloc().buffer().writeBytes(in));
+                    proxy.writeAndFlush(msg);
+                    return;
+                }
             }
 
             while (true) {
@@ -458,7 +466,7 @@ public class NgrokNettyServer extends AbstractNgrokServer {
                             return;
                         }
                         // 看看控制器在线不?
-                        NgrokContrlHandler handler = clientHanlders.get(cliendId);
+                        handler = clientHanlders.get(cliendId);
                         if (handler == null) {
                             // 木有,404侍候
                             log.debugf("Host[%s] without Ngrok Client", host);
@@ -484,6 +492,11 @@ public class NgrokNettyServer extends AbstractNgrokServer {
                             wait = true;
                             this.ctx = ctx;
                             this.host = host;
+                            if (in.isReadable()) {
+                                byte[] _tmp = new byte[in.readableBytes()];
+                                in.readBytes(_tmp);
+                                bao.write(_tmp);
+                            }
                             log.debug("没有可用的Proxy链接,将自身加入到waitProxys, handler.id=" + handler.id);
                             handler.waitProxys.add(this);
                             // 要客户端给Proxy链接!!
@@ -496,6 +509,8 @@ public class NgrokNettyServer extends AbstractNgrokServer {
                             // 很好很强大
                             log.debug("有可用Proxy链接, 开始启用Proxy代理链路");
                             startProxy(ctx, proxy, host, bao.toByteArray(), in);
+                            handler.httpChannelCounter.incrementAndGet();
+                            handler.httpActiveCounter.incrementAndGet();
                             bao = null;
                             return;
                         }
@@ -514,6 +529,8 @@ public class NgrokNettyServer extends AbstractNgrokServer {
             if (proxy != null) {
                 log.debug("[浏览器<-->服务器] 的链路已经关闭,那么,关闭[服务器<-->客户端]的链路吧");
                 proxy.close();
+                if (handler != null)
+                    handler.httpActiveCounter.decrementAndGet();
             }
         }
     }
@@ -532,7 +549,9 @@ public class NgrokNettyServer extends AbstractNgrokServer {
         }
 
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-            write2Another(ctx, target, (ByteBuf)msg, false);
+            ByteBuf in = (ByteBuf)msg;
+            //log.debugf("[服务器<-->客户端],有数据从客户端发过来, count=%d, 内容是\r\n%s", in.readableBytes(), in.toString(Encoding.CHARSET_UTF8));
+            target.writeAndFlush(msg);
         }
 
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
@@ -545,29 +564,21 @@ public class NgrokNettyServer extends AbstractNgrokServer {
 //            target.close();
 //        }
     }
-    
-    public static void write2Another(ChannelHandlerContext source, ChannelHandlerContext target, ByteBuf buf, boolean retain) {
-        //target.writeAndFlush(target.alloc().buffer().writeBytes(buf));
-        target.writeAndFlush(buf);
-        if (retain)
-            buf.retain();
-    }
 
     public void startProxy(final ChannelHandlerContext ctx,
                            ChannelHandlerContext proxy,
                            String host,
                            byte[] buf,
                            ByteBuf in) {
+        proxy.pipeline().addAfter("ssl", "ngrok.proxy", new Piped(ctx)); // 加入管道处理器
         // 给Proxy链接发通知
-        proxy.write(NgrokMsg.startProxy("http://" + host, ""));
-        proxy.pipeline().addLast(new Piped(ctx)); // 加入管道处理器
-        if (buf != null) // 把预先读取的数据写进去
-            proxy.write(proxy.alloc().buffer().writeBytes(buf));
-        if (in != null) { // 把剩余的数据也写进入
-            write2Another(ctx, proxy, in, false);
+        proxy.writeAndFlush(NgrokMsg.startProxy("http://" + host, ""));
+        if (buf != null) {// 把预先读取的数据写进去 
+            proxy.writeAndFlush(proxy.alloc().buffer().writeBytes(buf));
         }
-        // 刷新出去,不然还得等缓存区满,那是挂的节奏
-        proxy.flush();
+        if (in != null) { // 把剩余的数据也写进入
+            proxy.writeAndFlush(in);
+        }
     }
     
     public void checkClientStatus() {
