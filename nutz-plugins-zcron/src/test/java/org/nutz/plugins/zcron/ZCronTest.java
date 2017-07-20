@@ -18,20 +18,21 @@ public class ZCronTest {
     @Test
     public void test_text_ext_0() {
         aeT("D[20170725,20170921) T[12:23,18:32]{0/30m}",
-            "在2017年7月25日（包含）至9月21日（不包含）期间，每天的12:23（包含）到18:32（包含），每隔30分钟");
+            "2017年7月25日至9月21日（不包含），每天的12:23到18:32，每隔30分钟");
         aeT("D(20170725,20170921] T(12:23,18:32]{4/30m}",
-                "在2017年7月25日（不包含）至9月21日（包含）期间，每天的12:23（不包含）到18:32（包含），经过4分钟后开始，每隔30分钟");
+            "2017年7月25日（不包含）至9月21日，每天的12:23（不包含）到18:32，经过4分钟后开始，每隔30分钟");
         aeT("D(20170725,20170921] T(12:23,18:32]{4s/2h}",
-                "在2017年7月25日（不包含）至9月21日（包含）期间，每天的12:23（不包含）到18:32（包含），经过4秒钟后开始，每隔2小时");
+            "2017年7月25日（不包含）至9月21日，每天的12:23（不包含）到18:32，经过4秒钟后开始，每隔2小时");
         aeT("D(20170725,20170921] T(12:23,18:32]{>1/2h}",
-                "在2017年7月25日（不包含）至9月21日（包含）期间，每天的12:23（不包含）到18:32（包含），起始时间按1小时全天对齐，每隔2小时");
+            "2017年7月25日（不包含）至9月21日，每天的12:23（不包含）到18:32，起始时间按1小时全天对齐，每隔2小时");
         aeT("D(20170725,20170921] T{1:20,2:3,18:05}",
-                "在2017年7月25日（不包含）至9月21日（包含）期间，每天的01:20,02:03,18:05");
+            "2017年7月25日（不包含）至9月21日，每天的01:20,02:03,18:05");
     }
 
     @Test
     public void test_text_std_1() {
         aeT("0 0 ? * * ? *", "每天的每小时的0分0秒");
+        aeT("0 0 ? * 1,5,6 1-3 *", "每年的一月,五月,六月的周日至周二的每天每小时的0分0秒");
         aeT("0 0 ? * * ? 2017-2020", "2017年至2020年的每天的每小时的0分0秒");
         aeT("0 0 ? * * ? 2017/2", "从2017年开始每隔2年的每天的每小时的0分0秒");
         aeT("0 0 ? * * ? 2017,2019,2034", "2017年,2019年,2034年的每天的每小时的0分0秒");
@@ -62,7 +63,7 @@ public class ZCronTest {
     public void test_ext_normal() {
         ZCron cr;
         // ............................................
-        cr = ZCron.parse("D[20170725,20170921] T[12:23,18:32]{0/30m}");
+        cr = new ZCron("D[20170725,20170921] T[12:23,18:32]{0/30m}");
         assertTrue(cr.matchDate("2017-07-25"));
         assertTrue(cr.matchDate("2017-09-21"));
         assertFalse(cr.matchDate("2017-07-24"));
@@ -88,7 +89,7 @@ public class ZCronTest {
     public void test_year() throws Exception {
         ZCron cr;
         // ............................................
-        cr = ZCron.parse("0 0 ? * * ? 2017-2020");
+        cr = new ZCron("0 0 ? * * ? 2017-2020");
         assertFalse(cr.matchDate("2016-12-31"));
         assertTrue(cr.matchDate("2017-12-20"));
         assertTrue(cr.matchDate("2018-01-12"));
@@ -97,7 +98,7 @@ public class ZCronTest {
         assertFalse(cr.matchDate("2021-01-01"));
 
         // ............................................
-        cr = ZCron.parse("0 0 ? * * ? 2017/2");
+        cr = new ZCron("0 0 ? * * ? 2017/2");
         assertFalse(cr.matchDate("2016-12-31"));
         assertTrue(cr.matchDate("2017-01-01"));
         assertFalse(cr.matchDate("2018-12-31"));
@@ -114,7 +115,7 @@ public class ZCronTest {
     public void test_month_XXX_1_5() throws Exception {
         ZCron cr;
         // ............................................
-        cr = ZCron.parse("0 0 0 1-5 * ?");
+        cr = new ZCron("0 0 0 1-5 * ?");
         assertTrue(cr.matchDate("2015-07-01"));
         assertTrue(cr.matchDate("2015-07-05"));
         assertFalse(cr.matchDate("2015-07-06"));
@@ -125,7 +126,7 @@ public class ZCronTest {
     public void test_month_jul_1_5() throws Exception {
         ZCron cr;
         // ............................................
-        cr = ZCron.parse("0 0 0 1-5 JUL ?");
+        cr = new ZCron("0 0 0 1-5 JUL ?");
         assertTrue(cr.matchDate("2015-07-01"));
         assertTrue(cr.matchDate("2015-07-05"));
         assertFalse(cr.matchDate("2015-07-06"));
@@ -136,7 +137,7 @@ public class ZCronTest {
     public void test_month_7_1_5() throws Exception {
         ZCron cr;
         // ............................................
-        cr = ZCron.parse("0 0 0 1-5 7 ?");
+        cr = new ZCron("0 0 0 1-5 7 ?");
         assertTrue(cr.matchDate("2015-07-01"));
         assertTrue(cr.matchDate("2015-07-05"));
         assertFalse(cr.matchDate("2015-07-06"));
@@ -148,7 +149,7 @@ public class ZCronTest {
         ZCron cr;
 
         // ............................................
-        cr = ZCron.parse("0 0 0 1-3,6-8 * ?");
+        cr = new ZCron("0 0 0 1-3,6-8 * ?");
         assertTrue(cr.matchDate("2012-04-02"));
         assertTrue(cr.matchDate("2014-06-07"));
         assertFalse(cr.matchDate("2011-05-04"));
@@ -159,41 +160,41 @@ public class ZCronTest {
         ZCron cr;
 
         // ............................................
-        cr = ZCron.parse("0 0 0 * 4,6 ?");
+        cr = new ZCron("0 0 0 * 4,6 ?");
         assertTrue(cr.matchDate("2012-04-05"));
         assertTrue(cr.matchDate("2014-06-06"));
         assertFalse(cr.matchDate("2011-05-07"));
 
         // ............................................
-        cr = ZCron.parse("0 0 0 * * SUN#2");
+        cr = new ZCron("0 0 0 * * SUN#2");
         assertTrue(cr.matchDate("2012-02-12"));
         assertFalse(cr.matchDate("2012-02-05"));
         assertFalse(cr.matchDate("2012-02-19"));
 
         // ............................................
-        cr = ZCron.parse("0 0 0 * * ?");
+        cr = new ZCron("0 0 0 * * ?");
         assertTrue(cr.matchDate("2012-03-15"));
 
         // ............................................
-        cr = ZCron.parse("0 0 0 W * ?");
+        cr = new ZCron("0 0 0 W * ?");
         assertTrue(cr.matchDate("2012-02-07"));
         assertFalse(cr.matchDate("2012-02-05"));
         assertFalse(cr.matchDate("2012-02-11"));
 
         // ............................................
-        cr = ZCron.parse("0 0 0 * * SUN-MON");
+        cr = new ZCron("0 0 0 * * SUN-MON");
         assertTrue(cr.matchDate("2012-02-05"));
         assertTrue(cr.matchDate("2012-02-06"));
         assertFalse(cr.matchDate("2012-02-07"));
 
         // ............................................
-        cr = ZCron.parse("0 0 0 * * 1-2");
+        cr = new ZCron("0 0 0 * * 1-2");
         assertTrue(cr.matchDate("2012-02-05"));
         assertTrue(cr.matchDate("2012-02-06"));
         assertFalse(cr.matchDate("2012-02-07"));
 
         // ............................................
-        cr = ZCron.parse("0 0 0 * 4-6 ?");
+        cr = new ZCron("0 0 0 * 4-6 ?");
         assertTrue(cr.matchDate("2012-04-05"));
         assertTrue(cr.matchDate("2018-05-06"));
         assertTrue(cr.matchDate("2016-06-06"));
@@ -201,21 +202,21 @@ public class ZCronTest {
         assertFalse(cr.matchDate("2012-07-07"));
 
         // ............................................
-        cr = ZCron.parse("0 0 0 1 * ?");
+        cr = new ZCron("0 0 0 1 * ?");
         assertTrue(cr.matchDate("2012-02-01"));
         assertTrue(cr.matchDate("2012-03-01"));
         assertFalse(cr.matchDate("2012-02-29"));
         assertFalse(cr.matchDate("2012-05-14"));
 
         // ............................................
-        cr = ZCron.parse("0 0 0 1-7 * ?");
+        cr = new ZCron("0 0 0 1-7 * ?");
         assertTrue(cr.matchDate("2012-02-01"));
         assertTrue(cr.matchDate("2012-03-07"));
         assertFalse(cr.matchDate("2012-02-29"));
         assertFalse(cr.matchDate("2012-05-14"));
 
         // ............................................
-        cr = ZCron.parse("0 0 0 1L * ?");
+        cr = new ZCron("0 0 0 1L * ?");
         assertTrue(cr.matchDate("2012-02-29"));
         assertTrue(cr.matchDate("2012-03-31"));
         assertFalse(cr.matchDate("2012-02-28"));
@@ -228,7 +229,7 @@ public class ZCronTest {
         ZCron cr;
 
         // ............................................
-        cr = ZCron.parse("* 9/25 * * * ?");
+        cr = new ZCron("* 9/25 * * * ?");
         assertFalse(cr.matchTime("00:00:00"));
 
         assertFalse(cr.matchTime("12:08:23"));
@@ -246,7 +247,7 @@ public class ZCronTest {
         assertTrue(cr.matchTime("23:59:59"));
 
         // ............................................
-        cr = ZCron.parse("* 1-10 * * * ?");
+        cr = new ZCron("* 1-10 * * * ?");
         assertTrue(cr.matchTime("12:01:23"));
         assertFalse(cr.matchTime("00:00:00"));
         assertTrue(cr.matchTime("09:03:45"));
@@ -254,7 +255,7 @@ public class ZCronTest {
         assertFalse(cr.matchTime("23:59:59"));
 
         // ............................................
-        cr = ZCron.parse("0 1-10 0 * * ?");
+        cr = new ZCron("0 1-10 0 * * ?");
         assertTrue(cr.matchTime("00:01:00"));
         assertFalse(cr.matchTime("00:00:00"));
         assertTrue(cr.matchTime("00:03:00"));
@@ -262,14 +263,14 @@ public class ZCronTest {
         assertFalse(cr.matchTime("23:59:59"));
 
         // ............................................
-        cr = ZCron.parse("0 0 0 * * ?");
+        cr = new ZCron("0 0 0 * * ?");
         assertTrue(cr.matchTime("00:00:00"));
         assertFalse(cr.matchTime("00:00:01"));
         assertFalse(cr.matchTime("00:00:02"));
         assertFalse(cr.matchTime("23:59:59"));
 
         // ............................................
-        cr = ZCron.parse("* 1,6,10 * * * ?");
+        cr = new ZCron("* 1,6,10 * * * ?");
         assertFalse(cr.matchTime("00:00:00"));
 
         assertFalse(cr.matchTime("12:00:23"));
@@ -327,7 +328,7 @@ public class ZCronTest {
 
     @Test
     public void test_simple_parse() {
-        ZCron.parse("0 0 0 7-13 JUL ?");
+        new ZCron("0 0 0 7-13 JUL ?");
     }
 
     /*----------------------------------------------------------读取i18n-------*/
@@ -340,7 +341,7 @@ public class ZCronTest {
 
     /*----------------------------------------------------------帮助函数们-------*/
     private static void aeT(String cron, String expect) {
-        ZCron cr = ZCron.parse(cron);
+        ZCron cr = new ZCron(cron);
         String txt = cr.toText(i18n);
         assertEquals(expect, txt);
     }
@@ -378,7 +379,7 @@ public class ZCronTest {
                              int unit,
                              String... expect) {
         // 创建+解析
-        ZCron cr = ZCron.parse(rus);
+        ZCron cr = new ZCron(rus);
 
         // 执行
         cr.fill(array, "E", Times.C(ds), off, len, unit);
@@ -409,7 +410,7 @@ public class ZCronTest {
         int i = 0;
         for (String rus : russ) {
             // 创建
-            ZCron qz = ZCron.parse(rus);
+            ZCron qz = new ZCron(rus);
             // 执行
             qz.overlapBy(qos, (i++) + ".E", ds);
         }

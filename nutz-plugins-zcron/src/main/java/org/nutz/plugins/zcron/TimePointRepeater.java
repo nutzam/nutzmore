@@ -11,7 +11,7 @@ class TimePointRepeater {
 
     static TimePointRepeater tryParse(String str) {
         TimePointRepeater tpr = new TimePointRepeater();
-        if (tpr.valueOf(str))
+        if (tpr.parse(str))
             return tpr;
         return null;
     }
@@ -54,7 +54,7 @@ class TimePointRepeater {
      *            输入字符串
      * @return 是否是符合规范的字符串
      */
-    boolean valueOf(String str) {
+    boolean parse(String str) {
         Matcher m = _P.matcher(str);
         if (m.find()) {
             autoPadding = null != m.group(1);
@@ -113,7 +113,7 @@ class TimePointRepeater {
         return tps;
     }
 
-    Pattern _P = Pattern.compile("^(>)?((\\d+)([hms])?)?/(\\d+)([hms])$");
+    private static final Pattern _P = Pattern.compile("^(>)?((\\d+)([hms])?)?/(\\d+)([hms])$");
 
     String explainTimePoints(TimeRegion tr) {
         int[] tps = this.genTimePoints(tr);

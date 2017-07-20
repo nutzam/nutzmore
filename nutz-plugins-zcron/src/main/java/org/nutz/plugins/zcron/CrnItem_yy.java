@@ -10,7 +10,7 @@ public class CrnItem_yy extends CrnDateItem {
 
     @Override
     protected int eval4override(String str) {
-        return super.eval(str, null, 1);
+        return super.__eval(str, null, 1);
     }
 
     @Override

@@ -81,7 +81,7 @@ public class CrnItem_ww extends CrnDateItem {
             str = str.substring(0, pos);
             breakWeek = true;
         }
-        int v = super.eval(str, CrnStdItem.DAYS_OF_WEEK, 1);
+        int v = super.__eval(str, CrnStdItem.DAYS_OF_WEEK, 1);
         return v + MOD_ww * n;
     }
 

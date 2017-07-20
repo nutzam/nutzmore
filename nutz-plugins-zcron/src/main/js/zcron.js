@@ -1,27 +1,289 @@
+/**
+提供了 ZCron 表达式的实现。无依赖
+ 
+表达式文档 : https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-zcron
+
+2017 by zozoh(zozohtnt@gmail.com)
+*/
 (function() {
 //================================================================
-var _T = function(lc, i18n, n){
-    // 特殊的周 FRI#3
-    if(n>MOD_ww){
-        var n0 = n % MOD_ww;
-        var n1 = (n - n0) / MOD_ww;
-        var s = lc.dict ? lc.dict[n0-1] : lc.tmpl.replace("?", n0);
-        return i18n.N.replace("?", n1) + s;
+var Tmpl = function(tmpl, c, left, right) {
+    var re = tmpl;
+    for(var key in c) {
+        var val = c[key] || "";
+        re = re.replace((left||"")+key+(right||""), val);
     }
-    // 特殊值:工作日 W
-    else if(n > (MOD_dd/2)){
-        var n0 = n - MOD_dd;
-        return n0 == 0 ? lc.Wonly : _T(lc, i18n, n0) + lc.W;
+    return re;
+};
+//================================================================
+var formatDate = function(fmt, d) {
+    var year = d.getFullYear();
+    var yy = (""+year).substring(2);
+    var month = d.getMonth() + 1;
+    var date  = d.getDate();
+    return Tmpl(fmt, {
+        yyyy : year,
+        yy   : yy,
+        MM   : month > 9 ? month : "0"+month,
+        M    : month,
+        dd   : date > 0 ? date : "0"+date,
+        d    : date,
+    });
+};
+//================================================================
+var AsDate = function(str) {
+    if("string" == (typeof str)) {
+        var m = /^(\d{4})[^\d]?(\d{1,2})([^\d]?(\d{1,2}))?$/.exec(str);
+        if(!m)
+            throw "Not a Date: '"+v+"'!!";
+        return new Date(m[1],m[2]-1,m[4]||1);
     }
-    // 正常值
-    else if(n>=0){
-        return lc.dict ? lc.dict[n-1] : lc.tmpl.replace("?", n);
+    return new Date(str);
+};
+var AsTimeInObj = function(input) {
+    var sec = parseInt(input);
+    if(isNaN(sec) || sec !=input) {
+        var m = /^(\d{1,2}):(\d{1,2})(:?(\d{1,2}))?$/.exec(input);
+        if(!m)
+            throw "Not a Time: '"+v+"'!!";
+        sec = m[1]*3600  + m[2]*60  + (m[4]||0)*1;
     }
-    // 那么就表示倒数
-    if(-1 == n){
-        return i18n.L1 + lc.unit;
+    var HH = parseInt(sec/3600);
+    var mm = parseInt((sec - HH*3600)/60);
+    var ss = sec - HH*3600 - mm*60;
+    return {
+        hour   : HH,
+        minute : mm,
+        second : ss,
+        value  : sec,
+        toString : function(autoIgnoreZeroSecond){
+            var re = (this.hour>9 ? this.hour : "0"+this.hour);
+            re += ":" + (this.minute>9 ? this.minute : "0"+this.minute);
+            if(!autoIgnoreZeroSecond || this.second > 0)
+                re += ":" + (this.second>9 ? this.second : "0"+this.second);
+            return re;
+        }
+    };
+};
+var AsTimeInSec = function(str) {
+    return AsTimeInObj(str).value;
+};
+var AsTimeInStr = function(sec, autoIgnoreZeroSecond) {
+    return AsTimeInObj(sec).toString(autoIgnoreZeroSecond);
+};
+//================================================================
+/*
+返回数组:
+    len==4 as Region:        [开/闭, 左值, 右值, 开/闭]
+    len==3 as Single value:  [开/闭, 值, 开/闭]
+    - true  : 开
+    - false : 闭
+*/
+var Region = function(str, formatFunc){
+    // 处理格式化值的方式
+    if(formatFunc) {
+        var fft = (typeof formatFunc);
+        if("string" == fft) {
+            // 日期
+            if("date" == formatFunc) {
+                formatFunc = function(v){
+                    return AsDate(v);
+                };
+            }
+            // 时间
+            else if("time" == formatFunc){
+                formatFunc = function(v){
+                    return AsTimeInSec(v);
+                };
+            }
+            // 数字
+            else if("number" == formatFunc){
+                formatFunc = function(v){
+                    return parseInt(v);
+                };
+            }
+            // 不支持
+            else {
+                throw "Region formatFunc can not be a '"+fftp+"'";
+            }
+        }
+        // 那么必须是函数了
+        else if("function" != fft) {
+            throw "Region(.., formatFunc) can not be a " + fft;
+        }
     }
-    return i18n.Ln.replace("?", Math.abs(n))+lc.unit;
+
+    // 整理字符串
+    var s = str.replace(/[ \t]/g, "");
+    // eval:  |   1  ||  2  || 3 || 4  ||  5   |
+    var m = /^([\[\(])([^,]*)(,)?([^,]*)([\)\]])$/.exec(str);
+    if(!m){
+        throw "invalid region: " + str;
+    }
+    // 范围
+    var re;
+    if(m[3]) {
+        re = [
+            m[1] == '(' ? true : false,  // [0]
+            m[2] || null,                // [1]
+            m[4] || null,                // [2] 
+            m[5] == ')' ? true : false,  // [3]
+        ];
+        if(formatFunc) {
+            if(re[1]!=null)re[1] = formatFunc(re[1]);
+            if(re[2]!=null)re[2] = formatFunc(re[2]);
+        }
+    }
+    // 单值
+    else {
+        re = [
+            m[1] == '(' ? true : false,  // [0]
+            m[2] || null,                // [1]
+            m[5] == ')' ? true : false,  // [2]
+        ];
+        if(formatFunc) {
+            if(re[1]!=null)re[1] = formatFunc(re[1]);
+        }
+    }
+    // 添加帮助函数
+    re.left  = function(){return this[1];}
+    re.right = function(){return this[this.length - 2];}
+    re.isLeftOpen  = function(){return this[0];}
+    re.isRightOpen = function(){return this[this.length-1];}
+    re.isRegion = function(){return this.length==4;}
+    re.match = function(v) {
+        // 区间
+        if(this.length == 4) {
+            if(null!=this[1]){
+                if((this[0] && this[1]>=v) || (!this[0] && this[1]>v))
+                    return false;
+            }
+            if(null!=this[2]){
+                if((this[3] && this[2]<=v) || (!this[3] && this[2]<v))
+                    return false;
+            }
+            return true;
+        }
+        // 不等于
+        if(this[0] && this[2])
+            return this[1] != v;
+        // 等于
+        return this[1] == v;
+    };
+    // 返回
+    return re;
+};
+//================================================================
+var TimePointRepeater = function(){};
+TimePointRepeater.tryParse = function(str) {
+    var tpr = new TimePointRepeater();
+    if (tpr.parse(str))
+        return tpr;
+    return null;
+};
+TimePointRepeater.prototype = {
+    unitInSec : function(tu) {
+        if ("h" == tu)
+            return 3600;
+        if ("m" == tu)
+            return 60;
+        return 1;
+    },
+    parse : function(str) {
+        // Parse: |1 |2[ 3 ][  4  ] |   | 5 ||  6  |
+        var m = /^(>)?((\d+)([hms])?)?\/(\d+)([hms])$/.exec(str);
+        if (m) {
+            this.autoPadding = m[1] ? true : false;
+            this.stepValue   = parseInt(m[5]);
+            this.stepUnit    = m[6];
+            if (m[2]) {
+                this.offValue = parseInt(m[3]);
+                this.offUnit  = m[4];
+            }
+
+            // 计算
+            this.offInSec  = (this.offValue < 0 ? this.stepValue : this.offValue)
+                              * this.unitInSec(null == this.offUnit 
+                                                ? this.stepUnit 
+                                                : this.offUnit);
+            this.stepInSec = this.stepValue * this.unitInSec(this.stepUnit);
+            // 解析成功
+            return true;
+        }
+        return false;
+    },
+    genTimePoints : function(tr) {
+        // 得到时间范围（秒）
+        var tStart; // 开始（包含）
+        var tEnd; // 结束（不包含）
+        // 全天
+        if (null == tr || !tr.isRegion()) {
+            tStart = 0;
+            tEnd = 86400;
+        }
+        // 根据给定时间区域
+        else {
+            tStart = tr.left() + (tr.isLeftOpen() ? 1 : 0);
+            tEnd = tr.right() - (tr.isRightOpen() ? 0 : 1);
+        }
+        // ..............................................
+        // 调整开始时间
+        if (this.offInSec > 0) {
+            // 自动对齐
+            if (this.autoPadding) {
+                tStart = Math.ceil(this.tStart/this.offInSec) * this.offInSec;
+            }
+            // 仅仅是调整
+            else {
+                tStart += this.offInSec;
+            }
+        }
+        // ..............................................
+        // 计算时间点，并开始填充
+        var len = ((tEnd - tStart) / this.stepInSec) + 1;
+        var tps = [];
+        tps[0] = tStart;
+        for (var i = 1; i < len; i++) {
+            tps[i] = tStart + (i * this.stepInSec);
+        }
+        // 返回
+        return tps;
+    },
+    explainTimePoints : function(tr) {
+        var tps  = this.genTimePoints(tr);
+        var list = [];
+        for (var i = 0; i < tps.length; i++) {
+            list[i] = AsTimeInStr(tps[i], true);
+        }
+        return list.join(", ");
+    },
+    _T : function(i18n, key, value) {
+        return i18n.times[key].replace(/\?/g, value);
+    },
+    toText: function(i18n) {
+        var re = "";
+        // 得到步长描述
+        var vstp = this._T(i18n, this.stepUnit, this.stepValue);
+        // 得到偏移描述
+        var voff = null;
+        if (this.offValue) {
+            var tu = this.offUnit || this.stepUnit;
+            voff = this._T(i18n, tu, this.offValue);
+        }
+        // 对齐
+        if (this.autoPadding) {
+            re += this._T(i18n, "pad", voff || vstp);
+        }
+        // 偏移
+        else if (this.offValue) {
+            re += this._T(i18n, "off", voff);
+        }
+        // 步长
+        re += this._T(i18n, "step", vstp);
+
+        // 返回
+        return re;
+    }
 };
 //================================================================
 var ANY   = 0;   // *
@@ -32,40 +294,26 @@ var ONE   = 4;   // 单值: values[1] 表示被精确匹配的值
 var MOD_dd = 100;
 var MOD_ww = 1000;
 var DAYS_OF_WEEK  = [null,"SUN","MON","TUE","WED","THU","FRI","SAT"];
-var MONTH_OF_YEAR = [null, "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+var MONTH_OF_YEAR = [null, "JAN", "FEB", "MAR", "APR", "MAY", "JUN", 
+                           "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+
 //================================================================
 // 表达式项的构造函数
-var CrnItem = function(){};
+var CrnItem = function(){
+    this.prevItems = Array.from(arguments);
+};
 //................................................................
 // Methods & Properties
 CrnItem.prototype = {
-    __eval : function(str, dict, dictOffset) {
-        var x = 1;
-
-        if (this.supportLast && /L$/.test(str)) {
-            x = -1;
-            str = str.substring(0, str.length - 1);
-        }
-
-        // 直接是数字
-        if(/^[0-9]+$/.test(str)){
-            return str * x;
-        }
-        
-        // 使用字典
-        if (dict) {
-            var s = str.toUpperCase();
-            for (var i = dictOffset; i < dict.length; i++)
-                if (s == dict[i])
-                    return i;
-        }
-        // 不支持
-        throw "isNaN : " + str;
+    setIgnoreZeroWhenPrevHasSpan: function(ignore) {
+        this.ignoreZeroWhenPrevHasSpan = ignore;
+        return this;
     },
-    // 子类重载它，可以支持更丰富的值
-    eval4override : function(str) {
-        return this.__eval(str, null, -1);
+    setIgnoreAnyWhenPrevAllAny: function(ignore) {
+        this.ignoreAnyWhenPrevAllAny = ignore;
+        return this;
     },
+    // 解析表达式项 （相当于 Java 版的 CrnStdItem.parse）
     parse : function(str){
         // 看看是不是 ANY
         if ("?" == str || "*" == str) {
@@ -111,19 +359,119 @@ CrnItem.prototype = {
     isANY : function(){
         return "ANY" == this.values[0];
     },
-    prepare : function(max) {
-        // 准备返回值
-        var refs = [];
-        refs[0] = this.values[0];
-
-        // 判断是否需要 L 一下 ...
-        for (var i = 1; i < this.values.length; i++) {
-            var v = this.values[i];
-            refs[i] = v < 0 ? max + v : v;
+    isSPAN : function() {
+        return "SPAN" == this.values[0];
+    },
+    isPrevAllAny : function() {
+        if (!this.prevItems || this.prevItems.length == 0)
+            return false;
+        for (var i=0; i<this.prevItems.length; i++){
+            var prev = this.prevItems[i];
+            if (!prev.isANY())
+                return false;
         }
+        return true;
+    },
+    isPrevHasSpan : function() {
+        if(this.prevItems && this.prevItems.length>0){
+            for (var i=0; i<this.prevItems.length; i++){
+                var prev = this.prevItems[i];
+                if (prev.isSPAN())
+                    return true;
+            }
+        }
+        return false;
+    },
+    _T : function(lc, i18n, n){
+        // 特殊的周 FRI#3
+        if(this.supportMOD && n>MOD_ww){
+            var n0 = n % MOD_ww;
+            var n1 = (n - n0) / MOD_ww;
+            var s = lc.dict ? lc.dict[n0-1] : lc.tmpl.replace("?", n0);
+            return i18n.N.replace("?", n1) + s;
+        }
+        // 特殊值:工作日 W
+        else if(this.supportMOD && n > (MOD_dd/2)){
+            var n0 = n - MOD_dd;
+            return n0 == 0 ? lc.Wonly : this._T(lc, i18n, n0) + lc.W;
+        }
+        // 正常值
+        else if(n>=0){
+            return lc.dict ? lc.dict[n-1] : lc.tmpl.replace("?", n);
+        }
+        // 那么就表示倒数
+        if(-1 == n){
+            return i18n.L1 + lc.unit;
+        }
+        return i18n.Ln.replace("?", Math.abs(n))+lc.unit;
+    },
+    joinText : function(ary, i18n, key, off, ignoreSuffix){
+        off = off || 0;
+        if(off >= this.values.length)
+            return -1;
+        var lc = i18n[key];
 
-        // 返回
-        return refs;
+        switch(this.values[off++]){
+        case "ANY":
+            // 忽略输出
+            if (this.ignoreAnyWhenPrevAllAny && this.isANY() && this.isPrevAllAny()) {}
+            // 输出
+            else if (lc.ANY) {
+                ary.push(lc.ANY);
+                if(!ignoreSuffix && lc.suffix)
+                    ary.push(lc.suffix);
+            }
+            break;
+        case "RANGE" :
+            ary.push(this._T(lc, i18n, this.values[off++])
+                    + i18n.to
+                    + this._T(lc, i18n, this.values[off++]));
+            if(!ignoreSuffix && lc.suffix) ary.push(lc.suffix);
+            break;
+        case "LIST":
+            var list = [];
+            while(-1!=(off = this.joinText(list, i18n, key, off, true))){}
+            ary.push(list.join(","));
+            if(!ignoreSuffix && lc.suffix) ary.push(lc.suffix);
+            break;
+        case "SPAN":
+            var s0 = this._T(lc, i18n, this.values[off++]);
+            ary.push(i18n.start.replace("?", s0));
+            ary.push(lc.span.replace("?", this.values[off++]));
+            if(!ignoreSuffix && lc.suffix) ary.push(lc.suffix);
+            break;
+        case "ONE":
+            var n = this.values[off++];
+            
+            // 忽略输出
+            if (n == 0 && this.ignoreZeroWhenPrevHasSpan && this.isPrevHasSpan()) {}
+            // 输出
+            else {
+                ary.push(this._T(lc, i18n, n));
+                if(!ignoreSuffix && lc.suffix)
+                    ary.push(lc.suffix);
+            }
+            break;
+        default:
+            throw "Unknown type : " + this.values[0];
+        }
+        // 返回指向下一个位置的下标
+        return off;
+    },
+    matchTime : function(v, min, max) {
+        // 如果值不在范围中
+        if (v < min || v >= max)
+            return false;
+
+        // 通配
+        if ("ANY" == this.values[0])
+            return true;
+
+        // 准备一下要判断的数组
+        var refs = this.prepare(max);
+
+        // 判断
+        return this._match_(v, refs);
     },
     _match_ : function(v, refs) {
         switch (refs[0]) {
@@ -158,67 +506,56 @@ CrnItem.prototype = {
         // 默认则不匹配
         return false;
     },
-    matchTime : function(v, min, max) {
-        // 如果值不在范围中
-        if (v < min || v >= max)
-            return false;
+    prepare : function(max) {
+        // 准备返回值
+        var refs = [];
+        refs[0] = this.values[0];
 
-        // 通配
-        if ("ANY" == this.values[0])
-            return true;
-
-        // 准备一下要判断的数组
-        var refs = this.prepare(max);
-
-        // 判断
-        return this._match_(v, refs);
-    },
-    joinText : function(ary, i18n, key, off, ignoreSuffix){
-        off = off || 0;
-        if(off >= this.values.length)
-            return -1;
-        var lc = i18n[key];
-
-        switch(this.values[off++]){
-        case "ANY":
-            ary.push(lc.ANY);
-            if(!ignoreSuffix && lc.suffix) ary.push(lc.suffix);
-            break;
-        case "RANGE" :
-            ary.push(_T(lc, i18n, this.values[off++])
-                    + i18n.to
-                    + _T(lc, i18n, this.values[off++]));
-            if(!ignoreSuffix && lc.suffix) ary.push(lc.suffix);
-            break;
-        case "LIST":
-            var list = [];
-            while(-1!=(off = this.joinText(list, i18n, key, off, true))){}
-            ary.push(list.join(","));
-            if(!ignoreSuffix && lc.suffix) ary.push(lc.suffix);
-            break;
-        case "SPAN":
-            var s0 = _T(lc, i18n, this.values[off++]);
-            ary.push(i18n.start.replace("?", s0));
-            ary.push(lc.span.replace("?", this.values[off++]));
-            if(!ignoreSuffix && lc.suffix) ary.push(lc.suffix);
-            break;
-        case "ONE":
-            var n = this.values[off++];
-            if(!this.ignoreZero || n>0){
-                ary.push(_T(lc, i18n, n));
-                if(!ignoreSuffix && lc.suffix) ary.push(lc.suffix);
-            }
-            break;
-        default:
-            throw "Unknown type : " + this.values[0];
+        // 判断是否需要 L 一下 ...
+        for (var i = 1; i < this.values.length; i++) {
+            var v = this.values[i];
+            refs[i] = v < 0 ? max + v : v;
         }
-        // 返回指向下一个位置的下标
-        return off;
-    }
+
+        // 返回
+        return refs;
+    },
+    // 解析表达式项字典值
+    __eval : function(str, dict, dictOffset) {
+        var x = 1;
+
+        if (this.supportLast && /L$/.test(str)) {
+            x = -1;
+            str = str.substring(0, str.length - 1);
+        }
+
+        // 直接是数字
+        if(/^[0-9]+$/.test(str)){
+            return str * x;
+        }
+        
+        // 使用字典
+        if (dict) {
+            var s = str.toUpperCase();
+            for (var i = dictOffset; i < dict.length; i++)
+                if (s == dict[i])
+                    return i;
+        }
+        // 不支持
+        throw "isNaN : " + str;
+    },
+    // 子类重载它，可以支持更丰富的值
+    eval4override : function(str) {
+        return this.__eval(str, null, -1);
+    },
 };
 //
 //================================================================
-var CrnItem_dd = function(){this.supportLast = true;};
+var CrnItem_dd = function(){
+    CrnItem.apply(this, Array.from(arguments));
+    this.supportLast = true;
+    this.supportMOD  = false;
+};
 CrnItem_dd.prototype = new CrnItem();
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 CrnItem_dd.prototype.eval4override = function(str){
@@ -307,7 +644,9 @@ CrnItem_dd.prototype.matchDate = function(c){
 };
 //
 //================================================================
-var CrnItem_MM = function(){};
+var CrnItem_MM = function(){
+    CrnItem.apply(this, Array.from(arguments));
+};
 CrnItem_MM.prototype = new CrnItem();
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 CrnItem_MM.prototype.eval4override = function(str){
@@ -317,9 +656,25 @@ CrnItem_MM.prototype.matchDate = function(c){
     var MM = c.getMonth() + 1;
     return this._match_(MM, this.prepare(13));
 };
+//================================================================
+var CrnItem_yy = function(){
+    CrnItem.apply(this, Array.from(arguments));
+};
+CrnItem_yy.prototype = new CrnItem();
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CrnItem_yy.prototype.eval4override = function(str){
+    return this.__eval(str, null, 1)
+};
+CrnItem_yy.prototype.matchDate = function(c){
+    var yy = c.getFullYear() + 1;
+    return this._match_(yy, this.prepare(0));
+};
 //
 //================================================================
-var CrnItem_ww = function(){};
+var CrnItem_ww = function(){
+    CrnItem.apply(this, Array.from(arguments));
+    this.supportMOD  = true;
+};
 CrnItem_ww.prototype = new CrnItem();
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 CrnItem_ww.prototype.eval4override = function(str){
@@ -370,45 +725,163 @@ CrnItem_ww.prototype.matchDate = function(c){
 };
 //================================================================
 // 主要构造函数
-var ZCronObj = function(str) {
-    this.iss = new CrnItem();
-    this.imm = new CrnItem();
+var ZCronObj = function(cron) {
+    this.__zcron_version = "1.1";
+
     this.iHH = new CrnItem();
+    this.imm = new CrnItem(this.iHH);
+    this.iss = new CrnItem(this.imm).setIgnoreZeroWhenPrevHasSpan(true);
+
     this.idd = new CrnItem_dd();
-    this.iMM = new CrnItem_MM();
-    this.iww = new CrnItem_ww();
-    // 解析
-    if(typeof str == "string")
-        this.parse(str);
+    this.iww = new CrnItem_ww(this.idd).setIgnoreAnyWhenPrevAllAny(true);
+    this.iMM = new CrnItem_MM(this.idd, this.iww).setIgnoreAnyWhenPrevAllAny(true);
+    this.iyy = new CrnItem_yy(this.iMM).setIgnoreAnyWhenPrevAllAny(true);
+
+    // 字符串
+    if(typeof cron == "string") {
+        this.parse(cron);
+    }
     // 是一个其他的 ZCron
-    if(str.__str && str.iss && str.imm && str.iHH && str.idd && str.iMM && str.iww )
-        this.parse(str.__str);
+    else if(str.__str && str.__zcron_version) {
+        this.parse(cron.__str);
+    }
+    // 其他情况抛错
+    else {
+        throw "ZCron.parse invalid input: " + s;
+    }
 };
 //................................................................
 // Methods & Properties
 ZCronObj.prototype = {
     //............................................................
-    parse : function(s){
-        if(!s)
-            return "haha";
-        this.__str = s;
+    parse : function(cron){
+        this.__str = cron;
+
         // 拆
-        var ss = s.split(/[ ]+/);
-        // 验证
-        if (6 != ss.length)
-            throw "Wrong format '"+s+"': expect 6 items but " + ss.length;
+        var items = cron.trim().split(/[ \t]+/g);
+        var stdList = [];
+
+        // 先找一遍,处理扩展表达式项目，剩下的归到标准表达式里面
+        this.__parse_for_ext(cron, items, stdList);
+
+        // 默认标准表达式
+        var stds = ["0", "0", "0", "*", "*", "?", "*"];
+
+        // 如果标准表达式项目不足，试图补上
+        var stdIC = stdList.length;
+        var stdN;
+        /**
+         * <pre>
+         * 输入没有年:
+         *  - 0 0 0 * * ?   <- 6
+         *  - * * ?         <- 3
+         * 输入有年
+         *  - 0 0 0 * * ? * <- 7
+         *  - * * ? *       <- 4
+         * 其他长度不正确
+         *  - !!! 抛出异常
+         * </pre>
+         */
+        switch (stdIC) {
+        // 什么都没给，必须有 timePoints 和 rgDate
+        case 0:
+            if (!this.timePoints)
+                throw "No TimePoints : " + cron;
+            if (!this.rgDate)
+                throw "No DateRange : " + cron;
+            stdN = 0;
+            break;
+        // 给了 `日 月 周` 必须还要给定 timePoints
+        case 3:
+            if (!timePoints)
+                throw "No TimePoints : " + cron;
+            stdN = 1;
+            break;
+        // 给了 `日 月 周 年` 必须还要给定 timePoints
+        case 4:
+            if (!timePoints)
+                throw "No TimePoints : " + cron;
+            stdN = 0;
+            break;
+        // 给了 `秒 分 时 日 月 周`
+        case 6:
+            stdN = 1;
+            break;
+        // 给了 `秒 分 时 日 月 周 年`
+        case 7:
+            stdN = 0;
+            break;
+        default:
+            throw "Wrong format : " + cron;
+        }
+
+        // 补上标准表达式项
+        for (var i = 1; i <= stdIC; i++) {
+            stds[stds.length - i - stdN] = stdList[stdIC - i];
+        }
+
         // 解析子表达式
-        this.iss.parse(ss[0]);
-        this.imm.parse(ss[1]);
-        this.iHH.parse(ss[2]);
-        this.idd.parse(ss[3]);
-        this.iMM.parse(ss[4]);
-        this.iww.parse(ss[5]);
+        this.iss.parse(stds[0]);
+        this.imm.parse(stds[1]);
+        this.iHH.parse(stds[2]);
+        this.idd.parse(stds[3]);
+        this.iMM.parse(stds[4]);
+        this.iww.parse(stds[5]);
+        this.iyy.parse(stds[6]);
+
         // 返回
         return this;
     },
+    __parse_for_ext : function(cron, items, stdList) {
+        for (var i=0; i<items.length; i++) {
+            var s = items[i];
+            // 为日期范围
+            if (/^D/.test(s)) {
+                this.rgDate = Region(s.substring(1), "date");
+            }
+            // 为时间范围
+            else if (/^T/.test(s)) {
+                // 是否声明了时间点
+                // Parse:  |           1        | |2 [  3  ]  |    
+                var m = /^T([\[\(][\d:,-]+[\]\)])?(\{([^}]+)\})?$/.exec(s);
+                if (!m)
+                    throw Lang.makeThrow("Wrong format '%s': ", cron);
+
+                // 有时间范围：
+                var tmrg = m[1];
+                if (tmrg)
+                    this.rgTime = Region(tmrg, "time");
+
+                var tps = m[3];
+                if (tps) {
+                    // 间隔时间点
+                    this.timeRepeater = TimePointRepeater.tryParse(tps);
+
+                    // 根据间隔时间点生成固定时间点
+                    if (this.timeRepeater) {
+                        this.timePoints = this.timeRepeater.genTimePoints(this.rgTime);
+                    }
+                    // 直接解析固定时间点
+                    else {
+                        var timeList = tps.split(/ *, */g);
+                        this.timePoints = [];
+                        for (var x = 0; x < timeList.length; x++) {
+                            this.timePoints[x] = AsTimeInSec(timeList[x]);
+                        }
+                    }
+                    // 确保顺序
+                    this.timePoints.sort(function(a,b){return a-b;})
+                }
+            }
+            // 标准表达式项
+            else {
+                stdList.push(s);
+            }
+        }
+    },
     //............................................................
     // 启动点精确到分,即不是 0分0秒的
+    // TODO zozoh: 这玩意没用了吧？
     isTiny : function(){
         if(this.iss.values[0] != "ONE" || this.iss.values[1] !=0)
             return true;
@@ -442,6 +915,12 @@ ZCronObj.prototype = {
     },
     //............................................................
     matchDate : function(c) {
+        if (this.rgDate && !this.rgDate.match(c))
+            return false;
+
+        if (!this.iyy.matchDate(c))
+            return false;
+
         if(!this.idd.matchDate(c))
             return false;
 
@@ -454,31 +933,26 @@ ZCronObj.prototype = {
         return true;
     },
     matchTime : function(sec) {
-        var HH,mm,ss;
-        // 如果是字符串 ...
-        if(typeof sec == "string"){
-            var ary = sec.split(/[ :\t]+/);
-            HH = parseInt(ary[0]);
-            mm = parseInt(ary[1]);
-            ss = ary.length>2 ? parseInt(ary[2]) : 0;
-        }
-        // 否则当做绝对秒数，先不计算
-        else{
-            HH = -1;
-            mm = -1;
-            ss = -1;
+        var ti = AsTimeInObj(sec);
+
+        // 指定了固定的时间点
+        if (this.timePoints) {
+            return this.timePoints.indexOf(ti.value) >= 0;
         }
 
-        HH = HH<0 ? parseInt(sec / 3600) : HH;
-        if (!this.iHH.matchTime(HH, 0, 24))
+        // 是否在给定时间范围内
+        if (null != this.rgTime && !this.rgTime.match(ti.value)) {
+            return false;
+        }
+
+        // 依次对于表达式求职
+        if (!this.iHH.matchTime(ti.hour, 0, 24))
             return false;
 
-        mm = mm<0 ? parseInt((sec - (HH * 3600)) / 60) : mm;
-        if (!this.imm.matchTime(mm, 0, 60))
+        if (!this.imm.matchTime(ti.minute, 0, 60))
             return false;
 
-        ss = ss<0 ? sec - (HH * 3600) - (mm * 60) : ss;
-        if (!this.iss.matchTime(ss, 0, 60))
+        if (!this.iss.matchTime(ti.second, 0, 60))
             return false;
 
         return true;
@@ -537,31 +1011,110 @@ ZCronObj.prototype = {
         return this.__str;
     },
     //............................................................
-    toText : function(i18n){
-        var ary = [];
-        this.iMM.joinText(ary, i18n, "month");
-        // 没限制日期，看看是否用周
-        if(this.idd.isANY()){
-            this.iww.isANY() 
-                ? this.idd.joinText(ary, i18n, "day")
-                : this.iww.joinText(ary, i18n, "week");
-        }
-        // 限制了日期，那么就用日期
-        else{
-            this.idd.joinText(ary, i18n, "day");
-        }
-        this.iHH.joinText(ary, i18n, "hour");
-        this.imm.joinText(ary, i18n, "minute");
-        this.iss.joinText(ary, i18n, "second");
-        return ary.join("");
-    },
     toTimeText : function(i18n){
         var ary = [];
         this.iHH.joinText(ary, i18n, "hour");
         this.imm.joinText(ary, i18n, "minute");
         this.iss.joinText(ary, i18n, "second");
         return ary.join("");
-    }
+    },
+    //............................................................
+    toText : function(i18n){
+        var ary = [];
+        // ............................................
+        // 增加日期范围
+        if (this.rgDate) {
+            this.__join_date_region(i18n, ary);
+        }
+
+        // ............................................
+        // 增加标准表达式的年/月
+        this.iyy.joinText(ary, i18n, "year");
+        this.iMM.joinText(ary, i18n, "month");
+        // ............................................
+        // 没限制日期，看看是否用周
+        if (this.idd.isANY()) {
+            if (this.iww.isANY())
+                this.idd.joinText(ary, i18n, "day");
+            else
+                this.iww.joinText(ary, i18n, "week");
+        }
+        // 限制了日期，那么就用日期
+        else {
+            this.idd.joinText(ary, i18n, "day");
+        }
+
+        // ............................................
+        // 增加时间范围
+        if (null != this.rgTime) {
+            this.__join_time_region(i18n, ary);
+        }
+
+        // ............................................
+        // 指定了时间区间的重复
+        if (null != this.timeRepeater) {
+            ary.push(this.timeRepeater.toText(i18n));
+        }
+        // ............................................
+        // 指定了固定时间点
+        else if (null != this.timePoints) {
+            var list = [];
+            for (var i=0; i<this.timePoints.length; i++) {
+                var sec = this.timePoints[i];
+                list.push(AsTimeInObj(sec).toString(true));
+            }
+            ary.push(list.join(","));
+        }
+        // ............................................
+        // 默认采用标准表达式的时间
+        else {
+            this.iHH.joinText(ary, i18n, "hour");
+            this.imm.joinText(ary, i18n, "minute");
+            this.iss.joinText(ary, i18n, "second");
+        }
+
+        // 返回字符串
+        return ary.join("");
+    },
+    //........................................................
+    __join_time_region : function(i18n, ary) {
+        var tFrom = AsTimeInObj(this.rgTime.left());
+        var tTo   = AsTimeInObj(this.rgTime.right());
+
+        // 准备上下文
+        var c = {};
+        c.ieF  = this.rgTime.isLeftOpen() ? i18n.EXC : i18n.INV;
+        c.ieT  = this.rgTime.isRightOpen() ? i18n.EXC : i18n.INV;
+        c.from = tFrom.toString(true);
+        c.to   = tTo.toString(true);
+
+        // 渲染
+        var str = Tmpl(i18n.times.region, c, "${", "}");
+        ary.push(str);
+    },
+    //........................................................
+    __join_date_region: function(i18n, ary) {
+        var dFrom = this.rgDate.left();
+        var dTo   = this.rgDate.right();
+
+        // 准备上下文
+        var c  = {};
+        c.ieF  = this.rgDate.isLeftOpen() ? i18n.EXC : i18n.INV;
+        c.ieT  = this.rgDate.isRightOpen() ? i18n.EXC : i18n.INV;
+        c.from = formatDate(i18n.dates.full, dFrom);
+        // 同年
+        if (dFrom.getYear() == dTo.getYear()) {
+            c.to = formatDate(i18n.dates.same, dTo);
+        }
+        // 跨年
+        else {
+            c.to = formatDate(i18n.dates.full, dTo);
+        }
+        // 渲染
+        var str = Tmpl(i18n.dates.region, c, "${", "}");
+        ary.push(str);
+    },
+    //........................................................
 };
 //............................................................
 // 下面两个是静态方法，可直接 ZCron.xxx 调用
