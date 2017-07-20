@@ -1,7 +1,7 @@
 # Apache Oltu OAuth2 Server + Client
 
 
-简介(可用性:生产)
+简介(可用性:生产,维护者:Rekoe)
 ==================================
 
 使用Apache Oltu 搭建Oauth2 Server及Client开放授权

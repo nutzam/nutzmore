@@ -1,12 +1,14 @@
 
-nutz-plugins-undertow 
+nutz-plugins-undertow 集成了JBOSS Undertow内嵌式高性能web服务器插件
 ==================================
 
-简单、轻量、高性能的集成式web容器插件。可一键将您的web程序启动，无需繁琐的部署过程。
 
-
-简介(可用性:试用)
+简介(可用性:试用,维护者:qinerg)
 ==================================
+
+集成JBOSS Undertow高性能web服务器插件
+
+可一键将您的web程序启动，无需繁琐的部署过程。
 
 nutz-plugins-undertow 是一个集成了JBOSS Undertow内嵌式高性能web服务器插件。Undertow 是红帽公司的开源产品，是 [Wildfly](http://www.oschina.net/p/wildfly) 默认的 web 服务器。
 
