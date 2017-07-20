@@ -32,8 +32,27 @@ var vueClientList = new Vue({
 	    	this.pager.pageNumber = to_page;
 	    	this.dataReload();
 	    },
-	    client_kill : function (uid) {
-	    	layer.alert("还没做");
+	    client_kill : function (client_id) {
+	    	$.ajax({
+		    	url : base + "/ngrokd/client/kill",
+		    	dataType : "json",
+		    	data : {id:client_id},
+		    	success : function(re) {
+		    		if (console)
+		    			console.info(re);
+		    		if (re && re.ok) {
+		    			vueClientList.dataReload();
+		    		} else if (re && re.msg) {
+						layer.alert(re.msg);
+					}
+		    	},
+		    	fail : function(err) {
+		    		layer.alert("加载失败:" + err);
+		    	},
+		    	error : function (err){
+		    		layer.alert("加载失败:" + err);
+		    	}
+		    });
 		},
 	},
 	created: function () {

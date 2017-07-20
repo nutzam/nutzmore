@@ -549,20 +549,13 @@ public class NgrokNettyServer extends AbstractNgrokServer {
         }
 
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-            ByteBuf in = (ByteBuf)msg;
-            //log.debugf("[服务器<-->客户端],有数据从客户端发过来, count=%d, 内容是\r\n%s", in.readableBytes(), in.toString(Encoding.CHARSET_UTF8));
             target.writeAndFlush(msg);
         }
 
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-            log.debug("close?", cause);
+            log.debug("pipe close?", cause);
             ctx.close();
         }
-        
-//        public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-//            log.debug("[服务器<-->客户端] 的链路已经关闭,那么,关闭[浏览器<-->服务器]的链路吧");
-//            target.close();
-//        }
     }
 
     public void startProxy(final ChannelHandlerContext ctx,

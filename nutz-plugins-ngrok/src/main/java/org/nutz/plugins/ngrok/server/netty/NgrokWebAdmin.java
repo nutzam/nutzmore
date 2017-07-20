@@ -2,7 +2,6 @@ package org.nutz.plugins.ngrok.server.netty;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,6 +34,7 @@ import org.nutz.mvc.annotation.Filters;
 import org.nutz.mvc.annotation.IocBy;
 import org.nutz.mvc.annotation.Modules;
 import org.nutz.mvc.annotation.Ok;
+import org.nutz.mvc.annotation.Param;
 import org.nutz.mvc.annotation.SetupBy;
 import org.nutz.mvc.annotation.Views;
 import org.nutz.mvc.view.HttpStatusView;
@@ -63,23 +63,42 @@ public class NgrokWebAdmin implements Setup, ActionFilter {
     
     @Ok("json:full")
     @At("/ngrokd/client/query")
-    public Object query() {
+    public Object query(@Param("..")Pager pager) {
         List<NutMap> clients = new ArrayList<NutMap>();
-        for (NgrokContrlHandler handler : server.clientHanlders.values()) {
+        List<String> ids = new ArrayList<String>(server.clientHanlders.keySet());
+        Collections.sort(ids);
+        if (pager.getPageNumber() < 1)
+            pager.setPageNumber(1);
+        if (pager.getPageSize() < 1)
+            pager.setPageNumber(20);
+        pager.setRecordCount(server.clientHanlders.size());
+        int start = pager.getOffset();
+        int end = start + pager.getPageSize();
+        if (start >= ids.size()) {
+            return new NutMap("ok", true).setv("data", new QueryResult(clients, pager));
+        }
+        if (end >= ids.size()) {
+            end = ids.size();
+        }
+        for (String id : ids.subList(start, end)) {
             try {
-                clients.add(handler.asMap());
+                clients.add(server.clientHanlders.get(id).asMap());
             } catch (Throwable e) {
                 log.debug("fail at NgrokContrlHandler.asMap", e);
             }
         }
-        Collections.sort(clients, new Comparator<NutMap>() {
-            public int compare(NutMap prev, NutMap next) {
-                return prev.getString("id").compareTo(next.getString("id"));
-            }
-        });
-        Pager pager = new Pager();
-        pager.setRecordCount(clients.size());
         return new NutMap("ok", true).setv("data", new QueryResult(clients, pager));
+    }
+    
+    @Ok("json:full")
+    @At("/ngrokd/client/kill")
+    public Object kill(String id) {
+        NgrokContrlHandler handler = server.clientHanlders.get(id);
+        if (handler == null) {
+            return new NutMap("ok", false).setv("msg", "该客户端已经消失?");
+        }
+        handler.shutdown(true);;
+        return new NutMap("ok", true);
     }
     
     //--------------------------------------------------
