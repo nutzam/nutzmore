@@ -5,8 +5,19 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.beetl.core.GroupTemplate;
+import org.beetl.core.resource.FileResourceLoader;
+import org.beetl.ext.nutz.BeetlViewMaker;
+import org.nutz.dao.QueryResult;
+import org.nutz.dao.pager.Pager;
+import org.nutz.ioc.Ioc2;
+import org.nutz.ioc.ObjectProxy;
+import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
+import org.nutz.json.Json;
 import org.nutz.lang.Strings;
 import org.nutz.lang.util.NutMap;
 import org.nutz.log.Log;
@@ -16,6 +27,7 @@ import org.nutz.mvc.ActionFilter;
 import org.nutz.mvc.NutConfig;
 import org.nutz.mvc.Setup;
 import org.nutz.mvc.View;
+import org.nutz.mvc.ViewMaker;
 import org.nutz.mvc.annotation.At;
 import org.nutz.mvc.annotation.By;
 import org.nutz.mvc.annotation.Fail;
@@ -24,6 +36,7 @@ import org.nutz.mvc.annotation.IocBy;
 import org.nutz.mvc.annotation.Modules;
 import org.nutz.mvc.annotation.Ok;
 import org.nutz.mvc.annotation.SetupBy;
+import org.nutz.mvc.annotation.Views;
 import org.nutz.mvc.view.HttpStatusView;
 import org.nutz.plugins.ngrok.server.netty.NgrokNettyServer.NgrokContrlHandler;
 import org.nutz.repo.Base64;
@@ -35,6 +48,7 @@ import org.nutz.repo.Base64;
 @SetupBy(value=Setup.class, args="ioc:ngrokWebAdmin")
 @Filters(@By(type=ActionFilter.class, args="ioc:ngrokWebAdmin"))
 @IocBean
+@Views(BeetlViewMaker.class)
 public class NgrokWebAdmin implements Setup, ActionFilter {
 
     private static final Log log = Logs.get();
@@ -48,8 +62,8 @@ public class NgrokWebAdmin implements Setup, ActionFilter {
     
     
     @Ok("json:full")
-    @At("/client/list")
-    public Object clientList() {
+    @At("/ngrokd/client/query")
+    public Object query() {
         List<NutMap> clients = new ArrayList<NutMap>();
         for (NgrokContrlHandler handler : server.clientHanlders.values()) {
             try {
@@ -63,10 +77,41 @@ public class NgrokWebAdmin implements Setup, ActionFilter {
                 return prev.getString("id").compareTo(next.getString("id"));
             }
         });
-        return clients;
+        Pager pager = new Pager();
+        pager.setRecordCount(clients.size());
+        return new NutMap("ok", true).setv("data", new QueryResult(clients, pager));
     }
     
+    //--------------------------------------------------
+    //                  AdminLTE 界面中转
+    //--------------------------------------------------
+    @At("/adminlte/page/?/?")
+    @Ok("beetl:/adminlte/${pathargs[0]}/${pathargs[1]}.html")
+    public void page() {}
+    
+    @Ok("beetl:/adminlte/index.html")
+    @At({"/", "/index"})
+    public void index(HttpServletRequest req){
+        req.setAttribute("profile", new NutMap());
+    }
+    
+    @At("/admin/hotplug/list")
+    public Object hotplugList() {
+        List<NutMap> list = new ArrayList<NutMap>();
+        NutMap map = new NutMap();
+        map.put("name", "ngrokd");
+        map.put("tmpls", new NutMap());
+        map.put("menu", Json.fromJson("[{name:'Ngrok服务',subs:[{name:'在线客户端管理',page:'ngrokd/client.html'}, {name:'token管理', page:'ngrokd/token.html'}]}]"));
+        list.add(map);
+        return new NutMap("ok", true).setv("data", new NutMap("list", list));
+    }
+    
+    //--------------------------------------------------
+    //                  初始化和销毁
+    //--------------------------------------------------
+    
     public void init(NutConfig nc) {
+        ((Ioc2)nc.getIoc()).getIocContext().save("app", "conf", new ObjectProxy(new PropertiesProxy()));
         new Thread("ngrok.server") {
             public void run() {
                 try {
@@ -77,10 +122,23 @@ public class NgrokWebAdmin implements Setup, ActionFilter {
                 }
             }
         }.start();
+        for (ViewMaker vm : nc.getViewMakers()) {
+            if (vm instanceof BeetlViewMaker) {
+                BeetlViewMaker bvm = (BeetlViewMaker)vm;
+                GroupTemplate gt = bvm.groupTemplate;
+                gt.setResourceLoader(new FileResourceLoader(server.webadim_root + "/templates/"));
+                gt.setSharedVars(new NutMap());
+                gt.getSharedVars().put("conf", nc.getIoc().get(null, "conf"));
+            }
+        }
     }
     
     public void destroy(NutConfig nc) {
     }
+    
+    //--------------------------------------------------
+    //                  用户授权,用Http基本授权吧,暂时
+    //--------------------------------------------------
 
     public View match(ActionContext ac) {
         String auth = ac.getRequest().getHeader("Authorization");

@@ -69,6 +69,8 @@ public class NgrokNettyServer extends AbstractNgrokServer {
     
     public int webadmin_port = 9081;
     
+    public String webadim_root = "webadmin";
+    
     public void start() throws Exception {
         // 首先,继续基本的初始化操作
         init();
@@ -621,7 +623,7 @@ public class NgrokNettyServer extends AbstractNgrokServer {
             StringBuilder props = new StringBuilder();
             props.append("mainModuleClassName=" + NgrokWebAdmin.class.getName() + "\r\n");
             props.append("app-port=" + server.webadmin_port + "\r\n");
-            props.append("app-root=webadmin\r\n");
+            props.append("app-root=" + server.webadim_root +"\r\n");
             final WebServer web = new NutOnlyWebServer(new WebConfig(new StringReader(props.toString())));
 
             web.run();

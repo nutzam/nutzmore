@@ -1,0 +1,67 @@
+
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <h1>用户管理</h1>
+      <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
+        <li><a href="#">用户及权限管理</a></li>
+        <li class="active">用户管理</li>
+      </ol>
+    </section>
+
+    <!-- Main content -->
+    <section class="content" id="user_manager_div">
+      <div class="row">
+        <div class="col-xs-12">
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title">用户一览</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+              <table id="user_table" class="table table-bordered table-hover">
+                <thead>
+                <tr>
+                  <th>id</th>
+                  <th>登录名</th>
+                  <th>是否锁定</th>
+                  <th>创建时间</th>
+                  <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="user in users">
+                  <td>{{user.id}}</td>
+                  <td>{{user.name}}</td>
+                  <td>{{user.locked}}</td>
+                  <td>{{user.createTime}}</td>
+                  <td>
+                  	<button @click="user_change_password(user.id)">修改密码</button>
+                  	<button @click="user_setLock(false)" v-if="user.locked">解锁</button>
+                  	<button @click="user_setLock(true)"  v-else>锁定</button>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+				</div>
+            <!-- /.box-body -->
+          </div>
+			<div class="box">
+				<div>
+					<div class='inner'>
+						<button class="btn" v-on:click="userAdd">新建用户</button>
+						<button class="btn" v-on:click="dataReload" disabled>第{{pager.pageNumber}}页,共{{pager.pageCount}}页</button>
+						<button class="btn" v-on:click="changePage(1)" :disabled="pager.pageNumber == 1">第一页</button>
+						<button class="btn" v-on:click="changePage(pager.pageNumber-1)" :disabled="pager.pageNumber == 1">上一页</button>
+						<button class="btn" v-on:click="changePage(pager.pageNumber+1)" :disabled="pager.pageNumber == pager.pageCount">下一页</button>
+						<button class="btn" v-on:click="changePage(pager.pageCount)" :disabled="pager.pageNumber == pager.pageCount">最后页</button>
+					</div>
+				</div>
+			</div>
+		</div>
+        <!-- /.col -->
+      </div>
+      <!-- /.row -->
+    </section>
+    <!-- /.content -->
+    <script src="${base}/assets/adminlte/js/authority/user.js"></script>
