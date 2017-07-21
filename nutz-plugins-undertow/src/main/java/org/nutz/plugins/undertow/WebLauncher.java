@@ -89,7 +89,7 @@ public class WebLauncher {
 	public static void start(WebConfig conf, Builder builder, DeploymentInfo servletBuilder) {
 		String contextPath = conf.getContextPath();
 
-		servletBuilder.setContextPath(contextPath).setDefaultSessionTimeout(conf.getSession()).setDeploymentName("nutz-web");
+		servletBuilder.setContextPath(contextPath).setDefaultSessionTimeout(conf.getSession() * 60).setDeploymentName("nutz-web");
 		addDefaultFilter(servletBuilder, conf);
 		servletBuilder.addWelcomePages("index.html", "index.htm", "index.do");
 
