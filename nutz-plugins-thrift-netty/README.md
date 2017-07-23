@@ -1,6 +1,6 @@
 ### Thrift-Netty on Nutz 
 
-简介(可用性:试用,维护者Rekoe)
+简介(可用性:试用,维护者:Rekoe)
 ==================================
 
 深度集成thrift-netty
