@@ -189,6 +189,7 @@ public class NgrokNettyServer extends AbstractNgrokServer {
 
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
             log.debug("bad ngrok message?", cause);
+            ctx.close();
         }
 
     }
@@ -231,7 +232,7 @@ public class NgrokNettyServer extends AbstractNgrokServer {
 
         ChannelHandlerContext ctx; // 当前链接的上下文
 
-        public ArrayBlockingQueue<ChannelHandlerContext> idleProxys;
+        public ArrayBlockingQueue<NgrokContrlHandler> idleProxys;
         public ArrayBlockingQueue<NgrokHttpHandler> waitProxys;
         
         Set<String> reqIds;
@@ -239,6 +240,7 @@ public class NgrokNettyServer extends AbstractNgrokServer {
         
         public AtomicLong httpChannelCounter;
         public AtomicLong httpActiveCounter;
+        public NgrokHttpHandler httpHandler;
 
         public void channelRead(ChannelHandlerContext ctx, Object _msg) throws Exception {
             this.ctx = ctx;
@@ -259,7 +261,7 @@ public class NgrokNettyServer extends AbstractNgrokServer {
                     return;
                 }
                 // 登录成功, 把两个队列准备好, 分别缓存通往客户端和浏览器的链接
-                idleProxys = new ArrayBlockingQueue<ChannelHandlerContext>(128);
+                idleProxys = new ArrayBlockingQueue<NgrokContrlHandler>(128);
                 waitProxys = new ArrayBlockingQueue<NgrokHttpHandler>(128);
                 reqIds = new HashSet<String>();
                 hosts = new HashSet<String>();
@@ -328,11 +330,12 @@ public class NgrokNettyServer extends AbstractNgrokServer {
                 ctx.pipeline().remove("ngrok.decode"); // 不再需要ngrok解码器
                 ctx.pipeline().remove("ngrok.handler"); // 不再需要ngrok处理器
                 // 看看有没有Http请求在等待
-                NgrokHttpHandler httpHandler = client.waitProxys.poll();
+                httpHandler = client.waitProxys.poll();
                 if (httpHandler == null) {
                     // 没有? 那就缓存着
+                    this.lastPing = System.currentTimeMillis();
                     log.debug("没有正在等待NgrokHttpHandler, 把Proxy链接加入到队列. CliendId=" + client.id);
-                    client.idleProxys.add(ctx);
+                    client.idleProxys.add(this);
                 }
                 else {
                     // 有, 立马同步,写入数据,建立隧道
@@ -345,7 +348,7 @@ public class NgrokNettyServer extends AbstractNgrokServer {
                                    null);
                         client.httpActiveCounter.incrementAndGet();
                         client.httpChannelCounter.incrementAndGet();
-                        httpHandler.proxy = ctx;
+                        httpHandler.proxy = this;
                         httpHandler.wait = false;
                         httpHandler.bao = null; // 清理数据
                     }
@@ -361,13 +364,22 @@ public class NgrokNettyServer extends AbstractNgrokServer {
         }
         
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-            shutdown(false);
+            if (proxyMode) {
+                if (httpHandler != null) {
+                    httpHandler.ctx.flush();
+                    httpHandler.ctx.close();
+                }
+            } else {
+                shutdown(false);
+            }
+            
         }
         
         public void shutdown(boolean closeForce) {
             if (id == null)
                 return;
             if (clientHanlders.get(id) == this) {
+                log.debug("移除客户端 id=" + id);
                 clientHanlders.remove(id);
             }
             if (closeForce) {
@@ -402,7 +414,7 @@ public class NgrokNettyServer extends AbstractNgrokServer {
 
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
 
-        ChannelHandlerContext proxy;
+        NgrokContrlHandler proxy;
         ChannelHandlerContext ctx;
         boolean wait;
         String host;
@@ -423,7 +435,7 @@ public class NgrokNettyServer extends AbstractNgrokServer {
                     // 是的啊, 那就把写数据到隧道啦
                     log.debug("Proxy链接已建立,桥接数据");
                     //proxy.writeAndFlush(proxy.alloc().buffer().writeBytes(in));
-                    proxy.writeAndFlush(msg);
+                    proxy.ctx.writeAndFlush(msg);
                     return;
                 }
             }
@@ -479,6 +491,11 @@ public class NgrokNettyServer extends AbstractNgrokServer {
                         }
                         // 看看有无已经待命的Proxy链接
                         proxy = handler.idleProxys.poll();
+                        if (proxy != null && System.currentTimeMillis() - proxy.lastPing > 15*60*1000) {
+                            log.debug("虽然有Proxy链接,但是建立在15分钟前,抛弃掉");
+                            proxy.ctx.close();
+                            proxy = null;
+                        }
                         if (proxy == null) {
                             // 木有,好惨,那看看有无对应的ReqId吧
                             String reqId = reqIdMap.get(host);
@@ -508,7 +525,7 @@ public class NgrokNettyServer extends AbstractNgrokServer {
                         } else {
                             // 很好很强大
                             log.debug("有可用Proxy链接, 开始启用Proxy代理链路");
-                            startProxy(ctx, proxy, host, bao.toByteArray(), in);
+                            startProxy(ctx, proxy.ctx, host, bao.toByteArray(), in);
                             handler.httpChannelCounter.incrementAndGet();
                             handler.httpActiveCounter.incrementAndGet();
                             bao = null;
@@ -528,7 +545,7 @@ public class NgrokNettyServer extends AbstractNgrokServer {
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
             if (proxy != null) {
                 log.debug("[浏览器<-->服务器] 的链路已经关闭,那么,关闭[服务器<-->客户端]的链路吧");
-                proxy.close();
+                proxy.ctx.close();
                 if (handler != null)
                     handler.httpActiveCounter.decrementAndGet();
             }
