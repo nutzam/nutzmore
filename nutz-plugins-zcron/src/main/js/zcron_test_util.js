@@ -6,7 +6,7 @@ function log() {
 }
 //-------------------------------------------------------
 function explain(cr) {
-	var str = "<b>" + cr.toString() + "</b>";
+	var str = "<b>" + cr + "</b>";
 	for (var i = cr.length; i < 22; i++)
 		str += " ";
 	log(str + " : " 
@@ -22,6 +22,45 @@ function Crn(str) {
 	log("\nPARSE(" + (ms1 - ms0) + "ms):");
 	explain(__cr);
 }
+//-------------------------------------------------------
+function ae_set_part(cron, index, part, expect) {
+	var cr = ZCron(cron);
+	var cr2 = ZCron(cron).__set_part(index, part);
+    assert_value(cr, expect, cr2.toString(), ' -> ['+index+']=\"'+part+'"\n');
+}
+function aeT(cr, expect) {
+	assert_value(cr, expect, ZCron(cr).toText(i18n));
+}
+function aeS(cr, expect) {
+	assert_value(cr, expect, ZCron(cr).toString());
+}
+//-------------------------------------------------------
+function assert_value(cr, expect, actual, prefix){
+	var str = "";
+	// 成功
+	if(actual == expect) {
+		str += '<span class=OK>OK: ' + cr + '</span>';
+		for (var i = cr.length; i < 22; i++)
+			str += " ";
+		if(prefix)
+			str += '<u>'+prefix+'</u>';
+		str += " : ";
+		str += actual;
+	}
+	// 失败
+	else {
+		str += '<span class=KO>!!: ' + cr + '</span>';
+		for (var i = cr.length; i < 22; i++)
+			str += " ";
+		if(prefix)
+			str += '<u>'+prefix+'</u>';
+		str += " : ";
+		str += actual;
+		str += '\n  <em>- expect: </em><b>' + expect + '</b>';
+	}
+	log(str);
+}
+//-------------------------------------------------------
 function assert_match_date(expect, ds) {
 	var c = new Date(ds);
 	var ms0 = Date.now();

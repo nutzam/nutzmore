@@ -63,6 +63,13 @@ public class ZCron {
 
     private String str; // 原始信息
 
+    /**
+     * 经过整理的字符串信息，这个数组永远有 4 位
+     * 
+     * 0 1 2 3 [时间范围/步长][时间部分][日期部分][日期范围] T(..]{..} 0 0 0 * * ? * D[..]
+     */
+    private String[] parts;
+
     /*-------------------------标准 Cron 表达式部分----*/
     private CrnStdItem iss;
     private CrnStdItem imm;
@@ -129,6 +136,7 @@ public class ZCron {
      */
     public ZCron parse(String cron) {
         this.str = cron;
+        this.parts = new String[4];
         // 拆
         String[] items = cron.trim().split("[ \t]+");
         ArrayList<String> stdList = new ArrayList<String>(items.length);
@@ -203,6 +211,10 @@ public class ZCron {
         iww.parse(stds[5]);
         iyy.parse(stds[6]);
 
+        // 记录成标准
+        parts[1] = Strings.join(0, 3, " ", stds);
+        parts[2] = Strings.join(3, 4, " ", stds);
+
         // 返回
         return this;
     }
@@ -212,9 +224,11 @@ public class ZCron {
             // 为日期范围
             if (s.startsWith("D")) {
                 rgDate = Region.Date(s.substring(1));
+                parts[3] = s;
             }
             // 为时间范围
             else if (s.startsWith("T")) {
+                parts[0] = s;
                 // 是否声明了时间点
                 Matcher m = _P_TIME_REGION.matcher(s);
                 if (!m.find())
@@ -680,7 +694,52 @@ public class ZCron {
         return array;
     }
 
+    public ZCron setPartExtTime(String str) {
+        return this.__set_part(0, str);
+    }
+
+    public ZCron setPartStdTime(String str) {
+        return this.__set_part(1, str);
+    }
+
+    public ZCron setPartStdDate(String str) {
+        return this.__set_part(2, str);
+    }
+
+    public ZCron setPartExtDate(String str) {
+        return this.__set_part(3, str);
+    }
+
+    ZCron __set_part(int index, String str) {
+        this.parts[index] = str;
+        String cron = this.toString();
+        return this.parse(cron);
+    }
+
     public String toString() {
+        ArrayList<String> list = new ArrayList<>();
+        // 扩展: 时间部分
+        if (!Strings.isBlank(parts[0])) {
+            list.add(parts[0]);
+        }
+        // 标准: 时间部分
+        if (null == timePoints) {
+            list.add(parts[1]);
+        }
+        // 标准: 日期部分
+        if (null == rgDate || !"* * ? *".equals(parts[2]) || null == timePoints) {
+            list.add(parts[2].endsWith(" *") ? parts[2].substring(0, parts[2].length() - 2)
+                                             : parts[2]);
+        }
+        // 扩展: 日期部分
+        if (!Strings.isBlank(parts[3])) {
+            list.add(parts[3]);
+        }
+        // 返回结果
+        return Strings.join(" ", list);
+    }
+
+    public String getPrimaryString() {
         return str;
     }
 

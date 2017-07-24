@@ -554,7 +554,7 @@ CrnItem.prototype = {
 var CrnItem_dd = function(){
     CrnItem.apply(this, Array.from(arguments));
     this.supportLast = true;
-    this.supportMOD  = false;
+    this.supportMOD  = true;
 };
 CrnItem_dd.prototype = new CrnItem();
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -756,6 +756,7 @@ ZCronObj.prototype = {
     //............................................................
     parse : function(cron){
         this.__str = cron;
+        this.parts = [null,null,null,null];
 
         // 拆
         var items = cron.trim().split(/[ \t]+/g);
@@ -793,13 +794,13 @@ ZCronObj.prototype = {
             break;
         // 给了 `日 月 周` 必须还要给定 timePoints
         case 3:
-            if (!timePoints)
+            if (!this.timePoints)
                 throw "No TimePoints : " + cron;
             stdN = 1;
             break;
         // 给了 `日 月 周 年` 必须还要给定 timePoints
         case 4:
-            if (!timePoints)
+            if (!this.timePoints)
                 throw "No TimePoints : " + cron;
             stdN = 0;
             break;
@@ -829,6 +830,10 @@ ZCronObj.prototype = {
         this.iww.parse(stds[5]);
         this.iyy.parse(stds[6]);
 
+        // 记录成标准
+        this.parts[1] = stds.slice(0, 3).join(" ");
+        this.parts[2] = stds.slice(3, 7).join(" ");
+
         // 返回
         return this;
     },
@@ -838,9 +843,11 @@ ZCronObj.prototype = {
             // 为日期范围
             if (/^D/.test(s)) {
                 this.rgDate = Region(s.substring(1), "date");
+                this.parts[3] = s;
             }
             // 为时间范围
             else if (/^T/.test(s)) {
+                this.parts[0] = s;
                 // 是否声明了时间点
                 // Parse:  |           1        | |2 [  3  ]  |    
                 var m = /^T([\[\(][\d:,-]+[\]\)])?(\{([^}]+)\})?$/.exec(s);
@@ -1007,7 +1014,55 @@ ZCronObj.prototype = {
         return array;
     },
     //............................................................
-    toString : function(){
+    setPartExtTime : function(str) {
+        return this.__set_part(0, str);
+    },
+    setPartStdTime : function(str) {
+        return this.__set_part(1, str);
+    },
+    setPartStdDate : function(str) {
+        return this.__set_part(2, str);
+    },
+    setPartExtDate : function(str) {
+        return this.__set_part(3, str);
+    },
+    __set_part : function(index, str) {
+        this.parts[index] = str;
+        var cron = this.toString();
+        return this.parse(cron);
+    },
+    //............................................................
+    toString : function() {
+        var list = [];
+        // 扩展: 时间部分
+        if (this.parts[0]) {
+            list.push(this.parts[0]);
+        }
+        // 标准: 时间部分
+        if (null == this.timePoints) {
+            list.push(this.parts[1]);
+        }
+        // 标准: 日期部分
+        if (!this.rgDate 
+            || "* * ? *" != this.parts[2] 
+            || !this.timePoints) {
+            list.push(/ [*]$/.test(this.parts[2]) 
+                ? this.parts[2].substring(0, this.parts[2].length - 2)
+                : this.parts[2]);
+        }
+        // 扩展: 日期部分
+        if (this.parts[3]) {
+            list.push(this.parts[3]);
+        }
+        // 返回结果
+        return list.join(" ");
+    },
+    //............................................................
+    // JS 默认对象变字符串的函数，相当于 Java 的 toString()
+    valueOf : function(){
+        return this.toString();
+    },
+    getPrimaryString : function(){
         return this.__str;
     },
     //............................................................
