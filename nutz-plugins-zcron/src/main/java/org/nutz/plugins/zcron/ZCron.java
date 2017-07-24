@@ -711,7 +711,18 @@ public class ZCron {
     }
 
     ZCron __set_part(int index, String str) {
-        this.parts[index] = str;
+        String val = Strings.sBlank(Strings.trim(str), null);
+        this.parts[index] = val;
+        // 清除时间点
+        if (0 == index && null == val) {
+            this.timePoints = null;
+            this.timeRepeater = null;
+        }
+        // 清除日期范围
+        if (3 == index && null == val) {
+            this.rgDate = null;
+        }
+        // 立即解析
         String cron = this.toString();
         return this.parse(cron);
     }

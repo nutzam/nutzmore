@@ -23,10 +23,19 @@ function Crn(str) {
 	explain(__cr);
 }
 //-------------------------------------------------------
-function ae_set_part(cron, index, part, expect) {
+function ae_set_part(cron, expect, parts) {
+	var args   = Array.from(arguments);
+	var cron   = args[0];
+	var expect = args[1];
+	var parts  = args.slice(2);
 	var cr = ZCron(cron);
-	var cr2 = ZCron(cron).__set_part(index, part);
-    assert_value(cr, expect, cr2.toString(), ' -> ['+index+']=\"'+part+'"\n');
+	for (var i=0;i<parts.length;i++) {
+		var part  = parts[i];
+        var index = parseInt(part.substring(0, 1));
+        var str   = part.substring(3).trim();
+        cr.__set_part(index, "null" == str ? null : str);
+    }
+    assert_value(cron, expect, cr.toString(), ' -> '+parts.join(" | ")+'\n');
 }
 function aeT(cr, expect) {
 	assert_value(cr, expect, ZCron(cr).toText(i18n));

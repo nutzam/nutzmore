@@ -17,17 +17,23 @@ public class ZCronTest {
 
     @Test
     public void test_set_part() {
-        ae_set_part("0 5,8 0 * * ?", 0, "T[12:23,18:32]{0/30m}", "T[12:23,18:32]{0/30m} * * ?");
-        ae_set_part("0 0 0 * * ?", 1, "0 3/6 8-10,13", "0 3/6 8-10,13 * * ?");
-        ae_set_part("0 0 0 * * ?", 2, "W 6,8 ? 2017-2019", "0 0 0 W 6,8 ? 2017-2019");
+        ae_set_part("0 5,8 0 * * ?", "T[12:23,18:32]{0/30m} * * ?", "0:: T[12:23,18:32]{0/30m}");
+        ae_set_part("0 0 0 * * ?", "0 3/6 8-10,13 * * ?", "1:: 0 3/6 8-10,13");
+        ae_set_part("0 0 0 * * ?", "0 0 0 W 6,8 ? 2017-2019", "2:: W 6,8 ? 2017-2019");
         ae_set_part("D[20170725,20170921) T[12:23,18:32]{0/30m}",
-                    3,
-                    "D(20180725,20180921]",
-                    "T[12:23,18:32]{0/30m} D(20180725,20180921]");
+                    "T[12:23,18:32]{0/30m} D(20180725,20180921]",
+                    "3:: D(20180725,20180921]");
         ae_set_part("D[20170725,20170921) 0 0 0 * * 1,5",
-                    3,
-                    "D(20180725,20180921]",
-                    "0 0 0 * * 1,5 D(20180725,20180921]");
+                    "0 0 0 * * 1,5 D(20180725,20180921]",
+                    "3:: D(20180725,20180921]");
+        ae_set_part("D[20170725,20170921) 0 0 0 * * 1,5",
+                    "0 0 0 * * 1,5 D(20180725,20180921]",
+                    "3:: D(20180725,20180921]");
+        ae_set_part("D[20170725,20170921) 0 0 0 * * 1,5",
+                    "T{2:00} * * 1,5",
+                    "0:: T{2:00}",
+                    "3:: null");
+        ae_set_part("T{2:00} 0 0 0 * * 1,5", "0 5,9 12 * * 1,5", "0:: null", "1:: 0 5,9 12");
     }
 
     @Test
@@ -383,8 +389,14 @@ public class ZCronTest {
     }
 
     /*----------------------------------------------------------帮助函数们-------*/
-    private static void ae_set_part(String cron, int index, String part, String expect) {
-        aeS(new ZCron().parse(cron).__set_part(index, part).toString(), expect);
+    private static void ae_set_part(String cron, String expect, String... parts) {
+        ZCron cr = new ZCron().parse(cron);
+        for (String part : parts) {
+            int index = Integer.parseInt(part.substring(0, 1));
+            String str = part.substring(3).trim();
+            cr.__set_part(index, "null".equals(str) ? null : str);
+        }
+        aeS(cr.toString(), expect);
     }
 
     private static void aeT(String cron, String expect) {

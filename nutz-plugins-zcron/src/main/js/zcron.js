@@ -1027,7 +1027,18 @@ ZCronObj.prototype = {
         return this.__set_part(3, str);
     },
     __set_part : function(index, str) {
-        this.parts[index] = str;
+        var val = (str||"").trim() || null;
+        this.parts[index] = val;
+        // 清除时间点
+        if (0 == index && !val) {
+            this.timePoints   = null;
+            this.timeRepeater = null;
+        }
+        // 清除日期范围
+        if (3 == index && !val) {
+            this.rgDate = null;
+        }
+        // 立即解析
         var cron = this.toString();
         return this.parse(cron);
     },
