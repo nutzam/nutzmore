@@ -1,0 +1,66 @@
+
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <h1>在线客户端管理</h1>
+      <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
+        <li><a href="#">在线客户端管理</a></li>
+        <li class="active">Ngrok服务</li>
+      </ol>
+    </section>
+
+    <!-- Main content -->
+    <section class="content" id="client_manager_div">
+      <div class="row">
+        <div class="col-xs-12">
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title">用户一览</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+              <table id="client_table" class="table table-bordered table-hover">
+                <thead>
+                <tr>
+                  <th>id</th>
+                  <th>映射域名</th>
+                  <th>活跃Http请求</th>
+                  <th>待命Porxy链接</th>
+                  <th>待处理Http请求</th>
+                  <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="client in clients">
+                  <td>{{client.id}}</td>
+                  <td>{{client.hosts}}</td>
+                  <td>{{client.httpActiveCount}}</td>
+                  <td>{{client.idleProxyCount}}</td>
+                  <td>{{client.waitProxyCount}}</td>
+                  <td>
+                  	<button @click="client_kill(client.id)">踢出去</button>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+				</div>
+            <!-- /.box-body -->
+          </div>
+			<div class="box">
+				<div>
+					<div class='inner'>
+						<button class="btn" v-on:click="dataReload" disabled>第{{pager.pageNumber}}页,共{{pager.pageCount}}页</button>
+						<button class="btn" v-on:click="changePage(1)" :disabled="pager.pageNumber == 1">第一页</button>
+						<button class="btn" v-on:click="changePage(pager.pageNumber-1)" :disabled="pager.pageNumber == 1">上一页</button>
+						<button class="btn" v-on:click="changePage(pager.pageNumber+1)" :disabled="pager.pageNumber == pager.pageCount">下一页</button>
+						<button class="btn" v-on:click="changePage(pager.pageCount)" :disabled="pager.pageNumber == pager.pageCount">最后页</button>
+					</div>
+				</div>
+			</div>
+		</div>
+        <!-- /.col -->
+      </div>
+      <!-- /.row -->
+    </section>
+    <!-- /.content -->
+    <script src="${base}/assets/adminlte/js/ngrokd/client.js"></script>

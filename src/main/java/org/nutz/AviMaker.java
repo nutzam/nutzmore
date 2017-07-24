@@ -30,13 +30,18 @@ public class AviMaker {
                 String line = lines.get(i);
                 if (line.startsWith("简介(可用性:")) {
                     String avi = line.substring("简介(可用性:".length(), line.length()-1);
-                    if (avi.equals("生产"))
+                    String m = "";
+                    if (avi.contains(",维护者:")) {
+                        m = avi.substring(avi.indexOf(",")+5);
+                        avi = avi.substring(0, avi.indexOf(','));
+                    }
+                    if (avi.startsWith("生产"))
                         avi = "**"+avi+"**";
                     //System.out.println(lines.get(i+3));
                     String shortt = lines.get(i+3);
                     String maven = "![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/"+f.getName()+"/badge.svg)";
-                    String link = "["+f.getName()+"](https://github.com/nutzam/nutzmore/tree/master/"+f.getName()+")";
-                    System.out.printf("| %s | %s | %s | %s |\r\n", link, maven, shortt, avi);
+                    String link = "["+f.getName().substring(5)+"](https://github.com/nutzam/nutzmore/tree/master/"+f.getName()+")";
+                    System.out.printf("| %s | %s | %s | %s | %s |\r\n", link, maven, shortt, avi, m);
                     flag = false;
                     break;
                 }

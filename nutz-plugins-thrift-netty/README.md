@@ -1,6 +1,6 @@
 ### Thrift-Netty on Nutz 
 
-简介(可用性:试用)
+简介(可用性:试用,维护者:Rekoe)
 ==================================
 
 深度集成thrift-netty
@@ -12,11 +12,11 @@
 	<dependency>
             <groupId>org.nutz</groupId>
             <artifactId>nutz-plugins-thrift-netty</artifactId>
-            <version>1.r.61-SNAPSHOT</version>
+            <version>1.r.62</version>
         </dependency>
 ```
 
-```
+```java
 	@At("/echo/?")
 	@Ok("raw")
 	@Aop("TCOMPACTPROTOCOL")
@@ -36,19 +36,19 @@ thrift.port=17424
 
 ### 添加加载 
 
-```
+```java
 @IocBy(type = ComboIocProvider.class, args = { "*org.nutz.plugins.thrift.ThriftIocLoader" })
 ```
 
 #### 如果启动自己的服务 请加载
 
-```
+```java
 ioc.get(NutThriftNettyFactory.class, "thriftFactory").serverPort(port).tProtocolFactory(new TCompactProtocol.Factory()).load("pkg.service.impl");
 ```
 
 ### thrift DTL文件生成插件 
 
-```
+```xml
 	<plugin>
 		<groupId>com.facebook.mojo</groupId>
 		<artifactId>swift-maven-plugin</artifactId>

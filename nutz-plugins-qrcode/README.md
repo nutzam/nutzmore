@@ -1,6 +1,6 @@
 ### QRCode on Nutz
 
-简介(可用性:生产)
+简介(可用性:生产,维护者:冬日温泉)
 ==================================
 
 生成 QRCode,基于 [zxing](http://code.google.com/p/zxing/)
