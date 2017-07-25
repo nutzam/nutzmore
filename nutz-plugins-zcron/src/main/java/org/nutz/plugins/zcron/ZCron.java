@@ -109,19 +109,9 @@ public class ZCron {
     private int[] timePoints;
 
     /*------------------------------------构造函数----*/
-    public ZCron() {
-        iHH = new CrnStdItem();
-        imm = new CrnStdItem(iHH);
-        iss = new CrnStdItem(imm).setIgnoreZeroWhenPrevHasSpan(true);
-
-        idd = new CrnItem_dd();
-        iww = new CrnItem_ww(idd).setIgnoreAnyWhenPrevAllAny(true);
-        iMM = new CrnItem_MM(idd, iww).setIgnoreAnyWhenPrevAllAny(true);
-        iyy = new CrnItem_yy(iMM).setIgnoreAnyWhenPrevAllAny(true);
-    }
+    public ZCron() {}
 
     public ZCron(String cron) {
-        this();
         this.parse(cron);
     }
 
@@ -137,6 +127,17 @@ public class ZCron {
     public ZCron parse(String cron) {
         this.str = cron;
         this.parts = new String[4];
+
+        // 初始化
+        iHH = new CrnStdItem();
+        imm = new CrnStdItem(iHH);
+        iss = new CrnStdItem(imm).setIgnoreZeroWhenPrevHasSpan(true);
+
+        idd = new CrnItem_dd();
+        iww = new CrnItem_ww(idd).setIgnoreAnyWhenPrevAllAny(true);
+        iMM = new CrnItem_MM(idd, iww).setIgnoreAnyWhenPrevAllAny(true);
+        iyy = new CrnItem_yy(iMM).setIgnoreAnyWhenPrevAllAny(true);
+
         // 拆
         String[] items = cron.trim().split("[ \t]+");
         ArrayList<String> stdList = new ArrayList<String>(items.length);

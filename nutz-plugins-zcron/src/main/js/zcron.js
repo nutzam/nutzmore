@@ -164,10 +164,12 @@ var Region = function(str, formatFunc){
         return this[this.length - 2];
     };
     re.leftAsStr  = function(fmt){
-        return formatDate(fmt||"yyyy-MM-dd",this[1]);
+        var v = this[1];
+        return v ? formatDate(fmt||"yyyy-MM-dd",v) : "";
     };
     re.rightAsStr = function(fmt){
-        return formatDate(fmt||"yyyy-MM-dd",this[this.length - 2]);
+        var v = this[this.length - 2];
+        return v ? formatDate(fmt||"yyyy-MM-dd",v) : "";
     };
     re.isLeftOpen  = function(){return this[0];};
     re.isRightOpen = function(){return this[this.length-1];};
@@ -395,6 +397,9 @@ CrnItem.prototype = {
     },
     isSPAN : function() {
         return "SPAN" == this.values[0];
+    },
+    isONE : function() {
+        return "ONE" == this.values[0];
     },
     isPrevAllAny : function() {
         if (!this.prevItems || this.prevItems.length == 0)
@@ -762,15 +767,6 @@ CrnItem_ww.prototype.matchDate = function(c){
 var ZCronObj = function(cron) {
     this.__zcron_version = "1.1";
 
-    this.iHH = new CrnItem();
-    this.imm = new CrnItem(this.iHH);
-    this.iss = new CrnItem(this.imm).setIgnoreZeroWhenPrevHasSpan(true);
-
-    this.idd = new CrnItem_dd();
-    this.iww = new CrnItem_ww(this.idd).setIgnoreAnyWhenPrevAllAny(true);
-    this.iMM = new CrnItem_MM(this.idd, this.iww).setIgnoreAnyWhenPrevAllAny(true);
-    this.iyy = new CrnItem_yy(this.iMM).setIgnoreAnyWhenPrevAllAny(true);
-
     // 字符串
     if(typeof cron == "string") {
         this.parse(cron);
@@ -791,6 +787,16 @@ ZCronObj.prototype = {
     parse : function(cron){
         this.__str = cron;
         this.parts = [null,null,null,null];
+
+        // 初始化
+        this.iHH = new CrnItem();
+        this.imm = new CrnItem(this.iHH);
+        this.iss = new CrnItem(this.imm).setIgnoreZeroWhenPrevHasSpan(true);
+
+        this.idd = new CrnItem_dd();
+        this.iww = new CrnItem_ww(this.idd).setIgnoreAnyWhenPrevAllAny(true);
+        this.iMM = new CrnItem_MM(this.idd, this.iww).setIgnoreAnyWhenPrevAllAny(true);
+        this.iyy = new CrnItem_yy(this.iMM).setIgnoreAnyWhenPrevAllAny(true);
 
         // 拆
         var items = cron.trim().split(/[ \t]+/g);
@@ -941,14 +947,24 @@ ZCronObj.prototype = {
     isWorkingDay : function(){
         return this.idd.workingDay;
     },
+    isFromLastDay : function(){
+        var dd = this.idd.values[1];
+        return this.idd.isONE()
+               && (dd < 0
+                  || (dd > 40 && dd<MOD_dd));
+    },
     //............................................................
     // day : [1,7] 表 [Sun, Sat]
     matchDayInWeek : function(day) {
         return this.iww._match_(day, this.iww.prepare(8));
     },
     matchDayInMonth : function(day) {
-        if(this.idd.workingDay)
+        //console.log("matchDayInMonth", day)
+        if(this.idd.workingDay){
             day += MOD_dd;
+            if(this.isFromLastDay())
+                day -= 32;
+        }
         return this.idd._match_(day, this.idd.prepare(32));
     },
     matchMonth : function(m) {
@@ -997,6 +1013,15 @@ ZCronObj.prototype = {
             return false;
 
         return true;
+    },
+    matchHour : function(HH) {
+        return this.iHH.matchTime(HH, 0, 24);
+    },
+    matchMinute : function(mm) {
+        return this.imm.matchTime(mm, 0, 60);
+    },
+    matchSecond : function(ss) {
+        return this.iss.matchTime(ss, 0, 60);
     },
     // callback : F(array, index)
     each : function(array, callback, c, off, len, unit) {
@@ -1062,6 +1087,7 @@ ZCronObj.prototype = {
     },
     __set_part : function(index, str) {
         var val = (str||"").trim() || null;
+        //console.log("__set_part", index, str);
         this.parts[index] = val;
         // 清除时间点
         if (0 == index && !val) {
