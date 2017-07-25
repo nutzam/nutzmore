@@ -14,9 +14,7 @@ import org.beetl.core.GroupTemplate;
 import org.beetl.core.Resource;
 import org.beetl.core.ResourceLoader;
 import org.beetl.core.resource.FileResource;
-import org.beetl.core.resource.StringTemplateResource;
 import org.nutz.lang.Encoding;
-import org.nutz.lang.Streams;
 import org.nutz.lang.Strings;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
@@ -29,11 +27,6 @@ public class WebappResourceLoader2 implements ResourceLoader {
     protected ServletContext sc;
     
     protected String root;
-
-    public WebappResourceLoader2(String root) {
-        super();
-        this.root = root;
-    }
 
     public void close() {
     }
@@ -55,15 +48,16 @@ public class WebappResourceLoader2 implements ResourceLoader {
     @Override
     public Resource getResource(final String path) {
         try {
-            String file = getServletContext().getRealPath(root + path);
+            final String src = _path(root + path);
+            String file = getServletContext().getRealPath(src);
             if (file != null)
                 return new FileResource(new File(file), path, this);
-            URL url = getServletContext().getResource(root + path);
+            URL url = getServletContext().getResource(src);
             if (url != null) {
                 return new Resource(path, this) {
                     
                     public Reader openReader() {
-                        return new InputStreamReader(getServletContext().getResourceAsStream(root + path), Encoding.CHARSET_UTF8);
+                        return new InputStreamReader(getServletContext().getResourceAsStream(src), Encoding.CHARSET_UTF8);
                     }
                     
                     public boolean isModified() {
@@ -80,7 +74,7 @@ public class WebappResourceLoader2 implements ResourceLoader {
 
     @Override
     public String getResourceId(Resource resource, String id) {
-        if (resource == null)
+        if (resource == null || id.startsWith("/"))
             return id;
         String[] myId = Strings.splitIgnoreBlank(resource.getId(), "[\\\\/]");
         String[] yourId = Strings.splitIgnoreBlank(id, "[\\\\/]");
@@ -103,6 +97,14 @@ public class WebappResourceLoader2 implements ResourceLoader {
 
     @Override
     public void init(GroupTemplate gt) {
+        root = gt.getConf().getResourceMap().get("root");
+        if (Strings.isBlank(root)) {
+            root = "/WEB-INF/templates/";
+        }
+        else if (!root.endsWith("/")) {
+            root += "/";
+        }
+        log.debug("Use Beetl Template Root= " + root);
     }
 
     public boolean isModified(Resource resource) {
@@ -115,5 +117,9 @@ public class WebappResourceLoader2 implements ResourceLoader {
         if (sc == null)
             sc = Mvcs.getServletContext();
         return sc;
+    }
+    
+    public String _path(String path) {
+        return path.replace("//", "/");
     }
 }
