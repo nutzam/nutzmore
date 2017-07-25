@@ -821,8 +821,11 @@ public class ZCron {
     }
 
     private void __join_time_region(ZCroni18n i18n, List<String> ary) {
-        Times.TmInfo tFrom = Times.Ti(rgTime.left());
-        Times.TmInfo tTo = Times.Ti(rgTime.right());
+        Integer sFrom = rgTime.left();
+        Integer sTo = rgTime.right();
+
+        Times.TmInfo tFrom = Times.Ti(null == sFrom ? 0 : sFrom);
+        Times.TmInfo tTo = Times.Ti(null == sTo ? 86400 : sTo);
         // 解析模板
         Tmpl tmpl = Tmpl.parse(i18n.times.region);
 
@@ -839,23 +842,44 @@ public class ZCron {
     }
 
     private void __join_date_region(ZCroni18n i18n, List<String> ary) {
-        Calendar dFrom = Times.C(rgDate.left());
-        Calendar dTo = Times.C(rgDate.right());
-        // 解析模板
-        Tmpl tmpl = Tmpl.parse(i18n.dates.region);
+        Date dFrom = rgDate.left();
+        Date dTo = rgDate.right();
+        int yearFrom = null == dFrom ? -1 : Times.C(dFrom).get(Calendar.YEAR);
+        int yearTo = null == dTo ? -2 : Times.C(dTo).get(Calendar.YEAR);
+
+        // 准备模板
+        Tmpl tmpl;
+        // 没有开始
+        if (yearFrom < 0) {
+            tmpl = Tmpl.parse(i18n.dates.no_from);
+        }
+        // 没有结束
+        else if (yearTo < 0) {
+            tmpl = Tmpl.parse(i18n.dates.no_to);
+        }
+        // 完整区间
+        else {
+            tmpl = Tmpl.parse(i18n.dates.region);
+        }
 
         // 准备上下文
         NutMap c = new NutMap();
-        c.put("ieF", rgDate.isLeftOpen() ? i18n.EXC : i18n.INV);
-        c.put("ieT", rgDate.isRightOpen() ? i18n.EXC : i18n.INV);
-        c.put("from", Times.format(i18n.dates.full, dFrom.getTime()));
-        // 同年
-        if (dFrom.get(Calendar.YEAR) == dTo.get(Calendar.YEAR)) {
-            c.put("to", Times.format(i18n.dates.same, dTo.getTime()));
+        // 开始
+        if (yearFrom > 0) {
+            c.put("from", Times.format(i18n.dates.full, dFrom));
+            c.put("ieF", rgDate.isLeftOpen() ? i18n.EXC : i18n.INV);
         }
-        // 跨年
-        else {
-            c.put("to", Times.format(i18n.dates.full, dTo.getTime()));
+        // 结束
+        if (yearTo > 0) {
+            // 同年
+            if (yearFrom == yearTo) {
+                c.put("to", Times.format(i18n.dates.same, dTo));
+            }
+            // 跨年
+            else {
+                c.put("to", Times.format(i18n.dates.full, dTo));
+            }
+            c.put("ieT", rgDate.isRightOpen() ? i18n.EXC : i18n.INV);
         }
         // 渲染
         String str = tmpl.render(c);

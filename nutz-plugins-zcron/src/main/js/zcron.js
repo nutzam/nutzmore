@@ -26,7 +26,7 @@ var formatDate = function(fmt, d) {
         yy   : yy,
         MM   : month > 9 ? month : "0"+month,
         M    : month,
-        dd   : date > 0 ? date : "0"+date,
+        dd   : date > 9 ? date : "0"+date,
         d    : date,
     });
 };
@@ -40,22 +40,33 @@ var AsDate = function(str) {
     }
     return new Date(str);
 };
-var AsTimeInObj = function(input) {
-    var sec = parseInt(input);
-    if(isNaN(sec) || sec !=input) {
+var AsTimeInObj = function(input, dft) {
+    var inType = (typeof input);
+    var sec = dft;
+    // 字符串
+    if("string" == inType) {
         var m = /^(\d{1,2}):(\d{1,2})(:?(\d{1,2}))?$/.exec(input);
         if(!m)
-            throw "Not a Time: '"+v+"'!!";
+            throw "Not a Time: '"+input+"'!!";
         sec = m[1]*3600  + m[2]*60  + (m[4]||0)*1;
     }
-    var HH = parseInt(sec/3600);
-    var mm = parseInt((sec - HH*3600)/60);
-    var ss = sec - HH*3600 - mm*60;
+    // 数字
+    else if("number" == inType) {
+        sec = parseInt(input);
+    }
+    // 其他
+    else if((typeof sec)!="number"){
+        throw "Not a Time: " + input;
+    }
+    // 计算时分秒
+    var HH = Math.min(23, parseInt(sec/3600));
+    var mm = Math.min(59, parseInt((sec - HH*3600)/60));
+    var ss = Math.min(59, sec - HH*3600 - mm*60);
     return {
         hour   : HH,
         minute : mm,
         second : ss,
-        value  : sec,
+        value  : HH*3600 + mm *60 + ss,
         toString : function(autoIgnoreZeroSecond){
             var re = (this.hour>9 ? this.hour : "0"+this.hour);
             re += ":" + (this.minute>9 ? this.minute : "0"+this.minute);
@@ -146,11 +157,21 @@ var Region = function(str, formatFunc){
         }
     }
     // 添加帮助函数
-    re.left  = function(){return this[1];}
-    re.right = function(){return this[this.length - 2];}
-    re.isLeftOpen  = function(){return this[0];}
-    re.isRightOpen = function(){return this[this.length-1];}
-    re.isRegion = function(){return this.length==4;}
+    re.left  = function(){
+        return this[1];
+    };
+    re.right = function(){
+        return this[this.length - 2];
+    };
+    re.leftAsStr  = function(fmt){
+        return formatDate(fmt||"yyyy-MM-dd",this[1]);
+    };
+    re.rightAsStr = function(fmt){
+        return formatDate(fmt||"yyyy-MM-dd",this[this.length - 2]);
+    };
+    re.isLeftOpen  = function(){return this[0];};
+    re.isRightOpen = function(){return this[this.length-1];};
+    re.isRegion = function(){return this.length==4;};
     re.match = function(v) {
         // 区间
         if(this.length == 4) {
@@ -170,6 +191,19 @@ var Region = function(str, formatFunc){
         // 等于
         return this[1] == v;
     };
+    re.valueOf = function(){
+        var s = this.isLeftOpen()?"(":"[";
+        if(this.isRegion()){
+            s += this.leftAsStr()  || "";
+            s += ",";
+            s += this.rightAsStr() || "";
+        }else{
+            s += this.leftAsStr();
+        }
+        s += this.isRightOpen()?")":"]";
+        return s;
+    };
+    re.toString = re.valueOf;
     // 返回
     return re;
 };
@@ -1144,8 +1178,8 @@ ZCronObj.prototype = {
     },
     //........................................................
     __join_time_region : function(i18n, ary) {
-        var tFrom = AsTimeInObj(this.rgTime.left());
-        var tTo   = AsTimeInObj(this.rgTime.right());
+        var tFrom = AsTimeInObj(this.rgTime.left(), 0);
+        var tTo   = AsTimeInObj(this.rgTime.right(), 86400);
 
         // 准备上下文
         var c = {};
@@ -1163,21 +1197,46 @@ ZCronObj.prototype = {
         var dFrom = this.rgDate.left();
         var dTo   = this.rgDate.right();
 
+        var yearFrom = !dFrom ? -1 : dFrom.getFullYear();
+        var yearTo   = !dTo   ? -2 : dTo.getFullYear();
+
+        // 准备模板
+        var tmpl;
+        // 没有开始
+        if (yearFrom < 0) {
+            tmpl = i18n.dates.no_from;
+        }
+        // 没有结束
+        else if (yearTo < 0) {
+            tmpl = i18n.dates.no_to;
+        }
+        // 完整区间
+        else {
+            tmpl = i18n.dates.region;
+        }
+
+
         // 准备上下文
         var c  = {};
-        c.ieF  = this.rgDate.isLeftOpen() ? i18n.EXC : i18n.INV;
-        c.ieT  = this.rgDate.isRightOpen() ? i18n.EXC : i18n.INV;
-        c.from = formatDate(i18n.dates.full, dFrom);
-        // 同年
-        if (dFrom.getYear() == dTo.getYear()) {
-            c.to = formatDate(i18n.dates.same, dTo);
+        // 开始
+        if (yearFrom > 0) {
+            c.from = formatDate(i18n.dates.full, dFrom);
+            c.ieF  = this.rgDate.isLeftOpen() ? i18n.EXC : i18n.INV;
         }
-        // 跨年
-        else {
-            c.to = formatDate(i18n.dates.full, dTo);
+        // 结束
+        if (yearTo > 0) {
+            // 同年
+            if (yearFrom == yearTo) {
+                c.to = formatDate(i18n.dates.same, dTo);
+            }
+            // 跨年
+            else {
+                c.to = formatDate(i18n.dates.full, dTo);
+            }
+            c.ieT  = this.rgDate.isRightOpen() ? i18n.EXC : i18n.INV;
         }
         // 渲染
-        var str = Tmpl(i18n.dates.region, c, "${", "}");
+        var str = Tmpl(tmpl, c, "${", "}");
         ary.push(str);
     },
     //........................................................

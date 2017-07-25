@@ -7,18 +7,20 @@ var i18n = {
 	"INV" : "",
 	"EXC" : "（不包含）",
 	"dates" : {
-		"region" : "${from}${ieF}至${to}${ieT}，",
-		"full" : "yyyy年M月d日",
-		"same" : "M月d日",
+		"full"     : "yyyy年M月d日",
+		"same"     : "M月d日",
+		"region"   : "${from}${ieF}至${to}${ieT}，",
+		"no_from"  : "截止至${to}${ieT}，",
+		"no_to"    : "从${from}${ieF}开始，",
 	},
 	"times" : {
-		"region" : "${from}${ieF}到${to}${ieT}，",
+		"region"   : "${from}${ieF}到${to}${ieT}，",
 		"off" : "经过?后开始，",
 		"h" : "?小时",
 		"m" : "?分钟",
 		"s" : "?秒钟",
 		"step" : "每隔?",
-		"pad" : "起始时间按?全天对齐，"
+		"pad" : "起始时间按?全天对齐，",
 	},
 	"year" : {
 		"unit" : "年",

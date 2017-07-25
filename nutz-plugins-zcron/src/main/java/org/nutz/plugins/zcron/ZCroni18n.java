@@ -14,9 +14,11 @@ public class ZCroni18n {
     public String EXC;
 
     public static class RgDates {
-        public String region;
         public String full;
         public String same;
+        public String region;
+        public String no_from;
+        public String no_to;
     }
 
     public RgDates dates;
