@@ -892,7 +892,7 @@ ZCronObj.prototype = {
                 // Parse:  |           1        | |2 [  3  ]  |    
                 var m = /^T([\[\(][\d:,-]+[\]\)])?(\{([^}]+)\})?$/.exec(s);
                 if (!m)
-                    throw Lang.makeThrow("Wrong format '%s': ", cron);
+                    throw "Wrong format : " + cron;
 
                 // 有时间范围：
                 var tmrg = m[1];
