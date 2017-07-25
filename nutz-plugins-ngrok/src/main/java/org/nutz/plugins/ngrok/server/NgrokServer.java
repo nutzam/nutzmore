@@ -112,6 +112,7 @@ public class NgrokServer extends AbstractNgrokServer implements Callable<Object>
 
         public Object call() throws Exception {
             try {
+                this.socket.setSoTimeout(2*60*1000);
                 this.ins = socket.getInputStream();
                 this.out = socket.getOutputStream();
                 while (true) {
@@ -169,6 +170,7 @@ public class NgrokServer extends AbstractNgrokServer implements Callable<Object>
                             log.debug("not such client id=" + clientId);
                             break;
                         }
+                        this.socket.setSoTimeout(3600*1000);
                         proxyMode = true;
                         ProxySocket proxySocket = new ProxySocket(socket);
                         client.idleProxys.add(proxySocket);
@@ -203,9 +205,14 @@ public class NgrokServer extends AbstractNgrokServer implements Callable<Object>
 
         public class ProxySocket {
             public Socket socket;
+            public long createAt;
 
             public ProxySocket(Socket socket) {
                 this.socket = socket;
+                createAt = System.currentTimeMillis();
+            }
+            protected void finalize() throws Throwable {
+                Streams.safeClose(socket);
             }
         }
 
@@ -215,6 +222,10 @@ public class NgrokServer extends AbstractNgrokServer implements Callable<Object>
                 ps = idleProxys.poll();
                 if (ps == null)
                     break;
+                if (System.currentTimeMillis() - ps.createAt > 65*1000) {
+                    Streams.safeClose(ps.socket);
+                    continue;
+                }
                 try {
                     NgrokAgent.writeMsg(ps.socket.getOutputStream(), NgrokMsg.startProxy("http://" + host, ""));
                     return ps;

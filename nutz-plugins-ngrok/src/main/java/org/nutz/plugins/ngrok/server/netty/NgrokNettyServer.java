@@ -261,8 +261,8 @@ public class NgrokNettyServer extends AbstractNgrokServer {
                     return;
                 }
                 // 登录成功, 把两个队列准备好, 分别缓存通往客户端和浏览器的链接
-                idleProxys = new ArrayBlockingQueue<NgrokContrlHandler>(128);
-                waitProxys = new ArrayBlockingQueue<NgrokHttpHandler>(128);
+                idleProxys = new ArrayBlockingQueue<NgrokContrlHandler>(1024);
+                waitProxys = new ArrayBlockingQueue<NgrokHttpHandler>(1024);
                 reqIds = new HashSet<String>();
                 hosts = new HashSet<String>();
                 httpChannelCounter = new AtomicLong();
@@ -387,10 +387,22 @@ public class NgrokNettyServer extends AbstractNgrokServer {
                     ctx.close();
                 } catch (Throwable e) {
                 }
-                if (waitProxys != null && !waitProxys.isEmpty()) {
-                    while (waitProxys.isEmpty()) {
-                        waitProxys.poll().ctx.close();
+                try {
+                    if (waitProxys != null && !waitProxys.isEmpty()) {
+                        while (waitProxys.isEmpty()) {
+                            waitProxys.poll().ctx.close();
+                        }
                     }
+                }
+                catch (Throwable e) {
+                }
+                try {
+                    if (idleProxys != null && !idleProxys.isEmpty()) {
+                        while (idleProxys.isEmpty()) {
+                            idleProxys.poll().ctx.close();
+                        }
+                    }
+                } catch (Throwable e) {
                 }
             }
         }
@@ -490,11 +502,15 @@ public class NgrokNettyServer extends AbstractNgrokServer {
                             return;
                         }
                         // 看看有无已经待命的Proxy链接
-                        proxy = handler.idleProxys.poll();
-                        if (proxy != null && System.currentTimeMillis() - proxy.lastPing > 15*60*1000) {
-                            log.debug("虽然有Proxy链接,但是建立在15分钟前,抛弃掉");
-                            proxy.ctx.close();
-                            proxy = null;
+                        while (true) {
+                            proxy = handler.idleProxys.poll();
+                            if (proxy != null && System.currentTimeMillis() - proxy.lastPing > 65*1000) {
+                                log.debug("虽然有Proxy链接,但是建立在1分钟前,抛弃掉");
+                                proxy.ctx.close();
+                                proxy = null;
+                            } else {
+                                break;
+                            }
                         }
                         if (proxy == null) {
                             // 木有,好惨,那看看有无对应的ReqId吧
