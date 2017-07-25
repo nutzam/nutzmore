@@ -205,9 +205,11 @@ public class NgrokServer extends AbstractNgrokServer implements Callable<Object>
 
         public class ProxySocket {
             public Socket socket;
+            public long createAt;
 
             public ProxySocket(Socket socket) {
                 this.socket = socket;
+                createAt = System.currentTimeMillis();
             }
             protected void finalize() throws Throwable {
                 Streams.safeClose(socket);
@@ -220,6 +222,10 @@ public class NgrokServer extends AbstractNgrokServer implements Callable<Object>
                 ps = idleProxys.poll();
                 if (ps == null)
                     break;
+                if (System.currentTimeMillis() - ps.createAt > 65*1000) {
+                    Streams.safeClose(ps.socket);
+                    continue;
+                }
                 try {
                     NgrokAgent.writeMsg(ps.socket.getOutputStream(), NgrokMsg.startProxy("http://" + host, ""));
                     return ps;

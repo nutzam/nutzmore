@@ -261,8 +261,8 @@ public class NgrokNettyServer extends AbstractNgrokServer {
                     return;
                 }
                 // 登录成功, 把两个队列准备好, 分别缓存通往客户端和浏览器的链接
-                idleProxys = new ArrayBlockingQueue<NgrokContrlHandler>(128);
-                waitProxys = new ArrayBlockingQueue<NgrokHttpHandler>(128);
+                idleProxys = new ArrayBlockingQueue<NgrokContrlHandler>(1024);
+                waitProxys = new ArrayBlockingQueue<NgrokHttpHandler>(1024);
                 reqIds = new HashSet<String>();
                 hosts = new HashSet<String>();
                 httpChannelCounter = new AtomicLong();
