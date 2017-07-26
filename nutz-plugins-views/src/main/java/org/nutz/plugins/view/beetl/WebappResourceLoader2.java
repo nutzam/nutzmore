@@ -14,6 +14,7 @@ import org.beetl.core.GroupTemplate;
 import org.beetl.core.Resource;
 import org.beetl.core.ResourceLoader;
 import org.beetl.core.resource.FileResource;
+import org.beetl.core.resource.FileResourceLoader;
 import org.nutz.lang.Encoding;
 import org.nutz.lang.Strings;
 import org.nutz.log.Log;
@@ -27,6 +28,8 @@ public class WebappResourceLoader2 implements ResourceLoader {
     protected ServletContext sc;
     
     protected String root;
+    
+    protected FileResourceLoader fileResourceLoader;
 
     public void close() {
     }
@@ -51,7 +54,7 @@ public class WebappResourceLoader2 implements ResourceLoader {
             final String src = _path(root + path);
             String file = getServletContext().getRealPath(src);
             if (file != null)
-                return new FileResource(new File(file), path, this);
+                return new FileResource(new File(file), path, fileResourceLoader);
             URL url = getServletContext().getResource(src);
             if (url != null) {
                 return new Resource(path, this) {
@@ -104,6 +107,9 @@ public class WebappResourceLoader2 implements ResourceLoader {
         else if (!root.endsWith("/")) {
             root += "/";
         }
+        String path = getServletContext().getRealPath(root);
+        if (path != null)
+            fileResourceLoader = new FileResourceLoader(path);
         log.debug("Use Beetl Template Root= " + root);
     }
 
