@@ -2,13 +2,9 @@ package org.nutz.plugins.zcron;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.nutz.lang.Lang;
 import org.nutz.lang.Mirror;
 import org.nutz.lang.Strings;
@@ -18,7 +14,6 @@ import org.nutz.lang.tmpl.Tmpl;
 import org.nutz.lang.util.DateRegion;
 import org.nutz.lang.util.NutMap;
 import org.nutz.lang.util.Region;
-import org.nutz.lang.util.TimeRegion;
 
 public class ZCron {
 
@@ -87,26 +82,11 @@ public class ZCron {
     private DateRegion rgDate;
 
     /**
-     * 限定时间区间: T[08:12,09:16]
+     * 固定时间点重复器
      */
-    private TimeRegion rgTime;
+    private List<TimePointRepeater> timeRepeaters;
 
-    /**
-     * 固定时间点从限定时间区间获取的方式: T[12:23,18:32]{0/30m}
-     * <p>
-     * 如果不为 null，那么 <code>timePoints</code> 段的值就来自本类的<code>genTimePoints</code>
-     * 函数
-     */
-    private TimePointRepeater timeRepeater;
-
-    /**
-     * 声明了固定时间点（秒）
-     * <p>
-     * 本项目优先于 `timeOffset/timeStep`
-     * <p>
-     * !!! 注意，本字段的时间点必须是经过排序的（从小到大）
-     */
-    private int[] timePoints;
+    private boolean has_time_points;
 
     /*------------------------------------构造函数----*/
     public ZCron() {}
@@ -114,8 +94,6 @@ public class ZCron {
     public ZCron(String cron) {
         this.parse(cron);
     }
-
-    private static final Pattern _P_TIME_REGION = Pattern.compile("^T([\\[\\(][\\d:,-]+[\\]\\)])?([{]([^}]+)[}])?$");
 
     /**
      * 根据字符串，重新解析一个表达式
@@ -168,7 +146,7 @@ public class ZCron {
         switch (stdIC) {
         // 什么都没给，必须有 timePoints 和 rgDate
         case 0:
-            if (null == timePoints)
+            if (0 == timeRepeaters.size())
                 throw Lang.makeThrow("No TimePoints : " + cron);
             if (null == rgDate)
                 throw Lang.makeThrow("No DateRange : " + cron);
@@ -176,13 +154,13 @@ public class ZCron {
             break;
         // 给了 `日 月 周` 必须还要给定 timePoints
         case 3:
-            if (null == timePoints)
+            if (0 == timeRepeaters.size())
                 throw Lang.makeThrow("No TimePoints : " + cron);
             stdN = 1;
             break;
         // 给了 `日 月 周 年` 必须还要给定 timePoints
         case 4:
-            if (null == timePoints)
+            if (0 == timeRepeaters.size())
                 throw Lang.makeThrow("No TimePoints : " + cron);
             stdN = 0;
             break;
@@ -221,6 +199,9 @@ public class ZCron {
     }
 
     private void __parse_for_ext(String cron, String[] items, ArrayList<String> stdList) {
+        List<TimePointRepeater> trList = new ArrayList<>(3);
+
+        // 循环解析
         for (String s : items) {
             // 为日期范围
             if (s.startsWith("D")) {
@@ -229,43 +210,44 @@ public class ZCron {
             }
             // 为时间范围
             else if (s.startsWith("T")) {
-                parts[0] = s;
-                // 是否声明了时间点
-                Matcher m = _P_TIME_REGION.matcher(s);
-                if (!m.find())
-                    throw Lang.makeThrow("Wrong format '%s': ", cron);
-
-                // 有时间范围：
-                String tmrg = m.group(1);
-                if (!Strings.isBlank(tmrg))
-                    rgTime = Region.Time(tmrg);
-
-                String tps = m.group(3);
-                if (!Strings.isBlank(tps)) {
-                    // 间隔时间点
-                    timeRepeater = TimePointRepeater.tryParse(tps);
-
-                    // 根据间隔时间点生成固定时间点
-                    if (null != timeRepeater) {
-                        timePoints = timeRepeater.genTimePoints(rgTime);
-                    }
-                    // 直接解析固定时间点
-                    else {
-                        String[] timeList = Strings.splitIgnoreBlank(tps);
-                        timePoints = new int[timeList.length];
-                        for (int x = 0; x < timeList.length; x++) {
-                            timePoints[x] = Times.T(timeList[x]);
-                        }
-                    }
-                    // 确保顺序
-                    Arrays.sort(timePoints);
-                }
+                TimePointRepeater tr = new TimePointRepeater();
+                tr.parse(s);
+                trList.add(tr);
             }
             // 标准表达式项
             else {
                 stdList.add(s);
             }
         }
+
+        // 判断一下是否有时间点，
+        this.has_time_points = false;
+        for (TimePointRepeater tr : trList) {
+            if (tr.isPoints() || tr.isStep()) {
+                this.has_time_points = true;
+                break;
+            }
+        }
+
+        // 如果有的话，丢弃所有的纯范围
+        this.timeRepeaters = new ArrayList<>(trList.size());
+        for (TimePointRepeater tr : trList) {
+            if (tr.isPureRegion()) {
+                if (!this.has_time_points)
+                    this.timeRepeaters.add(tr);
+            }
+            // 肯定加
+            else {
+                this.timeRepeaters.add(tr);
+            }
+        }
+
+        // 设置一下 part[0]
+        List<String> trStrs = new ArrayList<>(this.timeRepeaters.size());
+        for (TimePointRepeater tr : this.timeRepeaters) {
+            trStrs.add(tr.getPrimaryString());
+        }
+        this.parts[0] = trList.isEmpty() ? null : Strings.join(" ", trStrs);
     }
 
     /**
@@ -394,14 +376,21 @@ public class ZCron {
      * @return 是否匹配
      */
     public boolean matchTime(Times.TmInfo ti) {
-        // 指定了固定的时间点
-        if (null != timePoints) {
-            return Arrays.binarySearch(timePoints, ti.value) >= 0;
+        // 指明了时间点的情况
+        if (this.has_time_points) {
+            for (TimePointRepeater tr : this.timeRepeaters) {
+                if (tr.matchTime(ti.value))
+                    return true;
+            }
+            return false;
         }
 
-        // 是否在给定时间范围内
-        if (null != rgTime && !rgTime.match(ti.value)) {
-            return false;
+        // 先匹配时间范围
+        if (this.timeRepeaters.size() > 0) {
+            for (TimePointRepeater tr : this.timeRepeaters) {
+                if (!tr.matchTime(ti.value))
+                    return false;
+            }
         }
 
         // 依次对于表达式求职
@@ -716,8 +705,8 @@ public class ZCron {
         this.parts[index] = val;
         // 清除时间点
         if (0 == index && null == val) {
-            this.timePoints = null;
-            this.timeRepeater = null;
+            this.timeRepeaters.clear();
+            this.has_time_points = false;
         }
         // 清除日期范围
         if (3 == index && null == val) {
@@ -735,11 +724,11 @@ public class ZCron {
             list.add(parts[0]);
         }
         // 标准: 时间部分
-        if (null == timePoints) {
+        if (!this.has_time_points) {
             list.add(parts[1]);
         }
         // 标准: 日期部分
-        if (null == rgDate || !"* * ? *".equals(parts[2]) || null == timePoints) {
+        if (null == rgDate || !"* * ? *".equals(parts[2]) || !this.has_time_points) {
             list.add(parts[2].endsWith(" *") ? parts[2].substring(0, parts[2].length() - 2)
                                              : parts[2]);
         }
@@ -790,28 +779,13 @@ public class ZCron {
         }
 
         // ............................................
-        // 增加时间范围
-        if (null != rgTime) {
-            __join_time_region(i18n, ary);
-        }
-
-        // ............................................
-        // 指定了时间区间的重复
-        if (null != timeRepeater) {
-            ary.add(timeRepeater.toText(i18n));
+        // 描述了时间点
+        for (TimePointRepeater tr : this.timeRepeaters) {
+            tr.joinText(i18n, ary);
         }
         // ............................................
-        // 指定了固定时间点
-        else if (null != timePoints) {
-            List<String> list = new ArrayList<>(timePoints.length);
-            for (int sec : timePoints) {
-                list.add(Times.Ti(sec).toString(true));
-            }
-            ary.add(Strings.join(",", list));
-        }
-        // ............................................
-        // 默认采用标准表达式的时间
-        else {
+        // 如果没有指定时间点，则默认采用标准表达式的时间
+        if (!this.has_time_points) {
             this.iHH.joinText(ary, i18n, "hour");
             this.imm.joinText(ary, i18n, "minute");
             this.iss.joinText(ary, i18n, "second");
@@ -819,27 +793,6 @@ public class ZCron {
 
         // 返回字符串
         return Strings.join("", ary);
-    }
-
-    private void __join_time_region(ZCroni18n i18n, List<String> ary) {
-        Integer sFrom = rgTime.left();
-        Integer sTo = rgTime.right();
-
-        Times.TmInfo tFrom = Times.Ti(null == sFrom ? 0 : sFrom);
-        Times.TmInfo tTo = Times.Ti(null == sTo ? 86400 : sTo);
-        // 解析模板
-        Tmpl tmpl = Tmpl.parse(i18n.times.region);
-
-        // 准备上下文
-        NutMap c = new NutMap();
-        c.put("ieF", rgTime.isLeftOpen() ? i18n.EXC : i18n.INV);
-        c.put("ieT", rgTime.isRightOpen() ? i18n.EXC : i18n.INV);
-        c.put("from", tFrom.toString(true));
-        c.put("to", tTo.toString(true));
-
-        // 渲染
-        String str = tmpl.render(c);
-        ary.add(str);
     }
 
     private void __join_date_region(ZCroni18n i18n, List<String> ary) {

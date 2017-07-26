@@ -79,7 +79,7 @@ public class ZCronTest {
             "2017年7月25日（不包含）至9月21日，每天的12:23（不包含）到18:32，经过4秒钟后开始，每隔2小时");
         aeT("D(20170725,20170921] T(12:23,18:32]{>1/2h}",
             "2017年7月25日（不包含）至9月21日，每天的12:23（不包含）到18:32，起始时间按1小时全天对齐，每隔2小时");
-        aeT("D(20170725,20170921] T{1:20,2:3,18:05}", "2017年7月25日（不包含）至9月21日，每天的01:20,02:03,18:05");
+        aeT("D(20170725,20170921] T{1:20,2:3,18:05}", "2017年7月25日（不包含）至9月21日，每天的01:20, 02:03, 18:05");
     }
 
     @Test
@@ -110,6 +110,37 @@ public class ZCronTest {
         aeT("0 0 0 * * 2#4", "每月的第4个周一的每天0点0分0秒");
         aeT("0 0/5 8,10-14,23 * * ?", "每天的8点,10点至14点,23点从0分开始每5分钟");
         aeT("0 0 0,1 * * ?", "每天的0点,1点0分0秒");
+    }
+
+    @Test
+    public void test_ext_multi_time_region() {
+        ZCron cr;
+        // ............................................
+        cr = new ZCron("* * ? T[6:00,8:30]{0/30m} T[22:00,22:30]{0/10m}");
+
+        assertTrue(cr.matchTime("6:00"));
+        assertTrue(cr.matchTime("6:30"));
+        assertTrue(cr.matchTime("7:00"));
+        assertTrue(cr.matchTime("7:30"));
+        assertTrue(cr.matchTime("8:00"));
+        assertTrue(cr.matchTime("8:30"));
+        assertTrue(cr.matchTime("22:00"));
+        assertTrue(cr.matchTime("22:10"));
+        assertTrue(cr.matchTime("22:20"));
+        assertTrue(cr.matchTime("22:30"));
+
+        assertFalse(cr.matchTime("5:59"));
+        assertFalse(cr.matchTime("6:01"));
+        assertFalse(cr.matchTime("6:59"));
+        assertFalse(cr.matchTime("7:01"));
+        assertFalse(cr.matchTime("7:59"));
+        assertFalse(cr.matchTime("8:01"));
+        assertFalse(cr.matchTime("8:59"));
+        assertFalse(cr.matchTime("21:59"));
+        assertFalse(cr.matchTime("22:01"));
+        assertFalse(cr.matchTime("22:11"));
+        assertFalse(cr.matchTime("22:13"));
+        assertFalse(cr.matchTime("22:31"));
     }
 
     @Test
