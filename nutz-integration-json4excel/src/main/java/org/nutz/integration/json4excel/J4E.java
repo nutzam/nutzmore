@@ -106,7 +106,10 @@ public class J4E {
         Mirror<T> mc = Mirror.me(objClz);
         j4eConf = checkJ4EConf(j4eConf, objClz);
         // FIXME 暂时是生成一个新的excel, 以后可以向现有的excel文件中写入
-        Sheet sheet = wb.createSheet(j4eConf.getSheetName());
+        Sheet sheet = wb.getSheet(j4eConf.getSheetName());
+        if (sheet == null) {
+            sheet = wb.createSheet(j4eConf.getSheetName());
+        }
         // 判断column的field是否都在T中
         for (J4EColumn jcol : j4eConf.getColumns()) {
             if (!Strings.isBlank(jcol.getFieldName())) {
@@ -121,17 +124,21 @@ public class J4E {
                 }
             }
         }
-        int rnum = 0;
-        // 写入head
-        Row rhead = sheet.createRow(rnum++);
+        int rnum = j4eConf.getPassRow();
         int cindex = 0;
-        for (J4EColumn jcol : j4eConf.getColumns()) {
-            Field jfield = jcol.getField();
-            if (null != jfield) {
-                Cell c = rhead.createCell(cindex++);
-                c.setCellType(CellType.STRING);
-                c.setCellValue(Strings.isBlank(jcol.getColumnName()) ? jcol.getFieldName()
-                                                                     : jcol.getColumnName());
+        if (j4eConf.isPassHead()) {
+            rnum++;
+        } else {
+            // 写入head
+            Row rhead = sheet.createRow(rnum++);
+            for (J4EColumn jcol : j4eConf.getColumns()) {
+                Field jfield = jcol.getField();
+                if (null != jfield) {
+                    Cell c = rhead.createCell(cindex++);
+                    c.setCellType(CellType.STRING);
+                    c.setCellValue(Strings.isBlank(jcol.getColumnName()) ? jcol.getFieldName()
+                                                                         : jcol.getColumnName());
+                }
             }
         }
         // 写入row
@@ -329,8 +336,8 @@ public class J4E {
             colType = J4EColumnType.STRING;
         }
         try {
-            @SuppressWarnings({ "deprecation" })//4.2之后将可直接调用c.getCellType返回枚举
-			CellType cType = c.getCellTypeEnum();
+            @SuppressWarnings({"deprecation"}) // 4.2之后将可直接调用c.getCellType返回枚举
+            CellType cType = c.getCellTypeEnum();
             switch (cType) {
             case NUMERIC: // 数字
                 if (DateUtil.isCellDateFormatted(c)) {

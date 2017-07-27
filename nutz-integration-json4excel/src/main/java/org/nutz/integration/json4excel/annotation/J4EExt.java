@@ -18,4 +18,6 @@ public @interface J4EExt {
     int passRow() default 0;;
 
     int passColumn() default 0;;
+
+    boolean passHead() default false;
 }
