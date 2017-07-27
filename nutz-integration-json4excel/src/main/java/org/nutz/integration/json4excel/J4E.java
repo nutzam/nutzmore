@@ -155,10 +155,38 @@ public class J4E {
             for (J4EColumn jcol : j4eConf.getColumns()) {
                 Field jfield = jcol.getField();
                 if (null != jfield) {
-                    Cell c = row.createCell(cindex++);
-                    c.setCellType(CellType.STRING);
+                    int ccin = cindex++;
+                    Cell c = row.getCell(ccin);
+                    if (c == null) {
+                        c = row.createCell(cindex++);
+
+                    }
+                    J4EColumnType columnType = jcol.getColumnType();
+                    if (columnType == J4EColumnType.STRING) {
+                        c.setCellType(CellType.STRING);
+                    }
+                    if (columnType == J4EColumnType.NUMERIC) {
+                        c.setCellType(CellType.NUMERIC);
+                    }
+                    if (columnType == J4EColumnType.DATE) {
+                        c.setCellType(CellType.STRING);
+                    }
                     Object dfv = mc.getValue(dval, jfield);
-                    c.setCellValue(dfv != null ? Castors.me().castTo(dfv, String.class) : "");
+                    int ctp = c.getCellType();
+                    switch (ctp) {
+                    case 1: // STRING
+                        c.setCellValue(dfv != null ? Castors.me().castTo(dfv, String.class) : "");
+                        break;
+                    case 0: // NUMERIC
+                        Integer intRe = Castors.me().castTo(dfv, Integer.class);
+                        if (intRe != null) {
+                            c.setCellValue(intRe);
+                        }
+                        break;
+                    default:
+                        break;
+                    }
+
                 }
             }
         }
