@@ -146,7 +146,11 @@ public class J4E {
             if (log.isDebugEnabled()) {
                 log.debugf("add Row : %s", Json.toJson(dval, JsonFormat.compact()));
             }
-            Row row = sheet.createRow(rnum++);
+            int crow = rnum++;
+            Row row = sheet.getRow(crow);
+            if (row == null) {
+                row = sheet.createRow(crow);
+            }
             cindex = 0;
             for (J4EColumn jcol : j4eConf.getColumns()) {
                 Field jfield = jcol.getField();
