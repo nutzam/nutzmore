@@ -38,7 +38,9 @@ var AsDate = function(str) {
             throw "Not a Date: '"+v+"'!!";
         return new Date(m[1],m[2]-1,m[4]||1);
     }
-    return new Date(str);
+    var d = new Date(str);
+    d.setHours(0,0,0,0);
+    return d;
 };
 var AsTimeInObj = function(input, dft) {
     var inType = (typeof input);
@@ -54,6 +56,10 @@ var AsTimeInObj = function(input, dft) {
     else if("number" == inType) {
         sec = parseInt(input);
     }
+    // 时间对象
+    else if(input && "object" == inType && input.__time_info_obj__) {
+        sec = input.value;
+    }
     // 其他
     else if((typeof sec)!="number"){
         throw "Not a Time: " + input;
@@ -63,6 +69,7 @@ var AsTimeInObj = function(input, dft) {
     var mm = Math.min(59, parseInt((sec - HH*3600)/60));
     var ss = Math.min(59, sec - HH*3600 - mm*60);
     return {
+        __time_info_obj__ : true,
         hour   : HH,
         minute : mm,
         second : ss,
@@ -211,12 +218,6 @@ var Region = function(str, formatFunc){
 };
 //================================================================
 var TimePointRepeater = function(){};
-TimePointRepeater.tryParse = function(str) {
-    var tpr = new TimePointRepeater();
-    if (tpr.parse(str))
-        return tpr;
-    return null;
-};
 TimePointRepeater.prototype = {
     unitInSec : function(tu) {
         if ("h" == tu)
@@ -225,84 +226,176 @@ TimePointRepeater.prototype = {
             return 60;
         return 1;
     },
+    //........................................................
     parse : function(str) {
-        // Parse: |1 |2[ 3 ][  4  ] |   | 5 ||  6  |
+        // 初始化
+        this.region = null;
+        this.timePoints = null;
+        this.stepValue = 0;
+        this.stepInSec = 0;
+        this.tStart = -1;
+        this.tEnd = -1;
+        this.__str = str;
+
+        // 匹配正则
+        var m = /^T([\[\(][\d:,-]+[\]\)])?([{]([^}]+)[}])?$/.exec(str);
+        if (!m)
+            throw "Invalid time repeater '" + str + "'";
+
+        // 有时间范围：
+        var tmrg = m[1];
+        if (tmrg)
+            this.region = Region(tmrg, "time");
+
+        // 处理时间点
+        var tps = m[3];
+        if (tps) {
+            // 如果不是步长，则根据间隔时间点生成固定时间点
+            if (!this.__parse_step(tps)) {
+                var timeList = tps.split(/[ ,]+/g);
+                this.timePoints = [];
+                for (var x = 0; x < timeList.length; x++) {
+                    this.timePoints[x] = AsTimeInSec(timeList[x]);
+                }
+                // 确保顺序
+                this.timePoints.sort(function(a,b){return a-b;})
+            }
+        }
+
+        // 既没有时间范围，有没有时间点，那么不能忍啊
+        if (!this.region && !this.timePoints && this.stepInSec <= 0) {
+            throw "Invalid time repeater '" + str + "'";
+        }
+    },
+    //........................................................
+    __parse_step : function(str) {
         var m = /^(>)?((\d+)([hms])?)?\/(\d+)([hms])$/.exec(str);
         if (m) {
+            // ..............................................
+            // 解析步长信息
             this.autoPadding = m[1] ? true : false;
             this.stepValue   = parseInt(m[5]);
             this.stepUnit    = m[6];
             if (m[2]) {
                 this.offValue = parseInt(m[3]);
-                this.offUnit  = m[4];
+                this.offUnit  = m[4] || null;
             }
-
+            // ..............................................
             // 计算
             this.offInSec  = (this.offValue < 0 ? this.stepValue : this.offValue)
-                              * this.unitInSec(null == this.offUnit 
-                                                ? this.stepUnit 
-                                                : this.offUnit);
+                             * this.unitInSec(this.offUnit || this.stepUnit);
             this.stepInSec = this.stepValue * this.unitInSec(this.stepUnit);
+            if (this.stepInSec <= 0) {
+                throw "Step Value is not ava!";
+            }
+            // ..............................................
+            // 计算步长的真正区间
+            var tr = this.region;
+            // 全天
+            if (!tr || !tr.isRegion()) {
+                this.tStart = 0;
+                this.tEnd = 86400;
+            }
+            // 根据给定时间区域
+            else {
+                this.tStart = tr.left() + (tr.isLeftOpen() ? 1 : 0);
+                this.tEnd = tr.right() + (tr.isRightOpen() ? 0 : 1);
+            }
+            // ..............................................
+            // 调整开始时间
+            if (this.offInSec > 0) {
+                // 自动对齐
+                if (this.autoPadding) {
+                    this.tStart = Math.ceil(this.tStart/this.offInSec) 
+                                          * this.offInSec;
+                }
+                // 仅仅是调整
+                else {
+                    this.tStart += this.offInSec;
+                }
+            }
+            // ..............................................
             // 解析成功
             return true;
         }
+        // 解析失败
         return false;
     },
-    genTimePoints : function(tr) {
-        // 得到时间范围（秒）
-        var tStart; // 开始（包含）
-        var tEnd; // 结束（不包含）
-        // 全天
-        if (null == tr || !tr.isRegion()) {
-            tStart = 0;
-            tEnd = 86400;
+    //........................................................
+    matchTime : function(sec) {
+        // 匹配范围
+        if (null != this.region && !this.region.match(sec)) {
+            return false;
         }
-        // 根据给定时间区域
-        else {
-            tStart = tr.left() + (tr.isLeftOpen() ? 1 : 0);
-            tEnd = tr.right() - (tr.isRightOpen() ? 0 : 1);
+
+        // 精确匹配时间点
+        if (null != this.timePoints) {
+            return this.timePoints.indexOf(sec) >= 0;
         }
-        // ..............................................
-        // 调整开始时间
-        if (this.offInSec > 0) {
-            // 自动对齐
-            if (this.autoPadding) {
-                tStart = Math.ceil(this.tStart/this.offInSec) * this.offInSec;
-            }
-            // 仅仅是调整
-            else {
-                tStart += this.offInSec;
-            }
+
+        // 根据步长计算
+        if (sec >= this.tStart && sec < this.tEnd) {
+            return 0 == (sec - this.tStart) % this.stepInSec;
         }
-        // ..............................................
-        // 计算时间点，并开始填充
-        var len = ((tEnd - tStart) / this.stepInSec) + 1;
-        var tps = [];
-        tps[0] = tStart;
-        for (var i = 1; i < len; i++) {
-            tps[i] = tStart + (i * this.stepInSec);
-        }
-        // 返回
-        return tps;
+        return false;
     },
-    explainTimePoints : function(tr) {
-        var tps  = this.genTimePoints(tr);
-        var list = [];
-        for (var i = 0; i < tps.length; i++) {
-            list[i] = AsTimeInStr(tps[i], true);
-        }
-        return list.join(", ");
+    //........................................................
+    getPrimaryString : function() {
+        return this.__str;
     },
+    //........................................................
+    toString : function() {
+        return this.__str;
+    },
+    valueOf : function() {
+        return this.__str;
+    },
+    //........................................................
+    isPureRegion : function() {
+        return !this.isPoints() && !this.isStep();
+    },
+    //........................................................
+    isPoints : function() {
+        return this.timePoints ? true : false;
+    },
+    //........................................................
+    isStep : function() {
+        return this.tStart > 0 && this.tEnd > 0 && this.stepInSec > 0;
+    },
+    //........................................................
     _T : function(i18n, key, value) {
         return i18n.times[key].replace(/\?/g, value);
     },
-    toText: function(i18n) {
+    //........................................................
+    joinText : function(i18n, ary) {
+        // 时间点
+        if (this.timePoints) {
+            this.__join_time_points(i18n, ary);
+        }
+        // 时间范围
+        else {
+            this.__join_time_region(i18n, ary);
+            if (this.isStep())
+                this.__join_step_info(i18n, ary);
+        }
+    },
+    //........................................................
+    __join_time_points: function(i18n, ary) {
+        var list = [];
+        for (var i = 0; i < this.timePoints.length; i++) {
+            var sec = this.timePoints[i];
+            list.push(AsTimeInStr(sec, true));
+        }
+        ary.push(list.join(", "));
+    },
+    //........................................................
+    __join_step_info: function(i18n, ary) {
         var re = "";
         // 得到步长描述
         var vstp = this._T(i18n, this.stepUnit, this.stepValue);
         // 得到偏移描述
         var voff = null;
-        if (this.offValue) {
+        if (this.offValue != 0) {
             var tu = this.offUnit || this.stepUnit;
             voff = this._T(i18n, tu, this.offValue);
         }
@@ -311,15 +404,37 @@ TimePointRepeater.prototype = {
             re += this._T(i18n, "pad", voff || vstp);
         }
         // 偏移
-        else if (this.offValue) {
+        else if (this.offValue != 0) {
             re += this._T(i18n, "off", voff);
         }
         // 步长
         re += this._T(i18n, "step", vstp);
 
-        // 返回
-        return re;
+        // 计入
+        ary.push(re);
+    },
+    //........................................................
+    __join_time_region: function(i18n, ary) {
+        if (!this.region)
+            return;
+        var sFrom = this.region.left();
+        var sTo   = this.region.right();
+
+        var tFrom = AsTimeInObj(sFrom, 0);
+        var tTo   = AsTimeInObj(sTo,   86400);
+
+        // 准备上下文
+        var c = {};
+        c.ieF  = this.region.isLeftOpen() ? i18n.EXC : i18n.INV;
+        c.ieT  = this.region.isRightOpen() ? i18n.EXC : i18n.INV;
+        c.from = tFrom.toString(true);
+        c.to   = tTo.toString(true);
+
+        // 渲染
+        var str = Tmpl(i18n.times.region, c, "${", "}");
+        ary.push(str);
     }
+    //........................................................
 };
 //================================================================
 var ANY   = 0;   // *
@@ -826,7 +941,7 @@ ZCronObj.prototype = {
         switch (stdIC) {
         // 什么都没给，必须有 timePoints 和 rgDate
         case 0:
-            if (!this.timePoints)
+            if (0 == this.timeRepeaters.length)
                 throw "No TimePoints : " + cron;
             if (!this.rgDate)
                 throw "No DateRange : " + cron;
@@ -834,13 +949,13 @@ ZCronObj.prototype = {
             break;
         // 给了 `日 月 周` 必须还要给定 timePoints
         case 3:
-            if (!this.timePoints)
+            if (0 == this.timeRepeaters.length)
                 throw "No TimePoints : " + cron;
             stdN = 1;
             break;
         // 给了 `日 月 周 年` 必须还要给定 timePoints
         case 4:
-            if (!this.timePoints)
+            if (0 == this.timeRepeaters.length)
                 throw "No TimePoints : " + cron;
             stdN = 0;
             break;
@@ -878,6 +993,9 @@ ZCronObj.prototype = {
         return this;
     },
     __parse_for_ext : function(cron, items, stdList) {
+        var trList = [];
+
+        // 循环解析
         for (var i=0; i<items.length; i++) {
             var s = items[i];
             // 为日期范围
@@ -887,54 +1005,47 @@ ZCronObj.prototype = {
             }
             // 为时间范围
             else if (/^T/.test(s)) {
-                this.parts[0] = s;
-                // 是否声明了时间点
-                // Parse:  |           1        | |2 [  3  ]  |    
-                var m = /^T([\[\(][\d:,-]+[\]\)])?(\{([^}]+)\})?$/.exec(s);
-                if (!m)
-                    throw "Wrong format : " + cron;
-
-                // 有时间范围：
-                var tmrg = m[1];
-                if (tmrg)
-                    this.rgTime = Region(tmrg, "time");
-
-                var tps = m[3];
-                if (tps) {
-                    // 间隔时间点
-                    this.timeRepeater = TimePointRepeater.tryParse(tps);
-
-                    // 根据间隔时间点生成固定时间点
-                    if (this.timeRepeater) {
-                        this.timePoints = this.timeRepeater.genTimePoints(this.rgTime);
-                    }
-                    // 直接解析固定时间点
-                    else {
-                        var timeList = tps.split(/ *, */g);
-                        this.timePoints = [];
-                        for (var x = 0; x < timeList.length; x++) {
-                            this.timePoints[x] = AsTimeInSec(timeList[x]);
-                        }
-                    }
-                    // 确保顺序
-                    this.timePoints.sort(function(a,b){return a-b;})
-                }
+                var tr = new TimePointRepeater();
+                tr.parse(s);
+                trList.push(tr);
             }
             // 标准表达式项
             else {
                 stdList.push(s);
             }
         }
-    },
-    //............................................................
-    // 启动点精确到分,即不是 0分0秒的
-    // TODO zozoh: 这玩意没用了吧？
-    isTiny : function(){
-        if(this.iss.values[0] != "ONE" || this.iss.values[1] !=0)
-            return true;
-        if(this.imm.values[0] != "ONE" || this.imm.values[1] !=0)
-            return true;
-        return false;
+
+        // 判断一下是否有时间点，
+        this.has_time_points = false;
+        for (var i=0; i<trList.length; i++) {
+            var tr = trList[i];
+            if (tr.isPoints() || tr.isStep()) {
+                this.has_time_points = true;
+                break;
+            }
+        }
+
+        // 如果有的话，丢弃所有的纯范围
+        this.timeRepeaters = [];
+        for (var i=0; i<trList.length; i++) {
+            var tr = trList[i];
+            if (tr.isPureRegion()) {
+                if (!this.has_time_points)
+                    this.timeRepeaters.push(tr);
+            }
+            // 肯定加
+            else {
+                this.timeRepeaters.push(tr);
+            }
+        }
+
+        // 设置一下 part[0]
+        var trStrs = [];
+        for (var i=0; i<this.timeRepeaters.length; i++) {
+            var tr = this.timeRepeaters[i];
+            trStrs.push(tr.getPrimaryString());
+        }
+        this.parts[0] = trStrs.length == 0 ? null : trStrs.join(" ");
     },
     //............................................................
     isWeekly : function(){
@@ -970,21 +1081,26 @@ ZCronObj.prototype = {
     matchMonth : function(m) {
         return this.iMM._match_(m, this.iMM.prepare(13));
     },
+    matchYear : function(year) {
+        return this.iyy._match_(year, this.iyy.prepare(0));
+    },
     //............................................................
     matchDate : function(c) {
-        if (this.rgDate && !this.rgDate.match(c))
+        var d = AsDate(c);
+
+        if (this.rgDate && !this.rgDate.match(d))
             return false;
 
-        if (!this.iyy.matchDate(c))
+        if (!this.iyy.matchDate(d))
             return false;
 
-        if(!this.idd.matchDate(c))
+        if(!this.idd.matchDate(d))
             return false;
 
-        if(!this.iMM.matchDate(c))
+        if(!this.iMM.matchDate(d))
             return false;
         
-        if(!this.iww.matchDate(c))
+        if(!this.iww.matchDate(d))
             return false;
         
         return true;
@@ -992,14 +1108,23 @@ ZCronObj.prototype = {
     matchTime : function(sec) {
         var ti = AsTimeInObj(sec);
 
-        // 指定了固定的时间点
-        if (this.timePoints) {
-            return this.timePoints.indexOf(ti.value) >= 0;
+        // 指明了时间点的情况
+        if (this.has_time_points) {
+            for (var i=0; i < this.timeRepeaters.length; i++) {
+                var tr = this.timeRepeaters[i];
+                if (tr.matchTime(ti.value))
+                    return true;
+            }
+            return false;
         }
 
-        // 是否在给定时间范围内
-        if (null != this.rgTime && !this.rgTime.match(ti.value)) {
-            return false;
+        // 先匹配时间范围
+        if (this.timeRepeaters.length > 0) {
+            for (var i=0; i < this.timeRepeaters.length; i++) {
+                var tr = this.timeRepeaters[i];
+                if (!tr.matchTime(ti.value))
+                    return false;
+            }
         }
 
         // 依次对于表达式求职
@@ -1091,8 +1216,8 @@ ZCronObj.prototype = {
         this.parts[index] = val;
         // 清除时间点
         if (0 == index && !val) {
-            this.timePoints   = null;
-            this.timeRepeater = null;
+            this.timeRepeaters   = [];
+            this.has_time_points = false;
         }
         // 清除日期范围
         if (3 == index && !val) {
@@ -1110,13 +1235,13 @@ ZCronObj.prototype = {
             list.push(this.parts[0]);
         }
         // 标准: 时间部分
-        if (null == this.timePoints) {
+        if (!this.has_time_points) {
             list.push(this.parts[1]);
         }
         // 标准: 日期部分
         if (!this.rgDate 
             || "* * ? *" != this.parts[2] 
-            || !this.timePoints) {
+            || !this.has_time_points) {
             list.push(/ [*]$/.test(this.parts[2]) 
                 ? this.parts[2].substring(0, this.parts[2].length - 2)
                 : this.parts[2]);
@@ -1139,9 +1264,20 @@ ZCronObj.prototype = {
     //............................................................
     toTimeText : function(i18n){
         var ary = [];
-        this.iHH.joinText(ary, i18n, "hour");
-        this.imm.joinText(ary, i18n, "minute");
-        this.iss.joinText(ary, i18n, "second");
+        // ............................................
+        // 描述了时间点
+        for (var i=0; i < this.timeRepeaters.length; i++) {
+            var tr = this.timeRepeaters[i];
+            tr.joinText(i18n, ary);
+        }
+        // ............................................
+        // 如果没有指定时间点，则默认采用标准表达式的时间
+        if (!this.has_time_points) {
+            this.iHH.joinText(ary, i18n, "hour");
+            this.imm.joinText(ary, i18n, "minute");
+            this.iss.joinText(ary, i18n, "second");
+        }
+        // 返回 
         return ary.join("");
     },
     //............................................................
@@ -1171,29 +1307,14 @@ ZCronObj.prototype = {
         }
 
         // ............................................
-        // 增加时间范围
-        if (null != this.rgTime) {
-            this.__join_time_region(i18n, ary);
-        }
-
-        // ............................................
-        // 指定了时间区间的重复
-        if (null != this.timeRepeater) {
-            ary.push(this.timeRepeater.toText(i18n));
+        // 描述了时间点
+        for (var i=0; i < this.timeRepeaters.length; i++) {
+            var tr = this.timeRepeaters[i];
+            tr.joinText(i18n, ary);
         }
         // ............................................
-        // 指定了固定时间点
-        else if (null != this.timePoints) {
-            var list = [];
-            for (var i=0; i<this.timePoints.length; i++) {
-                var sec = this.timePoints[i];
-                list.push(AsTimeInObj(sec).toString(true));
-            }
-            ary.push(list.join(","));
-        }
-        // ............................................
-        // 默认采用标准表达式的时间
-        else {
+        // 如果没有指定时间点，则默认采用标准表达式的时间
+        if (!this.has_time_points) {
             this.iHH.joinText(ary, i18n, "hour");
             this.imm.joinText(ary, i18n, "minute");
             this.iss.joinText(ary, i18n, "second");
@@ -1201,22 +1322,6 @@ ZCronObj.prototype = {
 
         // 返回字符串
         return ary.join("");
-    },
-    //........................................................
-    __join_time_region : function(i18n, ary) {
-        var tFrom = AsTimeInObj(this.rgTime.left(), 0);
-        var tTo   = AsTimeInObj(this.rgTime.right(), 86400);
-
-        // 准备上下文
-        var c = {};
-        c.ieF  = this.rgTime.isLeftOpen() ? i18n.EXC : i18n.INV;
-        c.ieT  = this.rgTime.isRightOpen() ? i18n.EXC : i18n.INV;
-        c.from = tFrom.toString(true);
-        c.to   = tTo.toString(true);
-
-        // 渲染
-        var str = Tmpl(i18n.times.region, c, "${", "}");
-        ary.push(str);
     },
     //........................................................
     __join_date_region: function(i18n, ary) {

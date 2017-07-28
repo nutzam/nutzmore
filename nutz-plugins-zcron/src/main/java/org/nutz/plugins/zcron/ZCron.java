@@ -247,7 +247,7 @@ public class ZCron {
         for (TimePointRepeater tr : this.timeRepeaters) {
             trStrs.add(tr.getPrimaryString());
         }
-        this.parts[0] = trList.isEmpty() ? null : Strings.join(" ", trStrs);
+        this.parts[0] = trStrs.isEmpty() ? null : Strings.join(" ", trStrs);
     }
 
     /**
@@ -339,8 +339,6 @@ public class ZCron {
      * @return 是否匹配
      */
     public boolean matchYear(int year) {
-        if (null == this.iyy)
-            return true;
         return this.iyy._match_(year, this.iyy.prepare(0));
     }
 
