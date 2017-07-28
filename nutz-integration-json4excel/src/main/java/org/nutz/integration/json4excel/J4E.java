@@ -106,7 +106,10 @@ public class J4E {
         Mirror<T> mc = Mirror.me(objClz);
         j4eConf = checkJ4EConf(j4eConf, objClz);
         // FIXME 暂时是生成一个新的excel, 以后可以向现有的excel文件中写入
-        Sheet sheet = wb.createSheet(j4eConf.getSheetName());
+        Sheet sheet = wb.getSheet(j4eConf.getSheetName());
+        if (sheet == null) {
+            sheet = wb.createSheet(j4eConf.getSheetName());
+        }
         // 判断column的field是否都在T中
         for (J4EColumn jcol : j4eConf.getColumns()) {
             if (!Strings.isBlank(jcol.getFieldName())) {
@@ -121,17 +124,21 @@ public class J4E {
                 }
             }
         }
-        int rnum = 0;
-        // 写入head
-        Row rhead = sheet.createRow(rnum++);
+        int rnum = j4eConf.getPassRow();
         int cindex = 0;
-        for (J4EColumn jcol : j4eConf.getColumns()) {
-            Field jfield = jcol.getField();
-            if (null != jfield) {
-                Cell c = rhead.createCell(cindex++);
-                c.setCellType(CellType.STRING);
-                c.setCellValue(Strings.isBlank(jcol.getColumnName()) ? jcol.getFieldName()
-                                                                     : jcol.getColumnName());
+        if (j4eConf.isPassHead()) {
+            rnum++;
+        } else {
+            // 写入head
+            Row rhead = sheet.createRow(rnum++);
+            for (J4EColumn jcol : j4eConf.getColumns()) {
+                Field jfield = jcol.getField();
+                if (null != jfield) {
+                    Cell c = rhead.createCell(cindex++);
+                    c.setCellType(CellType.STRING);
+                    c.setCellValue(Strings.isBlank(jcol.getColumnName()) ? jcol.getFieldName()
+                                                                         : jcol.getColumnName());
+                }
             }
         }
         // 写入row
@@ -139,15 +146,47 @@ public class J4E {
             if (log.isDebugEnabled()) {
                 log.debugf("add Row : %s", Json.toJson(dval, JsonFormat.compact()));
             }
-            Row row = sheet.createRow(rnum++);
+            int crow = rnum++;
+            Row row = sheet.getRow(crow);
+            if (row == null) {
+                row = sheet.createRow(crow);
+            }
             cindex = 0;
             for (J4EColumn jcol : j4eConf.getColumns()) {
                 Field jfield = jcol.getField();
                 if (null != jfield) {
-                    Cell c = row.createCell(cindex++);
-                    c.setCellType(CellType.STRING);
+                    int ccin = cindex++;
+                    Cell c = row.getCell(ccin);
+                    if (c == null) {
+                        c = row.createCell(cindex++);
+
+                    }
+                    J4EColumnType columnType = jcol.getColumnType();
+                    if (columnType == J4EColumnType.STRING) {
+                        c.setCellType(CellType.STRING);
+                    }
+                    if (columnType == J4EColumnType.NUMERIC) {
+                        c.setCellType(CellType.NUMERIC);
+                    }
+                    if (columnType == J4EColumnType.DATE) {
+                        c.setCellType(CellType.STRING);
+                    }
                     Object dfv = mc.getValue(dval, jfield);
-                    c.setCellValue(dfv != null ? Castors.me().castTo(dfv, String.class) : "");
+                    int ctp = c.getCellType();
+                    switch (ctp) {
+                    case 1: // STRING
+                        c.setCellValue(dfv != null ? Castors.me().castTo(dfv, String.class) : "");
+                        break;
+                    case 0: // NUMERIC
+                        Integer intRe = Castors.me().castTo(dfv, Integer.class);
+                        if (intRe != null) {
+                            c.setCellValue(intRe);
+                        }
+                        break;
+                    default:
+                        break;
+                    }
+
                 }
             }
         }
@@ -329,8 +368,8 @@ public class J4E {
             colType = J4EColumnType.STRING;
         }
         try {
-            @SuppressWarnings({ "deprecation" })//4.2之后将可直接调用c.getCellType返回枚举
-			CellType cType = c.getCellTypeEnum();
+            @SuppressWarnings({"deprecation"}) // 4.2之后将可直接调用c.getCellType返回枚举
+            CellType cType = c.getCellTypeEnum();
             switch (cType) {
             case NUMERIC: // 数字
                 if (DateUtil.isCellDateFormatted(c)) {

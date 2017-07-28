@@ -77,7 +77,7 @@ Ehcache示例配置
 
 为shiro和daocache分配不同的CacheManager实例是完全可以,请注意区分场景!!
 
-```
+```js
 var ioc = {
 		cacheManager : {
 			type : "net.sf.ehcache.CacheManager",
@@ -96,7 +96,7 @@ var ioc = {
 
 第二个是dao.js, 区别只是cacheProvider指向的类不一样
 
-```
+```js
 var ioc = {
 		conf : {
 			type : "org.nutz.ioc.impl.PropertiesProxy",
@@ -130,7 +130,7 @@ var ioc = {
 			}
 		},
 		cacheExecutor : {
-			type : "org.nutz.plugins.cache.dao.CachedNutDaoExecutor",
+			type : "org.nutz.plugins.cache.dao.DaoCacheInterceptor", // 1.r.57.r3及以下版本用 CachedNutDaoExecutor
 			fields : {
 				cacheProvider : {refer:"cacheProvider"},
 				cachedTableNames : [

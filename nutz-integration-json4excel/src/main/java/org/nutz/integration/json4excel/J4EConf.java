@@ -32,6 +32,9 @@ public class J4EConf {
     // 跳过的行
     private int passRow;
 
+    // 跳过标头
+    private boolean passHead;
+
     // sheet中对应的列
     private List<J4EColumn> columns;
 
@@ -139,6 +142,26 @@ public class J4EConf {
 
     // ===================== 生成J4EConf的快捷方法
 
+    public boolean isPassHead() {
+        return passHead;
+    }
+
+    public void setPassHead(boolean passHead) {
+        this.passHead = passHead;
+    }
+
+    public OutputStream getModifyOut() {
+        return modifyOut;
+    }
+
+    public void setModifyOut(OutputStream modifyOut) {
+        this.modifyOut = modifyOut;
+    }
+
+    public void setEachModify(J4EEachRowModify eachModify) {
+        this.eachModify = eachModify;
+    }
+
     public static J4EConf from(Class<?> clz) {
         J4EConf jc = new J4EConf();
         // Ext
@@ -146,6 +169,7 @@ public class J4EConf {
         if (ecnf != null) {
             jc.passRow = ecnf.passRow();
             jc.passColumn = ecnf.passColumn();
+            jc.passHead = ecnf.passHead();
         }
         // sheet
         String sheetName = null;
