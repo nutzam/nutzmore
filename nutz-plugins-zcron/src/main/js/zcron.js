@@ -360,7 +360,7 @@ TimePointRepeater.prototype = {
     },
     //........................................................
     isStep : function() {
-        return this.tStart > 0 && this.tEnd > 0 && this.stepInSec > 0;
+        return this.tStart >= 0 && this.tEnd >= 0 && this.stepInSec > 0;
     },
     //........................................................
     _T : function(i18n, key, value) {
@@ -918,7 +918,7 @@ ZCronObj.prototype = {
         var stdList = [];
 
         // 先找一遍,处理扩展表达式项目，剩下的归到标准表达式里面
-        this.__parse_for_ext(cron, items, stdList);
+        this.__parse_for_ext(items, stdList);
 
         // 默认标准表达式
         var stds = ["0", "0", "0", "*", "*", "?", "*"];
@@ -992,7 +992,7 @@ ZCronObj.prototype = {
         // 返回
         return this;
     },
-    __parse_for_ext : function(cron, items, stdList) {
+    __parse_for_ext : function(items, stdList) {
         var trList = [];
 
         // 循环解析

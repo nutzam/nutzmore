@@ -206,7 +206,7 @@ class TimePointRepeater {
     }
 
     public boolean isStep() {
-        return this.tStart > 0 && this.tEnd > 0 && this.stepInSec > 0;
+        return this.tStart >= 0 && this.tEnd >= 0 && this.stepInSec > 0;
     }
 
     private static String _T(ZCroni18n i18n, String key, Object value) {

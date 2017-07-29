@@ -121,7 +121,7 @@ public class ZCron {
         ArrayList<String> stdList = new ArrayList<String>(items.length);
 
         // 先找一遍,处理扩展表达式项目，剩下的归到标准表达式里面
-        __parse_for_ext(cron, items, stdList);
+        __parse_for_ext(items, stdList);
 
         // 默认标准表达式
         String[] stds = Lang.array("0", "0", "0", "*", "*", "?", "*");
@@ -198,7 +198,7 @@ public class ZCron {
         return this;
     }
 
-    private void __parse_for_ext(String cron, String[] items, ArrayList<String> stdList) {
+    private void __parse_for_ext(String[] items, ArrayList<String> stdList) {
         List<TimePointRepeater> trList = new ArrayList<>(3);
 
         // 循环解析
