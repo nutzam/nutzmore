@@ -32,6 +32,22 @@ nutz-plugins-websocket
 
 如果使用原生WebSocketApi已经非常顺畅,而感觉本插件非常繁琐,那就继续用原生嘛,不强求的,也强求不来嘛.
 
+### Maven依赖配置
+
+```xml
+		<dependency>
+			<groupId>javax.websocket</groupId>
+			<artifactId>javax.websocket-api</artifactId>
+			<version>1.1</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.nutz</groupId>
+			<artifactId>nutz-plugins-websocket</artifactId>
+			<version>1.r.62</version>
+		</dependency>
+```
+
 使用方法
 ==================================
 
