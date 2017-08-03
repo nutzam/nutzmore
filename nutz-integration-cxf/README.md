@@ -73,8 +73,8 @@ public class MyCxfModule extends AbstractCxfModule {
 
     public MyCxfModule() {
        // 与类上的@At对应
-		pathROOT = "/cxf/" ;
-		// 设置webservice实现类的package
+       pathROOT = "/cxf/" ;
+       // 设置webservice实现类的package
        pkg = "net.wendal.nutzbook.cxfdemo.webservice";
     }
 
