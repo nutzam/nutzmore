@@ -88,6 +88,8 @@ public class ZCron {
 
     private boolean has_time_points;
 
+    private boolean has_time_steps;
+
     /*------------------------------------构造函数----*/
     public ZCron() {}
 
@@ -243,8 +245,10 @@ public class ZCron {
         }
 
         // 设置一下 part[0]
+        this.has_time_steps = false;
         List<String> trStrs = new ArrayList<>(this.timeRepeaters.size());
         for (TimePointRepeater tr : this.timeRepeaters) {
+            this.has_time_steps |= tr.isStep();
             trStrs.add(tr.getPrimaryString());
         }
         this.parts[0] = trStrs.isEmpty() ? null : Strings.join(" ", trStrs);
@@ -680,6 +684,14 @@ public class ZCron {
             }
         }, c, off, len, unit);
         return array;
+    }
+
+    public boolean isHasTimePoints() {
+        return this.has_time_points;
+    }
+
+    public boolean isHasTimeSteps() {
+        return this.has_time_steps;
     }
 
     public ZCron setPartExtTime(String str) {
