@@ -144,6 +144,7 @@
     <module>nutz-integration-bex5</module>
     <module>nutz-plugins-spring-boot-starter</module>
     <module>nutz-plugins-ip2region</module>
+    <module>nutz-integration-cxf</module>
 	</modules>
 	<distributionManagement>
 		<snapshotRepository>
