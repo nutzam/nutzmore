@@ -204,10 +204,10 @@ public class SlogService {
             Context ctx = Lang.context();
             List<String> names = null;
             if (Nutz.majorVersion() == 1 && Nutz.minorVersion() < 60) {
-                Class<?> klass = re.getClass();
+                Class<?> klass = obj.getClass();
                 if (klass.getName().endsWith("$$NUTZAOP"))
                     klass = klass.getSuperclass();
-                String key = re.getClass().getName();
+                String key = klass.getName();
                 if (caches.containsKey(key))
                     names = caches.get(key).get(ClassMetaReader.getKey(method));
                 else {
