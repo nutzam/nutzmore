@@ -16,6 +16,7 @@ import org.apache.cxf.BusFactory;
 import org.apache.cxf.common.classloader.ClassLoaderUtils;
 import org.apache.cxf.common.classloader.ClassLoaderUtils.ClassLoaderHolder;
 import org.apache.cxf.jaxws.JaxWsServerFactoryBean;
+import org.apache.cxf.transport.http.HTTPTransportFactory;
 import org.apache.cxf.transport.servlet.CXFNonSpringServlet;
 import org.apache.cxf.transport.servlet.ServletController;
 import org.nutz.ioc.Ioc;
@@ -42,6 +43,10 @@ public abstract class AbstractCxfModule extends CXFNonSpringServlet {
 
     protected String pathROOT = "/cxf/"; // 对应@At("/cxf")
     protected String pkg = "net.wendal.nutzbook.cxfdemo.webservice";
+    
+    public AbstractCxfModule() {
+        super(new HTTPTransportFactory().getRegistry());
+    }
 
     @At("/*")
     public void service() throws Exception {
