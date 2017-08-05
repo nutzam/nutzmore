@@ -145,6 +145,7 @@
     <module>nutz-plugins-spring-boot-starter</module>
     <module>nutz-plugins-ip2region</module>
     <module>nutz-integration-cxf</module>
+	<module>nutz-integration-swagger</module>
 	</modules>
 	<distributionManagement>
 		<snapshotRepository>
