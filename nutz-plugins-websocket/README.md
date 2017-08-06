@@ -153,6 +153,9 @@ public void sayhi(String room) {
 
 ```java
 public class MySimpleWsHandler extends SimpleWsHandler {
+    public MySimpleWsHandler() {
+        super(""); // 覆盖默认前缀
+    }
     public void sayhi(NutMap req) { // 对应js端的action名称,方法参数必须是NutMap哦
         String name = req.getString("name");// 可以拿到页面发过来的任意内容
         NutMap resp = new NutMap("action", "notify"); // 响应的内容完全由你决定,推荐用{action:"xxx", ....}
