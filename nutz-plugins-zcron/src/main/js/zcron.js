@@ -343,10 +343,6 @@ TimePointRepeater.prototype = {
     getPrimaryString : function() {
         return this.__str;
     },
-    //........................................................
-    toString : function() {
-        return this.__str;
-    },
     valueOf : function() {
         return this.__str;
     },
