@@ -49,7 +49,10 @@ public class SimpleWsHandler extends AbstractWsHandler implements MessageHandler
         final String room = req.getString("room");
         if (room == null)
             return;
-        endpoint.each(room, new Each<Session>() {
+        String _room = room;
+        if (prefix.length() > 0 && !room.startsWith(prefix))
+            _room = prefix + room;
+        endpoint.each(_room, new Each<Session>() {
             public void invoke(int index, Session ele, int length) {
                 if (ele.getId().equals(session.getId()))
                     return;

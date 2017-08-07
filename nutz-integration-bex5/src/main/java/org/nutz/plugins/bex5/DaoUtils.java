@@ -1,12 +1,7 @@
 package org.nutz.plugins.bex5;
 
-import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -17,7 +12,6 @@ import org.nutz.dao.Dao;
 import org.nutz.dao.impl.NutDao;
 
 import com.justep.model.Model;
-import com.justep.model.ModelUtils;
 
 public class DaoUtils {
 	private static Map<String, Dao> map = new HashMap<String, Dao>();

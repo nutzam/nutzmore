@@ -33,6 +33,7 @@ public class HotplugFilter implements Filter {
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
+        Thread.currentThread().setContextClassLoader(Hotplug.me().hpcl);
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse resp = (HttpServletResponse) response;
         String path = req.getPathInfo();

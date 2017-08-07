@@ -68,7 +68,10 @@ public class Hotplug extends NutLoading {
     
     protected HotplugClassLoader hpcl;
     
+    protected static Hotplug me;
+    
     public Hotplug() throws IOException {
+        me = this;
         hpcl = new HotplugClassLoader(Thread.currentThread().getContextClassLoader());
         InputStream ins = getClass().getClassLoader().getResourceAsStream("/hotplug.properties");
         if (ins != null) {
@@ -501,5 +504,13 @@ public class Hotplug extends NutLoading {
     
     public static List<HotplugConfig> getActiveHotPlugList() {
         return new ArrayList<HotplugConfig>(_plugins.values());
+    }
+    
+    public static Hotplug me() {
+        return me;
+    }
+    
+    public HotplugClassLoader getHpcl() {
+        return hpcl;
     }
 }
