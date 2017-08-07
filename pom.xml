@@ -136,6 +136,7 @@
 		<module>nutz-integration-grpc</module>
 		
 		<module>nutz-plugins-zdoc</module>
+		<module>nutz-plugins-zcron</module>
 		<module>nutz-plugins-profiler</module>
 		<module>nutz-integration-neo4j</module>
 		<module>nutz-plugins-wkcache</module>
