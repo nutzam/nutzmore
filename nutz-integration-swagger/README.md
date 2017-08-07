@@ -9,29 +9,16 @@ nutz-integration-swagger
 功能介绍
 ==================================
 
-1. Swagger Extension for Nutz
-2. SwaggerAbstractModule
-
-完成情况
-==================================
-
-- [ ] Swagger Extension for Nutz
-- [ ] SwaggerAbstractModule
-
+演示如何集成Swagger.
 
 服务端用法
 ==================================
 
 ### maven依赖
 
-TODO
+只需要引入swagger
 
 ```xml
-		<dependency>
-			<groupId>org.nutz</groupId>
-			<artifactId>nutz-integration-swagger</artifactId>
-			<version>1.r.63-SNAPSHOT</version>
-		</dependency>
 		<dependency>
 			<groupId>io.swagger</groupId>
 			<artifactId>swagger-core</artifactId>
@@ -57,6 +44,8 @@ public class SwaggerModule {
 
     @At
     public void swagger(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        if ("true".equals(request.getParamter("force")))
+            init(); //强制刷新
         final String pathInfo = request.getRequestURI();
         if (pathInfo.endsWith("/swagger.json")) {
             response.setContentType("application/json");
@@ -106,5 +95,24 @@ public class SwaggerModule {
 url: "http://petstore.swagger.io/v2/swagger.json",
 // 改成
 url: "./swagger.json",
-
 ```
+
+### 添加swagger注解
+
+```java
+@Api(value = "swagger")
+@IocBean(create = "init")
+@At("/swagger")
+@Path("/swagger")
+public class SwaggerTestModule extends BaseModule {
+    @Path("/ping")
+    @GET
+    @ApiOperation(value = "心跳接口", notes = "发我一个ping,回你一个pong", httpMethod="GET")
+    @At
+    @Ok("json:full")
+    public Object ping() {
+        return new NutMap("ok", true).setv("data", "pong");
+    }
+```
+
+访问 http://localhost:8080/nutzcn/swagger/ 即可看到swagger的界面
