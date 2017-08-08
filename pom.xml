@@ -147,6 +147,7 @@
     <module>nutz-plugins-ip2region</module>
     <module>nutz-integration-cxf</module>
 	<module>nutz-integration-swagger</module>
+	<module>nutz-plugins-sqlmanager</module>
 	</modules>
 	<distributionManagement>
 		<snapshotRepository>
