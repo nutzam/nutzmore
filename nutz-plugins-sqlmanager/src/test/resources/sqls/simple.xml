@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sqls>
+	<sql key="user.fetch.by_name"><![CDATA[
+	select * from t_user where name = @name
+	]]></sql>
+
+	<sql key="user.count"><![CDATA[
+	select count(*) from t_user $cnd
+	]]></sql>
+</sqls>

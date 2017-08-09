@@ -5,12 +5,7 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import org.nutz.log.Log;
-import org.nutz.log.Logs;
-
 public class HotplugClassLoader extends ClassLoader {
-    
-    private static final Log log = Logs.get();
     
     protected ThreadLocal<Object> lock = new ThreadLocal<Object>();
 
@@ -59,7 +54,7 @@ public class HotplugClassLoader extends ClassLoader {
         } finally {
             lock.remove();
         }
-        log.debugf("name=%s size=%s", name, vector.size());
+        //log.debugf("name=%s size=%s", name, vector.size());
         return vector.elements();
     }
     
