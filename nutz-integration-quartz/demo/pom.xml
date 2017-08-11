@@ -9,6 +9,7 @@
 	<url>http://maven.apache.org</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<nutz.version>1.r.63-SNAPSHOT</nutz.version>
 	</properties>
 	<repositories>
 		<repository>
@@ -33,7 +34,13 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz</artifactId>
-			<version>1.r.58</version>
+			<version>${nutz.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.1.0</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>mysql</groupId>
@@ -53,12 +60,11 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz-integration-quartz</artifactId>
-			<version>1.r.58</version>
+			<version>${nutz.version}</version>
 		</dependency>
 	</dependencies>
 	<build>
-		<finalName>nutzdemo</finalName>
-
+		<finalName>nutz-quartz-demo</finalName>
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
