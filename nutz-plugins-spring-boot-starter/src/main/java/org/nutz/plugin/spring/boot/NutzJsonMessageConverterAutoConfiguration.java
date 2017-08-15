@@ -3,11 +3,11 @@ package org.nutz.plugin.spring.boot;
 import java.text.DecimalFormat;
 import java.util.TimeZone;
 
+import org.nutz.integration.spring.NutzJsonMessageConverter;
 import org.nutz.json.Json;
 import org.nutz.json.JsonFormat;
 import org.nutz.lang.Strings;
 import org.nutz.plugin.spring.boot.config.NutzJsonProperties;
-import org.nutz.plugin.spring.boot.converters.NutzJsonMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

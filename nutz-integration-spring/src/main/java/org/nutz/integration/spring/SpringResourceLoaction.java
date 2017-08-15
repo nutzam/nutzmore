@@ -19,45 +19,48 @@ import org.springframework.core.io.Resource;
  */
 public class SpringResourceLoaction extends ResourceLocation implements ApplicationContextAware {
 
-    protected ApplicationContext applicationContext;
+	protected ApplicationContext applicationContext;
 
-    public String id() {
-        return "spring";
-    }
+	@Override
+	public String id() {
+		return "spring";
+	}
 
-    @Override
-    public void scan(String base, Pattern pattern, List<NutResource> list) {
-        try {
-            Resource[] tmp = applicationContext.getResources("classpath*:" + base + "*");
-            for (Resource resource : tmp) {
-                if (resource.getFilename() == null)
-                    continue;
-                if (pattern != null && !pattern.matcher(resource.getFilename()).find()) {
-                    continue;
-                }
-                SpringResource sr = new SpringResource();
-                sr.resource = resource;
-                sr.setName(resource.getFilename());
-                sr.setSource("spring");
-                list.add(sr);
-            }
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+	@Override
+	public void scan(String base, Pattern pattern, List<NutResource> list) {
+		base = pattern.matcher(base).find() ? "classpath*:" + base : "classpath*:" + base + "/**";
+		try {
+			Resource[] tmp = applicationContext.getResources(base);
+			for (Resource resource : tmp) {
+				if (resource.getFilename() == null)
+					continue;
+				if (pattern != null && !pattern.matcher(resource.getFilename()).find()) {
+					continue;
+				}
+				SpringResource sr = new SpringResource();
+				sr.resource = resource;
+				sr.setName(resource.getFilename());
+				sr.setSource("spring");
+				list.add(sr);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
-    public void setApplicationContext(ApplicationContext applicationContext) {
-        this.applicationContext = applicationContext;
-    }
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) {
+		this.applicationContext = applicationContext;
+	}
 
-    public class SpringResource extends NutResource {
+	public class SpringResource extends NutResource {
 
-        protected Resource resource;
+		protected Resource resource;
 
-        public InputStream getInputStream() throws IOException {
-            return resource.getInputStream();
-        }
+		@Override
+		public InputStream getInputStream() throws IOException {
+			return resource.getInputStream();
+		}
 
-    }
+	}
 }

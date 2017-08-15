@@ -46,7 +46,7 @@
 	</scm>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<spring-boot.version>1.5.3.RELEASE</spring-boot.version>
+		<spring-boot.version>1.5.6.RELEASE</spring-boot.version>
 	</properties>
 
 	<build>
@@ -127,6 +127,11 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 			<version>${spring-boot.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.nutz</groupId>
+			<artifactId>nutz-integration-spring</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
 </project>
