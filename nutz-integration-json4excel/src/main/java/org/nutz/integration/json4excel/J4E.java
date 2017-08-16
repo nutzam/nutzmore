@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -373,6 +374,22 @@ public class J4E {
             switch (cType) {
             case NUMERIC: // 数字
                 if (DateUtil.isCellDateFormatted(c)) {
+                	Date time = c.getDateCellValue();
+                	if (jcol.getDtFormat() != null) {
+                		try {
+                			String result = Times.format(jcol.getDtFormat()[1], time);
+                			return result; 
+                        }
+                        catch (Exception e) {
+                            log.error(String.format("cell [%d, %d] datetime formate err, value %s [%s-%s]",
+                                                    c.getRowIndex(),
+                                                    c.getColumnIndex(),
+                                                    time,
+                                                    jcol.getDtFormat()[0],
+                                                    jcol.getDtFormat()[1],
+                                                    e));
+                        }
+                    }
                     return Times.sDT(c.getDateCellValue());
                 }
                 if (J4EColumnType.STRING == colType) {
