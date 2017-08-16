@@ -27,7 +27,7 @@ public class SpringIocProvider implements IocProvider, Ioc {
 
 	@Override
 	public Ioc create(NutConfig config, String[] args) {
-		if (config == null || Lang.length(args) > 0)
+		if (config == null || Lang.eleSize(args) > 0)
 			applicationContext = new ClassPathXmlApplicationContext(args);
 		else
 			applicationContext = (ApplicationContext) config.getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
@@ -62,7 +62,6 @@ public class SpringIocProvider implements IocProvider, Ioc {
 		applicationContext.publishEvent(new ContextRefreshedEvent(applicationContext));
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T get(Class<T> classZ) throws IocException {
 		InjectName injectName = classZ.getAnnotation(InjectName.class);

@@ -28,6 +28,13 @@ public class Markdown {
     }
 
     /**
+     * @see #toHtml(String, Callback)
+     */
+    public static String toHtml(String markdown) {
+        return toHtml(markdown, null);
+    }
+
+    /**
      * 将 Markdown 文本填充到给定的文档对象
      * 
      * @param d

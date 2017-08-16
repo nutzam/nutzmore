@@ -5,9 +5,12 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.nio.charset.Charset;
+import java.util.regex.Pattern;
 
 import org.nutz.json.Json;
 import org.nutz.json.JsonFormat;
+import org.nutz.lang.Lang;
+import org.nutz.lang.Strings;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
@@ -23,6 +26,31 @@ import org.springframework.http.converter.HttpMessageNotWritableException;
 public class NutzJsonMessageConverter extends AbstractHttpMessageConverter<Object> {
 
 	public static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
+
+	JsonFormat format = JsonFormat.compact();
+
+	Pattern ignoreType;
+
+	public NutzJsonMessageConverter setIgnoreType(String ignoreType) {
+		if (Strings.isBlank(ignoreType)) {
+			return this;
+		}
+		this.ignoreType = Pattern.compile(ignoreType);
+		return this;
+	}
+
+	/**
+	 * @param format
+	 *            the format to set
+	 */
+	public NutzJsonMessageConverter setFormat(JsonFormat format) {
+		this.format = format;
+		return this;
+	}
+
+	{
+		setSupportedMediaTypes(Lang.array2list(new MediaType[] { MediaType.APPLICATION_JSON_UTF8 }));
+	}
 
 	/**
 	 * 
@@ -60,25 +88,47 @@ public class NutzJsonMessageConverter extends AbstractHttpMessageConverter<Objec
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.springframework.http.converter.AbstractHttpMessageConverter#canWrite(java
+	 * .lang.Class, org.springframework.http.MediaType)
+	 */
+	@Override
+	public boolean canWrite(Class<?> clazz, MediaType mediaType) {
+		/**
+		 * 放过swagger
+		 */
+		if (Pattern.matches(".*springfox.*", clazz.getName())) {
+			return false;
+		}
+		/**
+		 * 放过spring 本身的各种玩意儿
+		 */
+		if (Pattern.matches("org.springframework.*", clazz.getName())) {
+			return false;
+		}
+		return ignoreType == null || !ignoreType.matcher(clazz.getName()).matches();
+	}
+
 	/**
 	 * @param headers
 	 * @return
 	 */
 	private Charset getCharset(HttpHeaders headers) {
-
 		if ((headers == null) || (headers.getContentType() == null)
-				|| (headers.getContentType().getCharSet() == null)) {
+				|| (headers.getContentType().getCharset() == null)) {
 			return DEFAULT_CHARSET;
 		}
-		return headers.getContentType().getCharSet();
+		return headers.getContentType().getCharset();
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see org.springframework.http.converter.AbstractHttpMessageConverter#
-	 * writeInternal(java.lang.Object,
-	 * org.springframework.http.HttpOutputMessage)
+	 * writeInternal(java.lang.Object, org.springframework.http.HttpOutputMessage)
 	 */
 	@Override
 	protected void writeInternal(Object obj, HttpOutputMessage outputMessage)
@@ -86,7 +136,7 @@ public class NutzJsonMessageConverter extends AbstractHttpMessageConverter<Objec
 		Charset charset = getCharset(outputMessage.getHeaders());
 		OutputStreamWriter writer = new OutputStreamWriter(outputMessage.getBody(), charset);
 		try {
-			Json.toJson(writer, obj, JsonFormat.compact());
+			Json.toJson(writer, obj, format);
 		} catch (Exception ex) {
 			throw new HttpMessageNotWritableException("Could not write JSON: " + ex.getMessage(), ex);
 		}
