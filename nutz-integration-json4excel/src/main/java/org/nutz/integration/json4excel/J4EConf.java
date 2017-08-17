@@ -32,6 +32,9 @@ public class J4EConf {
     // 跳过的行
     private int passRow;
 
+    // 跳过内容行数
+    private int passContentRow;
+
     // 跳过标头
     private boolean passHead;
 
@@ -150,6 +153,14 @@ public class J4EConf {
         this.passHead = passHead;
     }
 
+    public int getPassContentRow() {
+        return passContentRow;
+    }
+
+    public void setPassContentRow(int passContentRow) {
+        this.passContentRow = passContentRow;
+    }
+
     public OutputStream getModifyOut() {
         return modifyOut;
     }
@@ -170,6 +181,7 @@ public class J4EConf {
             jc.passRow = ecnf.passRow();
             jc.passColumn = ecnf.passColumn();
             jc.passHead = ecnf.passHead();
+            jc.passContentRow = ecnf.passContentRow();
         }
         // sheet
         String sheetName = null;
