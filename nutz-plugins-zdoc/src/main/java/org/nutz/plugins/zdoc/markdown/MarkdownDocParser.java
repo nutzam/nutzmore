@@ -6,6 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.nutz.lang.Strings;
+import org.nutz.lang.util.NutMap;
 import org.nutz.lang.util.Tag;
 import org.nutz.plugins.zdoc.NutDoc;
 import org.nutz.plugins.zdoc.NutDocParser;
@@ -30,17 +31,22 @@ public class MarkdownDocParser implements NutDocParser {
     // 定义内容输出函数
     private void __B_to_html(Tag tag, MdBlock B) {
         boolean isFirstLine = true;
+        NutMap tagNames = new NutMap();
         for (String line : B.content) {
             if (isFirstLine) {
                 isFirstLine = false;
             } else {
                 tag.add("br");
             }
-            __line_to_html(tag, line);
+            __line_to_html(tag, line, tagNames);
+        }
+        // 如果段落里只有 IMG，做一下特殊标识
+        if (tagNames.size() == 1 && tagNames.getBoolean("img")) {
+            tag.attr("md-img-only", "yes");
         }
     }
 
-    private void __line_to_html(Tag tag, String str) {
+    private void __line_to_html(Tag tag, String str, NutMap tagNames) {
         String reg = "(\\*([^*]+)\\*)"
                      + "|(\\*\\*([^*]+)\\*\\*)"
                      + "|(__([^_]+)__)"
@@ -56,41 +62,70 @@ public class MarkdownDocParser implements NutDocParser {
             // console.log(m)
             // 之前的内容直接加为文本节点
             if (pos < m.start()) {
-                tag.add(Tag.text(str.substring(pos, m.start())));
+                String txt = str.substring(pos, m.start());
+                tag.add(Tag.text(txt));
+                // 记录标签
+                if (null != tagNames && !Strings.isBlank(txt)) {
+                    tagNames.put("!TEXT", true);
+                }
             }
             // EM: *xxx*
             if (null != m.group(1)) {
                 tag.add("em").setText(m.group(2));
+                // 记录标签
+                if (null != tagNames)
+                    tagNames.put("em", true);
             }
             // B: **xxx**
             else if (null != m.group(3)) {
                 tag.add(Tag.tag("b").setText(m.group(4)));
+                // 记录标签
+                if (null != tagNames)
+                    tagNames.put("b", true);
             }
             // B: __xxx__
             else if (null != m.group(5)) {
                 tag.add("b").setText(m.group(6));
+                // 记录标签
+                if (null != tagNames)
+                    tagNames.put("b", true);
             }
             // DEL: ~~xxx~~
             else if (null != m.group(7)) {
                 tag.add("del").setText(m.group(8));
+                // 记录标签
+                if (null != tagNames)
+                    tagNames.put("del", true);
             }
             // CODE: `xxx`
             else if (null != m.group(9)) {
                 tag.add("code").setText(m.group(10));
+                // 记录标签
+                if (null != tagNames)
+                    tagNames.put("code", true);
             }
             // IMG: ![](xxxx)
             else if (null != m.group(11)) {
                 tag.add("img").attr("title", m.group(12)).attr("src", m.group(13));
+                // 记录标签
+                if (null != tagNames)
+                    tagNames.put("img", true);
             }
             // A: [](xxxx)
             else if (null != m.group(14)) {
                 tag.add("a")
                    .attr("href", m.group(16))
                    .setText(Strings.sBlank(m.group(15), m.group(16)));
+                // 记录标签
+                if (null != tagNames)
+                    tagNames.put("a", true);
             }
             // A: http://xxxx
             else if (null != m.group(17)) {
                 tag.add("a").attr("href", m.group(17)).setText(Strings.sBlank(m.group(17)));
+                // 记录标签
+                if (null != tagNames)
+                    tagNames.put("a", true);
             }
 
             // 唯一下标
@@ -305,7 +340,7 @@ public class MarkdownDocParser implements NutDocParser {
             // 标题: H
             if ("H" == B.type) {
                 Tag tH = top.add("h" + B.level);
-                this.__line_to_html(tH, B.content.get(0));
+                this.__line_to_html(tH, B.content.get(0), null);
             }
             // 代码: code
             else if ("code" == B.type) {
@@ -342,7 +377,7 @@ public class MarkdownDocParser implements NutDocParser {
                     if (!"left".equals(align)) {
                         tCell.attr("align", align);
                     }
-                    this.__line_to_html(tCell, line);
+                    this.__line_to_html(tCell, line, null);
                     x++;
                 }
 
@@ -361,7 +396,7 @@ public class MarkdownDocParser implements NutDocParser {
                             if (!"left".equals(align)) {
                                 tCell.attr("align", align);
                             }
-                            this.__line_to_html(tCell, line);
+                            this.__line_to_html(tCell, line, null);
                             x++;
                         }
                     }
