@@ -19,5 +19,5 @@ public @interface J4EDefine {
 
     J4EColumnType type() default J4EColumnType.STRING;
 
-    int precision() default 2;
+    int precision() default 0;
 }

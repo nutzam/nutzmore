@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -242,6 +243,7 @@ public class J4E {
         Iterator<Row> rlist = sheet.rowIterator();
         int passRow = j4eConf.getPassRow();
         int passColumn = j4eConf.getPassColumn();
+        int passContentRow = j4eConf.getPassContentRow();
         int currRow = 0;
         int currColumn = 0;
         boolean firstRow = true;
@@ -302,7 +304,13 @@ public class J4E {
                     }
                     continue;
                 }
-                // 从第二行开始读数据
+
+                // 跳过内容行数
+                if (passContentRow > 0) {
+                    passContentRow--;
+                    continue;
+                }
+                // 开始读数据
                 T rVal = rowValue(row, j4eConf, mc);
                 if (null != j4eConf.getEachPrepare()) {
                     j4eConf.getEachPrepare().doEach(rVal);
@@ -373,17 +381,37 @@ public class J4E {
             switch (cType) {
             case NUMERIC: // 数字
                 if (DateUtil.isCellDateFormatted(c)) {
-                    return Times.sDT(c.getDateCellValue());
+                    Date dval = c.getDateCellValue();
+                    if (jcol.getDtFormat() != null) {
+                        try {
+                            return Times.format(jcol.getDtFormat()[1], dval);
+                        }
+                        catch (Exception e) {
+                            log.error(String.format("cell [%d, %d] datetime formate err, value %s [%s-%s]",
+                                                    c.getRowIndex(),
+                                                    c.getColumnIndex(),
+                                                    dval.toString(),
+                                                    jcol.getDtFormat()[0],
+                                                    jcol.getDtFormat()[1],
+                                                    e));
+                        }
+                    }
+                    return Times.sDT(dval);
                 }
                 if (J4EColumnType.STRING == colType) {
                     // 按照整形来拿, 防止2B的科学计数法
                     DecimalFormat df = new DecimalFormat("0");
                     return df.format(c.getNumericCellValue());
                 } else if (J4EColumnType.NUMERIC == colType) {
-                    // 按照double数字拿
-                    String fString = "0." + Strings.alignLeft("", jcol.getPrecision(), '0');
-                    DecimalFormat df = new DecimalFormat(fString);
-                    return df.format(c.getNumericCellValue());
+                    if (jcol.getPrecision() == 0) {
+                        // 整数
+                        return "" + (int) c.getNumericCellValue();
+                    } else {
+                        // 按照double数字拿
+                        String fString = "0." + Strings.alignLeft("", jcol.getPrecision(), '0');
+                        DecimalFormat df = new DecimalFormat(fString);
+                        return df.format(c.getNumericCellValue());
+                    }
                 } else {
                     throw new RuntimeException("WTF, CELL_TYPE_NUMERIC is what!");
                 }
