@@ -60,5 +60,30 @@
 			<artifactId>nutz-plugins-spring-boot-starter</artifactId>
 			<version>1.r.63-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>club.zhcs</groupId>
+			<artifactId>axe-swagger</artifactId>
+			<version>1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>club.zhcs</groupId>
+			<artifactId>axe-captcha</artifactId>
+			<version>1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>club.zhcs</groupId>
+			<artifactId>axe-apm</artifactId>
+			<version>1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>club.zhcs</groupId>
+			<artifactId>axe-sigar</artifactId>
+			<version>1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>club.zhcs</groupId>
+			<artifactId>axe-validation</artifactId>
+			<version>1.2</version>
+		</dependency>
 	</dependencies>
 </project>

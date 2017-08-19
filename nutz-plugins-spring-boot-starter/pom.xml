@@ -133,5 +133,10 @@
 			<artifactId>nutz-integration-spring</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.nutz</groupId>
+			<artifactId>nutz-plugins-sqlmanager</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 </project>
