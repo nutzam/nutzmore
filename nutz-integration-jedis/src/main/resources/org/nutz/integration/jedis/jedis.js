@@ -55,7 +55,10 @@ var ioc = {
 			}
 		},
 		redisService : {
-			type : "org.nutz.integration.jedis.RedisService"
+			type : "org.nutz.integration.jedis.RedisService",
+			fields : {
+				jedisAgent : {refer:"jedisAgent"}
+			}
 		},
 		pubSubService : {
 			type : "org.nutz.integration.jedis.pubsub.PubSubService",

@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.nutz.ioc.aop.Aop;
+import org.nutz.lang.Streams;
 
 import redis.clients.jedis.*;
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
@@ -19,12 +19,20 @@ import redis.clients.util.Pool;
 import redis.clients.util.Slowlog;
 
 /**
- * 代理jedis的全部方法. <b>调用pipeline()方法的时候,调用者也需要在@Aop("reids")的作用域内.</>
  *
  * @author wendal
  */
 @SuppressWarnings("deprecation")
 public class RedisService extends Jedis {
+    
+    protected JedisAgent jedisAgent;
+    
+    protected Jedis getJedis() {
+        Jedis jedis = RedisInterceptor.jedis();
+        if (jedis == null)
+            jedis = jedisAgent.getResource();
+        return jedis;
+    }
 
     /**
      * Set the string value as value of the key. The string can't be longer than 1073741824 bytes (1GB).
@@ -35,9 +43,11 @@ public class RedisService extends Jedis {
      * @param value
      * @return Status code reply
      */
-    @Aop("redis")
     public String set(String key, String value) {
-        return jedis().set(key, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.set(key, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -52,9 +62,11 @@ public class RedisService extends Jedis {
      * @param time  expire time in the units of <code>expx</code>
      * @return Status code reply
      */
-    @Aop("redis")
     public String set(String key, String value, String nxxx, String expx, long time) {
-        return jedis().set(key, value, nxxx, expx, time);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.set(key, value, nxxx, expx, time);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -66,9 +78,11 @@ public class RedisService extends Jedis {
      * @param key
      * @return Bulk reply
      */
-    @Aop("redis")
     public String get(String key) {
-        return jedis().get(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.get(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -79,14 +93,18 @@ public class RedisService extends Jedis {
      * @return Integer reply, specifically: an integer greater than 0 if one or more keys were removed
      * 0 if none of the specified key existed
      */
-    @Aop("redis")
     public Long exists(String... keys) {
-        return jedis().exists(keys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.exists(keys);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String ping() {
-        return jedis().ping();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.ping();
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -98,9 +116,11 @@ public class RedisService extends Jedis {
      * @param value
      * @return Status code reply
      */
-    @Aop("redis")
     public String set(byte[] key, byte[] value) {
-        return jedis().set(key, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.set(key, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -149,9 +169,11 @@ public class RedisService extends Jedis {
      * @see #hashCode()
      * @see java.util.HashMap
      */
-    @Aop("redis")
     public boolean equals(Object obj) {
-        return jedis().equals(obj);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.equals(obj);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -162,9 +184,11 @@ public class RedisService extends Jedis {
      * @param key
      * @return Boolean reply, true if the key exists, otherwise false
      */
-    @Aop("redis")
     public Boolean exists(String key) {
-        return jedis().exists(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.exists(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -178,9 +202,11 @@ public class RedisService extends Jedis {
      * @param time  expire time in the units of <code>expx</code>
      * @return Status code reply
      */
-    @Aop("redis")
     public String set(byte[] key, byte[] value, byte[] nxxx, byte[] expx, long time) {
-        return jedis().set(key, value, nxxx, expx, time);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.set(key, value, nxxx, expx, time);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -191,14 +217,18 @@ public class RedisService extends Jedis {
      * @return Integer reply, specifically: an integer greater than 0 if one or more keys were removed
      * 0 if none of the specified key existed
      */
-    @Aop("redis")
     public Long del(String... keys) {
-        return jedis().del(keys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.del(keys);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long del(String key) {
-        return jedis().del(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.del(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -211,9 +241,11 @@ public class RedisService extends Jedis {
      * @param key
      * @return Bulk reply
      */
-    @Aop("redis")
     public byte[] get(byte[] key) {
-        return jedis().get(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.get(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -226,17 +258,21 @@ public class RedisService extends Jedis {
      * contains a Set value "zset" if the key contains a Sorted Set value "hash" if the key
      * contains a Hash value
      */
-    @Aop("redis")
     public String type(String key) {
-        return jedis().type(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.type(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
      * Ask the server to silently close the connection.
      */
-    @Aop("redis")
     public String quit() {
-        return jedis().quit();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.quit();
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -247,9 +283,11 @@ public class RedisService extends Jedis {
      * @return Integer reply, specifically: an integer greater than 0 if one or more keys existed 0 if
      * none of the specified keys existed
      */
-    @Aop("redis")
     public Long exists(byte[]... keys) {
-        return jedis().exists(keys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.exists(keys);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -281,9 +319,11 @@ public class RedisService extends Jedis {
      * @param pattern
      * @return Multi bulk reply
      */
-    @Aop("redis")
     public Set<String> keys(String pattern) {
-        return jedis().keys(pattern);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.keys(pattern);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -294,9 +334,11 @@ public class RedisService extends Jedis {
      * @param key
      * @return Boolean reply, true if the key exists, otherwise false
      */
-    @Aop("redis")
     public Boolean exists(byte[] key) {
-        return jedis().exists(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.exists(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -307,14 +349,18 @@ public class RedisService extends Jedis {
      * @return Integer reply, specifically: an integer greater than 0 if one or more keys were removed
      * 0 if none of the specified key existed
      */
-    @Aop("redis")
     public Long del(byte[]... keys) {
-        return jedis().del(keys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.del(keys);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long del(byte[] key) {
-        return jedis().del(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.del(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -327,9 +373,11 @@ public class RedisService extends Jedis {
      * contains a Set value "zset" if the key contains a Sorted Set value "hash" if the key
      * contains a Hash value
      */
-    @Aop("redis")
     public String type(byte[] key) {
-        return jedis().type(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.type(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -340,9 +388,11 @@ public class RedisService extends Jedis {
      * @return Singe line reply, specifically the randomly selected key or an empty string is the
      * database is empty
      */
-    @Aop("redis")
     public String randomKey() {
-        return jedis().randomKey();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.randomKey();
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -355,9 +405,11 @@ public class RedisService extends Jedis {
      * @param newkey
      * @return Status code repy
      */
-    @Aop("redis")
     public String rename(String oldkey, String newkey) {
-        return jedis().rename(oldkey, newkey);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.rename(oldkey, newkey);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -365,9 +417,11 @@ public class RedisService extends Jedis {
      *
      * @return Status code reply
      */
-    @Aop("redis")
     public String flushDB() {
-        return jedis().flushDB();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.flushDB();
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -379,9 +433,11 @@ public class RedisService extends Jedis {
      * @param newkey
      * @return Integer reply, specifically: 1 if the key was renamed 0 if the target key already exist
      */
-    @Aop("redis")
     public Long renamenx(String oldkey, String newkey) {
-        return jedis().renamenx(oldkey, newkey);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.renamenx(oldkey, newkey);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -412,9 +468,11 @@ public class RedisService extends Jedis {
      * @param pattern
      * @return Multi bulk reply
      */
-    @Aop("redis")
     public Set<byte[]> keys(byte[] pattern) {
-        return jedis().keys(pattern);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.keys(pattern);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -439,9 +497,11 @@ public class RedisService extends Jedis {
      * 2.1.3, Redis &gt;= 2.1.3 will happily update the timeout), or the key does not exist.
      * @see <a href="http://code.google.com/p/redis/wiki/ExpireCommand">ExpireCommand</a>
      */
-    @Aop("redis")
     public Long expire(String key, int seconds) {
-        return jedis().expire(key, seconds);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.expire(key, seconds);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -452,9 +512,11 @@ public class RedisService extends Jedis {
      * @return Singe line reply, specifically the randomly selected key or an empty string is the
      * database is empty
      */
-    @Aop("redis")
     public byte[] randomBinaryKey() {
-        return jedis().randomBinaryKey();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.randomBinaryKey();
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -467,9 +529,11 @@ public class RedisService extends Jedis {
      * @param newkey
      * @return Status code repy
      */
-    @Aop("redis")
     public String rename(byte[] oldkey, byte[] newkey) {
-        return jedis().rename(oldkey, newkey);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.rename(oldkey, newkey);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -496,9 +560,11 @@ public class RedisService extends Jedis {
      * 2.1.3, Redis &gt;= 2.1.3 will happily update the timeout), or the key does not exist.
      * @see <a href="http://code.google.com/p/redis/wiki/ExpireCommand">ExpireCommand</a>
      */
-    @Aop("redis")
     public Long expireAt(String key, long unixTime) {
-        return jedis().expireAt(key, unixTime);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.expireAt(key, unixTime);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -510,9 +576,11 @@ public class RedisService extends Jedis {
      * @param newkey
      * @return Integer reply, specifically: 1 if the key was renamed 0 if the target key already exist
      */
-    @Aop("redis")
     public Long renamenx(byte[] oldkey, byte[] newkey) {
-        return jedis().renamenx(oldkey, newkey);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.renamenx(oldkey, newkey);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -520,9 +588,11 @@ public class RedisService extends Jedis {
      *
      * @return Integer reply
      */
-    @Aop("redis")
     public Long dbSize() {
-        return jedis().dbSize();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.dbSize();
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -547,9 +617,11 @@ public class RedisService extends Jedis {
      * 2.1.3, Redis &gt;= 2.1.3 will happily update the timeout), or the key does not exist.
      * @see <a href="http://code.google.com/p/redis/wiki/ExpireCommand">ExpireCommand</a>
      */
-    @Aop("redis")
     public Long expire(byte[] key, int seconds) {
-        return jedis().expire(key, seconds);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.expire(key, seconds);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -563,9 +635,11 @@ public class RedisService extends Jedis {
      * associated expire, -1 is returned. In Redis 2.8 or newer, if the Key does not have an
      * associated expire, -1 is returned or if the Key does not exists, -2 is returned.
      */
-    @Aop("redis")
     public Long ttl(String key) {
-        return jedis().ttl(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.ttl(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -579,9 +653,11 @@ public class RedisService extends Jedis {
      * @return Integer reply, specifically: 1 if the key was moved 0 if the key was not moved because
      * already present on the target DB or was not found in the current DB.
      */
-    @Aop("redis")
     public Long move(String key, int dbIndex) {
-        return jedis().move(key, dbIndex);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.move(key, dbIndex);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -594,9 +670,11 @@ public class RedisService extends Jedis {
      * @param value
      * @return Bulk reply
      */
-    @Aop("redis")
     public String getSet(String key, String value) {
-        return jedis().getSet(key, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.getSet(key, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -609,9 +687,11 @@ public class RedisService extends Jedis {
      * @param keys
      * @return Multi bulk reply
      */
-    @Aop("redis")
     public List<String> mget(String... keys) {
-        return jedis().mget(keys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.mget(keys);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -624,9 +704,11 @@ public class RedisService extends Jedis {
      * @param value
      * @return Integer reply, specifically: 1 if the key was set 0 if the key was not set
      */
-    @Aop("redis")
     public Long setnx(String key, String value) {
-        return jedis().setnx(key, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.setnx(key, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -653,9 +735,11 @@ public class RedisService extends Jedis {
      * 2.1.3, Redis &gt;= 2.1.3 will happily update the timeout), or the key does not exist.
      * @see <a href="http://code.google.com/p/redis/wiki/ExpireCommand">ExpireCommand</a>
      */
-    @Aop("redis")
     public Long expireAt(byte[] key, long unixTime) {
-        return jedis().expireAt(key, unixTime);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.expireAt(key, unixTime);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -670,9 +754,11 @@ public class RedisService extends Jedis {
      * @param value
      * @return Status code reply
      */
-    @Aop("redis")
     public String setex(String key, int seconds, String value) {
-        return jedis().setex(key, seconds, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.setex(key, seconds, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -692,9 +778,11 @@ public class RedisService extends Jedis {
      * @return Status code reply Basically +OK as MSET can't fail
      * @see #msetnx(String...)
      */
-    @Aop("redis")
     public String mset(String... keysvalues) {
-        return jedis().mset(keysvalues);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.mset(keysvalues);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -707,9 +795,11 @@ public class RedisService extends Jedis {
      * EXPIRE. If the Key does not exists or does not have an associated expire, -1 is
      * returned.
      */
-    @Aop("redis")
     public Long ttl(byte[] key) {
-        return jedis().ttl(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.ttl(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -730,9 +820,11 @@ public class RedisService extends Jedis {
      * least one key already existed)
      * @see #mset(String...)
      */
-    @Aop("redis")
     public Long msetnx(String... keysvalues) {
-        return jedis().msetnx(keysvalues);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.msetnx(keysvalues);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -742,9 +834,11 @@ public class RedisService extends Jedis {
      * @param index
      * @return Status code reply
      */
-    @Aop("redis")
     public String select(int index) {
-        return jedis().select(index);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.select(index);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -758,9 +852,11 @@ public class RedisService extends Jedis {
      * @return Integer reply, specifically: 1 if the key was moved 0 if the key was not moved because
      * already present on the target DB or was not found in the current DB.
      */
-    @Aop("redis")
     public Long move(byte[] key, int dbIndex) {
-        return jedis().move(key, dbIndex);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.move(key, dbIndex);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -782,9 +878,11 @@ public class RedisService extends Jedis {
      * @see #decr(String)
      * @see #incrBy(String, long)
      */
-    @Aop("redis")
     public Long decrBy(String key, long integer) {
-        return jedis().decrBy(key, integer);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.decrBy(key, integer);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -793,9 +891,11 @@ public class RedisService extends Jedis {
      *
      * @return Status code reply
      */
-    @Aop("redis")
     public String flushAll() {
-        return jedis().flushAll();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.flushAll();
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -808,9 +908,11 @@ public class RedisService extends Jedis {
      * @param value
      * @return Bulk reply
      */
-    @Aop("redis")
     public byte[] getSet(byte[] key, byte[] value) {
-        return jedis().getSet(key, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.getSet(key, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -831,9 +933,11 @@ public class RedisService extends Jedis {
      * @see #incrBy(String, long)
      * @see #decrBy(String, long)
      */
-    @Aop("redis")
     public Long decr(String key) {
-        return jedis().decr(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.decr(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -846,9 +950,11 @@ public class RedisService extends Jedis {
      * @param keys
      * @return Multi bulk reply
      */
-    @Aop("redis")
     public List<byte[]> mget(byte[]... keys) {
-        return jedis().mget(keys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.mget(keys);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -870,9 +976,11 @@ public class RedisService extends Jedis {
      * @see #decr(String)
      * @see #decrBy(String, long)
      */
-    @Aop("redis")
     public Long incrBy(String key, long integer) {
-        return jedis().incrBy(key, integer);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.incrBy(key, integer);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -885,9 +993,11 @@ public class RedisService extends Jedis {
      * @param value
      * @return Integer reply, specifically: 1 if the key was set 0 if the key was not set
      */
-    @Aop("redis")
     public Long setnx(byte[] key, byte[] value) {
-        return jedis().setnx(key, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.setnx(key, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -902,9 +1012,11 @@ public class RedisService extends Jedis {
      * @param value
      * @return Status code reply
      */
-    @Aop("redis")
     public String setex(byte[] key, int seconds, byte[] value) {
-        return jedis().setex(key, seconds, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.setex(key, seconds, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -923,9 +1035,11 @@ public class RedisService extends Jedis {
      * @param value
      * @return Double reply, this commands will reply with the new value of key after the increment.
      */
-    @Aop("redis")
     public Double incrByFloat(String key, double value) {
-        return jedis().incrByFloat(key, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.incrByFloat(key, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -945,9 +1059,11 @@ public class RedisService extends Jedis {
      * @return Status code reply Basically +OK as MSET can't fail
      * @see #msetnx(byte[]...)
      */
-    @Aop("redis")
     public String mset(byte[]... keysvalues) {
-        return jedis().mset(keysvalues);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.mset(keysvalues);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -968,9 +1084,11 @@ public class RedisService extends Jedis {
      * @see #decr(String)
      * @see #decrBy(String, long)
      */
-    @Aop("redis")
     public Long incr(String key) {
-        return jedis().incr(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.incr(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -991,9 +1109,11 @@ public class RedisService extends Jedis {
      * least one key already existed)
      * @see #mset(byte[]...)
      */
-    @Aop("redis")
     public Long msetnx(byte[]... keysvalues) {
-        return jedis().msetnx(keysvalues);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.msetnx(keysvalues);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1009,9 +1129,11 @@ public class RedisService extends Jedis {
      * @param value
      * @return Integer reply, specifically the total length of the string after the append operation.
      */
-    @Aop("redis")
     public Long append(String key, String value) {
-        return jedis().append(key, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.append(key, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1033,9 +1155,11 @@ public class RedisService extends Jedis {
      * @see #decr(byte[])
      * @see #incrBy(byte[], long)
      */
-    @Aop("redis")
     public Long decrBy(byte[] key, long integer) {
-        return jedis().decrBy(key, integer);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.decrBy(key, integer);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1055,9 +1179,11 @@ public class RedisService extends Jedis {
      * @param end
      * @return Bulk reply
      */
-    @Aop("redis")
     public String substr(String key, int start, int end) {
-        return jedis().substr(key, start, end);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.substr(key, start, end);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1078,9 +1204,11 @@ public class RedisService extends Jedis {
      * @see #incrBy(byte[], long)
      * @see #decrBy(byte[], long)
      */
-    @Aop("redis")
     public Long decr(byte[] key) {
-        return jedis().decr(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.decr(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1096,9 +1224,11 @@ public class RedisService extends Jedis {
      * @return If the field already exists, and the HSET just produced an update of the value, 0 is
      * returned, otherwise if a new field is created 1 is returned.
      */
-    @Aop("redis")
     public Long hset(String key, String field, String value) {
-        return jedis().hset(key, field, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hset(key, field, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1120,9 +1250,11 @@ public class RedisService extends Jedis {
      * @see #decr(byte[])
      * @see #decrBy(byte[], long)
      */
-    @Aop("redis")
     public Long incrBy(byte[] key, long integer) {
-        return jedis().incrBy(key, integer);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.incrBy(key, integer);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1136,9 +1268,11 @@ public class RedisService extends Jedis {
      * @param field
      * @return Bulk reply
      */
-    @Aop("redis")
     public String hget(String key, String field) {
-        return jedis().hget(key, field);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hget(key, field);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1151,9 +1285,11 @@ public class RedisService extends Jedis {
      * @return If the field already exists, 0 is returned, otherwise if a new field is created 1 is
      * returned.
      */
-    @Aop("redis")
     public Long hsetnx(String key, String field, String value) {
-        return jedis().hsetnx(key, field, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hsetnx(key, field, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1176,9 +1312,11 @@ public class RedisService extends Jedis {
      * @see #decr(byte[])
      * @see #decrBy(byte[], long)
      */
-    @Aop("redis")
     public Double incrByFloat(byte[] key, double integer) {
-        return jedis().incrByFloat(key, integer);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.incrByFloat(key, integer);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1192,9 +1330,11 @@ public class RedisService extends Jedis {
      * @param hash
      * @return Return OK or Exception if hash is empty
      */
-    @Aop("redis")
     public String hmset(String key, Map<String, String> hash) {
-        return jedis().hmset(key, hash);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hmset(key, hash);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1210,9 +1350,11 @@ public class RedisService extends Jedis {
      * @return Multi Bulk Reply specifically a list of all the values associated with the specified
      * fields, in the same order of the request.
      */
-    @Aop("redis")
     public List<String> hmget(String key, String... fields) {
-        return jedis().hmget(key, fields);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hmget(key, fields);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1233,9 +1375,11 @@ public class RedisService extends Jedis {
      * @see #decr(byte[])
      * @see #decrBy(byte[], long)
      */
-    @Aop("redis")
     public Long incr(byte[] key) {
-        return jedis().incr(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.incr(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1253,9 +1397,11 @@ public class RedisService extends Jedis {
      * @param value
      * @return Integer reply The new value at field after the increment operation.
      */
-    @Aop("redis")
     public Long hincrBy(String key, String field, long value) {
-        return jedis().hincrBy(key, field, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hincrBy(key, field, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1271,9 +1417,11 @@ public class RedisService extends Jedis {
      * @param value
      * @return Integer reply, specifically the total length of the string after the append operation.
      */
-    @Aop("redis")
     public Long append(byte[] key, byte[] value) {
-        return jedis().append(key, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.append(key, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1293,9 +1441,11 @@ public class RedisService extends Jedis {
      * @return Double precision floating point reply The new value at field after the increment
      * operation.
      */
-    @Aop("redis")
     public Double hincrByFloat(String key, String field, double value) {
-        return jedis().hincrByFloat(key, field, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hincrByFloat(key, field, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1315,9 +1465,11 @@ public class RedisService extends Jedis {
      * @param end
      * @return Bulk reply
      */
-    @Aop("redis")
     public byte[] substr(byte[] key, int start, int end) {
-        return jedis().substr(key, start, end);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.substr(key, start, end);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1328,9 +1480,11 @@ public class RedisService extends Jedis {
      * @return Return 1 if the hash stored at key contains the specified field. Return 0 if the key is
      * not found or the field is not present.
      */
-    @Aop("redis")
     public Boolean hexists(String key, String field) {
-        return jedis().hexists(key, field);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hexists(key, field);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1343,9 +1497,11 @@ public class RedisService extends Jedis {
      * @return If the field was present in the hash it is deleted and 1 is returned, otherwise 0 is
      * returned and no operation is performed.
      */
-    @Aop("redis")
     public Long hdel(String key, String... fields) {
-        return jedis().hdel(key, fields);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hdel(key, fields);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1361,9 +1517,11 @@ public class RedisService extends Jedis {
      * @return If the field already exists, and the HSET just produced an update of the value, 0 is
      * returned, otherwise if a new field is created 1 is returned.
      */
-    @Aop("redis")
     public Long hset(byte[] key, byte[] field, byte[] value) {
-        return jedis().hset(key, field, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hset(key, field, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1375,9 +1533,11 @@ public class RedisService extends Jedis {
      * @return The number of entries (fields) contained in the hash stored at key. If the specified
      * key does not exist, 0 is returned assuming an empty hash.
      */
-    @Aop("redis")
     public Long hlen(String key) {
-        return jedis().hlen(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hlen(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1391,9 +1551,11 @@ public class RedisService extends Jedis {
      * @param field
      * @return Bulk reply
      */
-    @Aop("redis")
     public byte[] hget(byte[] key, byte[] field) {
-        return jedis().hget(key, field);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hget(key, field);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1404,9 +1566,11 @@ public class RedisService extends Jedis {
      * @param key
      * @return All the fields names contained into a hash.
      */
-    @Aop("redis")
     public Set<String> hkeys(String key) {
-        return jedis().hkeys(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hkeys(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1419,9 +1583,11 @@ public class RedisService extends Jedis {
      * @return If the field already exists, 0 is returned, otherwise if a new field is created 1 is
      * returned.
      */
-    @Aop("redis")
     public Long hsetnx(byte[] key, byte[] field, byte[] value) {
-        return jedis().hsetnx(key, field, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hsetnx(key, field, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1432,9 +1598,11 @@ public class RedisService extends Jedis {
      * @param key
      * @return All the fields values contained into a hash.
      */
-    @Aop("redis")
     public List<String> hvals(String key) {
-        return jedis().hvals(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hvals(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1448,9 +1616,11 @@ public class RedisService extends Jedis {
      * @param hash
      * @return Always OK because HMSET can't fail
      */
-    @Aop("redis")
     public String hmset(byte[] key, Map<byte[], byte[]> hash) {
-        return jedis().hmset(key, hash);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hmset(key, hash);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1461,9 +1631,11 @@ public class RedisService extends Jedis {
      * @param key
      * @return All the fields and values contained into a hash.
      */
-    @Aop("redis")
     public Map<String, String> hgetAll(String key) {
-        return jedis().hgetAll(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hgetAll(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1478,9 +1650,11 @@ public class RedisService extends Jedis {
      * @return Integer reply, specifically, the number of elements inside the list after the push
      * operation.
      */
-    @Aop("redis")
     public Long rpush(String key, String... strings) {
-        return jedis().rpush(key, strings);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.rpush(key, strings);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1496,9 +1670,11 @@ public class RedisService extends Jedis {
      * @return Multi Bulk Reply specifically a list of all the values associated with the specified
      * fields, in the same order of the request.
      */
-    @Aop("redis")
     public List<byte[]> hmget(byte[] key, byte[]... fields) {
-        return jedis().hmget(key, fields);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hmget(key, fields);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1513,9 +1689,11 @@ public class RedisService extends Jedis {
      * @return Integer reply, specifically, the number of elements inside the list after the push
      * operation.
      */
-    @Aop("redis")
     public Long lpush(String key, String... strings) {
-        return jedis().lpush(key, strings);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.lpush(key, strings);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1533,9 +1711,11 @@ public class RedisService extends Jedis {
      * @param value
      * @return Integer reply The new value at field after the increment operation.
      */
-    @Aop("redis")
     public Long hincrBy(byte[] key, byte[] field, long value) {
-        return jedis().hincrBy(key, field, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hincrBy(key, field, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1548,9 +1728,11 @@ public class RedisService extends Jedis {
      * @param key
      * @return The length of the list.
      */
-    @Aop("redis")
     public Long llen(String key) {
-        return jedis().llen(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.llen(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1570,9 +1752,11 @@ public class RedisService extends Jedis {
      * @return Double precision floating point reply The new value at field after the increment
      * operation.
      */
-    @Aop("redis")
     public Double hincrByFloat(byte[] key, byte[] field, double value) {
-        return jedis().hincrByFloat(key, field, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hincrByFloat(key, field, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1608,9 +1792,11 @@ public class RedisService extends Jedis {
      * @param end
      * @return Multi bulk reply, specifically a list of elements in the specified range.
      */
-    @Aop("redis")
     public List<String> lrange(String key, long start, long end) {
-        return jedis().lrange(key, start, end);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.lrange(key, start, end);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1621,9 +1807,11 @@ public class RedisService extends Jedis {
      * @return Return 1 if the hash stored at key contains the specified field. Return 0 if the key is
      * not found or the field is not present.
      */
-    @Aop("redis")
     public Boolean hexists(byte[] key, byte[] field) {
-        return jedis().hexists(key, field);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hexists(key, field);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1636,9 +1824,11 @@ public class RedisService extends Jedis {
      * @return If the field was present in the hash it is deleted and 1 is returned, otherwise 0 is
      * returned and no operation is performed.
      */
-    @Aop("redis")
     public Long hdel(byte[] key, byte[]... fields) {
-        return jedis().hdel(key, fields);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hdel(key, fields);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1672,9 +1862,11 @@ public class RedisService extends Jedis {
      * @param end
      * @return Status code reply
      */
-    @Aop("redis")
     public String ltrim(String key, long start, long end) {
-        return jedis().ltrim(key, start, end);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.ltrim(key, start, end);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1686,9 +1878,11 @@ public class RedisService extends Jedis {
      * @return The number of entries (fields) contained in the hash stored at key. If the specified
      * key does not exist, 0 is returned assuming an empty hash.
      */
-    @Aop("redis")
     public Long hlen(byte[] key) {
-        return jedis().hlen(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hlen(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1699,9 +1893,11 @@ public class RedisService extends Jedis {
      * @param key
      * @return All the fields names contained into a hash.
      */
-    @Aop("redis")
     public Set<byte[]> hkeys(byte[] key) {
-        return jedis().hkeys(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hkeys(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1712,9 +1908,11 @@ public class RedisService extends Jedis {
      * @param key
      * @return All the fields values contained into a hash.
      */
-    @Aop("redis")
     public List<byte[]> hvals(byte[] key) {
-        return jedis().hvals(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hvals(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1725,9 +1923,11 @@ public class RedisService extends Jedis {
      * @param key
      * @return All the fields and values contained into a hash.
      */
-    @Aop("redis")
     public Map<byte[], byte[]> hgetAll(byte[] key) {
-        return jedis().hgetAll(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hgetAll(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1747,9 +1947,11 @@ public class RedisService extends Jedis {
      * @param index
      * @return Bulk reply, specifically the requested element
      */
-    @Aop("redis")
     public String lindex(String key, long index) {
-        return jedis().lindex(key, index);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.lindex(key, index);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1765,9 +1967,11 @@ public class RedisService extends Jedis {
      * operation.
      * @see BinaryJedis#rpush(byte[], byte[]...)
      */
-    @Aop("redis")
     public Long rpush(byte[] key, byte[]... strings) {
-        return jedis().rpush(key, strings);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.rpush(key, strings);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1783,9 +1987,11 @@ public class RedisService extends Jedis {
      * operation.
      * @see BinaryJedis#rpush(byte[], byte[]...)
      */
-    @Aop("redis")
     public Long lpush(byte[] key, byte[]... strings) {
-        return jedis().lpush(key, strings);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.lpush(key, strings);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1808,9 +2014,11 @@ public class RedisService extends Jedis {
      * @return Status code reply
      * @see #lindex(String, long)
      */
-    @Aop("redis")
     public String lset(String key, long index, String value) {
-        return jedis().lset(key, index, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.lset(key, index, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1823,9 +2031,11 @@ public class RedisService extends Jedis {
      * @param key
      * @return The length of the list.
      */
-    @Aop("redis")
     public Long llen(byte[] key) {
-        return jedis().llen(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.llen(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1844,9 +2054,11 @@ public class RedisService extends Jedis {
      * @param value
      * @return Integer Reply, specifically: The number of removed elements if the operation succeeded
      */
-    @Aop("redis")
     public Long lrem(String key, long count, String value) {
-        return jedis().lrem(key, count, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.lrem(key, count, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1882,9 +2094,11 @@ public class RedisService extends Jedis {
      * @param end
      * @return Multi bulk reply, specifically a list of elements in the specified range.
      */
-    @Aop("redis")
     public List<byte[]> lrange(byte[] key, long start, long end) {
-        return jedis().lrange(key, start, end);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.lrange(key, start, end);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1898,9 +2112,11 @@ public class RedisService extends Jedis {
      * @return Bulk reply
      * @see #rpop(String)
      */
-    @Aop("redis")
     public String lpop(String key) {
-        return jedis().lpop(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.lpop(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1914,9 +2130,11 @@ public class RedisService extends Jedis {
      * @return Bulk reply
      * @see #lpop(String)
      */
-    @Aop("redis")
     public String rpop(String key) {
-        return jedis().rpop(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.rpop(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1950,9 +2168,11 @@ public class RedisService extends Jedis {
      * @param end
      * @return Status code reply
      */
-    @Aop("redis")
     public String ltrim(byte[] key, long start, long end) {
-        return jedis().ltrim(key, start, end);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.ltrim(key, start, end);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1971,9 +2191,11 @@ public class RedisService extends Jedis {
      * @param dstkey
      * @return Bulk reply
      */
-    @Aop("redis")
     public String rpoplpush(String srckey, String dstkey) {
-        return jedis().rpoplpush(srckey, dstkey);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.rpoplpush(srckey, dstkey);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -1988,9 +2210,11 @@ public class RedisService extends Jedis {
      * @return Integer reply, specifically: 1 if the new element was added 0 if the element was
      * already a member of the set
      */
-    @Aop("redis")
     public Long sadd(String key, String... members) {
-        return jedis().sadd(key, members);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sadd(key, members);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2010,9 +2234,11 @@ public class RedisService extends Jedis {
      * @param index
      * @return Bulk reply, specifically the requested element
      */
-    @Aop("redis")
     public byte[] lindex(byte[] key, long index) {
-        return jedis().lindex(key, index);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.lindex(key, index);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2024,9 +2250,11 @@ public class RedisService extends Jedis {
      * @param key
      * @return Multi bulk reply
      */
-    @Aop("redis")
     public Set<String> smembers(String key) {
-        return jedis().smembers(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.smembers(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2040,9 +2268,11 @@ public class RedisService extends Jedis {
      * @return Integer reply, specifically: 1 if the new element was removed 0 if the new element was
      * not a member of the set
      */
-    @Aop("redis")
     public Long srem(String key, String... members) {
-        return jedis().srem(key, members);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.srem(key, members);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2065,9 +2295,11 @@ public class RedisService extends Jedis {
      * @return Status code reply
      * @see #lindex(byte[], long)
      */
-    @Aop("redis")
     public String lset(byte[] key, long index, byte[] value) {
-        return jedis().lset(key, index, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.lset(key, index, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2082,14 +2314,18 @@ public class RedisService extends Jedis {
      * @param key
      * @return Bulk reply
      */
-    @Aop("redis")
     public String spop(String key) {
-        return jedis().spop(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.spop(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<String> spop(String key, long count) {
-        return jedis().spop(key, count);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.spop(key, count);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2108,9 +2344,11 @@ public class RedisService extends Jedis {
      * @param value
      * @return Integer Reply, specifically: The number of removed elements if the operation succeeded
      */
-    @Aop("redis")
     public Long lrem(byte[] key, long count, byte[] value) {
-        return jedis().lrem(key, count, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.lrem(key, count, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2133,9 +2371,11 @@ public class RedisService extends Jedis {
      * @return Integer reply, specifically: 1 if the element was moved 0 if the element was not found
      * on the first set and no operation was performed
      */
-    @Aop("redis")
     public Long smove(String srckey, String dstkey, String member) {
-        return jedis().smove(srckey, dstkey, member);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.smove(srckey, dstkey, member);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2149,9 +2389,11 @@ public class RedisService extends Jedis {
      * @return Bulk reply
      * @see #rpop(byte[])
      */
-    @Aop("redis")
     public byte[] lpop(byte[] key) {
-        return jedis().lpop(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.lpop(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2162,9 +2404,11 @@ public class RedisService extends Jedis {
      * @return Integer reply, specifically: the cardinality (number of elements) of the set as an
      * integer.
      */
-    @Aop("redis")
     public Long scard(String key) {
-        return jedis().scard(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.scard(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2178,9 +2422,11 @@ public class RedisService extends Jedis {
      * @return Bulk reply
      * @see #lpop(byte[])
      */
-    @Aop("redis")
     public byte[] rpop(byte[] key) {
-        return jedis().rpop(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.rpop(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2193,9 +2439,11 @@ public class RedisService extends Jedis {
      * @return Integer reply, specifically: 1 if the element is a member of the set 0 if the element
      * is not a member of the set OR if the key does not exist
      */
-    @Aop("redis")
     public Boolean sismember(String key, String member) {
-        return jedis().sismember(key, member);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sismember(key, member);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2214,9 +2462,11 @@ public class RedisService extends Jedis {
      * @param dstkey
      * @return Bulk reply
      */
-    @Aop("redis")
     public byte[] rpoplpush(byte[] srckey, byte[] dstkey) {
-        return jedis().rpoplpush(srckey, dstkey);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.rpoplpush(srckey, dstkey);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2235,9 +2485,11 @@ public class RedisService extends Jedis {
      * @param keys
      * @return Multi bulk reply, specifically the list of common elements.
      */
-    @Aop("redis")
     public Set<String> sinter(String... keys) {
-        return jedis().sinter(keys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sinter(keys);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2252,9 +2504,11 @@ public class RedisService extends Jedis {
      * @return Integer reply, specifically: 1 if the new element was added 0 if the element was
      * already a member of the set
      */
-    @Aop("redis")
     public Long sadd(byte[] key, byte[]... members) {
-        return jedis().sadd(key, members);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sadd(key, members);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2268,9 +2522,11 @@ public class RedisService extends Jedis {
      * @param keys
      * @return Status code reply
      */
-    @Aop("redis")
     public Long sinterstore(String dstkey, String... keys) {
-        return jedis().sinterstore(dstkey, keys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sinterstore(dstkey, keys);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2282,9 +2538,11 @@ public class RedisService extends Jedis {
      * @param key the key of the set
      * @return Multi bulk reply
      */
-    @Aop("redis")
     public Set<byte[]> smembers(byte[] key) {
-        return jedis().smembers(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.smembers(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2300,9 +2558,11 @@ public class RedisService extends Jedis {
      * @param keys
      * @return Multi bulk reply, specifically the list of common elements.
      */
-    @Aop("redis")
     public Set<String> sunion(String... keys) {
-        return jedis().sunion(keys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sunion(keys);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2316,9 +2576,11 @@ public class RedisService extends Jedis {
      * @return Integer reply, specifically: 1 if the new element was removed 0 if the new element was
      * not a member of the set
      */
-    @Aop("redis")
     public Long srem(byte[] key, byte[]... member) {
-        return jedis().srem(key, member);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.srem(key, member);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2333,9 +2595,11 @@ public class RedisService extends Jedis {
      * @param key
      * @return Bulk reply
      */
-    @Aop("redis")
     public byte[] spop(byte[] key) {
-        return jedis().spop(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.spop(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2348,14 +2612,18 @@ public class RedisService extends Jedis {
      * @param keys
      * @return Status code reply
      */
-    @Aop("redis")
     public Long sunionstore(String dstkey, String... keys) {
-        return jedis().sunionstore(dstkey, keys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sunionstore(dstkey, keys);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<byte[]> spop(byte[] key, long count) {
-        return jedis().spop(key, count);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.spop(key, count);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2380,9 +2648,11 @@ public class RedisService extends Jedis {
      * @return Return the members of a set resulting from the difference between the first set
      * provided and all the successive sets.
      */
-    @Aop("redis")
     public Set<String> sdiff(String... keys) {
-        return jedis().sdiff(keys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sdiff(keys);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2405,9 +2675,11 @@ public class RedisService extends Jedis {
      * @return Integer reply, specifically: 1 if the element was moved 0 if the element was not found
      * on the first set and no operation was performed
      */
-    @Aop("redis")
     public Long smove(byte[] srckey, byte[] dstkey, byte[] member) {
-        return jedis().smove(srckey, dstkey, member);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.smove(srckey, dstkey, member);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2418,9 +2690,11 @@ public class RedisService extends Jedis {
      * @param keys
      * @return Status code reply
      */
-    @Aop("redis")
     public Long sdiffstore(String dstkey, String... keys) {
-        return jedis().sdiffstore(dstkey, keys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sdiffstore(dstkey, keys);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2434,9 +2708,11 @@ public class RedisService extends Jedis {
      * @param key
      * @return Bulk reply
      */
-    @Aop("redis")
     public String srandmember(String key) {
-        return jedis().srandmember(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.srandmember(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2447,9 +2723,11 @@ public class RedisService extends Jedis {
      * @return Integer reply, specifically: the cardinality (number of elements) of the set as an
      * integer.
      */
-    @Aop("redis")
     public Long scard(byte[] key) {
-        return jedis().scard(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.scard(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2462,14 +2740,18 @@ public class RedisService extends Jedis {
      * @return Integer reply, specifically: 1 if the element is a member of the set 0 if the element
      * is not a member of the set OR if the key does not exist
      */
-    @Aop("redis")
     public Boolean sismember(byte[] key, byte[] member) {
-        return jedis().sismember(key, member);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sismember(key, member);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<String> srandmember(String key, int count) {
-        return jedis().srandmember(key, count);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.srandmember(key, count);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2489,9 +2771,11 @@ public class RedisService extends Jedis {
      * @return Integer reply, specifically: 1 if the new element was added 0 if the element was
      * already a member of the sorted set and the score was updated
      */
-    @Aop("redis")
     public Long zadd(String key, double score, String member) {
-        return jedis().zadd(key, score, member);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zadd(key, score, member);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2510,19 +2794,25 @@ public class RedisService extends Jedis {
      * @param keys
      * @return Multi bulk reply, specifically the list of common elements.
      */
-    @Aop("redis")
     public Set<byte[]> sinter(byte[]... keys) {
-        return jedis().sinter(keys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sinter(keys);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long zadd(String key, double score, String member, ZAddParams params) {
-        return jedis().zadd(key, score, member, params);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zadd(key, score, member, params);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long zadd(String key, Map<String, Double> scoreMembers) {
-        return jedis().zadd(key, scoreMembers);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zadd(key, scoreMembers);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2536,19 +2826,25 @@ public class RedisService extends Jedis {
      * @param keys
      * @return Status code reply
      */
-    @Aop("redis")
     public Long sinterstore(byte[] dstkey, byte[]... keys) {
-        return jedis().sinterstore(dstkey, keys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sinterstore(dstkey, keys);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long zadd(String key, Map<String, Double> scoreMembers, ZAddParams params) {
-        return jedis().zadd(key, scoreMembers, params);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zadd(key, scoreMembers, params);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<String> zrange(String key, long start, long end) {
-        return jedis().zrange(key, start, end);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrange(key, start, end);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2564,9 +2860,11 @@ public class RedisService extends Jedis {
      * @param keys
      * @return Multi bulk reply, specifically the list of common elements.
      */
-    @Aop("redis")
     public Set<byte[]> sunion(byte[]... keys) {
-        return jedis().sunion(keys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sunion(keys);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2581,9 +2879,11 @@ public class RedisService extends Jedis {
      * @return Integer reply, specifically: 1 if the new element was removed 0 if the new element was
      * not a member of the set
      */
-    @Aop("redis")
     public Long zrem(String key, String... members) {
-        return jedis().zrem(key, members);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrem(key, members);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2605,9 +2905,11 @@ public class RedisService extends Jedis {
      * @param member
      * @return The new score
      */
-    @Aop("redis")
     public Double zincrby(String key, double score, String member) {
-        return jedis().zincrby(key, score, member);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zincrby(key, score, member);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2620,9 +2922,11 @@ public class RedisService extends Jedis {
      * @param keys
      * @return Status code reply
      */
-    @Aop("redis")
     public Long sunionstore(byte[] dstkey, byte[]... keys) {
-        return jedis().sunionstore(dstkey, keys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sunionstore(dstkey, keys);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2647,14 +2951,18 @@ public class RedisService extends Jedis {
      * @return Return the members of a set resulting from the difference between the first set
      * provided and all the successive sets.
      */
-    @Aop("redis")
     public Set<byte[]> sdiff(byte[]... keys) {
-        return jedis().sdiff(keys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sdiff(keys);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Double zincrby(String key, double score, String member, ZIncrByParams params) {
-        return jedis().zincrby(key, score, member, params);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zincrby(key, score, member, params);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2665,9 +2973,11 @@ public class RedisService extends Jedis {
      * @param keys
      * @return Status code reply
      */
-    @Aop("redis")
     public Long sdiffstore(byte[] dstkey, byte[]... keys) {
-        return jedis().sdiffstore(dstkey, keys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sdiffstore(dstkey, keys);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2687,9 +2997,11 @@ public class RedisService extends Jedis {
      * reply if the element exists. A nil bulk reply if there is no such element.
      * @see #zrevrank(String, String)
      */
-    @Aop("redis")
     public Long zrank(String key, String member) {
-        return jedis().zrank(key, member);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrank(key, member);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2703,14 +3015,18 @@ public class RedisService extends Jedis {
      * @param key
      * @return Bulk reply
      */
-    @Aop("redis")
     public byte[] srandmember(byte[] key) {
-        return jedis().srandmember(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.srandmember(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<byte[]> srandmember(byte[] key, int count) {
-        return jedis().srandmember(key, count);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.srandmember(key, count);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2730,9 +3046,11 @@ public class RedisService extends Jedis {
      * reply if the element exists. A nil bulk reply if there is no such element.
      * @see #zrank(String, String)
      */
-    @Aop("redis")
     public Long zrevrank(String key, String member) {
-        return jedis().zrevrank(key, member);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrevrank(key, member);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2752,34 +3070,46 @@ public class RedisService extends Jedis {
      * @return Integer reply, specifically: 1 if the new element was added 0 if the element was
      * already a member of the sorted set and the score was updated
      */
-    @Aop("redis")
     public Long zadd(byte[] key, double score, byte[] member) {
-        return jedis().zadd(key, score, member);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zadd(key, score, member);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<String> zrevrange(String key, long start, long end) {
-        return jedis().zrevrange(key, start, end);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrevrange(key, start, end);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<Tuple> zrangeWithScores(String key, long start, long end) {
-        return jedis().zrangeWithScores(key, start, end);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrangeWithScores(key, start, end);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long zadd(byte[] key, double score, byte[] member, ZAddParams params) {
-        return jedis().zadd(key, score, member, params);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zadd(key, score, member, params);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<Tuple> zrevrangeWithScores(String key, long start, long end) {
-        return jedis().zrevrangeWithScores(key, start, end);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrevrangeWithScores(key, start, end);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long zadd(byte[] key, Map<byte[], Double> scoreMembers) {
-        return jedis().zadd(key, scoreMembers);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zadd(key, scoreMembers);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2791,19 +3121,25 @@ public class RedisService extends Jedis {
      * @param key
      * @return the cardinality (number of elements) of the set as an integer.
      */
-    @Aop("redis")
     public Long zcard(String key) {
-        return jedis().zcard(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zcard(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long zadd(byte[] key, Map<byte[], Double> scoreMembers, ZAddParams params) {
-        return jedis().zadd(key, scoreMembers, params);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zadd(key, scoreMembers, params);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<byte[]> zrange(byte[] key, long start, long end) {
-        return jedis().zrange(key, start, end);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrange(key, start, end);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2817,9 +3153,11 @@ public class RedisService extends Jedis {
      * @param member
      * @return the score
      */
-    @Aop("redis")
     public Double zscore(String key, String member) {
-        return jedis().zscore(key, member);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zscore(key, member);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2834,14 +3172,18 @@ public class RedisService extends Jedis {
      * @return Integer reply, specifically: 1 if the new element was removed 0 if the new element was
      * not a member of the set
      */
-    @Aop("redis")
     public Long zrem(byte[] key, byte[]... members) {
-        return jedis().zrem(key, members);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrem(key, members);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String watch(String... keys) {
-        return jedis().watch(keys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.watch(keys);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2858,9 +3200,11 @@ public class RedisService extends Jedis {
      * @see #sort(String, SortingParams)
      * @see #sort(String, SortingParams, String)
      */
-    @Aop("redis")
     public List<String> sort(String key) {
-        return jedis().sort(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sort(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2882,9 +3226,11 @@ public class RedisService extends Jedis {
      * @param member
      * @return The new score
      */
-    @Aop("redis")
     public Double zincrby(byte[] key, double score, byte[] member) {
-        return jedis().zincrby(key, score, member);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zincrby(key, score, member);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2962,14 +3308,18 @@ public class RedisService extends Jedis {
      * @see #sort(String)
      * @see #sort(String, SortingParams, String)
      */
-    @Aop("redis")
     public List<String> sort(String key, SortingParams sortingParameters) {
-        return jedis().sort(key, sortingParameters);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sort(key, sortingParameters);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Double zincrby(byte[] key, double score, byte[] member, ZIncrByParams params) {
-        return jedis().zincrby(key, score, member, params);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zincrby(key, score, member, params);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -2989,9 +3339,11 @@ public class RedisService extends Jedis {
      * reply if the element exists. A nil bulk reply if there is no such element.
      * @see #zrevrank(byte[], byte[])
      */
-    @Aop("redis")
     public Long zrank(byte[] key, byte[] member) {
-        return jedis().zrank(key, member);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrank(key, member);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -3057,9 +3409,11 @@ public class RedisService extends Jedis {
      * accordingly to the programming language used.
      * @see #brpop(int, String...)
      */
-    @Aop("redis")
     public List<String> blpop(int timeout, String... keys) {
-        return jedis().blpop(timeout, keys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.blpop(timeout, keys);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -3079,24 +3433,32 @@ public class RedisService extends Jedis {
      * reply if the element exists. A nil bulk reply if there is no such element.
      * @see #zrank(byte[], byte[])
      */
-    @Aop("redis")
     public Long zrevrank(byte[] key, byte[] member) {
-        return jedis().zrevrank(key, member);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrevrank(key, member);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<byte[]> zrevrange(byte[] key, long start, long end) {
-        return jedis().zrevrange(key, start, end);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrevrange(key, start, end);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<Tuple> zrangeWithScores(byte[] key, long start, long end) {
-        return jedis().zrangeWithScores(key, start, end);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrangeWithScores(key, start, end);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<Tuple> zrevrangeWithScores(byte[] key, long start, long end) {
-        return jedis().zrevrangeWithScores(key, start, end);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrevrangeWithScores(key, start, end);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -3108,9 +3470,11 @@ public class RedisService extends Jedis {
      * @param key
      * @return the cardinality (number of elements) of the set as an integer.
      */
-    @Aop("redis")
     public Long zcard(byte[] key) {
-        return jedis().zcard(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zcard(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -3124,14 +3488,18 @@ public class RedisService extends Jedis {
      * @param member
      * @return the score
      */
-    @Aop("redis")
     public Double zscore(byte[] key, byte[] member) {
-        return jedis().zscore(key, member);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zscore(key, member);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Transaction multi() {
-        return jedis().multi();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.multi();
+        } finally {Streams.safeClose(jedis);}
     }
 
     @Deprecated
@@ -3141,52 +3509,61 @@ public class RedisService extends Jedis {
      * You can use multi() instead
      * @see https://github.com/xetorthio/jedis/pull/498
      */
-    @Aop("redis")
     public List<Object> multi(TransactionBlock jedisTransaction) {
-        return jedis().multi(jedisTransaction);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.multi(jedisTransaction);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public void connect() {
         jedis().connect();
     }
 
-    @Aop("redis")
     public void disconnect() {
         jedis().disconnect();
     }
 
-    @Aop("redis")
     public void resetState() {
         jedis().resetState();
     }
 
-    @Aop("redis")
     public List<String> blpop(String... args) {
-        return jedis().blpop(args);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.blpop(args);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<String> brpop(String... args) {
-        return jedis().brpop(args);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.brpop(args);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String watch(byte[]... keys) {
-        return jedis().watch(keys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.watch(keys);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String unwatch() {
-        return jedis().unwatch();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.unwatch();
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
      * @deprecated unusable command, this command will be removed in 3.0.0.
      */
-    @Aop("redis")
     public List<String> blpop(String arg) {
-        return jedis().blpop(arg);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.blpop(arg);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -3203,17 +3580,21 @@ public class RedisService extends Jedis {
      * @see #sort(byte[], SortingParams)
      * @see #sort(byte[], SortingParams, byte[])
      */
-    @Aop("redis")
     public List<byte[]> sort(byte[] key) {
-        return jedis().sort(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sort(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
      * @deprecated unusable command, this command will be removed in 3.0.0.
      */
-    @Aop("redis")
     public List<String> brpop(String arg) {
-        return jedis().brpop(arg);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.brpop(arg);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -3227,9 +3608,11 @@ public class RedisService extends Jedis {
      * @see #sort(String)
      * @see #sort(String, String)
      */
-    @Aop("redis")
     public Long sort(String key, SortingParams sortingParameters, String dstkey) {
-        return jedis().sort(key, sortingParameters, dstkey);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sort(key, sortingParameters, dstkey);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -3307,9 +3690,11 @@ public class RedisService extends Jedis {
      * @see #sort(byte[])
      * @see #sort(byte[], SortingParams, byte[])
      */
-    @Aop("redis")
     public List<byte[]> sort(byte[] key, SortingParams sortingParameters) {
-        return jedis().sort(key, sortingParameters);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sort(key, sortingParameters);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -3326,9 +3711,11 @@ public class RedisService extends Jedis {
      * @see #sort(String, SortingParams)
      * @see #sort(String, SortingParams, String)
      */
-    @Aop("redis")
     public Long sort(String key, String dstkey) {
-        return jedis().sort(key, dstkey);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sort(key, dstkey);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -3394,9 +3781,11 @@ public class RedisService extends Jedis {
      * accordingly to the programming language used.
      * @see #blpop(int, String...)
      */
-    @Aop("redis")
     public List<String> brpop(int timeout, String... keys) {
-        return jedis().brpop(timeout, keys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.brpop(timeout, keys);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -3462,19 +3851,25 @@ public class RedisService extends Jedis {
      * accordingly to the programming language used.
      * @see #brpop(int, byte[]...)
      */
-    @Aop("redis")
     public List<byte[]> blpop(int timeout, byte[]... keys) {
-        return jedis().blpop(timeout, keys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.blpop(timeout, keys);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long zcount(String key, double min, double max) {
-        return jedis().zcount(key, min, max);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zcount(key, min, max);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long zcount(String key, String min, String max) {
-        return jedis().zcount(key, min, max);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zcount(key, min, max);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -3526,9 +3921,11 @@ public class RedisService extends Jedis {
      * @see #zrangeByScoreWithScores(String, double, double, int, int)
      * @see #zcount(String, double, double)
      */
-    @Aop("redis")
     public Set<String> zrangeByScore(String key, double min, double max) {
-        return jedis().zrangeByScore(key, min, max);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrangeByScore(key, min, max);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -3542,9 +3939,11 @@ public class RedisService extends Jedis {
      * @see #sort(byte[])
      * @see #sort(byte[], byte[])
      */
-    @Aop("redis")
     public Long sort(byte[] key, SortingParams sortingParameters, byte[] dstkey) {
-        return jedis().sort(key, sortingParameters, dstkey);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sort(key, sortingParameters, dstkey);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -3561,9 +3960,11 @@ public class RedisService extends Jedis {
      * @see #sort(byte[], SortingParams)
      * @see #sort(byte[], SortingParams, byte[])
      */
-    @Aop("redis")
     public Long sort(byte[] key, byte[] dstkey) {
-        return jedis().sort(key, dstkey);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sort(key, dstkey);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -3629,14 +4030,18 @@ public class RedisService extends Jedis {
      * accordingly to the programming language used.
      * @see #blpop(int, byte[]...)
      */
-    @Aop("redis")
     public List<byte[]> brpop(int timeout, byte[]... keys) {
-        return jedis().brpop(timeout, keys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.brpop(timeout, keys);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<String> zrangeByScore(String key, String min, String max) {
-        return jedis().zrangeByScore(key, min, max);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrangeByScore(key, min, max);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -3687,40 +4092,52 @@ public class RedisService extends Jedis {
      * @see #zrangeByScoreWithScores(String, double, double, int, int)
      * @see #zcount(String, double, double)
      */
-    @Aop("redis")
     public Set<String> zrangeByScore(String key, double min, double max, int offset, int count) {
-        return jedis().zrangeByScore(key, min, max, offset, count);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrangeByScore(key, min, max, offset, count);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
      * @deprecated unusable command, this command will be removed in 3.0.0.
      */
-    @Aop("redis")
     public List<byte[]> blpop(byte[] arg) {
-        return jedis().blpop(arg);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.blpop(arg);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
      * @deprecated unusable command, this command will be removed in 3.0.0.
      */
-    @Aop("redis")
     public List<byte[]> brpop(byte[] arg) {
-        return jedis().brpop(arg);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.brpop(arg);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<byte[]> blpop(byte[]... args) {
-        return jedis().blpop(args);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.blpop(args);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<byte[]> brpop(byte[]... args) {
-        return jedis().brpop(args);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.brpop(args);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<String> zrangeByScore(String key, String min, String max, int offset, int count) {
-        return jedis().zrangeByScore(key, min, max, offset, count);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrangeByScore(key, min, max, offset, count);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -3736,9 +4153,11 @@ public class RedisService extends Jedis {
      * @param password
      * @return Status code reply
      */
-    @Aop("redis")
     public String auth(String password) {
-        return jedis().auth(password);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.auth(password);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -3789,9 +4208,11 @@ public class RedisService extends Jedis {
      * @see #zrangeByScoreWithScores(String, double, double, int, int)
      * @see #zcount(String, double, double)
      */
-    @Aop("redis")
     public Set<Tuple> zrangeByScoreWithScores(String key, double min, double max) {
-        return jedis().zrangeByScoreWithScores(key, min, max);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrangeByScoreWithScores(key, min, max);
+        } finally {Streams.safeClose(jedis);}
     }
 
     @Deprecated
@@ -3802,24 +4223,32 @@ public class RedisService extends Jedis {
      *
      * @see https://github.com/xetorthio/jedis/pull/498
      */
-    @Aop("redis")
     public List<Object> pipelined(PipelineBlock jedisPipeline) {
-        return jedis().pipelined(jedisPipeline);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.pipelined(jedisPipeline);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Pipeline pipelined() {
-        return jedis().pipelined();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.pipelined();
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long zcount(byte[] key, double min, double max) {
-        return jedis().zcount(key, min, max);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zcount(key, min, max);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long zcount(byte[] key, byte[] min, byte[] max) {
-        return jedis().zcount(key, min, max);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zcount(key, min, max);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -3870,14 +4299,18 @@ public class RedisService extends Jedis {
      * @see #zrangeByScoreWithScores(byte[], double, double, int, int)
      * @see #zcount(byte[], double, double)
      */
-    @Aop("redis")
     public Set<byte[]> zrangeByScore(byte[] key, double min, double max) {
-        return jedis().zrangeByScore(key, min, max);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrangeByScore(key, min, max);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<Tuple> zrangeByScoreWithScores(String key, String min, String max) {
-        return jedis().zrangeByScoreWithScores(key, min, max);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrangeByScoreWithScores(key, min, max);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -3928,18 +4361,22 @@ public class RedisService extends Jedis {
      * @see #zrangeByScoreWithScores(String, double, double, int, int)
      * @see #zcount(String, double, double)
      */
-    @Aop("redis")
     public Set<Tuple> zrangeByScoreWithScores(String key,
                                               double min,
                                               double max,
                                               int offset,
                                               int count) {
-        return jedis().zrangeByScoreWithScores(key, min, max, offset, count);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrangeByScoreWithScores(key, min, max, offset, count);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max) {
-        return jedis().zrangeByScore(key, min, max);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrangeByScore(key, min, max);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -3989,38 +4426,50 @@ public class RedisService extends Jedis {
      * @param max
      * @return Multi bulk reply specifically a list of elements in the specified score range.
      */
-    @Aop("redis")
     public Set<byte[]> zrangeByScore(byte[] key, double min, double max, int offset, int count) {
-        return jedis().zrangeByScore(key, min, max, offset, count);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrangeByScore(key, min, max, offset, count);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<Tuple> zrangeByScoreWithScores(String key,
                                               String min,
                                               String max,
                                               int offset,
                                               int count) {
-        return jedis().zrangeByScoreWithScores(key, min, max, offset, count);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrangeByScoreWithScores(key, min, max, offset, count);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<String> zrevrangeByScore(String key, double max, double min) {
-        return jedis().zrevrangeByScore(key, max, min);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrevrangeByScore(key, max, min);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<String> zrevrangeByScore(String key, String max, String min) {
-        return jedis().zrevrangeByScore(key, max, min);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrevrangeByScore(key, max, min);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<String> zrevrangeByScore(String key, double max, double min, int offset, int count) {
-        return jedis().zrevrangeByScore(key, max, min, offset, count);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrevrangeByScore(key, max, min, offset, count);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max, int offset, int count) {
-        return jedis().zrangeByScore(key, min, max, offset, count);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrangeByScore(key, min, max, offset, count);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -4071,42 +4520,54 @@ public class RedisService extends Jedis {
      * @see #zrangeByScoreWithScores(byte[], double, double, int, int)
      * @see #zcount(byte[], double, double)
      */
-    @Aop("redis")
     public Set<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max) {
-        return jedis().zrangeByScoreWithScores(key, min, max);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrangeByScoreWithScores(key, min, max);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<Tuple> zrevrangeByScoreWithScores(String key, double max, double min) {
-        return jedis().zrevrangeByScoreWithScores(key, max, min);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrevrangeByScoreWithScores(key, max, min);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<Tuple> zrevrangeByScoreWithScores(String key,
                                                  double max,
                                                  double min,
                                                  int offset,
                                                  int count) {
-        return jedis().zrevrangeByScoreWithScores(key, max, min, offset, count);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrevrangeByScoreWithScores(key, max, min, offset, count);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<Tuple> zrevrangeByScoreWithScores(String key,
                                                  String max,
                                                  String min,
                                                  int offset,
                                                  int count) {
-        return jedis().zrevrangeByScoreWithScores(key, max, min, offset, count);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrevrangeByScoreWithScores(key, max, min, offset, count);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<String> zrevrangeByScore(String key, String max, String min, int offset, int count) {
-        return jedis().zrevrangeByScore(key, max, min, offset, count);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrevrangeByScore(key, max, min, offset, count);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<Tuple> zrevrangeByScoreWithScores(String key, String max, String min) {
-        return jedis().zrevrangeByScoreWithScores(key, max, min);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrevrangeByScoreWithScores(key, max, min);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -4119,9 +4580,11 @@ public class RedisService extends Jedis {
      * <b>Time complexity:</b> O(log(N))+O(M) with N being the number of elements in the sorted set
      * and M the number of elements removed by the operation
      */
-    @Aop("redis")
     public Long zremrangeByRank(String key, long start, long end) {
-        return jedis().zremrangeByRank(key, start, end);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zremrangeByRank(key, start, end);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -4138,14 +4601,18 @@ public class RedisService extends Jedis {
      * @param end
      * @return Integer reply, specifically the number of elements removed.
      */
-    @Aop("redis")
     public Long zremrangeByScore(String key, double start, double end) {
-        return jedis().zremrangeByScore(key, start, end);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zremrangeByScore(key, start, end);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max) {
-        return jedis().zrangeByScoreWithScores(key, min, max);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrangeByScoreWithScores(key, min, max);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -4196,18 +4663,22 @@ public class RedisService extends Jedis {
      * @see #zrangeByScoreWithScores(byte[], double, double, int, int)
      * @see #zcount(byte[], double, double)
      */
-    @Aop("redis")
     public Set<Tuple> zrangeByScoreWithScores(byte[] key,
                                               double min,
                                               double max,
                                               int offset,
                                               int count) {
-        return jedis().zrangeByScoreWithScores(key, min, max, offset, count);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrangeByScoreWithScores(key, min, max, offset, count);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long zremrangeByScore(String key, String start, String end) {
-        return jedis().zremrangeByScore(key, start, end);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zremrangeByScore(key, start, end);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -4241,9 +4712,11 @@ public class RedisService extends Jedis {
      * @see #zinterstore(String, String...)
      * @see #zinterstore(String, ZParams, String...)
      */
-    @Aop("redis")
     public Long zunionstore(String dstkey, String... sets) {
-        return jedis().zunionstore(dstkey, sets);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zunionstore(dstkey, sets);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -4278,38 +4751,50 @@ public class RedisService extends Jedis {
      * @see #zinterstore(String, String...)
      * @see #zinterstore(String, ZParams, String...)
      */
-    @Aop("redis")
     public Long zunionstore(String dstkey, ZParams params, String... sets) {
-        return jedis().zunionstore(dstkey, params, sets);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zunionstore(dstkey, params, sets);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<Tuple> zrangeByScoreWithScores(byte[] key,
                                               byte[] min,
                                               byte[] max,
                                               int offset,
                                               int count) {
-        return jedis().zrangeByScoreWithScores(key, min, max, offset, count);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrangeByScoreWithScores(key, min, max, offset, count);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<byte[]> zrevrangeByScore(byte[] key, double max, double min) {
-        return jedis().zrevrangeByScore(key, max, min);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrevrangeByScore(key, max, min);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min) {
-        return jedis().zrevrangeByScore(key, max, min);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrevrangeByScore(key, max, min);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<byte[]> zrevrangeByScore(byte[] key, double max, double min, int offset, int count) {
-        return jedis().zrevrangeByScore(key, max, min, offset, count);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrevrangeByScore(key, max, min, offset, count);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min, int offset, int count) {
-        return jedis().zrevrangeByScore(key, max, min, offset, count);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrevrangeByScore(key, max, min, offset, count);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -4343,37 +4828,47 @@ public class RedisService extends Jedis {
      * @see #zinterstore(String, String...)
      * @see #zinterstore(String, ZParams, String...)
      */
-    @Aop("redis")
     public Long zinterstore(String dstkey, String... sets) {
-        return jedis().zinterstore(dstkey, sets);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zinterstore(dstkey, sets);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min) {
-        return jedis().zrevrangeByScoreWithScores(key, max, min);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrevrangeByScoreWithScores(key, max, min);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<Tuple> zrevrangeByScoreWithScores(byte[] key,
                                                  double max,
                                                  double min,
                                                  int offset,
                                                  int count) {
-        return jedis().zrevrangeByScoreWithScores(key, max, min, offset, count);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrevrangeByScoreWithScores(key, max, min, offset, count);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min) {
-        return jedis().zrevrangeByScoreWithScores(key, max, min);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrevrangeByScoreWithScores(key, max, min);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<Tuple> zrevrangeByScoreWithScores(byte[] key,
                                                  byte[] max,
                                                  byte[] min,
                                                  int offset,
                                                  int count) {
-        return jedis().zrevrangeByScoreWithScores(key, max, min, offset, count);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrevrangeByScoreWithScores(key, max, min, offset, count);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -4386,9 +4881,11 @@ public class RedisService extends Jedis {
      * <b>Time complexity:</b> O(log(N))+O(M) with N being the number of elements in the sorted set
      * and M the number of elements removed by the operation
      */
-    @Aop("redis")
     public Long zremrangeByRank(byte[] key, long start, long end) {
-        return jedis().zremrangeByRank(key, start, end);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zremrangeByRank(key, start, end);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -4405,9 +4902,11 @@ public class RedisService extends Jedis {
      * @param end
      * @return Integer reply, specifically the number of elements removed.
      */
-    @Aop("redis")
     public Long zremrangeByScore(byte[] key, double start, double end) {
-        return jedis().zremrangeByScore(key, start, end);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zremrangeByScore(key, start, end);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -4442,14 +4941,18 @@ public class RedisService extends Jedis {
      * @see #zinterstore(String, String...)
      * @see #zinterstore(String, ZParams, String...)
      */
-    @Aop("redis")
     public Long zinterstore(String dstkey, ZParams params, String... sets) {
-        return jedis().zinterstore(dstkey, params, sets);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zinterstore(dstkey, params, sets);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long zremrangeByScore(byte[] key, byte[] start, byte[] end) {
-        return jedis().zremrangeByScore(key, start, end);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zremrangeByScore(key, start, end);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -4482,24 +4985,32 @@ public class RedisService extends Jedis {
      * @see #zinterstore(byte[], byte[]...)
      * @see #zinterstore(byte[], ZParams, byte[]...)
      */
-    @Aop("redis")
     public Long zunionstore(byte[] dstkey, byte[]... sets) {
-        return jedis().zunionstore(dstkey, sets);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zunionstore(dstkey, sets);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long zlexcount(String key, String min, String max) {
-        return jedis().zlexcount(key, min, max);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zlexcount(key, min, max);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<String> zrangeByLex(String key, String min, String max) {
-        return jedis().zrangeByLex(key, min, max);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrangeByLex(key, min, max);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<String> zrangeByLex(String key, String min, String max, int offset, int count) {
-        return jedis().zrangeByLex(key, min, max, offset, count);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrangeByLex(key, min, max, offset, count);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -4533,34 +5044,46 @@ public class RedisService extends Jedis {
      * @see #zinterstore(byte[], byte[]...)
      * @see #zinterstore(byte[], ZParams, byte[]...)
      */
-    @Aop("redis")
     public Long zunionstore(byte[] dstkey, ZParams params, byte[]... sets) {
-        return jedis().zunionstore(dstkey, params, sets);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zunionstore(dstkey, params, sets);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<String> zrevrangeByLex(String key, String max, String min) {
-        return jedis().zrevrangeByLex(key, max, min);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrevrangeByLex(key, max, min);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<String> zrevrangeByLex(String key, String max, String min, int offset, int count) {
-        return jedis().zrevrangeByLex(key, max, min, offset, count);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrevrangeByLex(key, max, min, offset, count);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long zremrangeByLex(String key, String min, String max) {
-        return jedis().zremrangeByLex(key, min, max);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zremrangeByLex(key, min, max);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long strlen(String key) {
-        return jedis().strlen(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.strlen(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long lpushx(String key, String... string) {
-        return jedis().lpushx(key, string);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.lpushx(key, string);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -4572,19 +5095,25 @@ public class RedisService extends Jedis {
      * @return Integer reply, specifically: 1: the key is now persist. 0: the key is not persist (only
      * happens when key not set).
      */
-    @Aop("redis")
     public Long persist(String key) {
-        return jedis().persist(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.persist(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long rpushx(String key, String... string) {
-        return jedis().rpushx(key, string);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.rpushx(key, string);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String echo(String string) {
-        return jedis().echo(string);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.echo(string);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -4617,14 +5146,18 @@ public class RedisService extends Jedis {
      * @see #zinterstore(byte[], byte[]...)
      * @see #zinterstore(byte[], ZParams, byte[]...)
      */
-    @Aop("redis")
     public Long zinterstore(byte[] dstkey, byte[]... sets) {
-        return jedis().zinterstore(dstkey, sets);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zinterstore(dstkey, sets);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long linsert(String key, LIST_POSITION where, String pivot, String value) {
-        return jedis().linsert(key, where, pivot, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.linsert(key, where, pivot, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -4635,9 +5168,11 @@ public class RedisService extends Jedis {
      * @param timeout
      * @return the element
      */
-    @Aop("redis")
     public String brpoplpush(String source, String destination, int timeout) {
-        return jedis().brpoplpush(source, destination, timeout);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.brpoplpush(source, destination, timeout);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -4648,14 +5183,18 @@ public class RedisService extends Jedis {
      * @param value
      * @return
      */
-    @Aop("redis")
     public Boolean setbit(String key, long offset, boolean value) {
-        return jedis().setbit(key, offset, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.setbit(key, offset, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Boolean setbit(String key, long offset, String value) {
-        return jedis().setbit(key, offset, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.setbit(key, offset, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -4665,29 +5204,39 @@ public class RedisService extends Jedis {
      * @param offset
      * @return
      */
-    @Aop("redis")
     public Boolean getbit(String key, long offset) {
-        return jedis().getbit(key, offset);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.getbit(key, offset);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long setrange(String key, long offset, String value) {
-        return jedis().setrange(key, offset, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.setrange(key, offset, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String getrange(String key, long startOffset, long endOffset) {
-        return jedis().getrange(key, startOffset, endOffset);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.getrange(key, startOffset, endOffset);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long bitpos(String key, boolean value) {
-        return jedis().bitpos(key, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.bitpos(key, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long bitpos(String key, boolean value, BitPosParams params) {
-        return jedis().bitpos(key, value, params);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.bitpos(key, value, params);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -4721,9 +5270,11 @@ public class RedisService extends Jedis {
      * @see #zinterstore(byte[], byte[]...)
      * @see #zinterstore(byte[], ZParams, byte[]...)
      */
-    @Aop("redis")
     public Long zinterstore(byte[] dstkey, ZParams params, byte[]... sets) {
-        return jedis().zinterstore(dstkey, params, sets);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zinterstore(dstkey, params, sets);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -4761,9 +5312,11 @@ public class RedisService extends Jedis {
      * @param pattern
      * @return Bulk reply.
      */
-    @Aop("redis")
     public List<String> configGet(String pattern) {
-        return jedis().configGet(pattern);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.configGet(pattern);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -4796,57 +5349,73 @@ public class RedisService extends Jedis {
      * @param value
      * @return Status code reply
      */
-    @Aop("redis")
     public String configSet(String parameter, String value) {
-        return jedis().configSet(parameter, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.configSet(parameter, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long zlexcount(byte[] key, byte[] min, byte[] max) {
-        return jedis().zlexcount(key, min, max);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zlexcount(key, min, max);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max) {
-        return jedis().zrangeByLex(key, min, max);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrangeByLex(key, min, max);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max, int offset, int count) {
-        return jedis().zrangeByLex(key, min, max, offset, count);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrangeByLex(key, min, max, offset, count);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Object eval(String script, int keyCount, String... params) {
-        return jedis().eval(script, keyCount, params);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.eval(script, keyCount, params);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min) {
-        return jedis().zrevrangeByLex(key, max, min);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrevrangeByLex(key, max, min);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public void subscribe(JedisPubSub jedisPubSub, String... channels) {
         jedis().subscribe(jedisPubSub, channels);
     }
 
-    @Aop("redis")
     public Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count) {
-        return jedis().zrevrangeByLex(key, max, min, offset, count);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zrevrangeByLex(key, max, min, offset, count);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long publish(String channel, String message) {
-        return jedis().publish(channel, message);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.publish(channel, message);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long zremrangeByLex(byte[] key, byte[] min, byte[] max) {
-        return jedis().zremrangeByLex(key, min, max);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zremrangeByLex(key, min, max);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public void psubscribe(JedisPubSub jedisPubSub, String... patterns) {
         jedis().psubscribe(jedisPubSub, patterns);
     }
@@ -4865,19 +5434,25 @@ public class RedisService extends Jedis {
      *
      * @return Status code reply
      */
-    @Aop("redis")
     public String save() {
-        return jedis().save();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.save();
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Object eval(String script, List<String> keys, List<String> args) {
-        return jedis().eval(script, keys, args);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.eval(script, keys, args);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Object eval(String script) {
-        return jedis().eval(script);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.eval(script);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -4889,14 +5464,18 @@ public class RedisService extends Jedis {
      *
      * @return Status code reply
      */
-    @Aop("redis")
     public String bgsave() {
-        return jedis().bgsave();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.bgsave();
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Object evalsha(String script) {
-        return jedis().evalsha(script);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.evalsha(script);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -4914,34 +5493,46 @@ public class RedisService extends Jedis {
      *
      * @return Status code reply
      */
-    @Aop("redis")
     public String bgrewriteaof() {
-        return jedis().bgrewriteaof();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.bgrewriteaof();
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Object evalsha(String sha1, List<String> keys, List<String> args) {
-        return jedis().evalsha(sha1, keys, args);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.evalsha(sha1, keys, args);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Object evalsha(String sha1, int keyCount, String... params) {
-        return jedis().evalsha(sha1, keyCount, params);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.evalsha(sha1, keyCount, params);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Boolean scriptExists(String sha1) {
-        return jedis().scriptExists(sha1);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.scriptExists(sha1);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<Boolean> scriptExists(String... sha1) {
-        return jedis().scriptExists(sha1);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.scriptExists(sha1);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String scriptLoad(String script) {
-        return jedis().scriptLoad(script);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.scriptLoad(script);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -4953,29 +5544,39 @@ public class RedisService extends Jedis {
      *
      * @return Integer reply, specifically an UNIX time stamp.
      */
-    @Aop("redis")
     public Long lastsave() {
-        return jedis().lastsave();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.lastsave();
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<Slowlog> slowlogGet() {
-        return jedis().slowlogGet();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.slowlogGet();
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<Slowlog> slowlogGet(long entries) {
-        return jedis().slowlogGet(entries);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.slowlogGet(entries);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long objectRefcount(String string) {
-        return jedis().objectRefcount(string);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.objectRefcount(string);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String objectEncoding(String string) {
-        return jedis().objectEncoding(string);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.objectEncoding(string);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -4989,29 +5590,39 @@ public class RedisService extends Jedis {
      * @return Status code reply on error. On success nothing is returned since the server quits and
      * the connection is closed.
      */
-    @Aop("redis")
     public String shutdown() {
-        return jedis().shutdown();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.shutdown();
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long objectIdletime(String string) {
-        return jedis().objectIdletime(string);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.objectIdletime(string);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long bitcount(String key) {
-        return jedis().bitcount(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.bitcount(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long bitcount(String key, long start, long end) {
-        return jedis().bitcount(key, start, end);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.bitcount(key, start, end);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long bitop(BitOP op, String destKey, String... srcKeys) {
-        return jedis().bitop(op, destKey, srcKeys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.bitop(op, destKey, srcKeys);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -5046,9 +5657,11 @@ public class RedisService extends Jedis {
      *
      * @return
      */
-    @Aop("redis")
     public List<Map<String, String>> sentinelMasters() {
-        return jedis().sentinelMasters();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sentinelMasters();
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -5088,9 +5701,11 @@ public class RedisService extends Jedis {
      *
      * @return Bulk reply
      */
-    @Aop("redis")
     public String info() {
-        return jedis().info();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.info();
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -5103,14 +5718,18 @@ public class RedisService extends Jedis {
      * @param masterName
      * @return two elements list of strings : host and port.
      */
-    @Aop("redis")
     public List<String> sentinelGetMasterAddrByName(String masterName) {
-        return jedis().sentinelGetMasterAddrByName(masterName);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sentinelGetMasterAddrByName(masterName);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String info(String section) {
-        return jedis().info(section);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.info(section);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -5122,9 +5741,11 @@ public class RedisService extends Jedis {
      * @param pattern
      * @return
      */
-    @Aop("redis")
     public Long sentinelReset(String pattern) {
-        return jedis().sentinelReset(pattern);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sentinelReset(pattern);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -5136,7 +5757,6 @@ public class RedisService extends Jedis {
      *
      * @param jedisMonitor
      */
-    @Aop("redis")
     public void monitor(JedisMonitor jedisMonitor) {
         jedis().monitor(jedisMonitor);
     }
@@ -5177,9 +5797,11 @@ public class RedisService extends Jedis {
      * @param masterName
      * @return
      */
-    @Aop("redis")
     public List<Map<String, String>> sentinelSlaves(String masterName) {
-        return jedis().sentinelSlaves(masterName);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sentinelSlaves(masterName);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -5204,24 +5826,32 @@ public class RedisService extends Jedis {
      * @param port
      * @return Status code reply
      */
-    @Aop("redis")
     public String slaveof(String host, int port) {
-        return jedis().slaveof(host, port);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.slaveof(host, port);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String sentinelFailover(String masterName) {
-        return jedis().sentinelFailover(masterName);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sentinelFailover(masterName);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String sentinelMonitor(String masterName, String ip, int port, int quorum) {
-        return jedis().sentinelMonitor(masterName, ip, port, quorum);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sentinelMonitor(masterName, ip, port, quorum);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String slaveofNoOne() {
-        return jedis().slaveofNoOne();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.slaveofNoOne();
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -5259,29 +5889,39 @@ public class RedisService extends Jedis {
      * @param pattern
      * @return Bulk reply.
      */
-    @Aop("redis")
     public List<byte[]> configGet(byte[] pattern) {
-        return jedis().configGet(pattern);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.configGet(pattern);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String sentinelRemove(String masterName) {
-        return jedis().sentinelRemove(masterName);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sentinelRemove(masterName);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String sentinelSet(String masterName, Map<String, String> parameterMap) {
-        return jedis().sentinelSet(masterName, parameterMap);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sentinelSet(masterName, parameterMap);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public byte[] dump(String key) {
-        return jedis().dump(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.dump(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String restore(String key, int ttl, byte[] serializedValue) {
-        return jedis().restore(key, ttl, serializedValue);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.restore(key, ttl, serializedValue);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -5289,14 +5929,18 @@ public class RedisService extends Jedis {
      *
      * @return
      */
-    @Aop("redis")
     public String configResetStat() {
-        return jedis().configResetStat();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.configResetStat();
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long pexpire(String key, int milliseconds) {
-        return jedis().pexpire(key, milliseconds);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.pexpire(key, milliseconds);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -5329,29 +5973,39 @@ public class RedisService extends Jedis {
      * @param value
      * @return Status code reply
      */
-    @Aop("redis")
     public byte[] configSet(byte[] parameter, byte[] value) {
-        return jedis().configSet(parameter, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.configSet(parameter, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long pexpire(String key, long milliseconds) {
-        return jedis().pexpire(key, milliseconds);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.pexpire(key, milliseconds);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long pexpireAt(String key, long millisecondsTimestamp) {
-        return jedis().pexpireAt(key, millisecondsTimestamp);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.pexpireAt(key, millisecondsTimestamp);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long pttl(String key) {
-        return jedis().pttl(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.pttl(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String psetex(String key, int milliseconds, String value) {
-        return jedis().psetex(key, milliseconds, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.psetex(key, milliseconds, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -5363,49 +6017,64 @@ public class RedisService extends Jedis {
      * @param value
      * @return Status code reply
      */
-    @Aop("redis")
     public String psetex(String key, long milliseconds, String value) {
-        return jedis().psetex(key, milliseconds, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.psetex(key, milliseconds, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String set(String key, String value, String nxxx) {
-        return jedis().set(key, value, nxxx);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.set(key, value, nxxx);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String set(String key, String value, String nxxx, String expx, int time) {
-        return jedis().set(key, value, nxxx, expx, time);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.set(key, value, nxxx, expx, time);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public boolean isConnected() {
-        return jedis().isConnected();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.isConnected();
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long strlen(byte[] key) {
-        return jedis().strlen(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.strlen(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String clientKill(String client) {
-        return jedis().clientKill(client);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.clientKill(client);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public void sync() {
         jedis().sync();
     }
 
-    @Aop("redis")
     public Long lpushx(byte[] key, byte[]... string) {
-        return jedis().lpushx(key, string);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.lpushx(key, string);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String clientSetname(String name) {
-        return jedis().clientSetname(name);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.clientSetname(name);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -5417,14 +6086,18 @@ public class RedisService extends Jedis {
      * @return Integer reply, specifically: 1: the key is now persist. 0: the key is not persist (only
      * happens when key not set).
      */
-    @Aop("redis")
     public Long persist(byte[] key) {
-        return jedis().persist(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.persist(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String migrate(String host, int port, String key, int destinationDb, int timeout) {
-        return jedis().migrate(host, port, key, destinationDb, timeout);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.migrate(host, port, key, destinationDb, timeout);
+        } finally {Streams.safeClose(jedis);}
     }
 
     @Deprecated
@@ -5433,19 +6106,25 @@ public class RedisService extends Jedis {
      * And will be removed on next major release
      * @see https://github.com/xetorthio/jedis/issues/531
      */
-    @Aop("redis")
     public ScanResult<String> scan(int cursor) {
-        return jedis().scan(cursor);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.scan(cursor);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long rpushx(byte[] key, byte[]... string) {
-        return jedis().rpushx(key, string);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.rpushx(key, string);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public byte[] echo(byte[] string) {
-        return jedis().echo(string);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.echo(string);
+        } finally {Streams.safeClose(jedis);}
     }
 
     @Deprecated
@@ -5454,24 +6133,32 @@ public class RedisService extends Jedis {
      * And will be removed on next major release
      * @see https://github.com/xetorthio/jedis/issues/531
      */
-    @Aop("redis")
     public ScanResult<String> scan(int cursor, ScanParams params) {
-        return jedis().scan(cursor, params);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.scan(cursor, params);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long linsert(byte[] key, LIST_POSITION where, byte[] pivot, byte[] value) {
-        return jedis().linsert(key, where, pivot, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.linsert(key, where, pivot, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String debug(DebugParams params) {
-        return jedis().debug(params);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.debug(params);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Client getClient() {
-        return jedis().getClient();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.getClient();
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -5482,9 +6169,11 @@ public class RedisService extends Jedis {
      * @param timeout
      * @return the element
      */
-    @Aop("redis")
     public byte[] brpoplpush(byte[] source, byte[] destination, int timeout) {
-        return jedis().brpoplpush(source, destination, timeout);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.brpoplpush(source, destination, timeout);
+        } finally {Streams.safeClose(jedis);}
     }
 
     @Deprecated
@@ -5493,9 +6182,11 @@ public class RedisService extends Jedis {
      * And will be removed on next major release
      * @see https://github.com/xetorthio/jedis/issues/531
      */
-    @Aop("redis")
     public ScanResult<Entry<String, String>> hscan(String key, int cursor) {
-        return jedis().hscan(key, cursor);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hscan(key, cursor);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -5506,9 +6197,11 @@ public class RedisService extends Jedis {
      * @param value
      * @return
      */
-    @Aop("redis")
     public Boolean setbit(byte[] key, long offset, boolean value) {
-        return jedis().setbit(key, offset, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.setbit(key, offset, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
     @Deprecated
@@ -5517,14 +6210,18 @@ public class RedisService extends Jedis {
      * And will be removed on next major release
      * @see https://github.com/xetorthio/jedis/issues/531
      */
-    @Aop("redis")
     public ScanResult<Entry<String, String>> hscan(String key, int cursor, ScanParams params) {
-        return jedis().hscan(key, cursor, params);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hscan(key, cursor, params);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Boolean setbit(byte[] key, long offset, byte[] value) {
-        return jedis().setbit(key, offset, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.setbit(key, offset, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -5534,29 +6231,39 @@ public class RedisService extends Jedis {
      * @param offset
      * @return
      */
-    @Aop("redis")
     public Boolean getbit(byte[] key, long offset) {
-        return jedis().getbit(key, offset);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.getbit(key, offset);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long bitpos(byte[] key, boolean value) {
-        return jedis().bitpos(key, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.bitpos(key, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long bitpos(byte[] key, boolean value, BitPosParams params) {
-        return jedis().bitpos(key, value, params);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.bitpos(key, value, params);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long setrange(byte[] key, long offset, byte[] value) {
-        return jedis().setrange(key, offset, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.setrange(key, offset, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public byte[] getrange(byte[] key, long startOffset, long endOffset) {
-        return jedis().getrange(key, startOffset, endOffset);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.getrange(key, startOffset, endOffset);
+        } finally {Streams.safeClose(jedis);}
     }
 
     @Deprecated
@@ -5565,17 +6272,20 @@ public class RedisService extends Jedis {
      * And will be removed on next major release
      * @see https://github.com/xetorthio/jedis/issues/531
      */
-    @Aop("redis")
     public ScanResult<String> sscan(String key, int cursor) {
-        return jedis().sscan(key, cursor);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sscan(key, cursor);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long publish(byte[] channel, byte[] message) {
-        return jedis().publish(channel, message);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.publish(channel, message);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public void subscribe(BinaryJedisPubSub jedisPubSub, byte[]... channels) {
         jedis().subscribe(jedisPubSub, channels);
     }
@@ -5586,19 +6296,22 @@ public class RedisService extends Jedis {
      * And will be removed on next major release
      * @see https://github.com/xetorthio/jedis/issues/531
      */
-    @Aop("redis")
     public ScanResult<String> sscan(String key, int cursor, ScanParams params) {
-        return jedis().sscan(key, cursor, params);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sscan(key, cursor, params);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public void psubscribe(BinaryJedisPubSub jedisPubSub, byte[]... patterns) {
         jedis().psubscribe(jedisPubSub, patterns);
     }
 
-    @Aop("redis")
     public Long getDB() {
-        return jedis().getDB();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.getDB();
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -5607,9 +6320,11 @@ public class RedisService extends Jedis {
      *
      * @return Script result
      */
-    @Aop("redis")
     public Object eval(byte[] script, List<byte[]> keys, List<byte[]> args) {
-        return jedis().eval(script, keys, args);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.eval(script, keys, args);
+        } finally {Streams.safeClose(jedis);}
     }
 
     @Deprecated
@@ -5618,9 +6333,11 @@ public class RedisService extends Jedis {
      * And will be removed on next major release
      * @see https://github.com/xetorthio/jedis/issues/531
      */
-    @Aop("redis")
     public ScanResult<Tuple> zscan(String key, int cursor) {
-        return jedis().zscan(key, cursor);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zscan(key, cursor);
+        } finally {Streams.safeClose(jedis);}
     }
 
     @Deprecated
@@ -5629,194 +6346,270 @@ public class RedisService extends Jedis {
      * And will be removed on next major release
      * @see https://github.com/xetorthio/jedis/issues/531
      */
-    @Aop("redis")
     public ScanResult<Tuple> zscan(String key, int cursor, ScanParams params) {
-        return jedis().zscan(key, cursor, params);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zscan(key, cursor, params);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Object eval(byte[] script, byte[] keyCount, byte[]... params) {
-        return jedis().eval(script, keyCount, params);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.eval(script, keyCount, params);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Object eval(byte[] script, int keyCount, byte[]... params) {
-        return jedis().eval(script, keyCount, params);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.eval(script, keyCount, params);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Object eval(byte[] script) {
-        return jedis().eval(script);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.eval(script);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Object evalsha(byte[] sha1) {
-        return jedis().evalsha(sha1);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.evalsha(sha1);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Object evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
-        return jedis().evalsha(sha1, keys, args);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.evalsha(sha1, keys, args);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Object evalsha(byte[] sha1, int keyCount, byte[]... params) {
-        return jedis().evalsha(sha1, keyCount, params);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.evalsha(sha1, keyCount, params);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public ScanResult<String> scan(String cursor) {
-        return jedis().scan(cursor);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.scan(cursor);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String scriptFlush() {
-        return jedis().scriptFlush();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.scriptFlush();
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public ScanResult<String> scan(String cursor, ScanParams params) {
-        return jedis().scan(cursor, params);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.scan(cursor, params);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long scriptExists(byte[] sha1) {
-        return jedis().scriptExists(sha1);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.scriptExists(sha1);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<Long> scriptExists(byte[]... sha1) {
-        return jedis().scriptExists(sha1);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.scriptExists(sha1);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public byte[] scriptLoad(byte[] script) {
-        return jedis().scriptLoad(script);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.scriptLoad(script);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String scriptKill() {
-        return jedis().scriptKill();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.scriptKill();
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public ScanResult<Entry<String, String>> hscan(String key, String cursor) {
-        return jedis().hscan(key, cursor);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hscan(key, cursor);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String slowlogReset() {
-        return jedis().slowlogReset();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.slowlogReset();
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public ScanResult<Entry<String, String>> hscan(String key, String cursor, ScanParams params) {
-        return jedis().hscan(key, cursor, params);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hscan(key, cursor, params);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long slowlogLen() {
-        return jedis().slowlogLen();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.slowlogLen();
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<byte[]> slowlogGetBinary() {
-        return jedis().slowlogGetBinary();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.slowlogGetBinary();
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<byte[]> slowlogGetBinary(long entries) {
-        return jedis().slowlogGetBinary(entries);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.slowlogGetBinary(entries);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long objectRefcount(byte[] key) {
-        return jedis().objectRefcount(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.objectRefcount(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public byte[] objectEncoding(byte[] key) {
-        return jedis().objectEncoding(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.objectEncoding(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long objectIdletime(byte[] key) {
-        return jedis().objectIdletime(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.objectIdletime(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long bitcount(byte[] key) {
-        return jedis().bitcount(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.bitcount(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public ScanResult<String> sscan(String key, String cursor) {
-        return jedis().sscan(key, cursor);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sscan(key, cursor);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long bitcount(byte[] key, long start, long end) {
-        return jedis().bitcount(key, start, end);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.bitcount(key, start, end);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public ScanResult<String> sscan(String key, String cursor, ScanParams params) {
-        return jedis().sscan(key, cursor, params);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sscan(key, cursor, params);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long bitop(BitOP op, byte[] destKey, byte[]... srcKeys) {
-        return jedis().bitop(op, destKey, srcKeys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.bitop(op, destKey, srcKeys);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public byte[] dump(byte[] key) {
-        return jedis().dump(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.dump(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String restore(byte[] key, int ttl, byte[] serializedValue) {
-        return jedis().restore(key, ttl, serializedValue);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.restore(key, ttl, serializedValue);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public ScanResult<Tuple> zscan(String key, String cursor) {
-        return jedis().zscan(key, cursor);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zscan(key, cursor);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long pexpire(byte[] key, int milliseconds) {
-        return jedis().pexpire(key, milliseconds);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.pexpire(key, milliseconds);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public ScanResult<Tuple> zscan(String key, String cursor, ScanParams params) {
-        return jedis().zscan(key, cursor, params);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zscan(key, cursor, params);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long pexpire(byte[] key, long milliseconds) {
-        return jedis().pexpire(key, milliseconds);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.pexpire(key, milliseconds);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long pexpireAt(byte[] key, long millisecondsTimestamp) {
-        return jedis().pexpireAt(key, millisecondsTimestamp);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.pexpireAt(key, millisecondsTimestamp);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long pttl(byte[] key) {
-        return jedis().pttl(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.pttl(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String psetex(byte[] key, int milliseconds, byte[] value) {
-        return jedis().psetex(key, milliseconds, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.psetex(key, milliseconds, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String clusterNodes() {
-        return jedis().clusterNodes();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.clusterNodes();
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -5828,104 +6621,144 @@ public class RedisService extends Jedis {
      * @param value
      * @return Status code reply
      */
-    @Aop("redis")
     public String psetex(byte[] key, long milliseconds, byte[] value) {
-        return jedis().psetex(key, milliseconds, value);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.psetex(key, milliseconds, value);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String readonly() {
-        return jedis().readonly();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.readonly();
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String clusterMeet(String ip, int port) {
-        return jedis().clusterMeet(ip, port);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.clusterMeet(ip, port);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String clusterReset(Reset resetType) {
-        return jedis().clusterReset(resetType);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.clusterReset(resetType);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String set(byte[] key, byte[] value, byte[] nxxx) {
-        return jedis().set(key, value, nxxx);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.set(key, value, nxxx);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String clusterAddSlots(int... slots) {
-        return jedis().clusterAddSlots(slots);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.clusterAddSlots(slots);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String set(byte[] key, byte[] value, byte[] nxxx, byte[] expx, int time) {
-        return jedis().set(key, value, nxxx, expx, time);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.set(key, value, nxxx, expx, time);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String clusterDelSlots(int... slots) {
-        return jedis().clusterDelSlots(slots);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.clusterDelSlots(slots);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String clusterInfo() {
-        return jedis().clusterInfo();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.clusterInfo();
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String clientKill(byte[] client) {
-        return jedis().clientKill(client);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.clientKill(client);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<String> clusterGetKeysInSlot(int slot, int count) {
-        return jedis().clusterGetKeysInSlot(slot, count);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.clusterGetKeysInSlot(slot, count);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String clientGetname() {
-        return jedis().clientGetname();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.clientGetname();
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String clientList() {
-        return jedis().clientList();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.clientList();
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String clusterSetSlotNode(int slot, String nodeId) {
-        return jedis().clusterSetSlotNode(slot, nodeId);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.clusterSetSlotNode(slot, nodeId);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String clientSetname(byte[] name) {
-        return jedis().clientSetname(name);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.clientSetname(name);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String clusterSetSlotMigrating(int slot, String nodeId) {
-        return jedis().clusterSetSlotMigrating(slot, nodeId);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.clusterSetSlotMigrating(slot, nodeId);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<String> time() {
-        return jedis().time();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.time();
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String clusterSetSlotImporting(int slot, String nodeId) {
-        return jedis().clusterSetSlotImporting(slot, nodeId);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.clusterSetSlotImporting(slot, nodeId);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String migrate(byte[] host, int port, byte[] key, int destinationDb, int timeout) {
-        return jedis().migrate(host, port, key, destinationDb, timeout);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.migrate(host, port, key, destinationDb, timeout);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String clusterSetSlotStable(int slot) {
-        return jedis().clusterSetSlotStable(slot);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.clusterSetSlotStable(slot);
+        } finally {Streams.safeClose(jedis);}
     }
 
     /**
@@ -5933,306 +6766,411 @@ public class RedisService extends Jedis {
      * Object class has implemented "wait" method, we cannot use it, so I had to change the name of
      * the method. Sorry :S
      */
-    @Aop("redis")
     public Long waitReplicas(int replicas, long timeout) {
-        return jedis().waitReplicas(replicas, timeout);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.waitReplicas(replicas, timeout);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String clusterForget(String nodeId) {
-        return jedis().clusterForget(nodeId);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.clusterForget(nodeId);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String clusterFlushSlots() {
-        return jedis().clusterFlushSlots();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.clusterFlushSlots();
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long pfadd(byte[] key, byte[]... elements) {
-        return jedis().pfadd(key, elements);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.pfadd(key, elements);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long clusterKeySlot(String key) {
-        return jedis().clusterKeySlot(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.clusterKeySlot(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long clusterCountKeysInSlot(int slot) {
-        return jedis().clusterCountKeysInSlot(slot);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.clusterCountKeysInSlot(slot);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public long pfcount(byte[] key) {
-        return jedis().pfcount(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.pfcount(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String clusterSaveConfig() {
-        return jedis().clusterSaveConfig();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.clusterSaveConfig();
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String pfmerge(byte[] destkey, byte[]... sourcekeys) {
-        return jedis().pfmerge(destkey, sourcekeys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.pfmerge(destkey, sourcekeys);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String clusterReplicate(String nodeId) {
-        return jedis().clusterReplicate(nodeId);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.clusterReplicate(nodeId);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long pfcount(byte[]... keys) {
-        return jedis().pfcount(keys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.pfcount(keys);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<String> clusterSlaves(String nodeId) {
-        return jedis().clusterSlaves(nodeId);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.clusterSlaves(nodeId);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public ScanResult<byte[]> scan(byte[] cursor) {
-        return jedis().scan(cursor);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.scan(cursor);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public ScanResult<byte[]> scan(byte[] cursor, ScanParams params) {
-        return jedis().scan(cursor, params);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.scan(cursor, params);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String clusterFailover() {
-        return jedis().clusterFailover();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.clusterFailover();
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<Object> clusterSlots() {
-        return jedis().clusterSlots();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.clusterSlots();
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String asking() {
-        return jedis().asking();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.asking();
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public ScanResult<Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor) {
-        return jedis().hscan(key, cursor);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hscan(key, cursor);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<String> pubsubChannels(String pattern) {
-        return jedis().pubsubChannels(pattern);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.pubsubChannels(pattern);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public ScanResult<Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor, ScanParams params) {
-        return jedis().hscan(key, cursor, params);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.hscan(key, cursor, params);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long pubsubNumPat() {
-        return jedis().pubsubNumPat();
+        Jedis jedis = getJedis();
+        try {
+            return jedis.pubsubNumPat();
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Map<String, String> pubsubNumSub(String... channels) {
-        return jedis().pubsubNumSub(channels);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.pubsubNumSub(channels);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public void close() {
         jedis().close();
     }
 
-    @Aop("redis")
     public void setDataSource(Pool<Jedis> jedisPool) {
         jedis().setDataSource(jedisPool);
     }
 
-    @Aop("redis")
     public ScanResult<byte[]> sscan(byte[] key, byte[] cursor) {
-        return jedis().sscan(key, cursor);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sscan(key, cursor);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long pfadd(String key, String... elements) {
-        return jedis().pfadd(key, elements);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.pfadd(key, elements);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public ScanResult<byte[]> sscan(byte[] key, byte[] cursor, ScanParams params) {
-        return jedis().sscan(key, cursor, params);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.sscan(key, cursor, params);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public long pfcount(String key) {
-        return jedis().pfcount(key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.pfcount(key);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public long pfcount(String... keys) {
-        return jedis().pfcount(keys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.pfcount(keys);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public String pfmerge(String destkey, String... sourcekeys) {
-        return jedis().pfmerge(destkey, sourcekeys);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.pfmerge(destkey, sourcekeys);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public ScanResult<Tuple> zscan(byte[] key, byte[] cursor) {
-        return jedis().zscan(key, cursor);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zscan(key, cursor);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public ScanResult<Tuple> zscan(byte[] key, byte[] cursor, ScanParams params) {
-        return jedis().zscan(key, cursor, params);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.zscan(key, cursor, params);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<String> blpop(int timeout, String key) {
-        return jedis().blpop(timeout, key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.blpop(timeout, key);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<String> brpop(int timeout, String key) {
-        return jedis().brpop(timeout, key);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.brpop(timeout, key);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long geoadd(String key, double longitude, double latitude, String member) {
-        return jedis().geoadd(key, longitude, latitude, member);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.geoadd(key, longitude, latitude, member);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long geoadd(String key, Map<String, GeoCoordinate> memberCoordinateMap) {
-        return jedis().geoadd(key, memberCoordinateMap);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.geoadd(key, memberCoordinateMap);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long geoadd(byte[] key, double longitude, double latitude, byte[] member) {
-        return jedis().geoadd(key, longitude, latitude, member);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.geoadd(key, longitude, latitude, member);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Double geodist(String key, String member1, String member2) {
-        return jedis().geodist(key, member1, member2);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.geodist(key, member1, member2);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Long geoadd(byte[] key, Map<byte[], GeoCoordinate> memberCoordinateMap) {
-        return jedis().geoadd(key, memberCoordinateMap);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.geoadd(key, memberCoordinateMap);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Double geodist(String key, String member1, String member2, GeoUnit unit) {
-        return jedis().geodist(key, member1, member2, unit);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.geodist(key, member1, member2, unit);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Double geodist(byte[] key, byte[] member1, byte[] member2) {
-        return jedis().geodist(key, member1, member2);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.geodist(key, member1, member2);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<String> geohash(String key, String... members) {
-        return jedis().geohash(key, members);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.geohash(key, members);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public Double geodist(byte[] key, byte[] member1, byte[] member2, GeoUnit unit) {
-        return jedis().geodist(key, member1, member2, unit);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.geodist(key, member1, member2, unit);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<GeoCoordinate> geopos(String key, String... members) {
-        return jedis().geopos(key, members);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.geopos(key, members);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<byte[]> geohash(byte[] key, byte[]... members) {
-        return jedis().geohash(key, members);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.geohash(key, members);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<GeoRadiusResponse> georadius(String key,
                                              double longitude,
                                              double latitude,
                                              double radius,
                                              GeoUnit unit) {
-        return jedis().georadius(key, longitude, latitude, radius, unit);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.georadius(key, longitude, latitude, radius, unit);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<GeoCoordinate> geopos(byte[] key, byte[]... members) {
-        return jedis().geopos(key, members);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.geopos(key, members);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<GeoRadiusResponse> georadius(String key,
                                              double longitude,
                                              double latitude,
                                              double radius,
                                              GeoUnit unit,
                                              GeoRadiusParam param) {
-        return jedis().georadius(key, longitude, latitude, radius, unit, param);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.georadius(key, longitude, latitude, radius, unit, param);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<GeoRadiusResponse> georadius(byte[] key,
                                              double longitude,
                                              double latitude,
                                              double radius,
                                              GeoUnit unit) {
-        return jedis().georadius(key, longitude, latitude, radius, unit);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.georadius(key, longitude, latitude, radius, unit);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<GeoRadiusResponse> georadiusByMember(String key,
                                                      String member,
                                                      double radius,
                                                      GeoUnit unit) {
-        return jedis().georadiusByMember(key, member, radius, unit);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.georadiusByMember(key, member, radius, unit);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<GeoRadiusResponse> georadius(byte[] key,
                                              double longitude,
                                              double latitude,
                                              double radius,
                                              GeoUnit unit,
                                              GeoRadiusParam param) {
-        return jedis().georadius(key, longitude, latitude, radius, unit, param);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.georadius(key, longitude, latitude, radius, unit, param);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<GeoRadiusResponse> georadiusByMember(String key,
                                                      String member,
                                                      double radius,
                                                      GeoUnit unit,
                                                      GeoRadiusParam param) {
-        return jedis().georadiusByMember(key, member, radius, unit, param);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.georadiusByMember(key, member, radius, unit, param);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<GeoRadiusResponse> georadiusByMember(byte[] key,
                                                      byte[] member,
                                                      double radius,
                                                      GeoUnit unit) {
-        return jedis().georadiusByMember(key, member, radius, unit);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.georadiusByMember(key, member, radius, unit);
+        } finally {Streams.safeClose(jedis);}
     }
 
-    @Aop("redis")
     public List<GeoRadiusResponse> georadiusByMember(byte[] key,
                                                      byte[] member,
                                                      double radius,
                                                      GeoUnit unit,
                                                      GeoRadiusParam param) {
-        return jedis().georadiusByMember(key, member, radius, unit, param);
+        Jedis jedis = getJedis();
+        try {
+            return jedis.georadiusByMember(key, member, radius, unit, param);
+        } finally {Streams.safeClose(jedis);}
     }
 
+    public void setJedisAgent(JedisAgent jedisAgent) {
+        this.jedisAgent = jedisAgent;
+    }
 }
