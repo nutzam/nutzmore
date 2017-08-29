@@ -1,14 +1,16 @@
 spring:
+#    aop:
+#        proxy-target-class: true
     datasource:
         name: test
         #url: jdbc:h2:~/.h2db/nutz-starter;MODE=MYSQL
-        url: jdbc:mysql://127.0.0.1:3306/test?useUnicode=true&characterEncoding=utf-8&useSSL=false
-        username: root
+        url: jdbc:oracle:thin:@localhost:49161:xe
+        username: test
         password: 123456
         # 使用druid数据源
         type: org.nutz.dao.impl.SimpleDataSource
         #driver-class-name: org.h2.Driver
-        driver-class-name: com.mysql.jdbc.Driver
+        driver-class-name: oracle.jdbc.driver.OracleDriver
         filters: stat,wall,log4j
         connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
         maxActive: 20

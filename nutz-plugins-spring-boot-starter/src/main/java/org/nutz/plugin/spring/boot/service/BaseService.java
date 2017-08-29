@@ -411,7 +411,21 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 	 *            字段正则
 	 * @return 影响的记录条数
 	 */
+	@Deprecated
 	public int update(final T obj, String regex) {
+		return dao().update(obj, regex);
+	}
+
+	/***
+	 * 更新字段的指定字段
+	 * 
+	 * @param obj
+	 *            待更新对象
+	 * @param regex
+	 *            字段正则
+	 * @return 影响的记录条数
+	 */
+	public int updateFields(final T obj, String regex) {
 		return dao().update(obj, regex);
 	}
 

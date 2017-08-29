@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.View;
 
 import club.zhcs.captcha.CaptchaView;
+import demo.bean.R;
 import demo.biz.TService;
 
 @RestController
@@ -33,6 +34,11 @@ public class App {
 	@GetMapping("captcha/{length}")
 	public View captcha(@PathVariable("length") int length) {
 		return new CaptchaView(length);
+	}
+
+	@GetMapping("enum")
+	public R enumtest() {
+		return new R();
 	}
 
 	@GetMapping("test")
