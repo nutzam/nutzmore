@@ -10,9 +10,9 @@ var ioc = {
 			}
 		},
 		processEngineSpec : {
-			type : "org.activiti.engine.impl.cfg.StandaloneProcessEngineConfiguration"
+			type : "org.nutz.integration.activiti.NutProcessEngineConfiguration"
 			factory: "$conf#make",
-			args : ["org.activiti.engine.impl.cfg.StandaloneProcessEngineConfiguration", "activiti."],
+			args : ["org.nutz.integration.activiti.NutProcessEngineConfiguration", "activiti."],
 			fields : {
 				dataSource : {refer:"dataSource"},
 				expressionManager : {refer:"nutzExpressionManager"}
