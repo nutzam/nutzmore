@@ -126,6 +126,7 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
         XSqlAdapter adapter;
         switch (db) {
         case ORACLE:
+        case DM:
             adapter = new XOracleSqlAdapter();
             break;
         case DB2:
@@ -244,6 +245,7 @@ public class CachedNutDaoExecutor extends NutDaoExecutor {
         case SQLITE:
             return new MySqlStatementParser(sql);
         case ORACLE:
+        case DM:
             return new OracleStatementParser(sql);
         case PSQL:
             return new PGSQLStatementParser(sql);
