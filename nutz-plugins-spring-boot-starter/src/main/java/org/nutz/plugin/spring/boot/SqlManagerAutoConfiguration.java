@@ -8,6 +8,8 @@ import org.nutz.integration.spring.SpringResourceLoaction;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.plugin.spring.boot.config.SqlManagerProperties;
+import org.nutz.plugin.spring.boot.config.SqlManagerProperties.Mode;
+import org.nutz.plugins.sqlmanager.xml.XmlSqlManager;
 import org.nutz.resource.Scans;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -20,11 +22,11 @@ import org.springframework.context.support.ApplicationObjectSupport;
 @Configuration
 @ConditionalOnClass(SqlManager.class)
 @EnableConfigurationProperties(SqlManagerProperties.class)
-public class FileSqlManagerAutoConfiguration extends ApplicationObjectSupport {
+public class SqlManagerAutoConfiguration extends ApplicationObjectSupport {
 
 	Log log = Logs.get();
 
-	public FileSqlManagerAutoConfiguration() {
+	public SqlManagerAutoConfiguration() {
 	}
 
 	@Autowired
@@ -50,7 +52,7 @@ public class FileSqlManagerAutoConfiguration extends ApplicationObjectSupport {
 		if (paths == null) {
 			paths = new String[] { "sqls" };
 		}
-		return new FileSqlManager(paths);
+		return sqlManagerProperties.getMode() == Mode.XML ? new XmlSqlManager(paths) : new FileSqlManager(paths);
 	}
 
 }

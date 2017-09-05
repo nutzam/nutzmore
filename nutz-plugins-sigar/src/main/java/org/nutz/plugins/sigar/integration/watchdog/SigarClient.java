@@ -74,6 +74,7 @@ public class SigarClient {
 
 	private Log log = Logs.getLog(SigarClient.class);
 
+	@SuppressWarnings("deprecation")
 	protected void start() {
 		Tasks.scheduleAtFixedTime(new Runnable() {
 
