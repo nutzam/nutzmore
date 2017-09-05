@@ -230,7 +230,7 @@ class TimePointRepeater {
         ArrayList<String> list = new ArrayList<>(this.timePoints.length);
         for (int i = 0; i < this.timePoints.length; i++) {
             int sec = this.timePoints[i];
-            list.add(Times.Ti(sec).toString(true));
+            list.add(Times.Ti(sec).toString());
         }
         ary.add(Strings.join(", ", list));
     }
@@ -275,8 +275,8 @@ class TimePointRepeater {
         NutMap c = new NutMap();
         c.put("ieF", this.region.isLeftOpen() ? i18n.EXC : i18n.INV);
         c.put("ieT", this.region.isRightOpen() ? i18n.EXC : i18n.INV);
-        c.put("from", tFrom.toString(true));
-        c.put("to", tTo.toString(true));
+        c.put("from", tFrom.toString());
+        c.put("to", tTo.toString());
 
         // 渲染
         String str = tmpl.render(c);
