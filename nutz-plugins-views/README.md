@@ -118,6 +118,16 @@ var ioc = {
 	<artifactId>nutz-plugins-views</artifactId>
 	<version>${nutz.plugins.version}</version>
 </dependency>
+<dependency>
+    <groupId>org.apache.velocity</groupId>
+    <artifactId>velocity</artifactId>
+    <version>1.7</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.velocity</groupId>
+    <artifactId>velocity-tools</artifactId>
+    <version>1.7</version>
+</dependency>
 ```
 
 + 主模块配置
@@ -162,7 +172,7 @@ nutz的filter或者servlet加上初始化参数
 + 使用模板
 
 ``` java?linenums
-@Ok("vm:pages/bill/list.html")
+@Ok("vm:/pages/bill/list.html")
 ```
 
 + 扩展工具
