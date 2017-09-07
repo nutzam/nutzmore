@@ -233,6 +233,7 @@ public NutMap main() {
     map.put("user", user);
     return map;
 }
+```
 
 main.vm文件
 ```html?linenums
