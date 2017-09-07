@@ -237,7 +237,7 @@ public NutMap main() {
 
 main.vm文件
 ```html?linenums
-<span> 站点名称：$!{obj.site_name}
+<span> 站点名称：$!{obj.site_name}</span>
 #if($!{obj.user.roleId} == 0)
 <li> 管理员 $!{obj.user.userName}</li>
 #else
