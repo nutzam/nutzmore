@@ -5,20 +5,20 @@ import java.lang.reflect.Method;
 import org.nutz.aop.InterceptorChain;
 import org.nutz.aop.MethodInterceptor;
 
-import com.jarvis.cache.AbstractCacheManager;
+import com.jarvis.cache.CacheHandler;
 import com.jarvis.cache.annotation.CacheDelete;
 import com.jarvis.cache.aop.DeleteCacheAopProxyChain;
 
 public class DelCacheAopInterceptor implements MethodInterceptor {
 
-	private AbstractCacheManager cacheManager;
+	private CacheHandler cacheHandler;
 
 	private CacheDelete cache;
 
 	private boolean haveCache;
 
-	public DelCacheAopInterceptor(AbstractCacheManager cacheManager, CacheDelete cache, Method method) {
-		this.cacheManager = cacheManager;
+	public DelCacheAopInterceptor(CacheHandler cacheHandler, CacheDelete cache, Method method) {
+		this.cacheHandler = cacheHandler;
 		this.cache = cache;
 		if (method.isAnnotationPresent(CacheDelete.class)) {
 			this.haveCache = true;
@@ -29,7 +29,7 @@ public class DelCacheAopInterceptor implements MethodInterceptor {
 		try {
 			if (haveCache) {
 				chain.doChain();
-				cacheManager.deleteCache(new DeleteCacheAopProxyChain() {
+				cacheHandler.deleteCache(new DeleteCacheAopProxyChain() {
 
 					@Override
 					public Class<?> getTargetClass() {
