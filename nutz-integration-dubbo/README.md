@@ -124,7 +124,7 @@ public class DubboClientTest {
 }
 ```
 
-服务端调用实例
+服务器端示例
 --------------------------------------------------
 
 接口及其实现类 
@@ -166,7 +166,7 @@ public class DubboWayServiceImpl {
 }
 ```
 
-新建一个配置文件 dubbo-client.xml, 使用dubbo原生配置
+新建一个配置文件 dubbo-server.xml, 使用dubbo原生配置
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -182,8 +182,26 @@ public class DubboWayServiceImpl {
     <dubbo:protocol name="dubbo" port="20880" />
  
     <!-- ref对应bean的name属性 -->
-    <dubbo:service id="dubboWayService" interface="net.wendal.nutzbook.service.DubboWayService" 
-    ref="dubboWayService"/>
+    <dubbo:service id="dubboWayService" interface="net.wendal.nutzbook.service.DubboWayService" ref="dubboWayService"/>
  
 </beans>
+```
+
+在MainModule的IocBy添加引用, 跟客户端的区别只是配置文件的名字不一样
+
+```java
+	@IocBy(type=ComboIocProvider.class, args={"*js", "ioc/",
+										   "*anno", "net.wendal.nutzbook",
+										   "*dubbo", "dubbo-server.xml"})
+```
+
+然后,在MainSetup或其他实现了Setup接口的init方法内启动服务
+
+```
+public class MainSetup implements Setup {
+	public void init(NutConfig nc) {
+		Ioc ioc = nc.getIoc();
+		ioc.get(DubboManager.class);
+	}
+}
 ```
