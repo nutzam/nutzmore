@@ -20,7 +20,7 @@
 		<dependency>
 			<groupId>com.github.qiujiayu</groupId>
 			<artifactId>autoload-cache</artifactId>
-			<version>4.15</version>
+			<version>6.4</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.springframework</groupId>
@@ -47,11 +47,6 @@
 			<artifactId>log4j</artifactId>
 			<version>1.2.17</version>
 			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.nutz</groupId>
-			<artifactId>nutz</artifactId>
-			<version>1.r.60</version>
 		</dependency>
 	</dependencies>
 	<build>
