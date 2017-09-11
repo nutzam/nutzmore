@@ -7,3 +7,4 @@ nutz-plugins-jsonrpc
 完整实现jsonrpc, 用Mapper方式
 
 本插件已经放进nutz核心库
+org.nutz.mvc.impl.JsonRPC
