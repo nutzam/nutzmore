@@ -22,7 +22,7 @@ import org.springframework.http.converter.HttpMessageConverter;
  */
 @Configuration
 @ConditionalOnClass({ Json.class })
-@ConditionalOnProperty("nutz.json")
+//@ConditionalOnProperty("nutz.json")
 @EnableConfigurationProperties(NutzJsonProperties.class)
 public class NutzJsonMessageConverterAutoConfiguration {
 
