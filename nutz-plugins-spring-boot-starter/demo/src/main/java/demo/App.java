@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 
 import org.nutz.dao.ConnCallback;
 import org.nutz.dao.Dao;
+import org.nutz.lang.Times;
 import org.nutz.lang.util.NutMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -241,7 +242,7 @@ public class App {
 
 	@GetMapping("dd")
 	public NutMap dd() {
-		return NutMap.NEW().addv("k", "(sss)");
+		return NutMap.NEW().addv("t", Times.now());
 	}
 
 	@Autowired
