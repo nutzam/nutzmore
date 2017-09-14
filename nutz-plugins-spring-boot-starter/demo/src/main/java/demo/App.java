@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 
 import org.nutz.dao.ConnCallback;
 import org.nutz.dao.Dao;
-import org.nutz.lang.Times;
 import org.nutz.lang.util.NutMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -22,6 +21,7 @@ import org.springframework.web.servlet.View;
 
 import club.zhcs.captcha.CaptchaView;
 import demo.bean.R;
+import demo.bean.T;
 import demo.biz.TService;
 
 @RestController
@@ -242,7 +242,7 @@ public class App {
 
 	@GetMapping("dd")
 	public NutMap dd() {
-		return NutMap.NEW().addv("t", Times.now());
+		return NutMap.NEW().addv("t", new T());
 	}
 
 	@Autowired

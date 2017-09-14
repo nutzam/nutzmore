@@ -34,6 +34,7 @@ nutz:
   json:
     enabled: true
     mode: compact
+    date-format: yyyyMMdd HH:mm:ss
   dao:
     runtime:
       add-column: true

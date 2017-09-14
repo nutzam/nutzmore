@@ -55,21 +55,21 @@ public class NutzJsonMessageConverterAutoConfiguration {
 			}
 		} else {
 			format = Json.fromJson(JsonFormat.class, Json.toJson(jsonProperties));
-			if (Strings.isNotBlank(jsonProperties.getActived())) {
-				format.setActived(jsonProperties.getActived());
-			}
-			if (Strings.isNotBlank(jsonProperties.getLocked())) {
-				format.setLocked(jsonProperties.getLocked());
-			}
-			if (Strings.isNotBlank(jsonProperties.getDateFormat())) {
-				format.setDateFormat(jsonProperties.getDateFormat());
-			}
-			if (Strings.isNotBlank(jsonProperties.getNumberFormat())) {
-				format.setNumberFormat(new DecimalFormat(jsonProperties.getNumberFormat()));
-			}
-			if (Strings.isNotBlank(jsonProperties.getTimeZone())) {
-				format.setTimeZone(TimeZone.getTimeZone(jsonProperties.getTimeZone()));
-			}
+		}
+		if (Strings.isNotBlank(jsonProperties.getActived())) {
+			format.setActived(jsonProperties.getActived());
+		}
+		if (Strings.isNotBlank(jsonProperties.getLocked())) {
+			format.setLocked(jsonProperties.getLocked());
+		}
+		if (Strings.isNotBlank(jsonProperties.getDateFormat())) {
+			format.setDateFormat(jsonProperties.getDateFormat());
+		}
+		if (Strings.isNotBlank(jsonProperties.getNumberFormat())) {
+			format.setNumberFormat(new DecimalFormat(jsonProperties.getNumberFormat()));
+		}
+		if (Strings.isNotBlank(jsonProperties.getTimeZone())) {
+			format.setTimeZone(TimeZone.getTimeZone(jsonProperties.getTimeZone()));
 		}
 		return new NutzJsonMessageConverter().setFormat(format).setIgnoreType(jsonProperties.getIgnoreType());
 	}

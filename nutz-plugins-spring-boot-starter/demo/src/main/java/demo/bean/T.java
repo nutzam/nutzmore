@@ -7,6 +7,7 @@ import org.nutz.dao.entity.annotation.Column;
 import org.nutz.dao.entity.annotation.Id;
 import org.nutz.dao.entity.annotation.Name;
 import org.nutz.dao.entity.annotation.Table;
+import org.nutz.json.JsonField;
 import org.nutz.lang.Times;
 import org.nutz.lang.random.R;
 import org.nutz.plugin.spring.boot.service.entity.DataBaseEntity;
@@ -22,9 +23,11 @@ public class T extends DataBaseEntity {
 
 	@Column("long_text")
 	@ColDefine(width = 2000)
-	String longText = R.sg(2000).next();
+	@JsonField(ignore = true)
+	String longText = R.sg(20).next();
 
 	@Column("t_tt_time")
+	@JsonField(dataFormat = "yyyy-MM-dd HH:mm:ss")
 	Date date = Times.now();
 
 	public long getId() {
