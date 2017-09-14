@@ -66,7 +66,7 @@ public interface DubboWayService {
     xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
     xsi:schemaLocation="http://www.springframework.org/schema/beans        http://www.springframework.org/schema/beans/spring-beans.xsd        http://code.alibabatech.com/schema/dubbo        http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
  
-    <dubbo:application name="nutzcn"  />
+    <dubbo:application name="nutzcn-client"  />
  
     <dubbo:registry address="multicast://224.5.6.7:1234" />
  
@@ -175,14 +175,15 @@ public class DubboWayServiceImpl {
     xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
     xsi:schemaLocation="http://www.springframework.org/schema/beans        http://www.springframework.org/schema/beans/spring-beans.xsd        http://code.alibabatech.com/schema/dubbo        http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
  
-    <dubbo:application name="nutzcn"  />
+    <dubbo:application name="nutzcn-server"  />
  
     <dubbo:registry address="multicast://224.5.6.7:1234" />
  
     <dubbo:protocol name="dubbo" port="20880" />
  
     <!-- ref对应bean的name属性 -->
-    <dubbo:service id="dubboWayService" interface="net.wendal.nutzbook.service.DubboWayService" ref="dubboWayService"/>
+    <!-- 但id不能与ref相同 -->
+    <dubbo:service id="dubboWayService_server" interface="net.wendal.nutzbook.service.DubboWayService" ref="dubboWayService"/>
  
 </beans>
 ```
