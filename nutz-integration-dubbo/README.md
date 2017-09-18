@@ -206,3 +206,12 @@ public class MainSetup implements Setup {
 	}
 }
 ```
+
+基于注解的扫描
+-----------------------------------------------------------
+
+与官方写法一样, 声明一下需要扫描的package, 即可使用@Reference和@Service注解
+
+```xml
+<dubbo:annotation package="com.foo.bar.service" />
+```
