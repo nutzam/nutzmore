@@ -6,7 +6,10 @@ Nutz集成nutz-integration-nettice的插件
 ![design](https://github.com/cyfonly/nettice/blob/master/pictures/nettice.png "nettice")  
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/cyfonly/nettice/blob/master/LICENSE)  [![Built with Maven](http://maven.apache.org/images/logos/maven-feather.png)](http://search.maven.org/#search%7Cga%7C1%7Ccyfonly)  
 基于netty http协议栈的轻量级 MVC 组件
-  
+
+#首先感谢 cyfonly 提供
+https://github.com/cyfonly/nettice
+
 # 特性
 1. 接收装配请求数据、流程控制和渲染数据
 2. `URI` 到方法直接映射，以及命名空间
@@ -136,6 +139,83 @@ public Render postPriMap(){
 # TODO LIST 
 1. java bean支持  
   
-  
+# DEMO
+
+```
+public class HttpServer {
+
+	private static final Log logger = Logs.get();
+
+	private final int port;
+
+	public HttpServer(int port) {
+		this.port = port;
+	}
+
+	public void run() throws Exception {
+		EventLoopGroup bossGroup = new NioEventLoopGroup();
+		EventLoopGroup workerGroup = new NioEventLoopGroup();
+
+		try {
+			ServerBootstrap bootstrap = new ServerBootstrap();
+			bootstrap.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class).childHandler(new ChannelInitializer<SocketChannel>() {
+				@Override
+				public void initChannel(SocketChannel ch) throws Exception {
+					ch.pipeline().addLast("codec", new HttpServerCodec()).addLast("aggregator", new HttpObjectAggregator(1024 * 1024)).addLast("dispatcher", new ActionDispatcher());
+				}
+			}).option(ChannelOption.SO_BACKLOG, 1024).childOption(ChannelOption.SO_KEEPALIVE, true).childOption(ChannelOption.TCP_NODELAY, true);
+			ChannelFuture future = bootstrap.bind(port).sync();
+			logger.info("Nettp server listening on port " + port);
+			future.channel().closeFuture().sync();
+		} finally {
+			bossGroup.shutdownGracefully();
+			workerGroup.shutdownGracefully();
+		}
+	}
+
+	public static void main(String[] args) throws Exception {
+		ActionDispatcher dispatcher = new ActionDispatcher();
+		dispatcher.init("nettice.xml", "om");
+		new HttpServer(8080).run();
+	}
+
+}
+
+```
+
+#nettice.xml 
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<router>
+	<action-package>
+		<package>com.anawin.http.action</package>
+	</action-package>
+</router>
+```
+#java
+
+```
+@At("/api/rule/")
+public class RuleAction extends BaseAction {
+
+	@At
+	public Render add(@Param(value = "ip") String addrs) {
+		if (StringUtils.isNotBlank(addrs)) {
+			String[] addrArry = StringUtils.split(addrs, ",");
+			IocProvider.me().ioc().get(IpRule.class).add(Lang.array2list(addrArry));
+		}
+		return new Render(RenderType.JSON, "{\"code\":200,\"msg\":\" Ok\"}");
+	}
+}
+```
+
+#请求地址
+
+```
+http://127.0.0.1/api/rule/add?ip=192.168.3.1
+
+```
+
 # License
 基于 Apache License 2.0 发布。有关详细信息，请参阅 [LICENSE](https://github.com/cyfonly/nettice/blob/master/LICENSE)。
