@@ -1,4 +1,4 @@
-Nutz集成nutz-integration-nettice</的插件
+Nutz集成nutz-integration-nettice的插件
 ======================
 
 简介(可用性:生产,维护者:Rekoe)
@@ -42,7 +42,8 @@ Nutz集成nutz-integration-nettice</的插件
 .addLast("dispatcher",new ActionDispatcher())
 ```  
 
-例如 `com.server.action.DemoAction` 提供了 `returnTextUseNamespace()` 方法，`com.server.action.sub.SubDemoAction` 也提供了 `returnTextUseNamespace()` 方法，但两个方法实现不同功能。`nettice` 组件默认使用方法名进行 `URI` 映射，那么上述两个 `returnTextUseNamespace()` 方法会产生冲突，开发者可以使用 `@Namespace` 注解修改 `URI` 映射：  
+例如 `com.server.action.DemoAction` 提供了 `returnTextUseNamespace()` 方法，`com.server.action.sub.SubDemoAction` 也提供了 `returnTextUseNamespace()` 方法，但两个方法实现不同功能。`nettice` 组件默认使用方法名进行 `URI` 映射，那么上述两个 `returnTextUseNamespace()` 方法会产生冲突，开发者可以使用 `@At` 注解修改 `URI` 映射：  
+
 ```
 package com.server.action;
 public class DemoAction extends BaseAction{
@@ -53,6 +54,7 @@ public class DemoAction extends BaseAction{
   	}
 }
 ``` 
+
   
 ```
 package com.server.action.sub;
@@ -65,18 +67,19 @@ public class SubDemoAction extends BaseAction{
 }
 ```
 
-```
-
 # 接收装配请求数据
 使用Read注解可以自动装配请求数组，支持不同的类型（`基本类型`、`List`、`Array`  和 `Map`），可以设置默认值（**目前仅支持基本类型设置 defaultValue**）。  
 这个例子演示了从 `HttpRequest` 中获取基本类型的方法，如果没有值会自动设置默认值：
+
 ```
 public Render primTypeTest(@Param(value="id", df="1" ) Integer id, @Param("proj") String proj, @Param("author") String author){
 	System.out.println("Receive parameters: id=" + id + ",proj=" + proj + ",author=" + author);
 	return new Render(RenderType.TEXT, "Received your primTypeTest request.[from primTypeTest]");
 }
 ```  
+
 这个例子演示了从 `HttpRequest` 中获取 `List/Array` 类型的方法：
+
 ```
 public Render arrayListTypeTest(@Param("ids") Integer[] ids, @Param("names") List<String> names){
 	System.out.println("server output ids:");
@@ -96,7 +99,9 @@ public Render arrayListTypeTest(@Param("ids") Integer[] ids, @Param("names") Lis
 	return new Render(RenderType.JSON, Json.toJson(obj));
 }
 ```
+
 这个例子演示了从 `HttpRequest` 中获取 `Map` 类型的方法（**注意，使用 Map 时限定了只能存在一个 Map<String,String> 参数**）：
+
 ```
 public Render mapTypeTest(@Read(key="srcmap") Map<String,String> srcmap){
 	System.out.println("server output srcmap:");
@@ -111,11 +116,13 @@ public Render mapTypeTest(@Read(key="srcmap") Map<String,String> srcmap){
 	return new Render(RenderType.JSON, Json.toJson(obj));
 }
 ```  
-  
+
+
 # 渲染数据
 处理方法可以通过返回 `Render` 对象向客户端返回特定格式的数据，一个 `Render` 对象由枚举类型 `RenderType` 和 `data` 两部分组成。  
 `nettice` 组件会通过 `RenderType` 来为 `Response` 设置合适的 `Content-Type`，开发者也可以扩展 `Render` 以及相关类来实现更多的类型支持。  
 例如这是一个返回 `JSON` 对象的例子，客户端将收到一个 `Json` 对象：
+
 ```
 public Render postPriMap(){
 	NutMap obj = new NutMap();
