@@ -1,39 +1,68 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.nutz</groupId>
-		<artifactId>nutzmore</artifactId>
-		<version>1.r.63-SNAPSHOT</version>
-	</parent>
-	<artifactId>nutz-integration-nettice</artifactId>
+	<groupId>org.nutz</groupId>
+	<artifactId>nutzmore</artifactId>
+	<version>1.r.63-SNAPSHOT</version>
+	<name>nutzmore</name>
+	<description>Nutz, which is a collections of lightweight frameworks, each of them can be used independently</description>
+
+	<url>https://nutzam.com</url>
+	<issueManagement>
+		<system>Github Issue</system>
+		<url>http://github.com/nutzam/nutzmore/issues</url>
+	</issueManagement>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
+	</licenses>
+	<developers>
+		<developer>
+			<id>zozoh</id>
+			<name>zozoh</name>
+			<email>zozohtnt@gmail.com</email>
+			<url>http://weibo.com/zozoh</url>
+		</developer>
+		<developer>
+			<id>wendal</id>
+			<name>Wendal Chen</name>
+			<email>wendal1985@gmail.com</email>
+			<url>http://wendal.net/</url>
+		</developer>
+		<developer>
+			<id>juqkai</id>
+			<name>Juqkai</name>
+			<email>Bird.Wyatt@gmail.com</email>
+			<url>https://github.com/juqkai</url>
+		</developer>
+	</developers>
+	<scm>
+		<connection>scm:git:git://github.com/nutzam/nutzmore.git</connection>
+		<developerConnection>scm:git:git://github.com/nutzam/nutzmore.git</developerConnection>
+		<url>git://github.com/nutzam/nutzmore.git</url>
+	</scm>
+	<repositories>
+		<repository>
+			<id>nutzcn-snapshots</id>
+			<url>https://jfrog.nutz.cn/artifactory/snapshots</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
 	<dependencies>
 		<dependency>
-			<groupId>io.netty</groupId>
-			<artifactId>netty-all</artifactId>
-			<version>4.1.6.Final</version>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.12</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<version>1.2.17</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>dom4j</groupId>
-			<artifactId>dom4j</artifactId>
-			<version>1.6.1</version>
+			<groupId>org.nutz</groupId>
+			<artifactId>nutz</artifactId>
+			<version>1.r.63-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -52,6 +81,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.18.1</version>
 				<configuration>
 					<forkMode>once</forkMode>
 					<argLine>-Dfile.encoding=UTF-8</argLine>
@@ -60,13 +90,66 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.10.3</version>
 				<configuration>
 					<additionalparam>-Xdoclint:none</additionalparam>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
-
+	<packaging>pom</packaging>
+	<modules>
+		<module>nutz-integration-activiti</module>
+		<module>nutz-integration-spring</module>
+		<module>nutz-integration-quartz</module>
+		<module>nutz-integration-dwr</module>
+		
+		<module>nutz-integration-shiro</module>
+		<module>nutz-integration-dubbo</module>
+		
+		<module>nutz-integration-zbus</module>
+		<module>nutz-integration-hessian</module>
+		<module>nutz-integration-jedis</module>
+		<module>nutz-integration-hasor</module>
+		<module>nutz-plugins-validation</module>
+		<module>nutz-plugins-views</module>
+		<module>nutz-plugins-multiview</module>
+		<module>nutz-plugins-xmlentitymaker</module>
+		
+		<module>nutz-plugins-daocache</module>
+		<module>nutz-plugins-protobuf</module>
+		<module>nutz-plugins-sqltpl</module>
+		<module>nutz-plugins-jsonrpc</module>
+		<module>nutz-plugins-sigar</module>
+		<module>nutz-plugins-mock</module>
+		<module>nutz-plugins-qrcode</module>
+		<module>nutz-plugins-nop</module>
+		<module>nutz-plugins-apidoc</module>
+		<module>nutz-plugins-websocket</module>
+		<module>nutz-plugins-slog</module>
+		<module>nutz-plugins-cache</module>
+		<module>nutz-plugins-hotplug</module>
+		<module>nutz-plugins-daomapping</module>
+		<module>nutz-plugins-ngrok</module>
+		<module>nutz-integration-json4excel</module>
+		<module>nutz-integration-rabbitmq</module>
+		<module>nutz-integration-grpc</module>
+		
+		<module>nutz-plugins-zdoc</module>
+		<module>nutz-plugins-zcron</module>
+		<module>nutz-plugins-profiler</module>
+		<module>nutz-integration-neo4j</module>
+		<module>nutz-plugins-wkcache</module>
+		<module>nutz-plugins-event</module>
+		<module>nutz-plugins-undertow</module>
+    <module>nutz-integration-bex5</module>
+    <module>nutz-plugins-spring-boot-starter</module>
+    <module>nutz-plugins-ip2region</module>
+    <module>nutz-integration-cxf</module>
+	<module>nutz-integration-swagger</module>
+	<module>nutz-plugins-sqlmanager</module>
+	<module>nutz-integration-nettice</module>
+	</modules>
 	<distributionManagement>
 		<snapshotRepository>
 			<id>nutzcn-snapshots</id>
