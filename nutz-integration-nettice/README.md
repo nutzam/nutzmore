@@ -7,7 +7,7 @@ Nutz集成nutz-integration-nettice的插件
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/cyfonly/nettice/blob/master/LICENSE)  [![Built with Maven](http://maven.apache.org/images/logos/maven-feather.png)](http://search.maven.org/#search%7Cga%7C1%7Ccyfonly)  
 基于netty http协议栈的轻量级 MVC 组件
 
-#首先感谢 cyfonly 提供
+# 首先感谢 cyfonly 提供
 https://github.com/cyfonly/nettice
 
 # 特性
@@ -115,7 +115,6 @@ public Render mapTypeTest(@Read(key="srcmap") Map<String,String> srcmap){
 	NutMap obj = new NutMap();
 	obj.put("code", 0);
 	obj.put("msg", "Received your Map request.[from mapTypeTest]");
-		
 	return new Render(RenderType.JSON, Json.toJson(obj));
 }
 ```  
@@ -131,7 +130,6 @@ public Render postPriMap(){
 	NutMap obj = new NutMap();
 	obj.put("code", 0);
 	obj.put("msg", "had received your request.");
-	
 	return new Render(RenderType.JSON, Json.toJson(obj));
 }
 ```  
@@ -145,7 +143,6 @@ public Render postPriMap(){
 public class HttpServer {
 
 	private static final Log logger = Logs.get();
-
 	private final int port;
 
 	public HttpServer(int port) {
@@ -155,7 +152,6 @@ public class HttpServer {
 	public void run() throws Exception {
 		EventLoopGroup bossGroup = new NioEventLoopGroup();
 		EventLoopGroup workerGroup = new NioEventLoopGroup();
-
 		try {
 			ServerBootstrap bootstrap = new ServerBootstrap();
 			bootstrap.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class).childHandler(new ChannelInitializer<SocketChannel>() {
@@ -175,7 +171,7 @@ public class HttpServer {
 
 	public static void main(String[] args) throws Exception {
 		ActionDispatcher dispatcher = new ActionDispatcher();
-		dispatcher.init("nettice.xml", "om");
+		dispatcher.init("nettice.xml", "action");
 		new HttpServer(8080).run();
 	}
 
@@ -183,7 +179,7 @@ public class HttpServer {
 
 ```
 
-#nettice.xml 
+# nettice.xml 
 
 ```
 <?xml version="1.0" encoding="UTF-8"?>
@@ -193,7 +189,7 @@ public class HttpServer {
 	</action-package>
 </router>
 ```
-#java
+# java
 
 ```
 @At("/api/rule/")
@@ -210,10 +206,10 @@ public class RuleAction extends BaseAction {
 }
 ```
 
-#请求地址
+# 请求地址
 
 ```
-http://127.0.0.1/api/rule/add?ip=192.168.3.1
+http://127.0.0.1/api/rule/add.action?ip=192.168.3.1
 
 ```
 
