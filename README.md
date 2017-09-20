@@ -1,134 +1,104 @@
-Nutz集成nutz-integration-nettice</的插件
-======================
+# Nutz的插件与集成库
 
-简介(可用性:生产,维护者:Rekoe)
-==================================
-![design](https://github.com/cyfonly/nettice/blob/master/pictures/nettice.png "nettice")  
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/cyfonly/nettice/blob/master/LICENSE)  [![Built with Maven](http://maven.apache.org/images/logos/maven-feather.png)](http://search.maven.org/#search%7Cga%7C1%7Ccyfonly)  
-基于netty http协议栈的轻量级 MVC 组件
-  
-# 特性
-1. 接收装配请求数据、流程控制和渲染数据
-2. `URI` 到方法直接映射，以及命名空间
+[![Build Status](https://travis-ci.org/nutzam/nutzmore.png?branch=master)](https://travis-ci.org/nutzam/nutzmore)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutzmore/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutzmore/)
+[![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
-  
-# 功能
-1. 对 `HttpRequest` 的流程控制
-2. 像普通方法一样处理 `http` 请求
-3. 对请求的数据自动装配，支持`基本类型`、`List`、`Array` 和 `Map`
-4. 提供 `Render` 方法渲染并写回响应，支持多种 `Content-Type`
-5. 支持可配置的命名空间
-  
-  
-# 请求分发整体设计
-![design](https://github.com/cyfonly/nettp/blob/master/pictures/design.png "design.png")
-  
-  
-# Action请求处理
-![action_process](https://github.com/cyfonly/nettp/blob/master/pictures/action_process.png "action_process.png")  
-  
-# Usage  
-#### 1. Maven   
+### 各种插件和集成的集合
 
-```
-<dependency>
-  <groupId>org.nutz</groupId>
-  <artifactId>nutz-integration-nettice</artifactId>
-  <version>1.r.63-SNAPSHOT</</version>
-</dependency>
-```   
-#### 2. In your project code
-```
-.addLast("dispatcher",new ActionDispatcher())
-```  
+每个插件都有自己的文件夹,均为maven module, 请按需获取.
 
-例如 `com.server.action.DemoAction` 提供了 `returnTextUseNamespace()` 方法，`com.server.action.sub.SubDemoAction` 也提供了 `returnTextUseNamespace()` 方法，但两个方法实现不同功能。`nettice` 组件默认使用方法名进行 `URI` 映射，那么上述两个 `returnTextUseNamespace()` 方法会产生冲突，开发者可以使用 `@Namespace` 注解修改 `URI` 映射：  
-```
-package com.server.action;
-public class DemoAction extends BaseAction{
-  	@At("/nettp/demo/")
-  	public Render returnTextUseNamespace(@Param("id") Integer id, @Param("proj") String proj){
-    		//do something
-    		return new Render(RenderType.TEXT, "returnTextUseNamespace in [DemoAction]");
-  	}
-}
-``` 
-  
-```
-package com.server.action.sub;
-public class SubDemoAction extends BaseAction{
-  	@At("/nettp/subdemo/")
-	public Render returnTextUseNamespace(@Param("ids") Integer[] ids, @Param("names") List<String> names){
-		//do something
-		return new Render(RenderType.TEXT, "returnTextUseNamespace in [SubDemoAction]");
-	}
-}
+```xml
+		<dependency>
+			<groupId>org.nutz</groupId>
+			<artifactId>填nutz插件名</artifactId>
+			<version>1.r.62</version>
+		</dependency>
 ```
 
+# 快照版地址
+
+https://jfrog.nutz.cn/artifactory/snapshots/org/nutz/
+
+```xml
+	<repositories>
+		<repository>
+			<id>nutzcn-snapshots</id>
+			<url>https://jfrog.nutz.cn/artifactory/snapshots</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+	<dependencies>
+		<dependency>
+			<groupId>org.nutz</groupId>
+			<artifactId>填nutz插件名</artifactId>
+			<version>填版本号-SNAPSHOT</version>
+		</dependency>
+		<!-- 其他依赖 -->
+	</dependencies>
 ```
 
-# 接收装配请求数据
-使用Read注解可以自动装配请求数组，支持不同的类型（`基本类型`、`List`、`Array`  和 `Map`），可以设置默认值（**目前仅支持基本类型设置 defaultValue**）。  
-这个例子演示了从 `HttpRequest` 中获取基本类型的方法，如果没有值会自动设置默认值：
-```
-public Render primTypeTest(@Param(value="id", df="1" ) Integer id, @Param("proj") String proj, @Param("author") String author){
-	System.out.println("Receive parameters: id=" + id + ",proj=" + proj + ",author=" + author);
-	return new Render(RenderType.TEXT, "Received your primTypeTest request.[from primTypeTest]");
-}
-```  
-这个例子演示了从 `HttpRequest` 中获取 `List/Array` 类型的方法：
-```
-public Render arrayListTypeTest(@Param("ids") Integer[] ids, @Param("names") List<String> names){
-	System.out.println("server output ids:");
-	for(int i=0; i<ids.length; i++){
-		System.out.println(ids[i]);
-	}
-		
-	System.out.println("server output names：");
-	for(String item : names){
-		System.out.println(item);
-	}
-		
-	NutMap obj = new NutMap();
-	obj.put("code", 0);
-	obj.put("msg", "Received your Array/List request.[from arrayListTypeTest()]");
-		
-	return new Render(RenderType.JSON, Json.toJson(obj));
-}
-```
-这个例子演示了从 `HttpRequest` 中获取 `Map` 类型的方法（**注意，使用 Map 时限定了只能存在一个 Map<String,String> 参数**）：
-```
-public Render mapTypeTest(@Read(key="srcmap") Map<String,String> srcmap){
-	System.out.println("server output srcmap:");
-	for(String key : srcmap.keySet()){
-		System.out.println(key + "=" + srcmap.get(key));
-	}
-		
-	NutMap obj = new NutMap();
-	obj.put("code", 0);
-	obj.put("msg", "Received your Map request.[from mapTypeTest]");
-		
-	return new Render(RenderType.JSON, Json.toJson(obj));
-}
-```  
-  
-# 渲染数据
-处理方法可以通过返回 `Render` 对象向客户端返回特定格式的数据，一个 `Render` 对象由枚举类型 `RenderType` 和 `data` 两部分组成。  
-`nettice` 组件会通过 `RenderType` 来为 `Response` 设置合适的 `Content-Type`，开发者也可以扩展 `Render` 以及相关类来实现更多的类型支持。  
-例如这是一个返回 `JSON` 对象的例子，客户端将收到一个 `Json` 对象：
-```
-public Render postPriMap(){
-	NutMap obj = new NutMap();
-	obj.put("code", 0);
-	obj.put("msg", "had received your request.");
-	
-	return new Render(RenderType.JSON, Json.toJson(obj));
-}
-```  
-  
-# TODO LIST 
-1. java bean支持  
-  
-  
-# License
-基于 Apache License 2.0 发布。有关详细信息，请参阅 [LICENSE](https://github.com/cyfonly/nettice/blob/master/LICENSE)。
+## 各插件可用性
+
+| 插件名称                                     | 版本                                       | 简介                                       | 可靠性    |   维护者 |
+| ---------------------------------------- | ---------------------------------------- | ---------------------------------------- | ------ |-------|
+| [integration-activiti](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-activiti) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-activiti/badge.svg) | 提供Activiti相关的Ioc配置 | 试用 | wendal |
+| [integration-autoloadcache](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-autoloadcache) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-autoloadcache/badge.svg) | 深度集成AutoLoadCache | **生产** | Rekoe |
+| [integration-bex5](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-bex5) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-bex5/badge.svg) | Bex5与Nutz集成 | 试用 | ecoolper |
+| [integration-cxf](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-cxf) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-cxf/badge.svg) | 轻度集成Cxf(WebService) | 试用 | wendal |
+| [integration-dubbo](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-dubbo) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-dubbo/badge.svg) | 兼容原生dubbo配置文件 | **生产** | wendal |
+| [integration-dwr](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-dwr) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-dwr/badge.svg) | 轻度集成dwr | 试用 | wendal |
+| [integration-grpc](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-grpc) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-grpc/badge.svg) | 封装grpc | 开发中 | wendal |
+| [integration-hasor](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-hasor) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-hasor/badge.svg) | Nutz 深度整合 Hasor/rsf | **生产** | hasor |
+| [integration-hessian](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-hessian) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-hessian/badge.svg) | 提供hessian的Mvc适配器 | **生产** | Rekoe |
+| [integration-jcache](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-jcache) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-jcache/badge.svg) | 集成Jcache的方法级注释 | 废弃 |  |
+| [integration-jedis](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-jedis) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-jedis/badge.svg) | 深度集成jedis | **生产** | wendal |
+| [integration-jsch](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-jsch) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-jsch/badge.svg) | 简单演示jsch的端口映射 | 试用 |  |
+| [integration-jsf](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-jsf) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-jsf/badge.svg) | 提供JSF集成所需要的EL解析器 | 废弃 | wendal |
+| [integration-json4excel](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-json4excel) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-json4excel/badge.svg) | [Apache POI](https://poi.apache.org/)项目的封装，简化了一些常见的操作 | **生产** | pangwu86 |
+| [integration-jsr303](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-jsr303) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-jsr303/badge.svg) | 深度集成jsr303的校验机制 | 试用 | wendal |
+| [integration-neo4j](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-neo4j) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-neo4j/badge.svg) | 集成neo4j | 试用 | wendal |
+| [integration-quartz](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-quartz) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-quartz/badge.svg) | 集成Quartz(计划任务/定时任务)的不二选择 | **生产** | wendal |
+| [integration-rabbitmq](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-rabbitmq) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-rabbitmq/badge.svg) | 集成rabbitmq很复杂吗?核心是拿到Channel对象嘛. | 试用 | wendal |
+| [integration-shiro](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-shiro) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-shiro/badge.svg) | 集成Shiro的登陆,鉴权,和Session机制 | **生产** | wendal |
+| [integration-spring](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-spring) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-spring/badge.svg) | Spring与Nutz集成所需要的一切 | **生产** | wendal |
+| [integration-struts2](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-struts2) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-struts2/badge.svg) | 替换struts2的Ioc容器为NutIoc | 废弃 | wendal |
+| [integration-swagger](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-swagger) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-swagger/badge.svg) | 深度集成Swagger | 试用 | wendal |
+| [integration-zbus](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-zbus) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-zbus/badge.svg) | 深度集成zbus,提供mq,rpc支持 | 试用 | wendal |
+| [integration-zookeeper](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-zookeeper) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-zookeeper/badge.svg) | 待编写 | 开发中 |  |
+| [maven-quickstart](https://github.com/nutzam/nutzmore/tree/master/nutz-maven-quickstart) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-maven-quickstart/badge.svg) | 待编写 | 开发中 | wendal |
+| [plugins-apidoc](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-apidoc) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-apidoc/badge.svg) | API文档生成及调试 | **生产** | wendal |
+| [plugins-cache](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-cache) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-cache/badge.svg) | Shiro的CacheManager实现 | **生产** | wendal |
+| [plugins-daocache](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-daocache) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-daocache/badge.svg) | 为NutDao提供缓存支持,SQL级别的缓存 | **生产** | wendal |
+| [plugins-daomapping](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-daomapping) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-daomapping/badge.svg) | Dao接口无缝生成 | 试用 | wendal |
+| [plugins-event](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-event) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-event/badge.svg) | 事件驱动和异步化插件,方便各模块间解耦 | 试用 | qinerg |
+| [plugins-hotplug](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-hotplug) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-hotplug/badge.svg) | 定义一套基础架构,实现可插拔系统 | **生产** | wendal |
+| [plugins-iocloader](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-iocloader) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-iocloader/badge.svg) | 演示自定义IocLoader的用法 | 废弃 | wendal |
+| [plugins-jsonrpc](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-jsonrpc) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-jsonrpc/badge.svg) | 完整实现jsonrpc, 用Mapper方式 | 废弃 | wendal |
+| [plugins-mock](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-mock) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-mock/badge.svg) | 提供单元测试所需要的一切东西 | 试用 | wendal |
+| [plugins-multiview](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-multiview/badge.svg) | 集合N种模板引擎,可配置性强 | **生产** | denghuafeng |
+| [plugins-ngrok](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-ngrok) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-ngrok/badge.svg) | 用Java实现的Ngrok的服务器端和客户端. | 试用 | wendal |
+| [plugins-nop](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-nop) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-nop/badge.svg) | NUTZ OPEN PLATFORM | **生产** | 王贵源 |
+| [plugins-oauth2-server](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-oauth2-server) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-oauth2-server/badge.svg) | 使用Apache Oltu 搭建Oauth2 Server及Client开放授权 | **生产** | Rekoe |
+| [plugins-profiler](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-profiler) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-profiler/badge.svg) | 性能监控 | 开发中 | wendal |
+| [plugins-protobuf](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-protobuf) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-protobuf/badge.svg) | 提供protobuf双向通信所需要的适配器和View | **生产** | Rekoe |
+| [plugins-qrcode](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-qrcode) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-qrcode/badge.svg) | 生成 QRCode,基于 [zxing](http://code.google.com/p/zxing/) | **生产** | 冬日温泉 |
+| [plugins-secken](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-secken) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-secken/badge.svg) | 完整实现洋葱登陆协议 | 废弃 | wendal |
+| [plugins-sfntly](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-sfntly) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-sfntly/badge.svg) | sfntly的fork版本,修正错误并添加可编程调用 | **生产** | wendal |
+| [plugins-sigar](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-sigar) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-sigar/badge.svg) | 深度集成sigar | 试用 | 王贵源 |
+| [plugins-slog](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-slog) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-slog/badge.svg) | 注解式系统日志 | **生产** | wendal |
+| [plugins-spring-boot-starter](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-spring-boot-starter) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-spring-boot-starter/badge.svg) | spring-boot 环境下使用 nutz-dao 和 nutzjson  | **生产** | 王贵源 |
+| [plugins-sqltpl](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-sqltpl) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-sqltpl/badge.svg) | 支持多种模板引擎 | 试用 | wendal |
+| [plugins-sqlmanager](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-sqlmanager) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-sqlmanager/badge.svg) | 各式各样的SqlManaget实现 | 试用 | wendal等 |
+| [plugins-thrift-netty](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-thrift-netty) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-thrift-netty/badge.svg) | 深度集成thrift-netty | 试用 | Rekoe |
+| [plugins-undertow](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-undertow) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-undertow/badge.svg) | 集成JBOSS Undertow高性能web服务器插件 | 试用 | qinerg |
+| [plugins-validation](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-validation) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-validation/badge.svg) | 独立,小巧且够用的校验库 | 试用 | wendal |
+| [plugins-views](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-views) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-views/badge.svg) | freemarker/velocity/thymeleaf/pdf 视图插件 | **生产** |  |
+| [plugins-webqq](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-webqq) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-webqq/badge.svg) | webqq集成 | 废弃 |  |
+| [plugins-websocket](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-websocket) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-websocket/badge.svg) | 为websocket提供完整支持 | **生产** | wendal |
+| [plugins-wkcache](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-wkcache) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-wkcache/badge.svg) |  | 试用 | 大鲨鱼 |
+| [plugins-xmlentitymaker](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-xmlentitymaker) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-xmlentitymaker/badge.svg) | 使用xml定义实体,替换原生的注解方式 | 试用 | wendal |
+| [plugins-zcron](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-zcron) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-zcron/badge.svg) | 定期运行的表达式 | 试用 | zozoh |
+| [plugins-zdoc](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-zdoc) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-zdoc/badge.svg) | 写文档也可以很轻松 | 试用 | zozoh |
