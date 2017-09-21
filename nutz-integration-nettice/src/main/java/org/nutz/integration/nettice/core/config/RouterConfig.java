@@ -14,7 +14,7 @@ import org.w3c.dom.NodeList;
 
 public class RouterConfig {
 
-	private List<String> actionPackages;
+	private List<String> actionPackages = new ArrayList<String>();
 
 	public static RouterConfig parse(String filePath) throws Exception {
 		File file = Files.findFile(filePath);
@@ -28,21 +28,19 @@ public class RouterConfig {
 		RouterConfig config = new RouterConfig();
 		org.w3c.dom.Document document = Lang.xmls().parse(ins);
 		NodeList list = document.getElementsByTagName("action-package");
-		parseActionPackages(list);
+		parseActionPackages(config.actionPackages, list);
 		return config;
 	}
 
-	private static List<String> parseActionPackages(NodeList actionPackage) {
-		List<String> packages = new ArrayList<String>();
+	private static void parseActionPackages(List<String> actionPackages, NodeList actionPackage) {
 		for (int i = 0; i < actionPackage.getLength(); i++) {
 			Element actionackage = (Element) actionPackage.item(i);
 			NodeList pkg = actionackage.getElementsByTagName("package");
 			int number = pkg.getLength();
 			for (int num = 0; num < number; num++) {
-				packages.add(Strings.trim(pkg.item(num).getTextContent()));
+				actionPackages.add(Strings.trim(pkg.item(num).getTextContent()));
 			}
 		}
-		return packages;
 	}
 
 	public List<String> getActionPacages() {
