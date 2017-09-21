@@ -154,12 +154,7 @@ public class J4E {
 			for (J4EColumn jcol : j4eConf.getColumns()) {
 				Field jfield = jcol.getField();
 				if (null != jfield) {
-					int ccin = cindex++;
-					Cell c = row.getCell(ccin);
-					if (c == null) {
-						c = row.createCell(cindex++);
-
-					}
+					Cell c = row.createCell(cindex++);
 					J4EColumnType columnType = jcol.getColumnType();
 					if (columnType == J4EColumnType.STRING) {
 						c.setCellType(CellType.STRING);
