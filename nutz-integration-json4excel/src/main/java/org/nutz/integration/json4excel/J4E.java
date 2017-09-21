@@ -164,11 +164,12 @@ public class J4E {
                     J4EColumnType columnType = jcol.getColumnType();
                     if (columnType == J4EColumnType.STRING) {
                         c.setCellType(CellType.STRING);
-                    }
-                    if (columnType == J4EColumnType.NUMERIC) {
+                    } else if (columnType == J4EColumnType.NUMERIC) {
                         c.setCellType(CellType.NUMERIC);
-                    }
-                    if (columnType == J4EColumnType.DATE) {
+                    } else if (columnType == J4EColumnType.DATE) {
+                        c.setCellType(CellType.STRING);
+                    } else {
+                        // TODO 根据field获取对应的类型
                         c.setCellType(CellType.STRING);
                     }
                     Object dfv = mc.getValue(dval, jfield);

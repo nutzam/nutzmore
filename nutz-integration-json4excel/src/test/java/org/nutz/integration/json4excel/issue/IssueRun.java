@@ -2,11 +2,15 @@ package org.nutz.integration.json4excel.issue;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
 import org.nutz.integration.json4excel.J4E;
 import org.nutz.integration.json4excel.TestUtil;
+import org.nutz.integration.json4excel.bean.I68Bean;
+import org.nutz.lang.Files;
+import org.nutz.lang.util.Disks;
 
 public class IssueRun extends TestUtil {
 
@@ -23,5 +27,18 @@ public class IssueRun extends TestUtil {
         assertEquals(25823, vr1.getTotalClick());
         assertEquals(354, vr1.getSearchClick());
         assertEquals(1015, vr1.getSearchCount());
+    }
+
+    @Test
+    public void testIssue68() throws Exception {
+        I68Bean d1 = new I68Bean();
+        d1.setKeyWorld("嗯嗯").setNumber(100);
+        I68Bean d2 = new I68Bean();
+        d2.setKeyWorld("呵呵").setNumber(200);
+        List<I68Bean> dataList = new ArrayList<I68Bean>();
+        dataList.add(d1);
+        dataList.add(d2);
+
+        J4E.toExce(Files.createFileIfNoExists2(Disks.normalize("~/issue68.xls")), dataList, null);
     }
 }
