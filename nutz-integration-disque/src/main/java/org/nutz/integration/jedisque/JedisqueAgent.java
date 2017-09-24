@@ -23,7 +23,7 @@ public class JedisqueAgent {
     }
     
     public Jedisque build() throws URISyntaxException {
-        String[] uris = conf.get("jedisque.uris").split(",");
+        String[] uris = conf.get("disque.uris").split(",");
         URI[] _uri = new URI[uris.length];
         for (int i = 0; i < _uri.length; i++) {
             _uri[i] = new URI(uris[i]);

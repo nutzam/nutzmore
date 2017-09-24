@@ -1,43 +1,52 @@
-nutz-plugins-jedis
+nutz-plugins-jedisque
 ==================================
 
 简介(可用性:生产,维护者:wendal)
 ==================================
 
-深度集成jedis
+深度集成Disque
 
-Redis简介
+Disque简介
 ==================================
+Disque是Redis之父Salvatore Sanfilippo新开源的一个分布式内存消息代理。它适应于“Redis作为作业队列”的场景，但采用了一种专用、独立、可扩展且具有容错功能的设计，兼具Redis的简洁和高性能，并且用C语言实现为一个非阻塞网络服务器。有一点需要提请读者注意，在Disque项目文档及本文中，“消息（Message）”和“作业（Job）”可互换。
 
-官网 http://redis.io 提供了源码下载及文档, 其中windows版是微软自己维护的,地址是 https://github.com/MSOpenTech/redis/releases
+Disque是一个独立于Redis的新项目，但它重用了Redis网络源代码、节点消息总线、库和客户端协议的一大部分。由于Disque使用了与Redis相同的协议，所以可以直接使用Redis客户端连接Disque集群，只是需要注意，Disque的默认端口是7711，而不是6379。
 
-Redis普通模式 -- 单机,主从,sentinel,及第三方集群方案(例如codis),均使用原始的redis协议, JedisPool和JedisSentinelPool均继承Pool<Jedis>哦
-Redis集群模式 -- Redis Cluster, redis 3.x加入的官方集群方案,使用hash槽的概念在不同节点存储数据, 使用MOVE响应指引客户端跳转到目标服务器, Jedis中的实现类是JedisCluster
+作为消息代理，Disque充当了需要进行消息交换的进程之间的一个中间层，生产者向其中添加供消费者使用的消息。这种生产者-消费者队列模型非常常见，其主要不同体现在一些细节方面：
 
-jedis奇葩的地方是, JedisPool与JedisCluster均为连接池实现,但后者不继承Pool<Jedis>,所以,使用原生jedis的时候,要么注入JedisPool走普通模式,要么注入JedisCluster走集群模式
+    Disque是一个同步复制作业队列，在默认情况下，新增任务会复制到W个节点上，W-1个节点发生故障也不会影响消息的传递。
+    Disque支持至少一次和至多一次传递语义，前者是设计和实现重点，而后者可以通过将重试时间设为0来实现。每个消息的传递语义都是单独设置的，因此，在同一个消息队列中，语义不同的消息可以共存。
+    按照设计，Disque的至少一次传递是近似一次传递，它会尽力避免消息的多次传递。
+    Disque集群的所有节点都有同样的角色，也就是“多主节点（multi-master）”。生产者和消费者可以连接到不同的队列或节点，节点会根据负载和客户端请求自动交换消息。
+    Disque支持可选的异步命令。在这种模式下，生产者在向一个复制因子不为1的队列中添加一个作业后，可以不必等待复制完成就可以转而执行其它操作，节点会在后台完成复制。
+    在超过指定的消息重试时间后，Disque会自动将未收到响应的消息重新放入队列。
+    在Disque中，消费者使用显式应答来标识消息已经传递完成。
+    Disque只提供尽力而为排序。队列根据消息创建时间对消息进行排序，而创建时间是通过本地节点的时钟获取的。因此，在同一个节点上创建的消息通常是按创建顺序传递的，但Disque并不提供严格的FIFO语义保证。比如，在消息重新排队或者因为负载均衡而移至其它节点时，消息的传递顺序就无法保证了。所以，Salvatore指出，从技术上讲，Disque严格来说并不是一个队列，而更应该称为消息代理。
+    Disque通过四个参数提供了细粒度的作业控制，分别是复制因子（指定消息的副本数）、延迟时间（将消息放入队列前的最小等待时间）、重试时间（设置消息何时重新排队）、过期时间（设置何时删除消息）。
+
+需要注意的是，Disque项目尚处于Alpha预览测试阶段，代码和算法未经充分测试，还不适合用于生产环境。在接下来的几个月里，其实现和API很可能会发生重大变化。此外，它还有如下限制：
+
+其中还包含许多没有用到的Redis代码；
+
+    它并非源于Salvatore的项目需求，而是源于他看到人们将Redis用作队列，但他不是这方面的专家；
+    同Redis一样，它是单线程的，但鉴于它所操作的数据结构并不复杂，将来可以考虑改为多线程；
+    Disque进程中的作业数量受可用内存限制；
+    Disque没有进行性能优化。
 
 背景
 ==================================
 
-这个插件的代码,最初源于nutzcn的源码. nutzcn即[NutzCN社区](https://github.com/wendal/nutz-book-project), 是nutzbook的衍生项目.
-
-在nutzcn中,最初使用方式是, 注入JedisPool实例, 使用try-with-resources进行资源管理.
-后来,发展为通过aop进行自动管理, 即@Aop("redis")方式.
-再后来, 为了兼容普通模式和集群模式, 引入JedisAgent,替换原有的JedisPool,实现两种模式的无缝切换.
-
-这里提到的无缝切换是指, 使用同一套代码,在普通模式和集群模式下,都正常使用,不需要大幅修改,只需要改改配置文件.
+这个插件的代码,是因为@howechiang要用 哈哈哈
 
 本插件包含几个核心类
 ==================================
 
-* JedisAgent -- 它封装了JedisPool和JedisCluster, 可无缝替换现有代码中的JedisPool.
-* JedisClusterWrapper -- 将JedisCluster对象封装为Jedis对象.
-* RedisInterceptor -- aop拦截器,自动管理Jedis的开启与关闭.
+* JedisqueAgent -- 它封装了Jedisque
 
 使用方法
 -------------------------
 
-本插件提供了ioc加载器(加载源码中的jedis.js),配置方式主要走properties文件
+本插件提供了ioc加载器(加载源码中的jedisque.js),配置方式主要走properties文件
 
 ### 在IocBy中引用本插件
 
@@ -45,109 +54,43 @@ jedis奇葩的地方是, JedisPool与JedisCluster均为连接池实现,但后者
 @IocBy(args={
 	"*js", "ioc/",
 	"*anno", "net.wendal.nutzbook",
-	jedisque // 是的,并没有什么参数
+	"jedisque*" // 是的,并没有什么参数
 	})
 ```
 
 
-### 直接使用jedis()操作(推荐)
+### 使用DisqueService操作
 
-通过静态import的RedisInterceptor,配合@Aop注解,通过调用jedis()获取Jedis实例进行操作,无需操心Jedis实例的关闭问题.
-
-
-```java
-import static org.nutz.integration.jedisque.DisqueInterceptor.jedis;
-
-@Aop("redis") // 必须添加这个注解哦,否则jedis()会抛出空指针
-public void addTopic(Topic topic) {
-	jedis().set("t:body:"+R.UU32(), Json.toJson(topic,JsonFormat.full()));
-	jedis().sadd("t:type:"+topic.getType(), topic.getId());
-}
-```
-
-
-### 使用RedisService操作
-
-RedisService类继承Jedis类,其所有方法都经过aop拦截,享有Jedis的遍历,又不需要关心Jedis的close方法,适合不喜欢在自己的方法上标注@Aop的用户.
+DisqueService类继承Jedisque类
 
 ```java
-@Inject RedisService redisService;
+@Inject DisqueService disqueService;
 
-public void addTopic(Topic topic) {
-	redisService.set("t:body:"+R.UU32(), Json.toJson(topic,JsonFormat.full()));
-	redisService.sadd("t:type:"+topic.getType(), topic.getId());
+public void addJob(String queueName, String job, long mstimeout) {
+	disqueService.addJob(queueName, job, mstimeout);
 }
 ```
 
 ### 注入JedisAgent
 
-有人可能问,为啥不是注入JedisPool? 原因是,JedisAgent能双模式切换(普通模式和集群模式)
-
 ```java
-@Inject JedisAgent jedisAgent;
+@Inject JedisqueAgent jedisqueAgent;
 
-public void addTopic(Topic topic) {
-    try (Jedis jedis = jedisAgent.getResouce()) { // 这叫try-with-resources语法, JDK7+适用.
-		jedis.set("t:body:"+R.UU32(), Json.toJson(topic,JsonFormat.full()));
-		jedis.sadd("t:type:"+topic.getType(), topic.getId());
-	}
-}
-
-public void addTopic2(Topic topic) {
-    Jedis jedis = null;
-    try { // JDK6的写法, 长长的try-finally
-        jedis = jedisAgent.getResouce();
-		jedis.set("t:body:"+R.UU32(), Json.toJson(topic,JsonFormat.full()));
-		jedis.sadd("t:type:"+topic.getType(), topic.getId());
-	}
-	finally {
-		Streams.safeClose(jedis);
+public void addJob(String queueName, String job, long mstimeout) {
+    try (Jedisque jedisque = jedisqueAgent.build()) { 
+		jedisque.addJob(queueName, job, mstimeout);
 	}
 }
 ```
 
-注入JedisPool和JedisCluster依然是可用的,虽然不推荐.
-
-```java
-// 下面两种对象,不要声明在同一个类哦
-
-// 普通模式
-@Inject JedisPool jedisPool;
-
-// 集群模式
-@Inject JedisCluster jedisCluster;
-```
 
 配置方式
 -----------------------------
 
-### 与其他插件类似, 本插件从conf读取redis开头的参数
+### 与其他插件类似, 本插件从conf读取disque开头的参数
 
 基本配置
 
 ```
-redis.host=localhost
-redis.port=6379
-redis.timeout=2000
-#redis.password=wendal.net
-redis.database=0
-
-#redis.mode=cluster
+disque.uris=disque://{password}@{host1}:{port},disque://{password}@{host2}:{port},disque://{password}@{host3}:{port}
 ```
-
-集群模式,指Redis Cluster
-
-```
-redis.host=localhost
-redis.port=6379
-redis.timeout=2000
-redis.mode=cluster
-```
-
-如何定制
---------------------------------------
-
-与其他基于ioc的插件一样,同名的bean,优先使用在*您自己*的ioc js定义的类,
-所以,jedisPool,jedisCluster等定义均可覆盖哦
-
-请参考插件源码中的jedis.js
