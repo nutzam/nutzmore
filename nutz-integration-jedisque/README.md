@@ -94,3 +94,27 @@ public void addJob(String queueName, String job, long mstimeout) {
 ```
 disque.uris=disque://{password}@{host1}:{port},disque://{password}@{host2}:{port},disque://{password}@{host3}:{port}
 ```
+
+Maven
+-----------------------------
+Jedisque的作者很坑啊, 依赖的jedis只能2.7.2, 关键2.7.3以上版本不向下兼容, 只能fork重新改了, 把jedis2.7.2改名字打入jedisque快照版里
+
+```xml
+<repositories>
+		<repository>
+			<id>nutzcn-snapshots</id>
+			<url>https://jfrog.nutz.cn/artifactory/snapshots</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+	<dependencies>
+		<dependency>
+            <groupId>com.github.xetorthio</groupId>
+            <artifactId>jedisque</artifactId>
+            <version>0.0.5-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+</repositories>
+```
