@@ -57,7 +57,7 @@ public class DisqueService extends Jedisque {
     public List<Job> getJob(long timeout, long count, String... queueNames) {
         Jedisque jedisque = getJedisque();
         try {
-            return getJob(timeout, count, queueNames);
+            return jedisque.getJob(timeout, count, queueNames);
         } finally {
             jedisque.close();
         }
@@ -66,7 +66,7 @@ public class DisqueService extends Jedisque {
     public Long working(String jobId) {
         Jedisque jedisque = getJedisque();
         try {
-            return working(jobId);
+            return jedisque.working(jobId);
         } finally {
             jedisque.close();
         }
@@ -75,7 +75,7 @@ public class DisqueService extends Jedisque {
     public String ping() {
         Jedisque jedisque = getJedisque();
         try {
-            return ping();
+            return jedisque.ping();
         } finally {
             jedisque.close();
         }
@@ -84,7 +84,7 @@ public class DisqueService extends Jedisque {
     public JobInfo show(String jobId) {
         Jedisque jedisque = getJedisque();
         try {
-            return show(jobId);
+            return jedisque.show(jobId);
         } finally {
             jedisque.close();
         }
@@ -93,7 +93,7 @@ public class DisqueService extends Jedisque {
     public Long fastack(String... jobIds) {
         Jedisque jedisque = getJedisque();
         try {
-            return fastack(jobIds);
+            return jedisque.fastack(jobIds);
         } finally {
             jedisque.close();
         }
@@ -102,7 +102,7 @@ public class DisqueService extends Jedisque {
     public Long enqueue(String... jobIds) {
         Jedisque jedisque = getJedisque();
         try {
-            return enqueue(jobIds);
+            return jedisque.enqueue(jobIds);
         } finally {
             jedisque.close();
         }
@@ -111,7 +111,7 @@ public class DisqueService extends Jedisque {
     public Long dequeue(String... jobIds) {
         Jedisque jedisque = getJedisque();
         try {
-            return dequeue(jobIds);
+            return jedisque.dequeue(jobIds);
         } finally {
             jedisque.close();
         }
@@ -120,7 +120,7 @@ public class DisqueService extends Jedisque {
     public Long delJob(String jobId) {
         Jedisque jedisque = getJedisque();
         try {
-            return delJob(jobId);
+            return jedisque.delJob(jobId);
         } finally {
             jedisque.close();
         }
@@ -129,7 +129,7 @@ public class DisqueService extends Jedisque {
     public List<Job> qpeek(String queueName, long count) {
         Jedisque jedisque = getJedisque();
         try {
-            return qpeek(queueName, count);
+            return jedisque.qpeek(queueName, count);
         } finally {
             jedisque.close();
         }
@@ -138,7 +138,7 @@ public class DisqueService extends Jedisque {
     public Long qlen(String queueName) {
         Jedisque jedisque = getJedisque();
         try {
-            return qlen(queueName);
+            return jedisque.qlen(queueName);
         } finally {
             jedisque.close();
         }
@@ -147,7 +147,7 @@ public class DisqueService extends Jedisque {
     public String info(String section) {
         Jedisque jedisque = getJedisque();
         try {
-            return info(section);
+            return jedisque.info(section);
         } finally {
             jedisque.close();
         }
@@ -156,7 +156,7 @@ public class DisqueService extends Jedisque {
     public String info() {
         Jedisque jedisque = getJedisque();
         try {
-            return info();
+            return jedisque.info();
         } finally {
             jedisque.close();
         }
@@ -165,7 +165,7 @@ public class DisqueService extends Jedisque {
     public Long ackjob(String... jobIds) {
         Jedisque jedisque = getJedisque();
         try {
-            return ackjob(jobIds);
+            return jedisque.ackjob(jobIds);
         } finally {
             jedisque.close();
         }
