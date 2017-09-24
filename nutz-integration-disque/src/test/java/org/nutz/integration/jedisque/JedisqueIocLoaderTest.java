@@ -23,7 +23,7 @@ public class JedisqueIocLoaderTest {
     public void test() throws ClassNotFoundException {
         Ioc ioc = new NutIoc(new ComboIocLoader("*jedisque"));
         PropertiesProxy conf = new PropertiesProxy();
-        conf.set("jedisque.uris", "disque://120.24.240.16:7711");
+        conf.set("disque.uris", "disque://120.24.240.16:7711");
         ((NutIoc)ioc).getIocContext().save("app", "conf", new ObjectProxy(conf));
         try (Jedisque jedisque = ioc.get(Jedisque.class)) {
             jedisque.ping();
