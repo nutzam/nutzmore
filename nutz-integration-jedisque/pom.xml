@@ -6,7 +6,7 @@
 		<artifactId>nutzmore</artifactId>
 		<version>1.r.63-SNAPSHOT</version>
 	</parent>
-	<artifactId>nutz-integration-disque</artifactId>
+	<artifactId>nutz-integration-jedisque</artifactId>
 	
 
 	<properties>
