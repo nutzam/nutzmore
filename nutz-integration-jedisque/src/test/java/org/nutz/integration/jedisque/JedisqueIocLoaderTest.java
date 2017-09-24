@@ -14,17 +14,19 @@ import com.github.xetorthio.jedisque.Jedisque;
 public class JedisqueIocLoaderTest {
 
     @Before
-    public void setUp() throws Exception {}
+    public void setUp() throws Exception {
+    }
 
     @After
-    public void tearDown() throws Exception {}
+    public void tearDown() throws Exception {
+    }
 
     @Test
     public void test() throws ClassNotFoundException {
         Ioc ioc = new NutIoc(new ComboIocLoader("*jedisque"));
         PropertiesProxy conf = new PropertiesProxy();
         conf.set("disque.uris", "disque://120.24.240.16:7711");
-        ((NutIoc)ioc).getIocContext().save("app", "conf", new ObjectProxy(conf));
+        ((NutIoc) ioc).getIocContext().save("app", "conf", new ObjectProxy(conf));
         try (Jedisque jedisque = ioc.get(Jedisque.class)) {
             jedisque.ping();
         }
@@ -33,5 +35,4 @@ public class JedisqueIocLoaderTest {
         }
         ioc.depose();
     }
-
 }
