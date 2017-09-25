@@ -5,7 +5,6 @@ import java.io.IOException;
 import org.beetl.core.Configuration;
 import org.beetl.core.GroupTemplate;
 import org.beetl.core.Template;
-import org.beetl.core.resource.StringTemplateResourceLoader;
 import org.nutz.dao.sql.Sql;
 import org.nutz.plugins.sqltpl.NutSqlTpl;
 import org.nutz.plugins.sqltpl.VarSetMap;
@@ -62,7 +61,7 @@ public class BeetlSqlTpl extends NutSqlTpl {
      */
     public static GroupTemplate gt() {
         if (gt == null) {
-            StringTemplateResourceLoader resourceLoader = new StringTemplateResourceLoader();
+            ClasspathStringResourceLoader resourceLoader = new ClasspathStringResourceLoader();
             Configuration cfg;
             try {
                 cfg = Configuration.defaultConfiguration();
