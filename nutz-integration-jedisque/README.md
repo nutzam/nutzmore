@@ -92,8 +92,9 @@ public void addJob(String queueName, String job, long mstimeout) {
 基本配置
 
 ```
-disque.uris=disque://{password}@{host1}:{port},disque://{password}@{host2}:{port},disque://{password}@{host3}:{port}
+disque.uris=disque://{host1}:{port},disque://{host2}:{port},disque://{host3}:{port}
 ```
+略坑不能设密码
 
 Maven
 -----------------------------
