@@ -25,15 +25,19 @@ public class SpringIocLoader extends AbstractLifeCycle implements IocLoader {
     
     protected ContextLoaderListener ctx;
     
+    protected boolean inited;
+    
+    protected String contextConfigLocation;
+    
     public SpringIocLoader() {
     }
     
     public SpringIocLoader(String contextConfigLocation) {
-        ctx = new ContextLoaderListener();
+        this.contextConfigLocation = contextConfigLocation;
+
         ServletContext sc = Mvcs.getServletContext();
-        if (sc.getInitParameter("contextConfigLocation") == null)
+        if (sc != null && sc.getInitParameter("contextConfigLocation") == null)
             sc.setInitParameter("contextConfigLocation", contextConfigLocation);
-        context = ctx.initWebApplicationContext(sc);
     }
 
     public String[] getName() {
@@ -56,13 +60,27 @@ public class SpringIocLoader extends AbstractLifeCycle implements IocLoader {
     }
 
     protected ApplicationContext context() {
-        if (context == null)
-            context = WebApplicationContextUtils.getRequiredWebApplicationContext(Mvcs.getServletContext());
+        if (context == null) {
+            init();
+        }
         return context;
     }
     
     public static Object fromSpring(ApplicationContext context, String name) {
         return context.getBean(name);
+    }
+    
+    @Override
+    public void init() {
+        if (context == null) {
+            if (contextConfigLocation == null) {
+                context = WebApplicationContextUtils.getRequiredWebApplicationContext(Mvcs.getServletContext());
+            } else {
+                ctx = new ContextLoaderListener();
+                ServletContext sc = Mvcs.getServletContext();
+                context = ctx.initWebApplicationContext(sc);
+            }
+        }
     }
 
     public void depose() throws Exception {
