@@ -11,3 +11,8 @@ where
 	<% } %>
 
 <% } %>
+
+/* user.select */
+<% layout("/sqls/layout/_select_x_from_y.sql", {t_name:"age", t_table:"t_user"}){ %>
+	where name = "wendal"
+<%}%>

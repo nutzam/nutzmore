@@ -36,6 +36,27 @@ public class NutzJsonProperties {
 	 * 是否给字段添加双引号
 	 */
 	private boolean quoteName;
+
+	/**
+	 * 是否启用nutz.json
+	 */
+	private boolean enabled;
+
+	/**
+	 * @return the enabled
+	 */
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	/**
+	 * @param enabled
+	 *            the enabled to set
+	 */
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+
 	/**
 	 * 是否忽略null值
 	 */

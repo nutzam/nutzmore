@@ -1,30 +1,25 @@
 spring:
-#    aop:
-#        proxy-target-class: true
-    datasource:
-        name: test
-        #url: jdbc:h2:~/.h2db/nutz-starter;MODE=MYSQL
-        url: jdbc:oracle:thin:@localhost:49161:xe
-        username: test
-        password: 123456
-        # 使用druid数据源
-        type: org.nutz.dao.impl.SimpleDataSource
-        #driver-class-name: org.h2.Driver
-        driver-class-name: oracle.jdbc.driver.OracleDriver
-        filters: stat,wall,log4j
-        connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
-        maxActive: 20
-        initialSize: 1
-        maxWait: 60000
-        minIdle: 1
-        timeBetweenEvictionRunsMillis: 60000
-        minEvictableIdleTimeMillis: 300000
-        validationQuery: select 'x'
-        testWhileIdle: true
-        testOnBorrow: false
-        testOnReturn: false
-        poolPreparedStatements: true
-        maxOpenPreparedStatements: 20
+  datasource:
+    name: test
+    url: jdbc:oracle:thin:@localhost:49161:xe
+    username: test
+    password: 123456
+    type: org.nutz.dao.impl.SimpleDataSource
+    driver-class-name: oracle.jdbc.driver.OracleDriver
+    filters: stat,wall,log4j
+    connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+    maxActive: 20
+    initialSize: 1
+    maxWait: 60000
+    minIdle: 1
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 300000
+    validationQuery: select 'x'
+    testWhileIdle: true
+    testOnBorrow: false
+    testOnReturn: false
+    poolPreparedStatements: true
+    maxOpenPreparedStatements: 20
 swagger:
   base-package: demo
 logging:
@@ -36,16 +31,19 @@ management:
   security:
     enabled: false
 nutz:
-    dao:
-        runtime:
-          add-column: true
-          check-index: true
-          delete-column: true
-          foce-create: false #此配置为true则每次均会删表重建
-          create: true
-          migration: true
-          basepackage: demo
-        sqlmanager:
-          paths:
-            - sqls
-        
+  json:
+    enabled: true
+    mode: compact
+    date-format: yyyyMMdd HH:mm:ss
+  dao:
+    runtime:
+      add-column: true
+      check-index: true
+      delete-column: true
+      foce-create: false
+      create: true
+      migration: true
+      basepackage: demo
+    sqlmanager:
+      paths:
+      - sqls

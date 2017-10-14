@@ -8,7 +8,7 @@ import org.nutz.lang.Mirror;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 
-import com.jarvis.cache.AbstractCacheManager;
+import com.jarvis.cache.CacheHandler;
 import com.jarvis.cache.annotation.Cache;
 import com.jarvis.cache.aop.CacheAopProxyChain;
 
@@ -16,13 +16,13 @@ public class AutoLoadCacheAopInterceptor implements MethodInterceptor {
 
 	private final static Log log = Logs.get();
 
-	private AbstractCacheManager cachePointCut;
+	private CacheHandler cacheHandler;
 	private Cache cache;
 	private boolean haveCache;
 	private Mirror<InterceptorChain> mirror;
 
-	public AutoLoadCacheAopInterceptor(AbstractCacheManager cacheManager, Cache cache, Method method) {
-		this.cachePointCut = cacheManager;
+	public AutoLoadCacheAopInterceptor(CacheHandler cacheHandler, Cache cache, Method method) {
+		this.cacheHandler = cacheHandler;
 		this.cache = cache;
 		if (method.isAnnotationPresent(Cache.class)) {
 			if (log.isDebugEnabled()) {
@@ -36,7 +36,7 @@ public class AutoLoadCacheAopInterceptor implements MethodInterceptor {
 	public void filter(final InterceptorChain chain) throws Throwable {
 		try {
 			if (haveCache) {
-				Object obj = cachePointCut.proceed(new CacheAopProxyChain() {
+				Object obj = cacheHandler.proceed(new CacheAopProxyChain() {
 
 					@Override
 					public Class<?> getTargetClass() {

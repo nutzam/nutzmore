@@ -118,12 +118,25 @@ var ioc = {
 	<artifactId>nutz-plugins-views</artifactId>
 	<version>${nutz.plugins.version}</version>
 </dependency>
+<dependency>
+    <groupId>org.apache.velocity</groupId>
+    <artifactId>velocity</artifactId>
+    <version>1.7</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.velocity</groupId>
+    <artifactId>velocity-tools</artifactId>
+    <version>2.0</version>
+</dependency>
 ```
 
 + 主模块配置
 
 ```java?linenums
 @Views({ VelocityViewMaker.class })
+public class MainModule {
+
+}
 ```
 
 + classpath配置
@@ -136,7 +149,7 @@ resource.loader = webapp
 #资源加载器类全限定名    
 webapp.resource.loader.class = org.apache.velocity.tools.view.WebappResourceLoader  
 #资源位置
-webapp.resource.loader.path=/WEB-INF/templates/
+webapp.resource.loader.path=/WEB-INF/
 #编码
 input.encoding=UTF-8  
 output.encoding=UTF-8 
@@ -159,10 +172,77 @@ nutz的filter或者servlet加上初始化参数
 </init-param>
 ```
 
-+ 使用模板
++ 使用方法
 
+User类
+```java?linenums
+public class User {
+    public int roleId;
+    public String userName;
+
+    public int getRoleId() {
+        return roleId;
+    }
+
+    public void setRoleId(int roleId) {
+        this.roleId = roleId;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+}
+```
+
+MVC类
 ``` java?linenums
-@Ok("vm:pages/bill/list.html")
+@At("/")
+@Ok("vm:/tmpl/main.vm")
+public User main() {
+    User user = new User();
+    user.setUserName("nutz");
+    user.setRoleId(0);
+    return user;
+}
+```
+
+main.vm文件
+``` html?linenums
+#if($!{obj.roleId} == 0)
+<li> 管理员 $!{obj.userName}</li>
+#else
+<li> 编辑 $!{obj.userName}</li>
+#end
+```
++ 更灵活的使用方法
+
+MVC类
+```java?linenums
+@At("/")
+@Ok("vm:/tmpl/main.vm")
+public NutMap main() {
+    NutMap map = new NutMap();
+    map.put("site_name", "Nutz工具箱");
+    User user = new User();
+    user.setRoleId(0);
+    user.setUserName("nutz");
+    map.put("user", user);
+    return map;
+}
+```
+
+main.vm文件
+```html?linenums
+<span> 站点名称：$!{obj.site_name}</span>
+#if($!{obj.user.roleId} == 0)
+<li> 管理员 $!{obj.user.userName}</li>
+#else
+<li> 编辑 $!{obj.user.userName}</li>
+#end
 ```
 
 + 扩展工具

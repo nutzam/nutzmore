@@ -103,13 +103,13 @@
 		<module>nutz-integration-spring</module>
 		<module>nutz-integration-quartz</module>
 		<module>nutz-integration-dwr</module>
-		
 		<module>nutz-integration-shiro</module>
 		<module>nutz-integration-dubbo</module>
 		
 		<module>nutz-integration-zbus</module>
 		<module>nutz-integration-hessian</module>
 		<module>nutz-integration-jedis</module>
+		<module>nutz-integration-jedisque</module>
 		<module>nutz-integration-hasor</module>
 		<module>nutz-plugins-validation</module>
 		<module>nutz-plugins-views</module>
@@ -148,6 +148,7 @@
     <module>nutz-integration-cxf</module>
 	<module>nutz-integration-swagger</module>
 	<module>nutz-plugins-sqlmanager</module>
+	<module>nutz-integration-nettice</module>
 	</modules>
 	<distributionManagement>
 		<snapshotRepository>

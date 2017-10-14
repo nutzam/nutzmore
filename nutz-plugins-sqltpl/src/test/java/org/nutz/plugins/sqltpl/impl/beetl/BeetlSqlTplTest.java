@@ -68,4 +68,18 @@ public class BeetlSqlTplTest {
         dst = sql.toPreparedStatement().replace('\t', ' ').replace('\r', ' ').replace('\n', ' ').replaceAll(" ", "").trim();
         assertEquals("select * from t_user where token = ?".replaceAll(" ", ""), dst);
     }
+    
+    /**
+     * 测试layout功能
+     */
+    @Test
+    public void test_issue_70() {
+        SqlManager sqlm = new FileSqlManager("org/nutz/plugins/sqltpl/impl/beetl/sqls");
+        assertTrue(sqlm.count() > 0);
+        Sql sql = sqlm.create("user.select");
+        
+        // 首先测试没有传任何参数
+        System.out.println(sql.toPreparedStatement());
+        assertEquals("select age from t_user where name = \"wendal\" order by age asc", sql.toPreparedStatement().replace("\r", "").replace("\n", ""));
+    }
 }

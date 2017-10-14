@@ -10,6 +10,7 @@ import org.apache.shiro.util.Initializable;
 import org.nutz.integration.jedis.JedisAgent;
 import org.nutz.lang.Lang;
 import org.nutz.lang.Mirror;
+import org.nutz.lang.Streams;
 import org.nutz.lang.random.R;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
@@ -72,15 +73,22 @@ public class LCacheManager implements CacheManager, Runnable, Destroyable, Initi
         }
         log.info("JedisAgent is Ready ...");
         while (running) {
+            Jedis jedis = null;
             try {
                 log.debug("psubscribe " + PREFIX + "*");
-                jedis().psubscribe(pubSub, PREFIX + "*");
+                jedis = jedis();
+                jedis.psubscribe(pubSub, PREFIX + "*");
             }
-            catch (Exception e) {
+            catch (Throwable e) {
                 if (!running)
                     break;
                 log.debug("psubscribe fail, retry after 3 seconds", e);
                 Lang.quiteSleep(count * 1000);
+            }
+            finally {
+                if (jedis != null) {
+                    Streams.safeClose(jedis);
+                }
             }
         }
     }

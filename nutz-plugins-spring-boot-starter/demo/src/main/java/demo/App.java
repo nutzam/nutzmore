@@ -21,6 +21,7 @@ import org.springframework.web.servlet.View;
 
 import club.zhcs.captcha.CaptchaView;
 import demo.bean.R;
+import demo.bean.T;
 import demo.biz.TService;
 
 @RestController
@@ -241,7 +242,7 @@ public class App {
 
 	@GetMapping("dd")
 	public NutMap dd() {
-		return NutMap.NEW().addv("k", "(sss)");
+		return NutMap.NEW().addv("t", new T());
 	}
 
 	@Autowired
