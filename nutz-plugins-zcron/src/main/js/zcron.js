@@ -43,51 +43,179 @@ var AsDate = function(str) {
     return d;
 };
 var AsTimeInObj = function(input, dft) {
-    var inType = (typeof input);
-    var sec = dft;
+	var _pad = function(v, width) {
+		width = width || 2;
+		if(3 == width){
+			return v>99 ? v : (v>9 ? "0"+v : "00"+v);
+		}
+		return v>9 ? v : "0"+v;
+	};
+	input = (typeof input) == "number" ? input : input || dft;
+	var inType = (typeof input);
+    var ms  = 0;
+    var ti  = {};
     // 字符串
-    if("string" == inType) {
-        var m = /^(\d{1,2}):(\d{1,2})(:?(\d{1,2}))?$/.exec(input);
-        if(!m)
-            throw "Not a Time: '"+input+"'!!";
-        sec = m[1]*3600  + m[2]*60  + (m[4]||0)*1;
+    if ("string" == inType) {
+        var m = /^([0-9]{1,2}):([0-9]{1,2})(:([0-9]{1,2})([.,]([0-9]{1,3}))?)?$/
+                    .exec(input);
+        if (!m)
+            throw "Not a Time: '" + input + "'!!";
+        // 仅仅到分钟
+        if (!m[3]) {
+            ti.hour = parseInt(m[1]);
+            ti.minute = parseInt(m[2]);
+            ti.second = 0;
+            ti.millisecond = 0;
+        }
+        // 到秒
+        else if (!m[5]) {
+            ti.hour = parseInt(m[1]);
+            ti.minute = parseInt(m[2]);
+            ti.second = parseInt(m[4]);
+            ti.millisecond = 0;
+        }
+        // 到毫秒
+        else {
+            ti.hour = parseInt(m[1]);
+            ti.minute = parseInt(m[2]);
+            ti.second = parseInt(m[4]);
+            ti.millisecond = parseInt(m[6]);
+        }
     }
     // 数字
-    else if("number" == inType) {
-        sec = parseInt(input);
-    }
-    // 时间对象
-    else if(input && "object" == inType && input.__time_info_obj__) {
-        sec = input.value;
+    else if ("number" == inType) {
+        var sec;
+        if("ms" == dft) {
+            sec = parseInt(input / 1000);
+            ms  = Math.round(input - sec * 1000);
+        }else{
+            sec = parseInt(input);
+            ms  = Math.round(input*1000 - sec*1000);
+        }
+        ti.hour   = Math.min(23, parseInt(sec / 3600));
+        ti.minute = Math.min(59, parseInt((sec - ti.hour * 3600) / 60));
+        ti.second = Math.min(59, sec - ti.hour * 3600 - ti.minute * 60);
+        ti.millisecond = ms;
     }
     // 其他
-    else if((typeof sec)!="number"){
+    else{
         throw "Not a Time: " + input;
     }
-    // 计算时分秒
-    var HH = Math.min(23, parseInt(sec/3600));
-    var mm = Math.min(59, parseInt((sec - HH*3600)/60));
-    var ss = Math.min(59, sec - HH*3600 - mm*60);
-    return {
-        __time_info_obj__ : true,
-        hour   : HH,
-        minute : mm,
-        second : ss,
-        value  : HH*3600 + mm *60 + ss,
-        toString : function(autoIgnoreZeroSecond){
-            var re = (this.hour>9 ? this.hour : "0"+this.hour);
-            re += ":" + (this.minute>9 ? this.minute : "0"+this.minute);
-            if(!autoIgnoreZeroSecond || this.second > 0)
-                re += ":" + (this.second>9 ? this.second : "0"+this.second);
-            return re;
+    // 计算其他的值
+    ti.value  = ti.hour * 3600 + ti.minute * 60 + ti.second;
+    ti.valueInMillisecond = ti.value * 1000 + ti.millisecond;
+    // 增加一个函数
+    ti.toString = function (fmt) {
+        // 默认的格式化方式
+        if(!fmt) {
+            fmt = "HH:mm";
+            // 到毫秒
+            if (0 != this.millisecond) {
+                fmt += ":ss.SSS";
+            }
+            // 到秒
+            else if (0 != this.second) {
+                fmt += ":ss";
+            }
         }
+        // 进行格式化
+        var sb  = "";
+        var reg = /a|[HhKkms]{1,2}|S(SS)?/g;
+        var pos = 0;
+        var m;
+        while (m = reg.exec(fmt)) {
+            //console.log(reg.lastIndex, m.index, m.input)
+            var l = m.index;
+            // 记录之前
+            if (l > pos) {
+                sb += fmt.substring(pos, l);
+            }
+            // 偏移
+            pos = reg.lastIndex;
+
+            // 替换
+            var s = m[0];
+            if ("a" == s) {
+                sb += this.value > 43200 ? "PM" : "AM";
+            }
+            // H Hour in day (0-23)
+            else if ("H" == s) {
+                sb += this.hour;
+            }
+            // k Hour in day (1-24)
+            else if ("k" == s) {
+                sb += (this.hour + 1);
+            }
+            // K Hour in am/pm (0-11)
+            else if ("K" == s) {
+                sb += (this.hour % 12);
+            }
+            // h Hour in am/pm (1-12)
+            else if ("h" == s) {
+                sb += ((this.hour % 12) + 1);
+            }
+            // m Minute in hour
+            else if ("m" == s) {
+                sb += this.minute;
+            }
+            // s Second in minute
+            else if ("s" == s) {
+                sb += this.second;
+            }
+            // S Millisecond Number
+            else if ("S" == s) {
+                sb += this.millisecond;
+            }
+            // HH 补零的小时(0-23)
+            else if ("HH" == s) {
+                sb += _pad(this.hour);
+            }
+            // kk 补零的小时(1-24)
+            else if ("kk" == s) {
+                sb += _pad(this.hour + 1);
+            }
+            // KK 补零的半天小时(0-11)
+            else if ("KK" == s) {
+                sb += _pad(this.hour % 12);
+            }
+            // hh 补零的半天小时(1-12)
+            else if ("hh" == s) {
+                sb += _pad((this.hour % 12) + 1);
+            }
+            // mm 补零的分钟
+            else if ("mm" == s) {
+                sb += _pad(this.minute);
+            }
+            // ss 补零的秒
+            else if ("ss" == s) {
+                sb += _pad(this.second);
+            }
+            // SSS 补零的毫秒
+            else if ("SSS" == s) {
+                sb += _pad(this.millisecond, 3);
+            }
+            // 不认识
+            else {
+                sb.append(s);
+            }
+        }
+        // 结尾
+        if (pos < fmt.length) {
+            sb.append(fmt.substring(pos));
+        }
+
+        // 返回
+        return sb.toString();
     };
+    ti.valueOf = ti.toString;
+    // 嗯，返回吧
+    return ti;
 };
 var AsTimeInSec = function(str) {
     return AsTimeInObj(str).value;
 };
-var AsTimeInStr = function(sec, autoIgnoreZeroSecond) {
-    return AsTimeInObj(sec).toString(autoIgnoreZeroSecond);
+var AsTimeInStr = function(sec, fmt) {
+    return AsTimeInObj(sec).toString(fmt);
 };
 //================================================================
 /*
@@ -380,7 +508,7 @@ TimePointRepeater.prototype = {
         var list = [];
         for (var i = 0; i < this.timePoints.length; i++) {
             var sec = this.timePoints[i];
-            list.push(AsTimeInStr(sec, true));
+            list.push(AsTimeInStr(sec));
         }
         ary.push(list.join(", "));
     },
@@ -423,8 +551,8 @@ TimePointRepeater.prototype = {
         var c = {};
         c.ieF  = this.region.isLeftOpen() ? i18n.EXC : i18n.INV;
         c.ieT  = this.region.isRightOpen() ? i18n.EXC : i18n.INV;
-        c.from = tFrom.toString(true);
-        c.to   = tTo.toString(true);
+        c.from = tFrom.toString();
+        c.to   = tTo.toString();
 
         // 渲染
         var str = Tmpl(i18n.times.region, c, "${", "}");
@@ -1036,9 +1164,11 @@ ZCronObj.prototype = {
         }
 
         // 设置一下 part[0]
+        this.has_time_steps  = false;
         var trStrs = [];
         for (var i=0; i<this.timeRepeaters.length; i++) {
             var tr = this.timeRepeaters[i];
+            this.has_time_steps |= tr.isStep();
             trStrs.push(tr.getPrimaryString());
         }
         this.parts[0] = trStrs.length == 0 ? null : trStrs.join(" ");
@@ -1059,6 +1189,12 @@ ZCronObj.prototype = {
         return this.idd.isONE()
                && (dd < 0
                   || (dd > 40 && dd<MOD_dd));
+    },
+    isHasTimePoints : function() {
+        return this.has_time_points;
+    },
+    isHasTimeSteps : function() {
+        return this.has_time_steps;
     },
     //............................................................
     // day : [1,7] 表 [Sun, Sat]
