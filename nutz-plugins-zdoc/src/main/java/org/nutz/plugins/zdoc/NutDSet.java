@@ -2,6 +2,7 @@ package org.nutz.plugins.zdoc;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -38,6 +39,7 @@ public class NutDSet extends NutD {
     public NutDSet(String name) {
         super(name);
         this.map = new LinkedHashMap<>();
+        this.subs = new LinkedList<>();
     }
 
     @Override
