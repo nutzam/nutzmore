@@ -42,6 +42,7 @@ public class SwaggerModule {
 
     protected Swagger swagger;
 
+    @Ok("void")
     @At
     public void swagger(HttpServletRequest request, HttpServletResponse response) throws Exception {
         if ("true".equals(request.getParamter("force")))
