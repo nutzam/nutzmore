@@ -1,5 +1,6 @@
 package org.nutz.plugins.mvc.websocket.room;
 
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -14,7 +15,7 @@ import org.nutz.plugins.mvc.websocket.WsRoomProvider;
  */
 public class MemoryRoomProvider implements WsRoomProvider {
 
-    private ConcurrentHashMap<String, ConcurrentSkipListSet<String>> rooms = new ConcurrentHashMap<>();
+    protected ConcurrentHashMap<String, ConcurrentSkipListSet<String>> rooms = new ConcurrentHashMap<>();
 
     public Set<String> wsids(String room) {
         return getRoom(room);
@@ -39,4 +40,7 @@ public class MemoryRoomProvider implements WsRoomProvider {
         return _room;
     }
 
+    public Iterable<String> getRoomNames() {
+        return new ArrayList<>(rooms.keySet());
+    }
 }

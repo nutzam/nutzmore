@@ -134,10 +134,10 @@ ws.send(JSON.stringify({"action":"nickname", "nickname" : "wendal"}));
 protected MyWebsocket myWebsocket;
 
 // 按业务需要,调用myWebsocket提供的各种api
-public void sayhi(String room) {
+public void send_job_notify(String room, final String from) {
     myWebsocket.each(room, new Each<Session>() {
     	public void invoke(int index, Session ele, int length) {
-                myWebsocket.sendJson(ele.getId(), new NutMap("action", "layer").setv("notify", "你有新的待办事宜,请查看收件箱"));
+                myWebsocket.sendJson(ele.getId(), new NutMap("action", "layer").setv("notify", "你有新的待办事宜,请查看收件箱 from=" + from));
             }
     });
 }
