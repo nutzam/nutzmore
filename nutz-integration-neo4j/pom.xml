@@ -54,7 +54,7 @@
 		<dependency>
 			<groupId>org.neo4j.driver</groupId>
 			<artifactId>neo4j-java-driver</artifactId>
-			<version>1.0.0</version>
+			<version>1.4.4</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

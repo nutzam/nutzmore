@@ -15,9 +15,9 @@ public class Neo4jFactory {
         if (useSSL) {
             throw Lang.noImplement();
         } else {
-            config = Config.build().withEncryptionLevel(Config.EncryptionLevel.NONE).toConfig();
+            config = Config.build().withoutEncryption().toConfig();
         }
-        String driverURL = conf.get(prefix + "url", "bolt://localhost");
+        String driverURL = conf.get(prefix + "url", "bolt://localhost:7687");
         String username = conf.get(prefix + "user", "neo4j");
         String password = conf.get(prefix + "password", "123456");
         Driver driver = GraphDatabase.driver(driverURL,
