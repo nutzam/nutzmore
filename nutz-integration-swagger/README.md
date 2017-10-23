@@ -62,6 +62,9 @@ public class SwaggerModule {
     public void init() {
         log.info("init swagger ...");
         swagger = new Swagger();
+        Info info = new Info();
+        info.title("ABC....");
+        swagger.info(info);
         HashSet<Class<?>> classes = new HashSet<>();
         // 把下来的package路径改成你自己的package路径
         for (Class<?> klass : Scans.me().scanPackage("net.wendal.nutzbook.swagger")) {
@@ -106,6 +109,7 @@ url: "./swagger.json",
 @At("/swagger")
 @Path("/swagger")
 public class SwaggerTestModule extends BaseModule {
+    // 无参数示例
     @Path("/ping")
     @GET
     @ApiOperation(value = "心跳接口", notes = "发我一个ping,回你一个pong", httpMethod="GET")
@@ -113,6 +117,16 @@ public class SwaggerTestModule extends BaseModule {
     @Ok("json:full")
     public Object ping() {
         return new NutMap("ok", true).setv("data", "pong");
+    }
+    
+    //带参数示例
+    @POST
+    @ApiOperation(value = "回显接口", notes = "发我一个字符串,原样回复一个字符串")
+    @ApiImplicitParams({@ApiImplicitParam(name = "text", paramType="form", value = "想发啥就发啥", dataType="string", required = true)})
+    @At
+    @Ok("raw")
+    public String echo(@Param("text") String text) {
+        return text;
     }
 ```
 
