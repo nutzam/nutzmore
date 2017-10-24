@@ -6,7 +6,7 @@
     <version>1.r.63-SNAPSHOT</version>
   </parent>
   <artifactId>nutz-plugins-ngrok</artifactId>
-  
+
 	<description>Ngrok Server and Client written by Java</description>
 
 	<url>https://nutzam.com</url>
@@ -37,39 +37,39 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<dependencies>
-	<dependency>
-		<groupId>redis.clients</groupId>
-		<artifactId>jedis</artifactId>
-		<version>2.9.0</version>
-	</dependency>
-	<dependency>
-		<groupId>org.nutz</groupId>
-		<artifactId>nutz-integration-jedis</artifactId>
-		<version>1.r.63-SNAPSHOT</version>
-	</dependency>
-	<dependency>
-		<groupId>io.netty</groupId>
-		<artifactId>netty-all</artifactId>
-		<version>4.1.13.Final</version>
-	</dependency>
-	<dependency>
-		<groupId>org.nutz</groupId>
-		<artifactId>nutz-web</artifactId>
-		<version>1.r.63-SNAPSHOT</version>
-		<scope>provided</scope>
-	</dependency>
-	<dependency>
-		<groupId>com.ibeetl</groupId>
-		<artifactId>beetl</artifactId>
-		<version>2.7.19</version>
-		<scope>provided</scope>
-	</dependency>
-	<dependency>
-		<groupId>junit</groupId>
-		<artifactId>junit</artifactId>
-		<version>4.12</version>
-		<scope>test</scope>
-	</dependency>
+		<dependency>
+			<groupId>redis.clients</groupId>
+			<artifactId>jedis</artifactId>
+			<version>2.9.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.nutz</groupId>
+			<artifactId>nutz-integration-jedis</artifactId>
+			<version>1.r.63-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-all</artifactId>
+			<version>4.1.16.Final</version>
+		</dependency>
+		<dependency>
+			<groupId>org.nutz</groupId>
+			<artifactId>nutz-web</artifactId>
+			<version>1.r.63-SNAPSHOT</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.ibeetl</groupId>
+			<artifactId>beetl</artifactId>
+			<version>2.7.22</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
