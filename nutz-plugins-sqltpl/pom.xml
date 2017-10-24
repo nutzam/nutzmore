@@ -63,6 +63,12 @@
 			<artifactId>beetl</artifactId>
 			<version>2.7.22</version>
 			<optional>true</optional>
+			<exclusions>
+				<exclusion>
+					<groupId>org.antlr</groupId>
+					<artifactId>antlr4-runtime</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -87,6 +93,17 @@
 			<artifactId>jetbrick-template</artifactId>
 			<version>2.1.5</version>
 			<optional>true</optional>
+			<exclusions>
+				<exclusion>
+					<groupId>org.antlr</groupId>
+					<artifactId>antlr4-runtime</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.antlr</groupId>
+			<artifactId>antlr4-runtime</artifactId>
+			<version>4.7</version>
 		</dependency>
 	</dependencies>
 

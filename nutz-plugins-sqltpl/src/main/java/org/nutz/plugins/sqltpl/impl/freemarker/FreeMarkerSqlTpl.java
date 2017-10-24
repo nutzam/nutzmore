@@ -16,7 +16,7 @@ import freemarker.template.TemplateExceptionHandler;
 
 /**
  * FreeMarker版SqlTpl实现
- * 
+ *
  * @author wendal(wendal1985@gmail.com)
  *
  */
@@ -35,7 +35,7 @@ public class FreeMarkerSqlTpl extends NutSqlTpl {
 
     /**
      * 渲染一个Sql对象
-     * 
+     *
      * @param sql
      *            需要渲染的Sql实例
      * @return 原对象,用于链式调用
@@ -59,12 +59,12 @@ public class FreeMarkerSqlTpl extends NutSqlTpl {
 
     /**
      * 获取Configuration
-     * 
+     *
      * @return Configuration实例,如果没有自定义的,就生成一个默认的
      */
     public static Configuration cfg() {
         if (cfg == null) {
-            Configuration cfg = new Configuration(Configuration.VERSION_2_3_22);
+            Configuration cfg = new Configuration(Configuration.VERSION_2_3_26);
             cfg.setDefaultEncoding("UTF-8");
             cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
             FreeMarkerSqlTpl.cfg = cfg;
@@ -74,7 +74,7 @@ public class FreeMarkerSqlTpl extends NutSqlTpl {
 
     /**
      * 设置Configuration
-     * 
+     *
      * @param cfg
      *            自定义Configuration
      */
