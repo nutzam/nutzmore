@@ -13,11 +13,11 @@ import org.nutz.plugins.daomapper.impl.FetchMethodMapper;
 import org.nutz.plugins.daomapper.impl.QueryMethodMapper;
 
 public class SimpleMapper implements InvocationHandler {
-	
+
 	public Dao dao;
-	
+
 	public Map<Method, MethodMapper> mappers;
-	
+
 	public SimpleMapper(Dao dao, Map<Method, MethodMapper> mappers) {
 		this.dao = dao;
 		this.mappers = mappers;
@@ -45,6 +45,10 @@ public class SimpleMapper implements InvocationHandler {
 		}
 		SimpleMapper sm = new SimpleMapper(dao, mappers);
 		return (T) Proxy.newProxyInstance(klass.getClassLoader(), new Class<?>[]{klass}, sm);
+	}
+
+	public static <T> T map(Dao dao, Class<?> bean, Class<T> klass) {
+		return map(dao, bean.getPackage().getName(), klass);
 	}
 
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
