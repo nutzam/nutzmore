@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 package org.nutz.integration.hasor;
-import java.io.IOException;
-import java.util.Map.Entry;
-import java.util.Set;
-
+import net.hasor.core.*;
 import org.nutz.integration.hasor.annotation.HasorConfiguration;
 import org.nutz.ioc.Ioc;
 import org.nutz.ioc.impl.PropertiesProxy;
@@ -27,13 +24,9 @@ import org.nutz.lang.util.NutMap;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 
-import net.hasor.core.ApiBinder;
-import net.hasor.core.AppContext;
-import net.hasor.core.BindInfo;
-import net.hasor.core.Hasor;
-import net.hasor.core.LifeModule;
-import net.hasor.core.Module;
-import net.hasor.core.utils.StringUtils;
+import java.io.IOException;
+import java.util.Map.Entry;
+import java.util.Set;
 /**
  * 用法：ioc.get(HasorFactoryIocLoader.class, "hasor");
  * @version : 2017年02月20日
@@ -41,7 +34,7 @@ import net.hasor.core.utils.StringUtils;
  */
 public class HasorFactoryIocLoader extends MapLoader implements LifeModule {
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~IocLoader
-    private static final Log    log           = Logs.get();
+    private static final Log log = Logs.get();
     private PropertiesProxy conf;
     public HasorFactoryIocLoader(PropertiesProxy conf) {
         this.conf = conf;
@@ -50,7 +43,6 @@ public class HasorFactoryIocLoader extends MapLoader implements LifeModule {
     //
     protected Ioc        ioc;
     protected AppContext appContext;
-    
     public void init() throws IOException {
         //
         // .创建 Hasor 对象，后面用来创建 AppContext
@@ -58,18 +50,20 @@ public class HasorFactoryIocLoader extends MapLoader implements LifeModule {
         //
         // .从插件参数中加载环境变量
         String mainConfig = conf.get("hasor.config");
-        if (!StringUtils.isBlank(mainConfig)) {
+        if (!isBlank(mainConfig)) {
             creter.setMainSettings(mainConfig);
         }
         //
         // .环境变量设置到 Hasor 中
         for (Entry<String, String> en : conf.entrySet()) {
             String key = en.getKey();
-            if (!key.startsWith("hasor."))
+            if (!key.startsWith("hasor.")) {
                 continue;
+            }
             key = key.substring("hasor.".length());
-            if ("config".equals(key))
+            if ("config".equals(key)) {
                 continue;
+            }
             creter.putData(key, en.getValue());
         }
         //
@@ -80,6 +74,9 @@ public class HasorFactoryIocLoader extends MapLoader implements LifeModule {
             log.error(e.getMessage(), e);
             throw e;
         }
+    }
+    private boolean isBlank(String mainConfig) {
+        return mainConfig == null || mainConfig.trim().equalsIgnoreCase("");
     }
     public void shutdown() {
         this.appContext.shutdown();
@@ -100,8 +97,9 @@ public class HasorFactoryIocLoader extends MapLoader implements LifeModule {
         //   -- 包扫描范围通过 Nutz 配置文件以环境变量方式传递进来。
         Set<Class<?>> aClass = apiBinder.findClass(HasorConfiguration.class);
         for (final Class<?> klass : aClass) {
-            if (klass == HasorConfiguration.class)
+            if (klass == HasorConfiguration.class) {
                 continue;
+            }
             if (!Module.class.isAssignableFrom(klass)) {
                 continue;
             }
@@ -120,7 +118,7 @@ public class HasorFactoryIocLoader extends MapLoader implements LifeModule {
             String bindName = bindInfo.getBindName();
             Class<?> bindType = bindInfo.getBindType();
             //
-            if (StringUtils.isBlank(bindName)) {
+            if (isBlank(bindName)) {
                 bindName = Strings.lowerFirst(bindType.getSimpleName());
             }
             //

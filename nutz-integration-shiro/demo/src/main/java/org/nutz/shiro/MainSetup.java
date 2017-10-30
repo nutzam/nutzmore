@@ -41,7 +41,7 @@ public class MainSetup implements Setup {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.nutz.mvc.Setup#destroy(org.nutz.mvc.NutConfig)
 	 */
 	@Override
@@ -51,7 +51,7 @@ public class MainSetup implements Setup {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.nutz.mvc.Setup#init(org.nutz.mvc.NutConfig)
 	 */
 	@Override
@@ -66,10 +66,11 @@ public class MainSetup implements Setup {
 		Ioc ioc = nc.getIoc();
 
 		Dao dao = ioc.get(Dao.class);
+		Daos.FORCE_WRAP_COLUMN_NAME = true;
 
 		// 创建和修改数据表
-		Daos.createTablesInPackage(dao, getClass().getPackage().getName(), false);
-		Daos.migration(dao, getClass().getPackage().getName(), true, true);
+		Daos.createTablesInPackage(dao, User.class, false);
+		Daos.migration(dao, User.class, true, true);
 
 		final UserService userService = ioc.get(UserService.class);
 		final RoleService roleService = ioc.get(RoleService.class);

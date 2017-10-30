@@ -37,6 +37,10 @@ public class NutzDocMain {
     private static final Log log = Logs.get();
 
     public static void main(String[] args) {
+        if (args == null || args.length < 2) {
+            usage();
+            return;
+        }
         // 分析参数
         String ctype = args[0];
         String phSrc = args[1];
@@ -80,4 +84,8 @@ public class NutzDocMain {
         log.infof("All done in %s.\n%s", Times.mss((int) sw.du()), sw.toString());
     }
 
+    protected static void usage() {
+        System.out.println("ZDoc Usage");
+        System.out.println("  zdoc [md2html|md2docx|md2pdf] source dest");
+    }
 }

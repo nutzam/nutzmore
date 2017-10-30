@@ -61,7 +61,7 @@ public class SpringIocLoader extends AbstractLifeCycle implements IocLoader {
 
     protected ApplicationContext context() {
         if (context == null) {
-            init();
+            _init();
         }
         return context;
     }
@@ -70,8 +70,7 @@ public class SpringIocLoader extends AbstractLifeCycle implements IocLoader {
         return context.getBean(name);
     }
     
-    @Override
-    public void init() {
+    public void _init() {
         if (context == null) {
             if (contextConfigLocation == null) {
                 context = WebApplicationContextUtils.getRequiredWebApplicationContext(Mvcs.getServletContext());

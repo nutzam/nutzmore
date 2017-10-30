@@ -1,11 +1,8 @@
 package org.nutz.plugins.daomapper;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.util.List;
 
+import com.alibaba.druid.pool.DruidDataSource;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,13 +15,15 @@ import org.nutz.lang.random.R;
 import org.nutz.plugins.daomapper.bean.Role;
 import org.nutz.plugins.daomapper.bean.User;
 
-import com.alibaba.druid.pool.DruidDataSource;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class SimpleMapperTest {
-    
+
     protected Dao dao;
     protected DruidDataSource ds;
-    
+
     @Before
     public void before() {
         ds = new DruidDataSource();
@@ -46,7 +45,7 @@ public class SimpleMapperTest {
             dao.insert(admin);
         }
     }
-    
+
     @After
     public void after() {
         if (ds != null)
@@ -56,18 +55,18 @@ public class SimpleMapperTest {
 	@Test
 	public void testMap() {
 		// UserDao 只是个接口
-		UserDao us = SimpleMapper.map(dao, User.class.getPackage().getName(), UserDao.class);
+		UserDao us = SimpleMapper.map(dao, User.class, UserDao.class);
 		User user = us.fetchById(1);
 		assertNotNull(user);
-		
+
 		List<User> list = us.queryByName("admin");
 		assertNotNull(list);
 		assertTrue(list.size() > 0);
 
 		assertEquals(user.getName(), us.fetchUserById(1).getName());
-		
+
 		assertNotNull(us.fetchRoleById(1));
-		
+
 		assertTrue(us.count(User.class) > 0);
 	}
 

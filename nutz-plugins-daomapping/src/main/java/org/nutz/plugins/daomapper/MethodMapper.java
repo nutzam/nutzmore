@@ -1,6 +1,7 @@
 package org.nutz.plugins.daomapper;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +31,9 @@ public abstract class MethodMapper {
 		this.pojoType = method.getReturnType();
 		this.pName = pName;
 		if (List.class.isAssignableFrom(this.pojoType)) {
-			this.pojoType = (Class<?>) Mirror.me(method.getGenericReturnType()).getGenericsType(0);
+			Type t = Mirror.me(method.getGenericReturnType()).getGenericsType(0);
+			if (t instanceof Class)
+			    this.pojoType = (Class<?>) t;
 		}
 		paramNames = mName();
 	}
