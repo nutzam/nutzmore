@@ -4,9 +4,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.HashMap;
+import java.util.List;
 
 import org.nutz.dao.ConnCallback;
 import org.nutz.dao.Dao;
+import org.nutz.dao.entity.Record;
 import org.nutz.lang.util.NutMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -20,6 +22,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.View;
+
+import com.google.common.collect.Lists;
 
 import club.zhcs.captcha.CaptchaView;
 import club.zhcs.common.Result;
@@ -247,20 +251,20 @@ public class App {
 
 	@GetMapping("run")
 	public Object run() {
-		dao.run(new ConnCallback() {
 
+		List<NutMap> target = Lists.newArrayList();
+		dao.run(new ConnCallback() {
 			@Override
 			public void invoke(Connection conn) throws Exception {
-				PreparedStatement p = conn.prepareStatement("SELECT * FROM t_user");
+				PreparedStatement p = conn.prepareStatement("SELECT * FROM t_tt_ttt_tttt");
 				p.executeQuery();
 				ResultSet rs = p.getResultSet();
 				while (rs.next()) {
-					System.err.println(rs.getLong("id"));
-					System.err.println(rs.getString("u_name"));
+					target.add(NutMap.WRAP(Record.create(rs)));
 				}
 			}
 		});
-		return null;
+		return target;
 	}
 
 	@GetMapping("/sqls")
