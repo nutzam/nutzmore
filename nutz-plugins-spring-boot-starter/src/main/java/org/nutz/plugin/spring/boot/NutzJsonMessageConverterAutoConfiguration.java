@@ -71,7 +71,8 @@ public class NutzJsonMessageConverterAutoConfiguration {
 		if (Strings.isNotBlank(jsonProperties.getTimeZone())) {
 			format.setTimeZone(TimeZone.getTimeZone(jsonProperties.getTimeZone()));
 		}
-		return new NutzJsonMessageConverter().setFormat(format).setIgnoreType(jsonProperties.getIgnoreType());
+		HttpMessageConverter c = new NutzJsonMessageConverter().setFormat(format).setIgnoreType(jsonProperties.getIgnoreType());
+		return c;
 	}
 
 }

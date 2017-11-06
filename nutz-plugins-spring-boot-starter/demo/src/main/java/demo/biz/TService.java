@@ -3,6 +3,7 @@ package demo.biz;
 import javax.annotation.PostConstruct;
 
 import org.nutz.lang.Lang;
+import org.nutz.lang.Times;
 import org.nutz.lang.random.R;
 import org.nutz.lang.util.NutMap;
 import org.nutz.plugin.spring.boot.service.BaseService;
@@ -13,6 +14,10 @@ import demo.bean.T;
 
 @Service
 public class TService extends BaseService<demo.bean.T> {
+
+	public static void main(String[] args) {
+		System.err.println(Times.D("0000-00-00 00:00:00"));
+	}
 
 	@PostConstruct
 	public void init() {

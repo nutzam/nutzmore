@@ -1,5 +1,6 @@
 package demo.hanlder;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.nutz.lang.util.NutMap;
@@ -23,9 +24,9 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(value = Exception.class)
 	@ResponseBody
-	public NutMap defaultErrorHandler(HttpServletResponse response, Exception e) throws Exception {
+	public NutMap defaultErrorHandler(HttpServletRequest request,HttpServletResponse response, Exception e) throws Exception {
 		log.debug(e);
-		response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
+		response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 		return NutMap.NEW().addv("exception", e.getMessage());
 	}
 }

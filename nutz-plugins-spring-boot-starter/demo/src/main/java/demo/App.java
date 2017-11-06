@@ -3,6 +3,7 @@ package demo;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.HashMap;
 
 import org.nutz.dao.ConnCallback;
 import org.nutz.dao.Dao;
@@ -15,6 +16,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.View;
@@ -212,9 +214,9 @@ public class App {
 		return NutMap.NEW().addv("status", 0).addv("d", new DTO());
 	}
 
-	@GetMapping("echo")
-	public NutMap echo(@RequestBody NutMap data) {
-		return data;
+	@PostMapping("echo")
+	public NutMap echo(@RequestBody HashMap data) {
+		return NutMap.WRAP(data);
 	}
 
 	@GetMapping("run")
@@ -227,8 +229,8 @@ public class App {
 				p.executeQuery();
 				ResultSet rs = p.getResultSet();
 				while (rs.next()) {
-					System.err.println(rs.getInt("id"));
-					System.err.println(rs.getDate("u_birth").getTime());
+					System.err.println(rs.getLong("id"));
+					System.err.println(rs.getString("u_name"));
 				}
 			}
 		});

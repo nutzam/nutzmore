@@ -8,7 +8,6 @@ import java.util.regex.Pattern;
 
 import org.nutz.json.Json;
 import org.nutz.json.JsonFormat;
-import org.nutz.lang.Lang;
 import org.nutz.lang.Strings;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
@@ -44,14 +43,9 @@ public class NutzJsonMessageConverter extends AbstractGenericHttpMessageConverte
 		return this;
 	}
 
-	{
-		setSupportedMediaTypes(Lang.array2list(new MediaType[] { MediaType.APPLICATION_JSON_UTF8 }));
+	public NutzJsonMessageConverter() {
+		super(new MediaType[] { MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON_UTF8, new MediaType("application", "*+json") });
 	}
-	
-	 public NutzJsonMessageConverter() {
-		  super(new MediaType[] { MediaType.APPLICATION_JSON, new MediaType("application", "*+json") });
-		 }
-
 
 	@Override
 	public Object read(Type type, Class<?> contextClass, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
