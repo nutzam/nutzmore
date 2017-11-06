@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.View;
 
 import club.zhcs.captcha.CaptchaView;
+import club.zhcs.common.Result;
 import demo.bean.R;
 import demo.bean.T;
 import demo.biz.TService;
@@ -209,9 +210,34 @@ public class App {
 
 	}
 
+	public static class K<F> {
+		F data;
+
+		/**
+		 * @return the data
+		 */
+		public F getData() {
+			return data;
+		}
+
+		/**
+		 * @param data
+		 *            the data to set
+		 */
+		public void setData(F data) {
+			this.data = data;
+		}
+
+	}
+
 	@GetMapping("json")
 	public NutMap json() {
 		return NutMap.NEW().addv("status", 0).addv("d", new DTO());
+	}
+
+	@PostMapping("dto")
+	public Result dto(@RequestBody K<DTO> k) {
+		return Result.success().addData("dto", k.getData());
 	}
 
 	@PostMapping("echo")
