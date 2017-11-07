@@ -3,9 +3,12 @@ package demo;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.HashMap;
+import java.util.List;
 
 import org.nutz.dao.ConnCallback;
 import org.nutz.dao.Dao;
+import org.nutz.dao.entity.Record;
 import org.nutz.lang.util.NutMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -15,11 +18,15 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.View;
 
+import com.google.common.collect.Lists;
+
 import club.zhcs.captcha.CaptchaView;
+import club.zhcs.common.Result;
 import demo.bean.R;
 import demo.bean.T;
 import demo.biz.TService;
@@ -207,32 +214,57 @@ public class App {
 
 	}
 
+	public static class K<F> {
+		F data;
+
+		/**
+		 * @return the data
+		 */
+		public F getData() {
+			return data;
+		}
+
+		/**
+		 * @param data
+		 *            the data to set
+		 */
+		public void setData(F data) {
+			this.data = data;
+		}
+
+	}
+
 	@GetMapping("json")
 	public NutMap json() {
 		return NutMap.NEW().addv("status", 0).addv("d", new DTO());
 	}
 
-	@GetMapping("echo")
-	public NutMap echo(@RequestBody NutMap data) {
-		return data;
+	@PostMapping("dto")
+	public Result dto(@RequestBody K<DTO> k) {
+		return Result.success().addData("dto", k.getData());
+	}
+
+	@PostMapping("echo")
+	public NutMap echo(@RequestBody HashMap data) {
+		return NutMap.WRAP(data);
 	}
 
 	@GetMapping("run")
 	public Object run() {
-		dao.run(new ConnCallback() {
 
+		List<NutMap> target = Lists.newArrayList();
+		dao.run(new ConnCallback() {
 			@Override
 			public void invoke(Connection conn) throws Exception {
-				PreparedStatement p = conn.prepareStatement("SELECT * FROM t_user");
+				PreparedStatement p = conn.prepareStatement("SELECT * FROM t_tt_ttt_tttt");
 				p.executeQuery();
 				ResultSet rs = p.getResultSet();
 				while (rs.next()) {
-					System.err.println(rs.getInt("id"));
-					System.err.println(rs.getDate("u_birth").getTime());
+					target.add(NutMap.WRAP(Record.create(rs)));
 				}
 			}
 		});
-		return null;
+		return target;
 	}
 
 	@GetMapping("/sqls")

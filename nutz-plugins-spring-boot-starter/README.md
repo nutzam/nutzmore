@@ -53,7 +53,12 @@ basepackage 实体类所在包名
 ```
 ## 使用nutzJson
 
-### 移除jackson和其他的json包即可,然后什么都不做
+### 移除jackson和其他的json包即可,然后配置
+```yml
+nutz:
+  json:
+    enable: true
+```
 ### 定制json
 ```yml
 nutz: 
