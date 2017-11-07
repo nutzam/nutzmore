@@ -191,6 +191,8 @@ public abstract class AbstractHtmlDSetRender implements NutDSetRender {
                 c.put("tags", this.__gen_meta_list(doc.getTags(), ".doc-tags"));
                 c.put("authors", this.__gen_meta_list(doc.getAuthors(), ".doc-authors"));
                 c.put("path", taph);
+                // TODO 这里要改成读文档的 title
+                c.put("title", Files.getMajorName(doc.getName()));
                 // 生成 HTML
                 String html = docTmpl.render(c, false);
 
