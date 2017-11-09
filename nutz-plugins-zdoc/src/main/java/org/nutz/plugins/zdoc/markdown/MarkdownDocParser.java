@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.nutz.lang.Files;
 import org.nutz.lang.Strings;
 import org.nutz.lang.util.NutMap;
 import org.nutz.lang.util.Tag;
@@ -53,7 +54,7 @@ public class MarkdownDocParser implements NutDocParser {
                      + "|(~~([^~]+)~~)"
                      + "|(`([^`]+)`)"
                      + "|(!\\[([^\\]]*)\\]\\(([^\\)]+)\\))"
-                     + "|(\\[([^\\]]*)\\]\\(([^\\)]+)\\))"
+                     + "|(\\[([^\\]]*)\\]\\(([^\\)]*)\\))"
                      + "|(https?:\\/\\/[^ ]+)";
         Pattern REG = Pattern.compile(reg);
         Matcher m = REG.matcher(str);
@@ -71,35 +72,43 @@ public class MarkdownDocParser implements NutDocParser {
             }
             // EM: *xxx*
             if (null != m.group(1)) {
-                tag.add("em").setText(m.group(2));
+                this.__line_to_html(tag.add("em"), m.group(2), tagNames);
                 // 记录标签
                 if (null != tagNames)
                     tagNames.put("em", true);
             }
             // B: **xxx**
             else if (null != m.group(3)) {
-                tag.add(Tag.tag("b").setText(m.group(4)));
+                this.__line_to_html(tag.add("b"), m.group(4), tagNames);
                 // 记录标签
                 if (null != tagNames)
                     tagNames.put("b", true);
             }
             // B: __xxx__
             else if (null != m.group(5)) {
-                tag.add("b").setText(m.group(6));
+                this.__line_to_html(tag.add("b"), m.group(6), tagNames);
                 // 记录标签
                 if (null != tagNames)
                     tagNames.put("b", true);
             }
             // DEL: ~~xxx~~
             else if (null != m.group(7)) {
-                tag.add("del").setText(m.group(8));
+                this.__line_to_html(tag.add("del"), m.group(8), tagNames);
                 // 记录标签
                 if (null != tagNames)
                     tagNames.put("del", true);
             }
             // CODE: `xxx`
             else if (null != m.group(9)) {
-                tag.add("code").setText(m.group(10));
+                String s2 = m.group(10);
+                // 特殊文字
+                if ("?".equals(s2)) {
+                    tag.add("i", ".fa fa-question-circle-o");
+                }
+                // 默认
+                else {
+                    tag.add("code").setText(s2);
+                }
                 // 记录标签
                 if (null != tagNames)
                     tagNames.put("code", true);
@@ -113,9 +122,22 @@ public class MarkdownDocParser implements NutDocParser {
             }
             // A: [](xxxx)
             else if (null != m.group(14)) {
-                tag.add("a")
-                   .attr("href", m.group(16))
-                   .setText(Strings.sBlank(m.group(15), m.group(16)));
+                // 得到超链
+                String href = m.group(16);
+                if (null != href && href.endsWith(".md")) {
+                    href = Files.renameSuffix(href, ".html");
+                }
+                // 得到文字
+                String text = Strings.sBlank(m.group(15), Files.getMajorName(href));
+                // 锚点
+                if (Strings.isBlank(href) && text.matches("^#.+$")) {
+                    tag.add("a").attr("name", text.substring(1));
+                }
+                // 链接
+                else {
+                    Tag a = tag.add("a").attr("href", href);
+                    this.__line_to_html(a, text, tagNames);
+                }
                 // 记录标签
                 if (null != tagNames)
                     tagNames.put("a", true);
