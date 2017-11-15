@@ -16,3 +16,38 @@ where
 <% layout("/sqls/layout/_select_x_from_y.sql", {t_name:"age", t_table:"t_user"}){ %>
 	where name = "wendal"
 <%}%>
+
+/*test.getDayTaskList*/
+SELECT a.id, a.name, a.createTime,
+IF((FROM_UNIXTIME(a.beginTime,'%Y%m%d')= date_format(now(),'%Y%m%d')) or a.beginTime is NULL, 1,0) isToday, 
+IF(a.beginTime is not null and FROM_UNIXTIME(a.beginTime,'%Y%m%d') > date_format(now(),'%Y%m%d'), 1,0) isFuture, 
+IF(a.beginTime is not null and FROM_UNIXTIME(a.beginTime,'%Y%m%d') < date_format(now(),'%Y%m%d'), 1,0) isover, 
+	IF(b.taskId is NULL, 0, 1) isEnd 
+	from ttask a LEFT JOIN ttaskendusermap b on a.id = b.taskId and b.loginUserId = @createUserId
+	where a.isLoopTemplate=0 and a.taskType = 1
+ 	and a.createUserId = @createUserId
+	and a.companyId = @companyId
+		<%if(has("beginTime")){%>
+  			and a.beginTime >= @beginTime
+  		<%}%>
+  		<%if(has("endTime")){%>
+  			and a.beginTime <= @endTime
+  		<%}%>
+  		<%if(!isEmpty(term)){%>
+  			and a.name like @term
+  		<%}%>
+  		<%if(has("labelId")){%>
+  			and a.id in (select b.taskId from ttasklabelmap b where b.labelId=@labelId)
+  			and (a.createUserId=@createUserId 
+  			or a.id in (select taskid from ttaskemployeemap  where employeeId =@currentEmployeeId)
+  			or a.id in (select taskid from ttasklabelmap where labelid in (select labelid from tcommonlabelusermap where loginuserid =@createUserId))
+  			 )
+  		<%}%>
+  		<%if(has("isend") && isend.~size == 1){%>
+			and b.taskId is
+			<%for(item in isend){%>
+			 <%if(item == 1){%>not<%}%> null 
+			<%}%>
+		<%}%>
+		${1==1 ? ' ':' '}
+      order by a.id desc

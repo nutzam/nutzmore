@@ -131,13 +131,15 @@ ws.send(JSON.stringify({"action":"nickname", "nickname" : "wendal"}));
 ```java
 // 在Service或Module中,通过ioc注入上述的MyWebsocket
 @Inject
-protected MyWebsocket myWebsocket;
+protected MyWsHandler myWsHandler;
 
 // 按业务需要,调用myWebsocket提供的各种api
 public void send_job_notify(String room, final String from) {
-    myWebsocket.each(room, new Each<Session>() {
+    // 通过each方法变量房间内的会话
+    myWsHandler.each(room, new Each<Session>() {
     	public void invoke(int index, Session ele, int length) {
-                myWebsocket.sendJson(ele.getId(), new NutMap("action", "layer").setv("notify", "你有新的待办事宜,请查看收件箱 from=" + from));
+    	        // 逐个会话发送消息
+                myWsHandler.sendJson(ele.getId(), new NutMap("action", "layer").setv("notify", "你有新的待办事宜,请查看收件箱 from=" + from));
             }
     });
 }

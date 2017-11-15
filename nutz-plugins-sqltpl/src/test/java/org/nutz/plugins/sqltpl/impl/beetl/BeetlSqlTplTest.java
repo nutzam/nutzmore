@@ -82,4 +82,32 @@ public class BeetlSqlTplTest {
         System.out.println(sql.toPreparedStatement());
         assertEquals("select age from t_user where name = \"wendal\" order by age asc", sql.toPreparedStatement().replace("\r", "").replace("\n", ""));
     }
+    
+
+    /**
+     * 测试SQL空格与否
+     */
+    @Test
+    public void test_issue_71() {
+        SqlManager sqlm = new FileSqlManager("org/nutz/plugins/sqltpl/impl/beetl/sqls");
+        assertTrue(sqlm.count() > 0);
+        Sql sql = sqlm.create("test.getDayTaskList");
+        
+        sql.setParam("isend", new int[]{1});
+        System.out.println(sql.toPreparedStatement());
+    }
+    
+    /**
+     * 测试Sql对象先获取参数矩阵,再获取Sql语句的情况
+     */
+    @Test
+    public void test_issue_xxx() {
+        SqlManager sqlm = new FileSqlManager("org/nutz/plugins/sqltpl/impl/beetl/sqls");
+        assertTrue(sqlm.count() > 0);
+        Sql sql = sqlm.create("test.getDayTaskList");
+        
+        sql.setParam("isend", new int[]{1});
+        sql.getParamMatrix();
+        System.out.println(sql.toPreparedStatement());
+    }
 }
