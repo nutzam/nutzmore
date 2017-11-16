@@ -1,10 +1,7 @@
 package org.nutz.plugins.wkcache.test;
 
 import org.nutz.ioc.loader.annotation.IocBean;
-import org.nutz.plugins.wkcache.annotation.CacheDefaults;
-import org.nutz.plugins.wkcache.annotation.CacheRemove;
-import org.nutz.plugins.wkcache.annotation.CacheRemoveAll;
-import org.nutz.plugins.wkcache.annotation.CacheResult;
+import org.nutz.plugins.wkcache.annotation.*;
 
 /**
  * Created by wizzer on 2017/6/14.
@@ -25,6 +22,11 @@ public class MyCacheTest {
     @CacheResult(cacheKey = "${args[0].id}_${args[0].name}")
     public Object testCacheObj(TestBean test) {
         return test;
+    }
+
+    @CacheUpdate(cacheKey = "hello")
+    public Object testUpdate(String txt) {
+        return txt;
     }
 
     @CacheRemove(cacheKey = "test")
