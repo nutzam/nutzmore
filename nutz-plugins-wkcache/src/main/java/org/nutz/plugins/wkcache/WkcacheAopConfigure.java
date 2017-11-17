@@ -8,6 +8,7 @@ import org.nutz.ioc.loader.annotation.IocBean;
 import org.nutz.plugins.wkcache.annotation.CacheRemove;
 import org.nutz.plugins.wkcache.annotation.CacheRemoveAll;
 import org.nutz.plugins.wkcache.annotation.CacheResult;
+import org.nutz.plugins.wkcache.annotation.CacheUpdate;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -25,8 +26,9 @@ public class WkcacheAopConfigure implements AopConfigration {
         boolean flag = true;
         for (Method method : clazz.getMethods()) {
             if (method.getAnnotation(CacheResult.class) != null
-                || method.getAnnotation(CacheRemove.class) != null
-                || method.getAnnotation(CacheRemoveAll.class) != null) {
+                    || method.getAnnotation(CacheUpdate.class) != null
+                    || method.getAnnotation(CacheRemove.class) != null
+                    || method.getAnnotation(CacheRemoveAll.class) != null) {
                 flag = false;
                 break;
             }
@@ -34,11 +36,13 @@ public class WkcacheAopConfigure implements AopConfigration {
         if (flag)
             return list;
         list.add(new InterceptorPair(ioc.get(WkcacheResultInterceptor.class),
-                                     new WkcacheMethodMatcher(CacheResult.class)));
+                new WkcacheMethodMatcher(CacheResult.class)));
+        list.add(new InterceptorPair(ioc.get(WkcacheUpdateInterceptor.class),
+                new WkcacheMethodMatcher(CacheUpdate.class)));
         list.add(new InterceptorPair(ioc.get(WkcacheRemoveEntryInterceptor.class),
-                                     new WkcacheMethodMatcher(CacheRemove.class)));
+                new WkcacheMethodMatcher(CacheRemove.class)));
         list.add(new InterceptorPair(ioc.get(WkcacheRemoveAllInterceptor.class),
-                                     new WkcacheMethodMatcher(CacheRemoveAll.class)));
+                new WkcacheMethodMatcher(CacheRemoveAll.class)));
         return list;
     }
 }

@@ -24,14 +24,15 @@ public class WkcacheTest extends Assert {
         assertTrue(ioc.getNames().length > 0);
 //        log.debug(ioc.get(MyCacheTest.class).testCache("wizzer.cn"));
 //        ioc.get(MyCacheTest.class).testRemove();
-        log.debug(ioc.get(MyCacheTest.class).testCache("大鲨鱼最帅"));
+//        log.debug(ioc.get(MyCacheTest.class).testCache("大鲨鱼最帅"));
 //        ioc.get(MyCacheTest.class).testRemoveAll();
-        log.debug(ioc.get(MyCacheTest.class).testCacheEl("el"));
-        TestBean test = new TestBean();
-        test.setId("abc");
-        test.setName("def");
-        log.debug(ioc.get(MyCacheTest.class).testCacheObj(test));
+//        log.debug(ioc.get(MyCacheTest.class).testCacheEl("el"));
+//        TestBean test = new TestBean();
+//        test.setId("abc");
+//        test.setName("def");
+//        log.debug(ioc.get(MyCacheTest.class).testCacheObj(test));
 //        ioc.get(MyCacheTest.class).testRemove(test);
+        ioc.get(MyCacheTest.class).testUpdate("hello");
     }
 
 
