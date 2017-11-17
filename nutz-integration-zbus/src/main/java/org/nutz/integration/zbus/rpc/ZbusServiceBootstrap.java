@@ -1,6 +1,6 @@
 package org.nutz.integration.zbus.rpc;
 
-public class ZBusServiceBootstrap {
+public class ZbusServiceBootstrap {
 
 	protected io.zbus.rpc.bootstrap.http.ServiceBootstrap http;
 	protected io.zbus.rpc.bootstrap.mq.ServiceBootstrap mq;

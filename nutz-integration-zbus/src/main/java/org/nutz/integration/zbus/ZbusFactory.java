@@ -8,8 +8,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.nutz.integration.zbus.mq.ZBusConsumer;
-import org.nutz.integration.zbus.mq.ZBusProducer;
+import org.nutz.integration.zbus.mq.ZbusConsumer;
+import org.nutz.integration.zbus.mq.ZbusProducer;
 import org.nutz.ioc.Ioc;
 import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.ioc.loader.annotation.Inject;
@@ -27,12 +27,12 @@ import io.zbus.mq.MqClient;
 import io.zbus.mq.ProducerConfig;
 
 @IocBean(name="zbus", create="init", depose="close")
-public class ZBusFactory implements Closeable {
+public class ZbusFactory implements Closeable {
 
 	private static final Log log = Logs.get();
 
 	protected Set<Consumer> consumers = new HashSet<Consumer>();
-	protected Map<String, ZBusProducer> producers = new ConcurrentHashMap<String, ZBusProducer>();
+	protected Map<String, ZbusProducer> producers = new ConcurrentHashMap<String, ZbusProducer>();
 	protected Object lock = new Object();
 	protected Broker broker;
 	@Inject("refer:$ioc")
@@ -40,14 +40,14 @@ public class ZBusFactory implements Closeable {
 	@Inject
 	protected PropertiesProxy conf;
 
-	public ZBusProducer getProducer(String mq) {
-		ZBusProducer producer = producers.get(mq);
+	public ZbusProducer getProducer(String mq) {
+		ZbusProducer producer = producers.get(mq);
 		if (producer == null) {
 			synchronized (lock) {
 				producer = producers.get(mq);
 				if (producer == null) {
 					ProducerConfig config = new ProducerConfig(broker);
-					producer = new ZBusProducer(config, mq);
+					producer = new ZbusProducer(config, mq);
 					producers.put(mq, producer);
 				}
 			}
@@ -63,13 +63,13 @@ public class ZBusFactory implements Closeable {
 	}
 
 	public void addConsumer(Class<?> klass) {
-		ZBusConsumer z = klass.getAnnotation(ZBusConsumer.class);
+		ZbusConsumer z = klass.getAnnotation(ZbusConsumer.class);
 		if (z != null && z.enable()) {
 			ConsumerConfig mqConfig = fromAnnotation(broker, z);
 			proxy(mqConfig, (MessageHandler) ioc.get(klass));
 		}
 		for (final Method method : klass.getMethods()) {
-			z = method.getAnnotation(ZBusConsumer.class);
+			z = method.getAnnotation(ZbusConsumer.class);
 			if (z != null && z.enable()) {
 				ConsumerConfig mqConfig = fromAnnotation(broker, z);
 				final Object obj = ioc.get(klass);
@@ -119,7 +119,7 @@ public class ZBusFactory implements Closeable {
 		}
 	}
 
-	protected static ConsumerConfig fromAnnotation(Broker broker, ZBusConsumer z) {
+	protected static ConsumerConfig fromAnnotation(Broker broker, ZbusConsumer z) {
 		ConsumerConfig config = new ConsumerConfig(broker);
 		config.setTopic(z.topic());
 		config.setVerbose(z.verbose());
@@ -138,7 +138,7 @@ public class ZBusFactory implements Closeable {
 	}
 
 	public void publish(String topic, Object message) {
-		ZBusProducer p = getProducer(topic);
+		ZbusProducer p = getProducer(topic);
 		p.async(message);
 	}
 }

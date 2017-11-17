@@ -10,11 +10,11 @@ import io.zbus.mq.Producer;
 import io.zbus.mq.ProducerConfig;
 import io.zbus.transport.ResultCallback;
 
-public class ZBusProducer extends Producer {
+public class ZbusProducer extends Producer {
 	
 	protected String topic;
 
-	public ZBusProducer(ProducerConfig producerConfig, String topic) {
+	public ZbusProducer(ProducerConfig producerConfig, String topic) {
 		super(producerConfig);
 		this.topic = topic;
 	}

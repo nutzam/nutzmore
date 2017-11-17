@@ -22,7 +22,7 @@ import io.zbus.transport.ServerAddress;
  *
  */
 @IocBean
-public class ZBusBrokerBean {
+public class ZbusBrokerBean {
 	
 	private static final Log log = Logs.get();
 

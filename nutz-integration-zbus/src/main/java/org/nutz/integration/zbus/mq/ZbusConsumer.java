@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface ZBusConsumer {
+public @interface ZbusConsumer {
 	
 	boolean enable() default true;
 

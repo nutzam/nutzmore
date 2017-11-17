@@ -4,14 +4,15 @@ import org.nutz.ioc.Ioc;
 import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
+import org.nutz.lang.Mirror;
 import org.nutz.lang.Strings;
 import org.nutz.resource.Scans;
 
-import io.zbus.mq.Broker;
+import io.zbus.mq.BrokerConfig;
 import io.zbus.rpc.Remote;
 
 @IocBean
-public class ZBusServiceBean {
+public class ZbusServiceBean {
 	
 	@Inject
 	protected PropertiesProxy conf;
@@ -54,13 +55,16 @@ public class ZBusServiceBean {
 	@IocBean(name="zbusMqServiceBootstrap", depose="close")
 	public io.zbus.rpc.bootstrap.mq.ServiceBootstrap createMqServiceBootstrap() {
 		io.zbus.rpc.bootstrap.mq.ServiceBootstrap bootstrap = new io.zbus.rpc.bootstrap.mq.ServiceBootstrap();
+
+		bootstrap.serviceName(conf.check("zbus.rpc.service.serviceName"));
+		
 		if (conf.has("zbus.rpc.service.port")) {
 			bootstrap.port(conf.getInt("zbus.rpc.service.port"));
 			if (conf.has("zbus.rpc.service.host")) {
 				bootstrap.host(conf.get("zbus.rpc.service.host"));
 			}
 		} else {
-			bootstrap.broker(ioc.get(Broker.class, "zbusBroker"));
+			Mirror.me(bootstrap).setValue(bootstrap, "brokerConfig", ioc.get(BrokerConfig.class, "zbusBrokerConfig"));
 		}
 		
 		if (conf.has("zbus.rpc.service.certFile")) {
@@ -88,12 +92,12 @@ public class ZBusServiceBean {
 	}
 	
 	@IocBean(name="zbusServiceBootstrap")
-	public ZBusServiceBootstrap createZBusServiceBootstrap() {
-		ZBusServiceBootstrap bootstrap = new ZBusServiceBootstrap();
+	public ZbusServiceBootstrap createZBusServiceBootstrap() {
+		ZbusServiceBootstrap bootstrap = new ZbusServiceBootstrap();
 		if ("mq".equals(conf.get("zbus.rpc.service.mode", "mq"))) {
-			bootstrap.http = ioc.get(io.zbus.rpc.bootstrap.http.ServiceBootstrap.class, "zbusHttpServiceBootstrap");
-		} else {
 			bootstrap.mq = ioc.get(io.zbus.rpc.bootstrap.mq.ServiceBootstrap.class, "zbusMqServiceBootstrap");
+		} else {
+			bootstrap.http = ioc.get(io.zbus.rpc.bootstrap.http.ServiceBootstrap.class, "zbusHttpServiceBootstrap");
 		}
 		return bootstrap;
 	}
