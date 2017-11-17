@@ -1,12 +1,10 @@
-package org.nutz.integration.zbus.annotation;
+package org.nutz.integration.zbus.mq;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import org.zbus.mq.Protocol.MqMode;
 
 /**
  * 将一个类/方法声明为zbus的消费者</p>
@@ -23,8 +21,6 @@ public @interface ZBusConsumer {
 	boolean enable() default true;
 
 	String mq();
-	
-	MqMode[] mode() default MqMode.MQ;
 	
 	String topic() default "";
 	
