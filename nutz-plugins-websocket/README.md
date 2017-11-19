@@ -106,7 +106,7 @@ setInterval("ws_ping()", 25000); // 25秒一次就可以了
 
 ### 默认的信息处理器WsHandler
 
-AbstractWsEndpoint的默认的WsHandler实现是SimpleWsHandler, 足够满足前端写个简单chat应用. 
+AbstractWsEndpoint的默认的WsHandler实现是SimpleWsHandler, 足够满足前端写个简单chat应用.
 
 其中action名字均对应SimpleWsHandler中的同名方法, 例如 action:"join" 对应的是 join(NutMap req)方法
 
@@ -228,7 +228,7 @@ AbstractWsEndpoint有一个属性叫 roomProvider, 自定义Endpoint的实例,�
 
 ## 故障排除
 
-* 404 -- 如果是纯Tomcat/Jetty,版本也够高的话, 通过是路径错误.
+* 404 -- 如果是纯Tomcat/Jetty,版本也够高的话, 通常是路径错误.
 * 404 -- 在Nginx之后, 需要以下特别配置
 
 ```txt
