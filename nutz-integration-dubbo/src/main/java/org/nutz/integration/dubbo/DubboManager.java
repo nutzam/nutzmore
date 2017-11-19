@@ -1,5 +1,6 @@
 package org.nutz.integration.dubbo;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -16,6 +17,11 @@ public class DubboManager {
     protected Map<String, IocObject> iobjs;
     
     public void init() {
+    	for (Entry<String, IocObject> en : new HashSet<>(iobjs.entrySet())) {
+    		if (en.getValue().getType().isAssignableFrom(AnnotationBean.class)) {
+            	ioc.get(AnnotationBean.class, en.getKey());
+            }
+    	}
         for (Entry<String, IocObject> en : iobjs.entrySet()) {
             if (ServiceConfig.class.isAssignableFrom(en.getValue().getType()))
                 ioc.get(ServiceConfig.class, en.getKey());

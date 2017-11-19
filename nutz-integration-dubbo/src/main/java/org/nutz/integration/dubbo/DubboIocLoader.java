@@ -47,7 +47,7 @@ public class DubboIocLoader implements IocLoader {
     
     protected Map<String, IocObject> iobjs = new HashMap<>();
     
-    protected DubboIocLoader() {}
+    public DubboIocLoader() {}
     
     public DubboIocLoader(String ... paths) {
         List<Element> tops = new ArrayList<>();
