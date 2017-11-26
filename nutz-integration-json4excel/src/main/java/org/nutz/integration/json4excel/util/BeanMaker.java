@@ -44,6 +44,8 @@ public class BeanMaker {
         int currRow = 0;
         while (rlist.hasNext()) {
             Row row = rlist.next();
+            if (row == null)
+            	continue;
             if (currRow >= passRow) {
                 Iterator<Cell> clist = row.cellIterator();
                 while (clist.hasNext()) {
