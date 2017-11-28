@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.nutz.integration.json4excel.annotation.J4EDefine;
 import org.nutz.integration.json4excel.annotation.J4EExt;
+import org.nutz.integration.json4excel.annotation.J4EIgnore;
 import org.nutz.integration.json4excel.annotation.J4EName;
 import org.nutz.json.Json;
 import org.nutz.lang.Mirror;
@@ -205,6 +206,10 @@ public class J4EConf {
             if (define != null) {
                 jcol.setColumnType(define.type());
                 jcol.setPrecision(define.precision());
+            }
+            J4EIgnore ignore = cf.getAnnotation(J4EIgnore.class);
+            if (ignore != null) {
+                jcol.setIgnore(true);
             }
             jclist.add(jcol);
         }

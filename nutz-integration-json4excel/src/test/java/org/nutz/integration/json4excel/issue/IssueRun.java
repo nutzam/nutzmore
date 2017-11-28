@@ -39,6 +39,6 @@ public class IssueRun extends TestUtil {
         dataList.add(d1);
         dataList.add(d2);
 
-        J4E.toExce(Files.createFileIfNoExists2(Disks.normalize("~/issue68.xls")), dataList, null);
+        J4E.toExcel(Files.createFileIfNoExists2(Disks.normalize("~/issue68.xls")), dataList, null);
     }
 }

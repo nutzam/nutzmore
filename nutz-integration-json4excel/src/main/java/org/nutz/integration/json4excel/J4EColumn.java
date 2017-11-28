@@ -20,6 +20,8 @@ public class J4EColumn {
 
     private int precision;
 
+    private boolean isIgnore;
+
     // 真实的field
     @JsonField(ignore = true)
     private Field field;
@@ -81,6 +83,14 @@ public class J4EColumn {
 
     public void setPrecision(int precision) {
         this.precision = precision;
+    }
+
+    public boolean isIgnore() {
+        return isIgnore;
+    }
+
+    public void setIgnore(boolean isIgnore) {
+        this.isIgnore = isIgnore;
     }
 
 }

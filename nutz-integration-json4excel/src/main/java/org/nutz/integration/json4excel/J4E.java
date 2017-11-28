@@ -133,6 +133,9 @@ public class J4E {
             // 写入head
             Row rhead = sheet.createRow(rnum++);
             for (J4EColumn jcol : j4eConf.getColumns()) {
+                if (jcol.isIgnore()) {
+                    continue;
+                }
                 Field jfield = jcol.getField();
                 if (null != jfield) {
                     Cell c = rhead.createCell(cindex++);
@@ -154,6 +157,9 @@ public class J4E {
             }
             cindex = 0;
             for (J4EColumn jcol : j4eConf.getColumns()) {
+                if (jcol.isIgnore()) {
+                    continue;
+                }
                 Field jfield = jcol.getField();
                 if (null != jfield) {
                     int ccin = cindex++;

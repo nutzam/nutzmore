@@ -37,6 +37,6 @@ public class J4EDBTest extends DbUtil {
         // 导出到本地
         List<Person> people = dao.query(Person.class, null);
         File exportF = Files.createFileIfNoExists2("~/人员.xls");
-        J4E.toExce(exportF, people, null);
+        J4E.toExcel(exportF, people, null);
     }
 }
