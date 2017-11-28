@@ -67,7 +67,7 @@ public class J4E {
         return toExcel(wb, out, dataList, j4eConf);
     }
 
-    public static <T> boolean toExce(File excel, List<T> dataList, J4EConf j4eConf) {
+    public static <T> boolean toExcel(File excel, List<T> dataList, J4EConf j4eConf) {
         Workbook wb = (j4eConf != null && j4eConf.isUse2007()) ? new XSSFWorkbook()
                                                                : new HSSFWorkbook();
         try {
