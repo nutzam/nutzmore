@@ -104,13 +104,11 @@ url: "./swagger.json",
 ### 添加swagger注解
 
 ```java
-@Api(value = "swagger")
-@IocBean(create = "init")
-@At("/swagger")
-@Path("/swagger")
-public class SwaggerTestModule extends BaseModule {
-    // 无参数示例
-    @Path("/ping")
+@Api(value = "demo")
+@IocBean
+@At("/demo")
+public class SwaggerDemoModule {
+
     @GET
     @ApiOperation(value = "心跳接口", notes = "发我一个ping,回你一个pong", httpMethod="GET")
     @At
@@ -118,16 +116,16 @@ public class SwaggerTestModule extends BaseModule {
     public Object ping() {
         return new NutMap("ok", true).setv("data", "pong");
     }
-    
-    //带参数示例
+
     @POST
-    @ApiOperation(value = "回显接口", notes = "发我一个字符串,原样回复一个字符串")
+    @ApiOperation(value = "回显接口", notes = "发我一个字符串,原样回复一个字符串", httpMethod="POST")
     @ApiImplicitParams({@ApiImplicitParam(name = "text", paramType="form", value = "想发啥就发啥", dataType="string", required = true)})
     @At
     @Ok("raw")
     public String echo(@Param("text") String text) {
         return text;
     }
+}
 ```
 
 访问 http://localhost:8080/nutzcn/swagger/ 即可看到swagger的界面
