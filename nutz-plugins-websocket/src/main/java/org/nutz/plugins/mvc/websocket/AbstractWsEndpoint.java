@@ -9,8 +9,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpSession;
 import javax.websocket.CloseReason;
-import javax.websocket.Endpoint;
 import javax.websocket.EndpointConfig;
+import javax.websocket.OnClose;
+import javax.websocket.OnError;
+import javax.websocket.OnOpen;
 import javax.websocket.Session;
 
 import org.nutz.json.Json;
@@ -38,7 +40,7 @@ import org.nutz.plugins.mvc.websocket.room.MemoryRoomProvider;
  * @author wendal
  *
  */
-public abstract class AbstractWsEndpoint extends Endpoint {
+public abstract class AbstractWsEndpoint {
 
     /**
      * 存放Websocket Session Id --> WsHandler 的映射关系
@@ -66,6 +68,7 @@ public abstract class AbstractWsEndpoint extends Endpoint {
     /**
      * Websocket会话创建成功时调用本方法, 将创建WsHandler实例,并登记之.
      */
+    @OnOpen
     public void onOpen(Session session, EndpointConfig config) {
         changeSessionId(session);
         String wsid = session.getId();
@@ -83,6 +86,7 @@ public abstract class AbstractWsEndpoint extends Endpoint {
     /**
      * WebSocket会话关闭是调用本方法,通常是用户关闭浏览器. 移除session相关的资源
      */
+    @OnClose
     public void onClose(Session session, CloseReason closeReason) {
         sessions.remove(session.getId());
         WsHandler handler = handlers.remove(session.getId());
@@ -93,6 +97,7 @@ public abstract class AbstractWsEndpoint extends Endpoint {
     /**
      * WebSocket会话出错时调用,默认调用onClose.
      */
+    @OnError
     public void onError(Session session, java.lang.Throwable throwable) {
         onClose(session, null);
     }
