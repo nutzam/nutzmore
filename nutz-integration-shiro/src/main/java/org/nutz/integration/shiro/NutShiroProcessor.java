@@ -145,7 +145,7 @@ public class NutShiroProcessor extends AbstractProcessor {
 	protected void whenUnauthenticated(ActionContext ac, UnauthenticatedException e) throws Exception {
 		if (NutShiro.isAjax(ac.getRequest())) {
 			ac.getResponse().addHeader("loginStatus", "accessDenied");
-			NutShiro.rendAjaxResp(ac.getRequest(), ac.getResponse(), ajaxFail("user.require.login", "user.require.login"));
+			NutShiro.rendAjaxResp(ac.getRequest(), ac.getResponse(), NutShiro.DefaultUnauthenticatedAjax);
 		} else {
 			new ServerRedirectView(loginUri()).render(ac.getRequest(), ac.getResponse(), null);
 		}
