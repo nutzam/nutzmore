@@ -18,6 +18,7 @@ import org.apache.shiro.authz.annotation.RequiresUser;
 import org.nutz.integration.shiro.annotation.NutzRequiresPermissions;
 import org.nutz.json.JsonFormat;
 import org.nutz.lang.Encoding;
+import org.nutz.lang.util.NutMap;
 import org.nutz.mvc.view.UTF8JsonView;
 import org.nutz.resource.Scans;
 
@@ -29,6 +30,9 @@ import org.nutz.resource.Scans;
 public class NutShiro {
 
     public static String DefaultLoginURL = "/user/login";
+    public static NutMap DefaultUnauthorizedAjax = new NutMap().setv("ok", false).setv("msg", "user.require.auth").setv("type", "user.require.auth");
+    public static NutMap DefaultOtherAjax = new NutMap().setv("ok", false).setv("msg", "user.require.login").setv("type", "user.require.login");
+    public static NutMap DefaultUnauthenticatedAjax = new NutMap().setv("ok", false).setv("msg", "user.require.unauthorized").setv("type", "user.require.unauthorized");
     public static String DefaultNoAuthURL; // 默认与DefaultLoginURL一致
     
     public static String SessionKey = "me";
