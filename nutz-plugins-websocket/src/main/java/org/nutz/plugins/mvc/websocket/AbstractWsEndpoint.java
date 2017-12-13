@@ -69,7 +69,6 @@ public abstract class AbstractWsEndpoint {
     /**
      * Websocket会话创建成功时调用本方法, 将创建WsHandler实例,并登记之.
      */
-    @OnOpen
     public void onOpen(Session session, EndpointConfig config) {
         changeSessionId(session);
         String wsid = session.getId();
@@ -83,32 +82,45 @@ public abstract class AbstractWsEndpoint {
         sessions.put(wsid, session);
         handlers.put(wsid, handler);
     }
+    @OnOpen
+    public void _onOpen(Session session, EndpointConfig config) {
+        onOpen(session, config);
+    }
 
     /**
      * WebSocket会话关闭是调用本方法,通常是用户关闭浏览器. 移除session相关的资源
      */
-    @OnClose
     public void onClose(Session session, CloseReason closeReason) {
         sessions.remove(session.getId());
         WsHandler handler = handlers.remove(session.getId());
         if (handler != null)
             handler.depose();
     }
+    @OnClose
+    public void _onClose(Session session, CloseReason closeReason) {
+        onClose(session, closeReason);
+    }
 
     /**
      * WebSocket会话出错时调用,默认调用onClose.
      */
-    @OnError
     public void onError(Session session, java.lang.Throwable throwable) {
         onClose(session, null);
     }
+    @OnError
+    public void _onError(Session session, java.lang.Throwable throwable) {
+        onError(session, throwable);
+    }
     
-    @OnMessage
     public void onMesssageString(Session session, String msg) {
         WsHandler handler = getHandler(session.getId());
         if (handler != null) {
             handler.onMessage(msg);
         }
+    }
+    @OnMessage
+    public void _onMesssageString(Session session, String msg) {
+        onMesssageString(session, msg);
     }
 
     /**
