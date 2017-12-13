@@ -12,6 +12,7 @@ import javax.websocket.CloseReason;
 import javax.websocket.EndpointConfig;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
+import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
 
@@ -100,6 +101,14 @@ public abstract class AbstractWsEndpoint {
     @OnError
     public void onError(Session session, java.lang.Throwable throwable) {
         onClose(session, null);
+    }
+    
+    @OnMessage
+    public void onMesssageString(Session session, String msg) {
+        WsHandler handler = getHandler(session.getId());
+        if (handler != null) {
+            handler.onMessage(msg);
+        }
     }
 
     /**
