@@ -79,7 +79,9 @@ public class Person {
 List<Person> people = dao.query(Person.class, null);  
  
 // 第二步，使用j4e将数据输出到指定文件或输出流中
-J4E.toExcel(Files.createFileIfNoExists2("~/人员.xls"), people, null);  
+try (OutputStream out = new FileOutputStream(Files.createFileIfNoExists2("~/人员.xls"))) {
+    J4E.toExcel(out, people, null);  
+}
    
 ```
 看看生成的文件

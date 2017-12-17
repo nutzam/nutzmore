@@ -18,7 +18,7 @@ public class MemoryDaoCacheProvider extends AbstractDaoCacheProvider {
 
     private static final Log log = Logs.get();
 
-    ConcurrentHashMap<String, LRUCache<String, Object>> caches = new ConcurrentHashMap<String, LRUCache<String, Object>>();
+    protected ConcurrentHashMap<String, LRUCache<String, Object>> caches = new ConcurrentHashMap<String, LRUCache<String, Object>>();
 
     /**
      * 每个cache缓存的对象数
@@ -62,5 +62,9 @@ public class MemoryDaoCacheProvider extends AbstractDaoCacheProvider {
         }
         // log.debugf("Cache(%s) size=%s", cacheName, cache.getAll().size());
         return cache;
+    }
+    
+    public void setCacheSize(int cacheSize) {
+        this.cacheSize = cacheSize;
     }
 }

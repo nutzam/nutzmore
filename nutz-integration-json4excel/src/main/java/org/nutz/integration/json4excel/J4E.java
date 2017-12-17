@@ -31,6 +31,7 @@ import org.nutz.integration.json4excel.annotation.J4EName;
 import org.nutz.json.Json;
 import org.nutz.json.JsonFormat;
 import org.nutz.lang.Mirror;
+import org.nutz.lang.Streams;
 import org.nutz.lang.Strings;
 import org.nutz.lang.Times;
 import org.nutz.log.Log;
@@ -70,12 +71,18 @@ public class J4E {
     public static <T> boolean toExcel(File excel, List<T> dataList, J4EConf j4eConf) {
         Workbook wb = (j4eConf != null && j4eConf.isUse2007()) ? new XSSFWorkbook()
                                                                : new HSSFWorkbook();
+        OutputStream out = null;
         try {
-            return toExcel(wb, new FileOutputStream(excel), dataList, j4eConf);
+        	out = new FileOutputStream(excel);
+            return toExcel(wb, out, dataList, j4eConf);
         }
         catch (FileNotFoundException e) {
             log.error(e);
             return false;
+        }
+        finally {
+        	Streams.safeClose(wb);
+        	Streams.safeClose(out);
         }
     }
 

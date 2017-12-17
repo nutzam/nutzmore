@@ -21,34 +21,40 @@ public class ThymeleafView extends AbstractPathView {
 
 	private static final Log log = Logs.get();
 
-	private ThymeleafProperties properties;
+	private TemplateEngine templateEngine = new TemplateEngine();
+
+	private String contentType;
+
+	private String encoding;
 
 	public ThymeleafView(ThymeleafProperties properties, String path) {
 		super(path);
-		this.properties = properties;
+		templateEngine.setTemplateResolver(initializeTemplateResolver(properties));
+
+		templateEngine.addDialect(new LayoutDialect());
+		IDialect[] dialects = properties.getDialects();
+		if (null != dialects) {
+			for (IDialect dialect : dialects) {
+				templateEngine.addDialect(dialect);
+			}
+		}
+
+		encoding = properties.getEncoding();
+		contentType = properties.getContentType() + "; charset=" + encoding;
 	}
 
 	@Override
 	public void render(HttpServletRequest request, HttpServletResponse response, Object value) throws Exception {
 		String path = evalPath(request, value);
-		response.setContentType(properties.getContentType() + "; charset=" + properties.getEncoding());
-		response.setCharacterEncoding(properties.getEncoding());
+		response.setContentType(contentType);
+		response.setCharacterEncoding(encoding);
 		try {
-			org.nutz.lang.util.Context ctx = super.createContext(request, value);
+			org.nutz.lang.util.Context ctx = createContext(request, value);
 			WebContext context = new WebContext(request,
 					response,
 					Mvcs.getServletContext(),
 					Locale.getDefault(),
 					ctx.getInnerMap());
-			TemplateEngine templateEngine = new TemplateEngine();
-			templateEngine.setTemplateResolver(initializeTemplateResolver(properties));
-			templateEngine.addDialect(new LayoutDialect());
-			IDialect[] dialects = properties.getDialects();
-			if (null != dialects) {
-				for (IDialect dialect : dialects) {
-					templateEngine.addDialect(dialect);
-				}
-			}
 			templateEngine.process(path, context, response.getWriter());
 		} catch (Exception e) {
 			log.error("模板引擎错误", e);
