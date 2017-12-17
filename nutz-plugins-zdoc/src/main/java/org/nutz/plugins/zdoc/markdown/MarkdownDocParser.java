@@ -34,11 +34,18 @@ public class MarkdownDocParser implements NutDocParser {
         boolean isFirstLine = true;
         NutMap tagNames = new NutMap();
         for (String line : B.content) {
+            // 忽略空行
+            if(Strings.isBlank(line))
+                continue;
+            // 首行
             if (isFirstLine) {
                 isFirstLine = false;
-            } else {
+            }
+            // 以后每行前都加个换行符
+            else {
                 tag.add("br");
             }
+            // 写入本行内容
             __line_to_html(tag, line, tagNames);
         }
         // 如果段落里只有 IMG，做一下特殊标识
@@ -64,7 +71,7 @@ public class MarkdownDocParser implements NutDocParser {
             // 之前的内容直接加为文本节点
             if (pos < m.start()) {
                 String txt = str.substring(pos, m.start());
-                tag.add(Tag.text(txt));
+                tag.add(Tag.html(txt));
                 // 记录标签
                 if (null != tagNames && !Strings.isBlank(txt)) {
                     tagNames.put("!TEXT", true);
@@ -84,9 +91,9 @@ public class MarkdownDocParser implements NutDocParser {
                 if (null != tagNames)
                     tagNames.put("b", true);
             }
-            // B: __xxx__
+            // U: __xxx__
             else if (null != m.group(5)) {
-                this.__line_to_html(tag.add("b"), m.group(6), tagNames);
+                this.__line_to_html(tag.add("u"), m.group(6), tagNames);
                 // 记录标签
                 if (null != tagNames)
                     tagNames.put("b", true);
@@ -103,7 +110,15 @@ public class MarkdownDocParser implements NutDocParser {
                 String s2 = m.group(10);
                 // 特殊文字
                 if ("?".equals(s2)) {
-                    tag.add("i", ".fa fa-question-circle-o");
+                    tag.add("span").add("i", ".fa fa-question-circle-o");
+                }
+                // fa
+                else if (s2.matches("^fa-.+$")) {
+                    tag.add("span").add("i", ".fa " + s2);
+                }
+                // zmdi
+                else if (s2.matches("^zmdi-.+$")) {
+                    tag.add("span").add("i", ".zmdi " + s2);
                 }
                 // 默认
                 else {
@@ -154,7 +169,7 @@ public class MarkdownDocParser implements NutDocParser {
             pos = m.end();
         }
         if (pos < str.length()) {
-            tag.add(Tag.text(str.substring(pos)));
+            tag.add(Tag.html(str.substring(pos)));
         }
     }
 
@@ -226,7 +241,7 @@ public class MarkdownDocParser implements NutDocParser {
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i];
             String trim = Strings.trim(line);
-            int indent = Strings.countStrHeadIndent(line, 4);
+            int indent = Strings.countStrHeadIndent(line, 2);
 
             // 来吧，判断类型
             // 空段落

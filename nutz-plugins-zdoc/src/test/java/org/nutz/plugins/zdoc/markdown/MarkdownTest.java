@@ -8,6 +8,11 @@ import org.nutz.lang.Strings;
 public class MarkdownTest {
     
     @Test
+    public void test_mix_html() {
+        assertEquals("<p>A</p><p>B<b>X</b>C</p>", _HTML("A\n\nB<b>X</b>C"));
+    }
+    
+    @Test
     public void test_indent_2space() {
         assertEquals("<ul><li>A<ul><li>B</li></ul></li></ul>", _HTML(" - A\n  - B"));
     }
