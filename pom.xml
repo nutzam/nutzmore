@@ -59,7 +59,7 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz</artifactId>
-			<version>1.r.65-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
 
@@ -116,7 +116,7 @@
 		<module>nutz-integration-rabbitmq</module>
 		<module>nutz-integration-shiro</module>
 		<module>nutz-integration-spring</module>
-		<module>nutz-integration-swagger</module>
+		
 		<module>nutz-integration-zbus</module>
 		<module>nutz-plugins-apidoc</module>
 		<module>nutz-plugins-cache</module>
@@ -128,6 +128,7 @@
 		<module>nutz-plugins-jsonrpc</module>
 		<module>nutz-plugins-mock</module>
 		<module>nutz-plugins-multiview</module>
+		<module>nutz-plugins-mongodb</module>
 		<module>nutz-plugins-ngrok</module>
 		<module>nutz-plugins-nop</module>
 		<module>nutz-plugins-profiler</module>

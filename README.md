@@ -12,7 +12,7 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>填nutz插件名</artifactId>
-			<version>1.r.62</version>
+			<version>1.r.63</version>
 		</dependency>
 ```
 
@@ -80,6 +80,7 @@ https://jfrog.nutz.cn/artifactory/snapshots/org/nutz/
 | [plugins-jsonrpc](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-jsonrpc) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-jsonrpc/badge.svg) | 完整实现jsonrpc, 用Mapper方式 | 废弃 | wendal |
 | [plugins-mock](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-mock) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-mock/badge.svg) | 提供单元测试所需要的一切东西 | 试用 | wendal |
 | [plugins-multiview](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-multiview/badge.svg) | 集合N种模板引擎,可配置性强 | **生产** | denghuafeng |
+| [plugins-mongodb](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-mongodb) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-mongodb/badge.svg) | Mongodb 薄封装 | **生产** | wendal |
 | [plugins-ngrok](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-ngrok) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-ngrok/badge.svg) | 用Java实现的Ngrok的服务器端和客户端. | 试用 | wendal |
 | [plugins-nop](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-nop) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-nop/badge.svg) | NUTZ OPEN PLATFORM | **生产** | 王贵源 |
 | [plugins-oauth2-server](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-oauth2-server) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-oauth2-server/badge.svg) | 使用Apache Oltu 搭建Oauth2 Server及Client开放授权 | **生产** | Rekoe |
