@@ -1,4 +1,4 @@
-nutz-plugins-proxy
+nutz-plugins-fiddler
 ==================================
 
 简介(可用性:生产,维护者:wendal,rekoe)
