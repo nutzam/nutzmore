@@ -105,3 +105,4 @@ https://jfrog.nutz.cn/artifactory/snapshots/org/nutz/
 | [plugins-zcron](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-zcron) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-zcron/badge.svg) | 定期运行的表达式 | 试用 | zozoh |
 | [plugins-zdoc](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-zdoc) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-zdoc/badge.svg) | 写文档也可以很轻松 | 试用 | zozoh |
 | [integration-nettice](https://github.com/nutzam/nutzmore/tree/master/nutz-integration-nettice) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-integration-nettice/badge.svg) | Netty的Http Router | 试用 | Rekoe |
+| [plugins-fiddler](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-fiddler) | ![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutz-plugins-fiddler/badge.svg) | 抓包工具 | 试用 | Rekoe |

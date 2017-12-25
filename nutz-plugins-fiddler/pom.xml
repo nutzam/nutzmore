@@ -5,7 +5,7 @@
     <artifactId>nutzmore</artifactId>
     <version>1.r.65-SNAPSHOT</version>
   </parent>
-  <artifactId>nutz-plugins-proxy</artifactId>
+  <artifactId>nutz-plugins-fiddler</artifactId>
 	<url>https://nutzam.com</url>
 	<issueManagement>
 		<system>Github Issue</system>
