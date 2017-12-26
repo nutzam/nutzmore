@@ -1,4 +1,4 @@
-package org.nutz.plugins.proxy.server;
+package org.nutz.plugins.fiddler.server;
 
 import java.security.KeyPair;
 import java.security.Security;
@@ -8,15 +8,15 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.nutz.lang.Streams;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
-import org.nutz.plugins.proxy.crt.CertUtil;
-import org.nutz.plugins.proxy.exception.HttpProxyExceptionHandle;
-import org.nutz.plugins.proxy.handler.HttpProxyServerHandle;
-import org.nutz.plugins.proxy.intercept.CertDownIntercept;
-import org.nutz.plugins.proxy.intercept.HttpProxyIntercept;
-import org.nutz.plugins.proxy.intercept.HttpProxyInterceptInitializer;
-import org.nutz.plugins.proxy.intercept.HttpProxyInterceptPipeline;
-import org.nutz.plugins.proxy.proxy.ProxyConfig;
-import org.nutz.plugins.proxy.proxy.ProxyType;
+import org.nutz.plugins.fiddler.crt.CertUtil;
+import org.nutz.plugins.fiddler.exception.HttpProxyExceptionHandle;
+import org.nutz.plugins.fiddler.handler.HttpProxyServerHandle;
+import org.nutz.plugins.fiddler.intercept.CertDownIntercept;
+import org.nutz.plugins.fiddler.intercept.HttpProxyIntercept;
+import org.nutz.plugins.fiddler.intercept.HttpProxyInterceptInitializer;
+import org.nutz.plugins.fiddler.intercept.HttpProxyInterceptPipeline;
+import org.nutz.plugins.fiddler.proxy.ProxyConfig;
+import org.nutz.plugins.fiddler.proxy.ProxyType;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;

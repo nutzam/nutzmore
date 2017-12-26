@@ -1,16 +1,16 @@
-package org.nutz.plugins.proxy.handler;
+package org.nutz.plugins.fiddler.handler;
 
-import org.nutz.plugins.proxy.crt.CertPool;
-import org.nutz.plugins.proxy.exception.HttpProxyExceptionHandle;
-import org.nutz.plugins.proxy.intercept.HttpProxyIntercept;
-import org.nutz.plugins.proxy.intercept.HttpProxyInterceptInitializer;
-import org.nutz.plugins.proxy.intercept.HttpProxyInterceptPipeline;
-import org.nutz.plugins.proxy.proxy.ProxyConfig;
-import org.nutz.plugins.proxy.proxy.ProxyHandleFactory;
-import org.nutz.plugins.proxy.server.HttpProxyServer;
-import org.nutz.plugins.proxy.server.HttpProxyServerConfig;
-import org.nutz.plugins.proxy.util.ProtoUtil;
-import org.nutz.plugins.proxy.util.ProtoUtil.RequestProto;
+import org.nutz.plugins.fiddler.crt.CertPool;
+import org.nutz.plugins.fiddler.exception.HttpProxyExceptionHandle;
+import org.nutz.plugins.fiddler.intercept.HttpProxyIntercept;
+import org.nutz.plugins.fiddler.intercept.HttpProxyInterceptInitializer;
+import org.nutz.plugins.fiddler.intercept.HttpProxyInterceptPipeline;
+import org.nutz.plugins.fiddler.proxy.ProxyConfig;
+import org.nutz.plugins.fiddler.proxy.ProxyHandleFactory;
+import org.nutz.plugins.fiddler.server.HttpProxyServer;
+import org.nutz.plugins.fiddler.server.HttpProxyServerConfig;
+import org.nutz.plugins.fiddler.util.ProtoUtil;
+import org.nutz.plugins.fiddler.util.ProtoUtil.RequestProto;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;

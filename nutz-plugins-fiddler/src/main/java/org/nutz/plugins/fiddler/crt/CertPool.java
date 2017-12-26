@@ -1,10 +1,10 @@
-package org.nutz.plugins.proxy.crt;
+package org.nutz.plugins.fiddler.crt;
 
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.nutz.plugins.proxy.server.HttpProxyServerConfig;
+import org.nutz.plugins.fiddler.server.HttpProxyServerConfig;
 
 public class CertPool {
 

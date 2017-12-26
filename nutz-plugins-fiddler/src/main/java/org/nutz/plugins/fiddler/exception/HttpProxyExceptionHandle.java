@@ -1,4 +1,4 @@
-package org.nutz.plugins.proxy.exception;
+package org.nutz.plugins.fiddler.exception;
 
 import io.netty.channel.Channel;
 

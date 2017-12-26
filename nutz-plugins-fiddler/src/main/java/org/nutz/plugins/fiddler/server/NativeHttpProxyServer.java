@@ -1,4 +1,4 @@
-package org.nutz.plugins.proxy.server;
+package org.nutz.plugins.fiddler.server;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,7 +7,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.CountDownLatch;
 
-import org.nutz.plugins.proxy.util.LineBuffer;
+import org.nutz.plugins.fiddler.util.LineBuffer;
 
 public class NativeHttpProxyServer {
 

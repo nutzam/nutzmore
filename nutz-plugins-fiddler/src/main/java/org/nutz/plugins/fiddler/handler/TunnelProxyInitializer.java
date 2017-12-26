@@ -1,6 +1,6 @@
-package org.nutz.plugins.proxy.handler;
+package org.nutz.plugins.fiddler.handler;
 
-import org.nutz.plugins.proxy.exception.HttpProxyExceptionHandle;
+import org.nutz.plugins.fiddler.exception.HttpProxyExceptionHandle;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;

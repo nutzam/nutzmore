@@ -1,4 +1,4 @@
-package org.nutz.plugins.proxy.proxy;
+package org.nutz.plugins.fiddler.proxy;
 
 import java.net.InetSocketAddress;
 

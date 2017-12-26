@@ -1,11 +1,11 @@
-package org.nutz.plugins.proxy.intercept;
+package org.nutz.plugins.fiddler.intercept;
 
 import java.net.InetSocketAddress;
 
 import org.nutz.lang.Streams;
-import org.nutz.plugins.proxy.crt.CertUtil;
-import org.nutz.plugins.proxy.util.ProtoUtil;
-import org.nutz.plugins.proxy.util.ProtoUtil.RequestProto;
+import org.nutz.plugins.fiddler.crt.CertUtil;
+import org.nutz.plugins.fiddler.util.ProtoUtil;
+import org.nutz.plugins.fiddler.util.ProtoUtil.RequestProto;
 
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.DefaultHttpResponse;

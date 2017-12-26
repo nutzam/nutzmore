@@ -1,4 +1,4 @@
-package org.nutz.plugins.proxy.server;
+package org.nutz.plugins.fiddler.server;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;

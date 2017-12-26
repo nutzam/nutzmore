@@ -1,10 +1,10 @@
-package org.nutz.plugins.proxy.intercept;
+package org.nutz.plugins.fiddler.intercept;
 
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.nutz.plugins.proxy.util.ProtoUtil.RequestProto;
+import org.nutz.plugins.fiddler.util.ProtoUtil.RequestProto;
 
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpContent;

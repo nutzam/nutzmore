@@ -1,4 +1,4 @@
-package org.nutz.plugins.proxy.intercept;
+package org.nutz.plugins.fiddler.intercept;
 
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpContent;

@@ -1,4 +1,4 @@
-package org.nutz.plugins.proxy.util;
+package org.nutz.plugins.fiddler.util;
 
 import java.io.IOException;
 import java.io.InputStream;

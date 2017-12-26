@@ -1,6 +1,6 @@
-package org.nutz.plugins.proxy.handler;
+package org.nutz.plugins.fiddler.handler;
 
-import org.nutz.plugins.proxy.util.ProtoUtil.RequestProto;
+import org.nutz.plugins.fiddler.util.ProtoUtil.RequestProto;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
