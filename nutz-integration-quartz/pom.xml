@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.r.65-SNAPSHOT</version>
+		<version>1.r.63.r4</version>
 	</parent>
 	<artifactId>nutz-integration-quartz</artifactId>
 	<properties>
