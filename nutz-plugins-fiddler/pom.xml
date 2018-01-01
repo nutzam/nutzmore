@@ -1,11 +1,12 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>org.nutz</groupId>
-    <artifactId>nutzmore</artifactId>
-    <version>1.r.65-SNAPSHOT</version>
-  </parent>
-  <artifactId>nutz-plugins-fiddler</artifactId>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.nutz</groupId>
+		<artifactId>nutzmore</artifactId>
+		<version>1.r.65-SNAPSHOT</version>
+	</parent>
+	<artifactId>nutz-plugins-fiddler</artifactId>
 	<url>https://nutzam.com</url>
 	<issueManagement>
 		<system>Github Issue</system>
@@ -73,6 +74,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.0.2</version>
 				<configuration>
 					<archive>
 						<manifest>
@@ -97,8 +99,8 @@
 			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
 		</repository>
 	</distributionManagement>
-  <dependencies>
-  			<dependency>
+	<dependencies>
+		<dependency>
 			<groupId>io.netty</groupId>
 			<artifactId>netty-all</artifactId>
 			<version>4.1.15.Final</version>
@@ -113,5 +115,5 @@
 			<artifactId>bcpkix-jdk15on</artifactId>
 			<version>1.58</version>
 		</dependency>
-  </dependencies>
+	</dependencies>
 </project>
