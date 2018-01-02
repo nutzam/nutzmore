@@ -1,21 +1,28 @@
 # nutz-plugins-multiview 多视图插件
 
-简介(可用性:生产,维护者:denghuafeng)
+简介(可用性:生产,维护者:邓华锋(http://dhf.ink))
 ==================================
 
 集合N种模板引擎,可配置性强
 
 ###### 适应nutz 1.r.55以上，以下版本暂时未测试
-# 版本更新日志：
+#1.65版本更新日志：
+###### 1.增加默认视图设置
+###### 2.增加配置视图扩展属性
+###### 3.增加全局属性文件的可配置功能
+
+#1.65之前版本更新日志：
 ###### 1.把所有属性配置文件里的变量及值加载到全局里，例如，在配置文件中配置了CDN地址，想在页面中能调用，默认全局变量是cfg变量，通过cfg调用相应的键值。
 ###### 2.支持直接调用视图 AbstractTemplateViewResolver atvr=new org.nutz.plugins.view.JspView("abc.bcd");
 ###### 3.代码重构，去除了AbstractUrlBasedView.java和ViewResolver
-针对https://github.com/nutzam/nutz/issues/603#issuecomment-35709620上提出的问题，开发了此插件、
+针对
+https://github.com/nutzam/nutz/issues/603#issuecomment-35709620  
+上提出的问题，开发了此插件、
 <br/>目的是用于开发博客社交类等程序，这些可能会经常要更换模板，路径写死在代码不合适。
 
 使用步骤：
 
- 1.引用nutz-plugins-multiview.jar插件
+ 1.引用nutz-plugins-multiview.jar插件及相关视图的引用包，在pom.xml里有注释引用。
 
  2.配置MainModule的视图为ResourceBundleViewResolver 
 
@@ -27,59 +34,73 @@
 
 ```javascript
  var ioc = {
-    jsp : {
-        type : "org.nutz.plugins.view.JspView",
-        args:[null],//新功能需要个构造参数
-        fields : {
-            prefix : "/WEB-INF/templates/jsp",
-            suffix : ".jsp"
-        }
-    },
-    btl : {
-        type : "org.nutz.plugins.view.BeetlView",
-        args:[null],
-        fields : {
-            contentType : "text/html; charset=UTF-8",
-            configPath : "WEB-INF/classes",
-            prefix : "/templates/btl",
-            suffix : ".html"
-        }
-    },
-    jetx : {
-        type : "org.nutz.plugins.view.JetTemplateView",
-        args:[null],
-        fields : {
-            prefix : "/WEB-INF/templates/jetx",
-            suffix : ".html"
-        }
-    },
-    ftl : {
-        type : "org.nutz.plugins.view.FreemarkerView",
-        args:[null],
-        fields : {
-            prefix : "/WEB-INF/templates/ftl",
-            suffix : ".html"
-        }
-    },
-    multiViewResover : {
-        type : "org.nutz.plugins.view.MultiViewResover",
-        fields : {
-            resolvers : {
-                "jsp" : {
-                    refer : "jsp"
-                },
-                "btl" : {
-                    refer : "btl"
-                },
-                "jetx" : {
-                    refer : "jetx"
-                },
-                "ftl" : {
-                    refer : "ftl"
-                }
-            }
-        }
-    }
+	conf : {//默认约定的视图配置文件conf
+		type : "org.nutz.ioc.impl.PropertiesProxy",
+		fields : {
+			paths : [ "custom/" ]
+		}
+	},
+	jsp : {
+		type : "org.nutz.plugins.view.JspView",
+		args : [ null ],//新功能需要个构造参数,必须项
+		fields : {
+			prefix : "/WEB-INF/templates/jsp",
+			suffix : ".jsp",
+		}
+	},
+	beetl : {
+		type : "org.nutz.plugins.view.BeetlView",
+		args : [ null ],
+		fields : {
+			prefix : "/templates/beetl",
+			suffix : ".html",
+			configPath : "WEB-INF/classes"
+			contentType : "text/html",
+			characterEncoding : "UTF-8"
+		}
+	},
+	freemarker : {
+		type : "org.nutz.plugins.view.FreemarkerView",
+		args : [ null ],
+		fields : {
+			prefix : "/WEB-INF/templates/freemarker",
+			suffix : ".html"
+		}
+	},
+	jetTemplate : {
+		type : "org.nutz.plugins.view.JetTemplateView",
+		args : [ null ],
+		fields : {
+			prefix : "/WEB-INF/templates/jetTemplate",
+			suffix : ".html"
+		}
+	},
+	multiViewResover : {
+		type : "org.nutz.plugins.view.MultiViewResover",
+		fields : {
+			defaultView : "btl",// 默认视图 这里填前缀标识
+			config : {// 定制的可单独设置视图的配置文件,优先于conf约定，既如果设置了这个约定conf将失效
+				type : "org.nutz.ioc.impl.PropertiesProxy",
+				fields : {
+					paths : [ "custom/" ]
+				}
+			}
+			resolvers : {
+				"jsp" : {// 视图前缀标识
+					refer : "jsp"
+				},
+				"btl" : {// 视图前缀标识
+					refer : "beetl"
+				},
+				"ftl" : {// 视图前缀标识
+					refer : "freemarker"
+				},
+				"jetx" : {// 视图前缀标识
+					refer : "jetTemplate"
+				}
+			}
+		}
+	}
 };
 ```
 当然要创建对应配置的目录，上面beetl的configPath是指这个视图的配置文件目录，相对于项目根目录来说的，可配置或不配置，分情况而定。 
@@ -97,7 +118,7 @@ public class BeetlModule {
 	}
 	
 	@At
-	@Ok("btl:test")
+	@Ok("btl:test.index")
 	public void test() {
 
 	}
@@ -105,7 +126,7 @@ public class BeetlModule {
 ```
 
 ```Java
-@At("/ftl")
+@At("/freemarker")
 @IocBean
 public class FreemarkerModule {
 	@At
@@ -117,7 +138,7 @@ public class FreemarkerModule {
 ```
 
 ```Java
-@At("/jetx")
+@At("/jetTemplate")
 @IocBean
 public class JetTemplateModule {
 	@At
@@ -141,6 +162,28 @@ public class JspModule {
 ```
 
 访问相应的链接，就会找到相应的视图，
+
+默认的视图如果已经设置了的话，将会是配置@Ok情况：
+
+```Java
+@At("/user")
+@IocBean
+public class UserModule {
+	@At
+	@Ok("user.index")
+	public void index() {
+
+	}
+	
+	@At
+	@Ok("user.info")
+	public void info() {
+
+	}
+} 
+```
+默认视图，将会走默认的视图，此例子中走beetl视图，因为上面view.js里配置了defaultView的值为 btl 即此视图的前缀标识。
+默认视图的好处是@Ok里不用再加“视图前缀:”来标识，直接通过配置文件就能改变视图模板引擎。
 
 注意的地方：
 
@@ -183,18 +226,30 @@ $loader.reloadable =false
 既这时候的root路径不起作用。
 
 
-开发此插件有啥优点了：
+开发此插件有啥优点了,所有配置都可以在配置文件中实现，而不用硬编码：
 
-1.配置视图的路径可以在配置文件中实现
+1.配置视图的路径
 
-2.配置视图扩展名也可在配置文件中实现
+2.配置视图扩展名
+
+3.配置默认视图
+
+4.配置默认内容类型
+
+5.配置字符编码
+
+6.其他扩展属性配置
+
+7.配置全局的属性文件
+
+8.可单独配置视图的属性文件
 
 
 插件中包含了对beetl、freemarker、JetTemplate和jsp的视图实现，其实把这些代码抽离出来，按需使用可让插件体积更小。
 
 插件的核心类，包括ResourceBundleViewResolver（接口 ViewMaker2的实现，用于从 IOC 容器配置文件中查找视图。）、
 
-AbstractTemplateViewResolver、AbstractUrlBasedView、MultiViewResover和ViewResolver
+AbstractTemplateViewResolver、MultiViewResover和ViewResolver
 
 view.js配置文件中，multiViewResover是约定的名称。
 
@@ -308,7 +363,7 @@ vr.render(req, resp, evalPath, sv);
 ```
 
 如果配置文件中增加如下代码：
-
+旧：
 ```javascript
  // 读取配置文件
 	conf : {
@@ -316,6 +371,35 @@ vr.render(req, resp, evalPath, sv);
 			fields : { paths : ["SystemGlobals.properties"] } 
 	}
 
+```
+新：
+```javascript
+multiViewResover : {
+		type : "org.nutz.plugins.view.MultiViewResover",
+		fields : {
+			defaultView : "btl",// 默认视图 这里填前缀标识
+			config : {// 定制的可单独设置视图的配置文件,优先于conf约定，既如果设置了这个约定conf将失效
+				type : "org.nutz.ioc.impl.PropertiesProxy",
+				fields : {
+					paths : [ "custom/" ]
+				}
+			}
+			resolvers : {
+				"jsp" : {// 视图前缀标识
+					refer : "jsp"
+				},
+				"btl" : {// 视图前缀标识
+					refer : "beetl"
+				},
+				"ftl" : {// 视图前缀标识
+					refer : "freemarker"
+				},
+				"jetx" : {// 视图前缀标识
+					refer : "jetTemplate"
+				}
+			}
+		}
+	}
 ```
 
 SystemGlobals.properties属性文件中，可配置如下:
@@ -326,6 +410,7 @@ servlet.extension=
 resource.dir=resources
 
 ```
+
 
 servlet.extension 是请求连接的后缀 对应页面变量servletExtension
 
