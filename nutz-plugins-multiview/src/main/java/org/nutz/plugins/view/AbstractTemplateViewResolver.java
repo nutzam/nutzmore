@@ -19,11 +19,15 @@ import org.nutz.mvc.view.AbstractPathView;
 /**
  * 视图模板类，其他模板视图需继承此抽象类
  * 
- * @author denghuafeng(it@denghuafeng.com)
+ * @author 邓华锋(http://dhf.ink)
  *
  */
 public abstract class AbstractTemplateViewResolver extends AbstractPathView {
-	protected  final Log log = Logs.get();
+	protected static final Log log = Logs.get();
+	private static final String DEFAULT_ENCODING = "UTF-8";
+	private static final String DEFAULT_CONTENT_TYPE = "text/html";
+	private static final String DEFAULT_PREFIX = "/WEB-INF/template/";
+	private static final String DEFAULT_SUFFIX = ".html";
 	private static final String OBJ = "obj";
 	private static final String REQUEST = "request";
 	private static final String RESPONSE = "response";
@@ -41,16 +45,18 @@ public abstract class AbstractTemplateViewResolver extends AbstractPathView {
 	private static final String WEB_INF = "WEB-INF/";
 	private static final String PROPS = "props";
 	private static final String MVCS = "mvcs";
-	private static final String CFG="cfg";
-	private static final String EVAL_PATH="evalPath";
-	private static final String DEST="dest";
+	private static final String CFG = "cfg";
+	private static final String EVAL_PATH = "evalPath";
+	private static final String DEST = "dest";
 	private PropertiesProxy config;
-	private String prefix = "";
-	private String suffix = "";
+	private String prefix;
+	private String suffix;
 	private String contentType;
+	private String characterEncoding;
 	private String configPath;
+	protected PropertiesProxy viewProperties;
 	// 扩展属性
-	private NutMap extAttrs = new NutMap();
+	protected NutMap properties = new NutMap();
 	protected boolean isInited;
 
 	public AbstractTemplateViewResolver(String dest) {
@@ -64,19 +70,19 @@ public abstract class AbstractTemplateViewResolver extends AbstractPathView {
 
 	@SuppressWarnings("unchecked")
 	public final void render(HttpServletRequest req, HttpServletResponse resp, Object obj) throws Throwable {
-		Map<String, Object> sourceMap=null;
+		Map<String, Object> sourceMap = null;
 		try {
-			if(obj!=null&&obj instanceof Map){
+			if (obj != null && obj instanceof Map) {
 				sourceMap = org.nutz.castor.Castors.me().castTo(obj, Map.class);
-				if(!sourceMap.containsKey(EVAL_PATH)||!sourceMap.containsKey(DEST)){//验证必要的key值
-					sourceMap=null;
+				if (!sourceMap.containsKey(EVAL_PATH) || !sourceMap.containsKey(DEST)) {// 验证必要的key值
+					sourceMap = null;
 				}
 			}
 		} catch (Exception e1) {
-			//e1.printStackTrace();
+			// e1.printStackTrace();
 		}
 		Map<String, Object> sv = new HashMap<String, Object>();
-		Object objOld=sourceMap==null?obj:sourceMap.get("obj");
+		Object objOld = sourceMap == null ? obj : sourceMap.get("obj");
 		sv.put(OBJ, objOld);
 		sv.put(REQUEST, req);
 		sv.put(RESPONSE, resp);
@@ -88,14 +94,16 @@ public abstract class AbstractTemplateViewResolver extends AbstractPathView {
 		sv.put(MVCS, msgs);
 		sv.put(CFG, config);
 		if (resp != null && Strings.isBlank(resp.getContentType()) && !Strings.isBlank(this.getContentType())) {// resp的contentType优先级高
-			resp.setContentType(this.getContentType());// 配置文件设置的contentType
+			resp.setContentType(this.getContentType() + "; charset=" + this.getCharacterEncoding());// 配置文件设置的contentType
+			resp.setCharacterEncoding(this.getCharacterEncoding());
 		}
 
 		String evalPath = null;
-		if(sourceMap!=null&&sourceMap.get(DEST)!=null&&Strings.isBlank(evalPath)){
-			evalPath=sourceMap.get(EVAL_PATH).toString();
-		}else{
-			evalPath=evalPath(req, obj);
+		if (sourceMap != null && sourceMap.get(DEST) != null && Strings.isBlank(evalPath)) {
+			sv.put(DEST, sourceMap.get(EVAL_PATH).toString());
+			evalPath = sourceMap.get(EVAL_PATH).toString();
+		} else {
+			evalPath = evalPath(req, obj);
 		}
 		String tplDir = this.getPrefix();// 模板路径
 		String ext = this.getSuffix();// 模板文件扩展名
@@ -111,10 +119,10 @@ public abstract class AbstractTemplateViewResolver extends AbstractPathView {
 		if (Strings.isBlank(evalPath)) {
 			evalPath = Mvcs.getRequestPath(req);
 			evalPath = tplDir + (evalPath.startsWith("/") ? "" : "/") + Files.renameSuffix(evalPath, ext);
-		}else if (evalPath.charAt(0) == '/') {// 绝对路径 : 以 '/' 开头的路径不增加视图配置的模板路径
+		} else if (evalPath.charAt(0) == '/') {// 绝对路径 : 以 '/' 开头的路径不增加视图配置的模板路径
 			if (!evalPath.toLowerCase().endsWith(ext))
 				evalPath += ext;
-		}else {// 包名形式的路径
+		} else {// 包名形式的路径
 			evalPath = tplDir + "/" + evalPath.replace('.', '/') + ext;
 		}
 
@@ -151,6 +159,9 @@ public abstract class AbstractTemplateViewResolver extends AbstractPathView {
 	}
 
 	public String getPrefix() {
+		if (Strings.isBlank(prefix)) {
+			return DEFAULT_PREFIX;
+		}
 		return prefix;
 	}
 
@@ -159,6 +170,9 @@ public abstract class AbstractTemplateViewResolver extends AbstractPathView {
 	}
 
 	public String getSuffix() {
+		if (Strings.isBlank(suffix)) {
+			return DEFAULT_SUFFIX;
+		}
 		return suffix;
 	}
 
@@ -167,6 +181,9 @@ public abstract class AbstractTemplateViewResolver extends AbstractPathView {
 	}
 
 	public String getContentType() {
+		if (Strings.isBlank(contentType)) {
+			return DEFAULT_CONTENT_TYPE;
+		}
 		return contentType;
 	}
 
@@ -190,19 +207,30 @@ public abstract class AbstractTemplateViewResolver extends AbstractPathView {
 		this.config = config;
 	}
 
-	public NutMap getExtAttrs() {
-		return extAttrs;
-	}
-
-	public void setExtAttrs(NutMap extAttrs) {
-		this.extAttrs = extAttrs;
-	}
-
 	protected boolean isInited() {
 		return isInited;
 	}
 
 	protected void setInited(boolean isInited) {
 		this.isInited = isInited;
+	}
+
+	public NutMap getProperties() {
+		return properties;
+	}
+
+	public void setProperties(Map<String, Object> properties) {
+		this.properties = new NutMap(properties);
+	}
+
+	public String getCharacterEncoding() {
+		if (Strings.isBlank(this.characterEncoding)) {
+			return DEFAULT_ENCODING;
+		}
+		return this.characterEncoding;
+	}
+
+	public void setCharacterEncoding(String characterEncoding) {
+		this.characterEncoding = characterEncoding;
 	}
 }

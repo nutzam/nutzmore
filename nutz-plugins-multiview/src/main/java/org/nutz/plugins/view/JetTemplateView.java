@@ -18,23 +18,24 @@ import org.nutz.lang.Lang;
 
 /**
  * JetTemplate视图。
- * @author denghuafeng(it@denghuafeng.com)
+ * 
+ * @author 邓华锋(http://dhf.ink)
  *
  */
 public class JetTemplateView extends AbstractTemplateViewResolver {
 	private JetEngine engine;
-	
+
 	public JetTemplateView(String dest) {
 		super(dest);
 	}
 
-	public void init(String appRoot,ServletContext sc) {
+	public void init(String appRoot, ServletContext sc) {
 		engine = JetWebEngine.create(sc);
 	}
 
 	@Override
-	public void render(HttpServletRequest req, HttpServletResponse resp,
-			String evalPath, Map<String, Object> sharedVars) throws Throwable {
+	public void render(HttpServletRequest req, HttpServletResponse resp, String evalPath,
+			Map<String, Object> sharedVars) throws Throwable {
 		String charsetEncoding = engine.getConfig().getOutputEncoding().name();
 		resp.setCharacterEncoding(charsetEncoding);
 		if (resp.getContentType() == null) {
