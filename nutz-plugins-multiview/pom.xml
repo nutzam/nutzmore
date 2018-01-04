@@ -9,35 +9,20 @@
 	<description>Nutz More multiView</description>
 	<developers>
 		<developer>
-			<id>denghuafeng</id>
-			<name>denghuafeng</name>
+			<id>邓华锋</id>
+			<name>邓华锋</name>
 			<email>denghuafeng@gmail.com</email>
-			<url>http://www.denghuafeng.com</url>
+			<url>http://dhf.ink</url>
 		</developer>
 	</developers>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<dependencies>
-	<dependency>
-			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
-			<version>2.4</version>
-			<optional>true</optional>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.8.2</version>
-			<scope>test</scope>
-		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>1.2.17</version>
-			<optional>true</optional>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>
@@ -45,6 +30,8 @@
 			<version>2.5</version>
 			<scope>provided</scope>
 		</dependency>
+
+		<!--freemarker jar start-->
 		<dependency>
 			<groupId>org.freemarker</groupId>
 			<artifactId>freemarker</artifactId>
@@ -52,13 +39,26 @@
 			<scope>compile</scope>
 			<optional>true</optional>
 		</dependency>
+		<!--freemarker jar end-->
+
+		<!--beetl jar start-->
+		<dependency>
+		    <groupId>org.antlr</groupId>
+		    <artifactId>antlr4-runtime</artifactId>
+		    <version>4.7.1</version>
+		    <optional>true</optional>
+			<scope>provided</scope>
+		</dependency>
 		<dependency>
 			<groupId>com.ibeetl</groupId>
 			<artifactId>beetl</artifactId>
-			<version>2.7.12</version>
+			<version>2.7.25</version>
 			<optional>true</optional>
 			<scope>provided</scope>
 		</dependency>
+		<!--beetl jar end-->
+	
+		<!--jetbrick jar start-->
 		<dependency>
 			<groupId>com.github.subchen</groupId>
 			<artifactId>jetbrick-template</artifactId>
@@ -66,7 +66,6 @@
 			<optional>true</optional>
 			<scope>provided</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>com.github.subchen</groupId>
 			<artifactId>jetbrick-template-web</artifactId>
@@ -74,112 +73,7 @@
 			<optional>true</optional>
 			<scope>provided</scope>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.antlr/antlr4-runtime -->
-		<dependency>
-			<groupId>org.antlr</groupId>
-			<artifactId>antlr4-runtime</artifactId>
-			<version>4.3</version>
-			<optional>true</optional>
-			<scope>provided</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.velocity</groupId>
-			<artifactId>velocity</artifactId>
-			<version>1.7</version>
-			<optional>true</optional>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.velocity</groupId>
-			<artifactId>velocity-tools</artifactId>
-			<version>2.0</version>
-			<optional>true</optional>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.thymeleaf</groupId>
-			<artifactId>thymeleaf</artifactId>
-			<version>3.0.0.RELEASE</version>
-			<optional>true</optional>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>nz.net.ultraq.thymeleaf</groupId>
-			<artifactId>thymeleaf-layout-dialect</artifactId>
-			<version>2.0.1</version>
-			<optional>true</optional>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.itextpdf</groupId>
-			<artifactId>itextpdf</artifactId>
-			<version>5.5.8</version>
-			<optional>true</optional>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.itextpdf</groupId>
-			<artifactId>itext-asian</artifactId>
-			<version>5.2.0</version>
-			<optional>true</optional>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.nutz</groupId>
-			<artifactId>nutz-plugins-sfntly</artifactId>
-			<version>1.r.60</version>
-			<optional>true</optional>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.22</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.jetty</groupId>
-			<artifactId>jetty-servlets</artifactId>
-			<version>9.4.3.v20170317</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.jetty</groupId>
-			<artifactId>jetty-webapp</artifactId>
-			<version>9.4.3.v20170317</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.jetty.websocket</groupId>
-			<artifactId>websocket-server</artifactId>
-			<version>9.4.3.v20170317</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.jetty.websocket</groupId>
-			<artifactId>javax-websocket-server-impl</artifactId>
-			<version>9.4.3.v20170317</version>
-			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.eclipse.jetty</groupId>
-					<artifactId>jetty-jndi</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.jetty</groupId>
-			<artifactId>apache-jsp</artifactId>
-			<version>9.4.3.v20170317</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.jetty</groupId>
-			<artifactId>apache-jstl</artifactId>
-			<version>9.4.3.v20170317</version>
-			<scope>test</scope>
-		</dependency>
+		<!--jetbrick jar end-->
 	</dependencies>
 	<build>
 		<plugins>
