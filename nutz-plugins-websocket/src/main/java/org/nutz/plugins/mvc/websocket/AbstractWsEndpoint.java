@@ -3,6 +3,7 @@ package org.nutz.plugins.mvc.websocket;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -78,8 +79,13 @@ public abstract class AbstractWsEndpoint {
         handler.setHttpSession((HttpSession) config.getUserProperties().get("HttpSession"));
         handler.setEndpoint(this);
         handler.init();
-        if (!isUndertowSession(session)) // undertow 不支持addMessageHandler的样子
-            session.addMessageHandler(handler);
+        if (!isUndertowSession(session))
+            try {
+                session.addMessageHandler(handler);
+            }
+            catch (Exception e) {
+                log.debug("skip addMessageHandler");
+            }
         sessions.put(wsid, session);
         handlers.put(wsid, handler);
     }
