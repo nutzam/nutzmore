@@ -17,7 +17,7 @@ import org.nutz.lang.Strings;
 /**
  * Beetl视图。
  * 
- * @author denghuafeng(it@denghuafeng.com)
+ * @author 邓华锋(http://dhf.ink)
  *
  */
 public class BeetlView extends AbstractTemplateViewResolver {
@@ -57,5 +57,5 @@ public class BeetlView extends AbstractTemplateViewResolver {
 		WebRender render = new WebRender(groupTemplate);
 		render.render(evalPath, req, resp);
 	}
-	
+
 }
