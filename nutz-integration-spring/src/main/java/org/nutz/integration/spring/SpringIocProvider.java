@@ -1,5 +1,7 @@
 package org.nutz.integration.spring;
 
+import java.lang.annotation.Annotation;
+
 import org.nutz.ioc.Ioc;
 import org.nutz.ioc.IocException;
 import org.nutz.ioc.annotation.InjectName;
@@ -62,7 +64,8 @@ public class SpringIocProvider implements IocProvider, Ioc {
 		applicationContext.publishEvent(new ContextRefreshedEvent(applicationContext));
 	}
 
-	@Override
+	@SuppressWarnings("unchecked")
+    @Override
 	public <T> T get(Class<T> classZ) throws IocException {
 		InjectName injectName = classZ.getAnnotation(InjectName.class);
 		if (injectName != null && !Strings.isBlank(injectName.value()))
@@ -90,4 +93,8 @@ public class SpringIocProvider implements IocProvider, Ioc {
 	public <K> K getByType(Class<K> klass) {
 		return applicationContext.getBean(klass);
 	}
+
+    public String[] getNamesByAnnotation(Class<? extends Annotation> klass) {
+        return applicationContext.getBeanNamesForAnnotation(klass);
+    }
 }
