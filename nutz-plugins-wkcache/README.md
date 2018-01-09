@@ -41,6 +41,14 @@ redis.maxTotal=100
 redis.mode=normal
 #redis.nodes=
 ```
+
+## wkcache.properties 配置文件
+```
+#缓存存活时间配置(单位:秒)
+wkcache.nutzwk_cache=1800 
+wkcache.cache_time_1=18000
+wkcache.cache_time_2=28000
+```
 ## 示例代码
 
 
