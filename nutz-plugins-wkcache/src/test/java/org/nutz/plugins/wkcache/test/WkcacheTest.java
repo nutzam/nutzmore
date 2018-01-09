@@ -21,9 +21,9 @@ public class WkcacheTest extends Assert {
     public void testIocLoader() throws ClassNotFoundException {
         NutIoc ioc = new NutIoc(new ComboIocLoader("*anno", "org.nutz.plugins.wkcache", "*jedis", "*wkcache"));
         PropertiesProxy conf = new PropertiesProxy();
-        conf.put("nutzwk_cache","1800");
-        conf.put("cache_time_1","18000");
-        conf.put("cache_time_2","28000");
+        conf.put("wkcache.nutzwk_cache","1800");
+        conf.put("wkcache.cache_time_1","18000");
+        conf.put("wkcache.cache_time_2","28000");
         ioc.getIocContext().save("app", "conf", new ObjectProxy(conf));
         assertTrue(ioc.getNames().length > 0);
         log.debug(ioc.get(MyCacheTest.class).testCache("wizzer.cn"));

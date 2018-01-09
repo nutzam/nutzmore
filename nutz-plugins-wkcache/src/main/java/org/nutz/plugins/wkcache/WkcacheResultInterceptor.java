@@ -58,7 +58,7 @@ public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
             liveTime = cacheDefaults != null ? cacheDefaults.cacheLiveTime() : 0;
         }
         if (conf != null && conf.size() > 0) {
-            int confLiveTime = conf.getInt(cacheName, 0);
+            int confLiveTime = conf.getInt("wkcache."+cacheName, 0);
             if (confLiveTime > 0)
                 liveTime = confLiveTime;
         }
