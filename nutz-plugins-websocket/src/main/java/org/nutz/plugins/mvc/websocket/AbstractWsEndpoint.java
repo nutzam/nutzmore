@@ -3,7 +3,6 @@ package org.nutz.plugins.mvc.websocket;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
