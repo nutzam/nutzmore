@@ -1,10 +1,10 @@
 package org.nutz.integration.rabbitmq;
 
-import org.nutz.ioc.loader.json.JsonLoader;
+import org.nutz.ioc.loader.annotation.AnnotationIocLoader;
 
-public class RabbitmqIocLoader extends JsonLoader {
+public class RabbitmqIocLoader extends AnnotationIocLoader {
 
     public RabbitmqIocLoader() {
-        super("org/nutz/integration/rabbitmq/rabbitmq.js");
+        super(RabbitmqIocLoader.class.getPackage().getName());
     }
 }
