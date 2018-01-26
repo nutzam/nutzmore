@@ -471,6 +471,8 @@ public class ApidocUrlMapping extends UrlMappingImpl {
 				if (!Strings.isBlank(apiParam.dateFormat()))
 					expParam.put("paramDateFormat", apiParam.dateFormat());
 				expParam.put("optional", apiParam.optional());
+				if (!Strings.isBlank(apiParam.requestData()))
+					expParam.put("requestData", apiParam.requestData());
 				apiParams.remove(apiParam);//处理完成 移除之
 			}
 			params.add(expParam);
