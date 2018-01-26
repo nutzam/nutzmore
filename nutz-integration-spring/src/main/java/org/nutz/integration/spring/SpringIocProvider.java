@@ -9,6 +9,7 @@ import org.nutz.lang.Lang;
 import org.nutz.lang.Strings;
 import org.nutz.mvc.IocProvider;
 import org.nutz.mvc.NutConfig;
+import org.springframework.beans.factory.config.SingletonBeanRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -96,4 +97,11 @@ public class SpringIocProvider implements IocProvider, Ioc {
 	public String[] getNamesByAnnotation(Class<? extends Annotation> klass) {
 	    return applicationContext.getBeanNamesForAnnotation(klass);
 	}
+
+    public Ioc addBean(String name, Object obj) {
+        if (this instanceof SingletonBeanRegistry) {
+            ((SingletonBeanRegistry)this).registerSingleton(name, obj);
+        }
+        return this;
+    }
 }
