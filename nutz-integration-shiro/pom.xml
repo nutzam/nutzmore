@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.r.65-SNAPSHOT</version>
+		<version>1.r.65</version>
 	</parent>
 	<artifactId>nutz-integration-shiro</artifactId>
 	<name>nutz-integration-shiro</name>
@@ -84,7 +84,7 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz-plugins-cache</artifactId>
-			<version>1.r.65-SNAPSHOT</version>
+			<version>1.r.65</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -101,7 +101,7 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz-plugins-mock</artifactId>
-			<version>1.r.65-SNAPSHOT</version>
+			<version>1.r.65</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
