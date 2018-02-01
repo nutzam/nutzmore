@@ -176,6 +176,7 @@ public class J4E {
                     }
                     J4EColumnType columnType = jcol.getColumnType();
                     Object dfv = mc.getValue(dval, jfield);
+                    // 数字
                     if (columnType == J4EColumnType.NUMERIC) {
                         c.setCellType(CellType.NUMERIC);
                         int precision = jcol.getPrecision();
@@ -190,10 +191,18 @@ public class J4E {
                                 c.setCellValue(dbRe);
                             }
                         }
-                    } else {
-                        // TODO 根据field获取对应的类型
+                    }
+                    // 字符串
+                    else {
                         c.setCellType(CellType.STRING);
-                        c.setCellValue(dfv != null ? Castors.me().castTo(dfv, String.class) : "");
+                        if (jcol.getToExcelFun() != null) {
+                            J4ECellToExcel cellFun = jcol.getToExcelFun();
+                            Object setVal = cellFun.toExecl(dfv);
+                            c.setCellValue(Castors.me().castTo(setVal, String.class));
+                        } else {
+                            c.setCellValue(dfv != null ? Castors.me().castTo(dfv, String.class)
+                                                       : "");
+                        }
                     }
                 }
             }
@@ -383,7 +392,7 @@ public class J4E {
             colType = J4EColumnType.STRING;
         }
         try {
-            @SuppressWarnings({"deprecation"}) // 4.2之后将可直接调用c.getCellType返回枚举
+            @SuppressWarnings({"deprecation"}) // 3.1.5之后将可直接调用c.getCellType返回枚举
             CellType cType = c.getCellTypeEnum();
             switch (cType) {
             case NUMERIC: // 数字

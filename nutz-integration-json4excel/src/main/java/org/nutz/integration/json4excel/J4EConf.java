@@ -9,6 +9,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.nutz.integration.json4excel.annotation.J4ECell;
 import org.nutz.integration.json4excel.annotation.J4EDefine;
 import org.nutz.integration.json4excel.annotation.J4EExt;
 import org.nutz.integration.json4excel.annotation.J4EIgnore;
@@ -210,6 +211,17 @@ public class J4EConf {
             J4EIgnore ignore = cf.getAnnotation(J4EIgnore.class);
             if (ignore != null) {
                 jcol.setIgnore(true);
+            }
+            J4ECell cellset = cf.getAnnotation(J4ECell.class);
+            if (cellset != null) {
+                Class<? extends J4ECellToExcel> toExcelFun = cellset.toExcel();
+                if (!toExcelFun.isAssignableFrom(J4ECellToExcelImpl.class)) {
+                    jcol.setToExcelFun(toExcelFun);
+                }
+                Class<? extends J4ECellFromExcel> fromExcelFun = cellset.fromExcel();
+                if (!fromExcelFun.isAssignableFrom(J4ECellFromExcelImpl.class)) {
+                    jcol.setFromExcelFun(fromExcelFun);
+                }
             }
             jclist.add(jcol);
         }
