@@ -73,7 +73,7 @@ public class J4E {
                                                                : new HSSFWorkbook();
         OutputStream out = null;
         try {
-        	out = new FileOutputStream(excel);
+            out = new FileOutputStream(excel);
             return toExcel(wb, out, dataList, j4eConf);
         }
         catch (FileNotFoundException e) {
@@ -81,8 +81,8 @@ public class J4E {
             return false;
         }
         finally {
-        	Streams.safeClose(wb);
-        	Streams.safeClose(out);
+            Streams.safeClose(wb);
+            Streams.safeClose(out);
         }
     }
 
@@ -175,32 +175,26 @@ public class J4E {
                         c = row.createCell(ccin);
                     }
                     J4EColumnType columnType = jcol.getColumnType();
-                    if (columnType == J4EColumnType.STRING) {
-                        c.setCellType(CellType.STRING);
-                    } else if (columnType == J4EColumnType.NUMERIC) {
+                    Object dfv = mc.getValue(dval, jfield);
+                    if (columnType == J4EColumnType.NUMERIC) {
                         c.setCellType(CellType.NUMERIC);
-                    } else if (columnType == J4EColumnType.DATE) {
-                        c.setCellType(CellType.STRING);
+                        int precision = jcol.getPrecision();
+                        if (precision == 0) {
+                            Integer intRe = Castors.me().castTo(dfv, Integer.class);
+                            if (intRe != null) {
+                                c.setCellValue(intRe);
+                            }
+                        } else {
+                            Double dbRe = Castors.me().castTo(dfv, Double.class);
+                            if (dbRe != null) {
+                                c.setCellValue(dbRe);
+                            }
+                        }
                     } else {
                         // TODO 根据field获取对应的类型
                         c.setCellType(CellType.STRING);
-                    }
-                    Object dfv = mc.getValue(dval, jfield);
-                    int ctp = c.getCellType();
-                    switch (ctp) {
-                    case 1: // STRING
                         c.setCellValue(dfv != null ? Castors.me().castTo(dfv, String.class) : "");
-                        break;
-                    case 0: // NUMERIC
-                        Integer intRe = Castors.me().castTo(dfv, Integer.class);
-                        if (intRe != null) {
-                            c.setCellValue(intRe);
-                        }
-                        break;
-                    default:
-                        break;
                     }
-
                 }
             }
         }
