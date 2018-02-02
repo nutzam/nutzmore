@@ -15,7 +15,7 @@ import org.nutz.lang.util.Disks;
 
 public class J4ETest extends TestUtil {
 
-    public static final String TMPDIR = System.getProperty("java.io.tmpdir");
+    public static final String TMPDIR = Disks.absolute("~/tmp/");
 
     @Test
     public void test_fromExcel() throws Exception {

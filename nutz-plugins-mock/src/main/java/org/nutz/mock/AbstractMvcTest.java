@@ -40,10 +40,10 @@ public abstract class AbstractMvcTest extends NutIocTestBase {
 		servlet = new NutServlet();
 		servlet.init(servletConfig);
 		session = Mock.servlet.session(servletContext);
-		newreq();
 		nc = Mvcs.getNutConfig();
 		ioc = nc.getIoc();
 		injectSelfFields();
+		newreq();
 		_before();
 	}
 

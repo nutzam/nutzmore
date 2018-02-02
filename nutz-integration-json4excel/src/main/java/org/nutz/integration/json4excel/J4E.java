@@ -73,7 +73,7 @@ public class J4E {
                                                                : new HSSFWorkbook();
         OutputStream out = null;
         try {
-        	out = new FileOutputStream(excel);
+            out = new FileOutputStream(excel);
             return toExcel(wb, out, dataList, j4eConf);
         }
         catch (FileNotFoundException e) {
@@ -81,8 +81,8 @@ public class J4E {
             return false;
         }
         finally {
-        	Streams.safeClose(wb);
-        	Streams.safeClose(out);
+            Streams.safeClose(wb);
+            Streams.safeClose(out);
         }
     }
 
@@ -175,32 +175,35 @@ public class J4E {
                         c = row.createCell(ccin);
                     }
                     J4EColumnType columnType = jcol.getColumnType();
-                    if (columnType == J4EColumnType.STRING) {
-                        c.setCellType(CellType.STRING);
-                    } else if (columnType == J4EColumnType.NUMERIC) {
-                        c.setCellType(CellType.NUMERIC);
-                    } else if (columnType == J4EColumnType.DATE) {
-                        c.setCellType(CellType.STRING);
-                    } else {
-                        // TODO 根据field获取对应的类型
-                        c.setCellType(CellType.STRING);
-                    }
                     Object dfv = mc.getValue(dval, jfield);
-                    int ctp = c.getCellType();
-                    switch (ctp) {
-                    case 1: // STRING
-                        c.setCellValue(dfv != null ? Castors.me().castTo(dfv, String.class) : "");
-                        break;
-                    case 0: // NUMERIC
-                        Integer intRe = Castors.me().castTo(dfv, Integer.class);
-                        if (intRe != null) {
-                            c.setCellValue(intRe);
+                    // 数字
+                    if (columnType == J4EColumnType.NUMERIC) {
+                        c.setCellType(CellType.NUMERIC);
+                        int precision = jcol.getPrecision();
+                        if (precision == 0) {
+                            Integer intRe = Castors.me().castTo(dfv, Integer.class);
+                            if (intRe != null) {
+                                c.setCellValue(intRe);
+                            }
+                        } else {
+                            Double dbRe = Castors.me().castTo(dfv, Double.class);
+                            if (dbRe != null) {
+                                c.setCellValue(dbRe);
+                            }
                         }
-                        break;
-                    default:
-                        break;
                     }
-
+                    // 字符串
+                    else {
+                        c.setCellType(CellType.STRING);
+                        if (jcol.getToExcelFun() != null) {
+                            J4ECellToExcel cellFun = jcol.getToExcelFun();
+                            Object setVal = cellFun.toExecl(dfv);
+                            c.setCellValue(Castors.me().castTo(setVal, String.class));
+                        } else {
+                            c.setCellValue(dfv != null ? Castors.me().castTo(dfv, String.class)
+                                                       : "");
+                        }
+                    }
                 }
             }
         }
@@ -389,7 +392,7 @@ public class J4E {
             colType = J4EColumnType.STRING;
         }
         try {
-            @SuppressWarnings({"deprecation"}) // 4.2之后将可直接调用c.getCellType返回枚举
+            @SuppressWarnings({"deprecation"}) // 3.1.5之后将可直接调用c.getCellType返回枚举
             CellType cType = c.getCellTypeEnum();
             switch (cType) {
             case NUMERIC: // 数字

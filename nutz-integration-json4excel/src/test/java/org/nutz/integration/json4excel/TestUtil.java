@@ -12,10 +12,11 @@ import java.util.List;
 
 import org.nutz.integration.json4excel.bean.Person;
 import org.nutz.lang.Streams;
+import org.nutz.lang.util.Disks;
 
 public abstract class TestUtil {
 
-    public static final String TMPDIR = System.getProperty("java.io.tmpdir");
+    public static final String TMPDIR = Disks.absolute("~/tmp/");
 
     public static String FD(Date d) {
         return new SimpleDateFormat("yyyy-MM-dd").format(d);
