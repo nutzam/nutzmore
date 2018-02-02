@@ -1,6 +1,7 @@
 # Nutz的插件与集成库
 
 [![Build Status](https://travis-ci.org/nutzam/nutzmore.png?branch=master)](https://travis-ci.org/nutzam/nutzmore)
+[![Circle CI](https://circleci.com/gh/nutzam/nutzmore/tree/master.svg?style=svg)](https://circleci.com/gh/nutzam/nutzmore/tree/master)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutzmore/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.nutz/nutzmore/)
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
@@ -12,7 +13,7 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>填nutz插件名</artifactId>
-			<version>1.r.63</version>
+			<version>1.r.65</version>
 		</dependency>
 ```
 

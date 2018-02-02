@@ -1,6 +1,6 @@
 sudo: false
 language: java
-script: mvn -Dmaven.test.skip=true clean source:jar deploy --settings mvn_settings.xml --fail-at-end
+script: mvn -Dmaven.test.skip=true clean package
 jdk:
   - oraclejdk8
 # whitelist
