@@ -33,7 +33,7 @@ jobs:
           key: v1-dependencies-{{ checksum "pom.xml" }}
         
       # run tests!
-      - run: mvn integration-test
+      - run: mvn -Dmaven.test.skip=true compile
   deploy-job:
     docker:
       # specify the version you desire here
