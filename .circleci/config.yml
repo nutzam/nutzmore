@@ -4,7 +4,7 @@
 #
 version: 2
 jobs:
-  build:
+  build-job:
     docker:
       # specify the version you desire here
       - image: circleci/openjdk:8-jdk
@@ -33,4 +33,29 @@ jobs:
           key: v1-dependencies-{{ checksum "pom.xml" }}
         
       # run tests!
-      - run: mvn integration-test  
+      - run: mvn integration-test
+  deploy-job:
+    docker:
+      # specify the version you desire here
+      - image: circleci/openjdk:8-jdk
+
+    working_directory: ~/repo
+
+    environment:
+      # Customize the JVM maximum heap limit
+      MAVEN_OPTS: -Xmx1024m
+    
+    steps:
+      # trigger deploy
+      - run: curl "http://180.76.176.118:8601/deploy/trigger?name=nutzwx&token=$DEPLOY_TOKEN"
+workflows:
+  version: 2
+  build-deploy:
+    jobs:
+      - build-job
+      - deploy-job:
+          requires:
+            - build-job
+          filters:
+            branches:
+              only: master
