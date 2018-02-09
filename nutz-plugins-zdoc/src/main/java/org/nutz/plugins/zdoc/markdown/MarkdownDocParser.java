@@ -35,7 +35,7 @@ public class MarkdownDocParser implements NutDocParser {
         NutMap tagNames = new NutMap();
         for (String line : B.content) {
             // 忽略空行
-            if(Strings.isBlank(line))
+            if (Strings.isBlank(line))
                 continue;
             // 首行
             if (isFirstLine) {
@@ -61,7 +61,9 @@ public class MarkdownDocParser implements NutDocParser {
                      + "|(~~([^~]+)~~)"
                      + "|(`([^`]+)`)"
                      + "|(!\\[([^\\]]*)\\]\\(([^\\)]+)\\))"
-                     + "|(\\[([^\\]]*)\\]\\(([^\\)]*)\\))"
+                     + "|(\\[("
+                     + "(!\\[([^\\]]*)\\]\\(([^\\)]+)\\))|([^\\]]*)"
+                     + ")\\]\\(([^\\)]*)\\))"
                      + "|(https?:\\/\\/[^ ]+)";
         Pattern REG = Pattern.compile(reg);
         Matcher m = REG.matcher(str);
@@ -130,7 +132,10 @@ public class MarkdownDocParser implements NutDocParser {
             }
             // IMG: ![](xxxx)
             else if (null != m.group(11)) {
-                tag.add("img").attr("title", m.group(12)).attr("src", m.group(13));
+                Tag img = tag.add("img").attr("src", m.group(13));
+                if (!Strings.isBlank(m.group(12))) {
+                    img.attr("alt", m.group(12));
+                }
                 // 记录标签
                 if (null != tagNames)
                     tagNames.put("img", true);
@@ -138,28 +143,42 @@ public class MarkdownDocParser implements NutDocParser {
             // A: [](xxxx)
             else if (null != m.group(14)) {
                 // 得到超链
-                String href = m.group(16);
+                String href = m.group(20);
                 if (null != href && href.endsWith(".md")) {
                     href = Files.renameSuffix(href, ".html");
                 }
-                // 得到文字
-                String text = Strings.sBlank(m.group(15), Files.getMajorName(href));
-                // 锚点
-                if (Strings.isBlank(href) && text.matches("^#.+$")) {
-                    tag.add("a").attr("name", text.substring(1));
+                // 如果内部是一个图片
+                if (!Strings.isBlank(m.group(16))) {
+                    String src = m.group(18);
+                    Tag img = tag.add("a").attr("href", href).add("img").attr("src", src);
+                    if (!Strings.isBlank(m.group(17))) {
+                        img.attr("alt", m.group(17));
+                    }
+                    // 记录标签
+                    if (null != tagNames) {
+                        tagNames.put("img", true);
+                    }
                 }
-                // 链接
+                // 得到文字
                 else {
-                    Tag a = tag.add("a").attr("href", href);
-                    this.__line_to_html(a, text, tagNames);
+                    String text = Strings.sBlank(m.group(19), Files.getMajorName(href));
+                    // 锚点
+                    if (Strings.isBlank(href) && text.matches("^#.+$")) {
+                        tag.add("a").attr("name", text.substring(1));
+                    }
+                    // 链接
+                    else {
+                        Tag a = tag.add("a").attr("href", href);
+                        this.__line_to_html(a, text, tagNames);
+                    }
                 }
                 // 记录标签
                 if (null != tagNames)
                     tagNames.put("a", true);
             }
             // A: http://xxxx
-            else if (null != m.group(17)) {
-                tag.add("a").attr("href", m.group(17)).setText(Strings.sBlank(m.group(17)));
+            else if (null != m.group(21)) {
+                tag.add("a").attr("href", m.group(21)).setText(Strings.sBlank(m.group(21)));
                 // 记录标签
                 if (null != tagNames)
                     tagNames.put("a", true);
