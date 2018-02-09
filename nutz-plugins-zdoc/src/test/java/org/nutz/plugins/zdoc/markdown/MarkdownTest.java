@@ -8,6 +8,38 @@ import org.nutz.lang.Strings;
 public class MarkdownTest {
 
     /**
+     * https://github.com/nutzam/nutzmore/issues/88
+     */
+    @Test
+    public void test_task_list() {
+        assertEquals("<ul class=\"md-task-list\">"
+                     + "<li class=\"md-task-list-item\">"
+                     + "<input disabled type=\"checkbox\" checked>AA"
+                     + "</li></ul>",
+                     _HTML("- [ ] AA"));
+
+        assertEquals("<ul class=\"md-task-list\">"
+                     + "<li class=\"md-task-list-item\">"
+                     + "<input disabled type=\"checkbox\" checked>AAAA"
+                     + "</li>"
+                     + "<li class=\"md-task-list-item\">"
+                     + "<input disabled type=\"checkbox\" checked>BBBB"
+                     + "<ul class=\"md-task-list\">"
+                     + "<li class=\"md-task-list-item\">"
+                     + "<input disabled type=\"checkbox\" checked>BB-b0</li>"
+                     + "<li class=\"md-task-list-item\">"
+                     + "<input disabled type=\"checkbox\" checked>BB-b1</li>"
+                     + "</ul>"
+                     + "</li>"
+                     + "</ul>",
+                     _HTML("- [ ] AAAA\n"
+                           + "- [ ] BBBB\n"
+                           + "  - [ ] BB-b0\n"
+                           + "  - [ ] BB-b1\n"));
+
+    }
+
+    /**
      * https://github.com/nutzam/nutzmore/issues/87
      */
     @Test

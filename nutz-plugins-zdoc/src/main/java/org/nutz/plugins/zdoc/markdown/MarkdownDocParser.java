@@ -32,6 +32,16 @@ public class MarkdownDocParser implements NutDocParser {
     // 定义内容输出函数
     private void __B_to_html(Tag tag, MdBlock B) {
         boolean isFirstLine = true;
+
+        // 处理任务列表
+        if (B.isTask) {
+            Tag jInput = tag.add("input").attr("disabled", "true").attr("type", "checkbox");
+            if (B.isChecked) {
+                jInput.attr("checked", "true");
+            }
+        }
+
+        // 收集一下块内标签
         NutMap tagNames = new NutMap();
         for (String line : B.content) {
             // 忽略空行
@@ -51,6 +61,10 @@ public class MarkdownDocParser implements NutDocParser {
         // 如果段落里只有 IMG，做一下特殊标识
         if (tagNames.size() == 1 && tagNames.getBoolean("img")) {
             tag.attr("md-img-only", "yes");
+        }
+        // 标识一下任务列表
+        if (B.isTask) {
+            tag.attrs(".md-task-list-item");
         }
     }
 
@@ -207,8 +221,28 @@ public class MarkdownDocParser implements NutDocParser {
         this.index--;
     }
 
+    private static final Pattern _P2 = Pattern.compile("^[ \t]*(\\[[xX ]\\])[ ](.+)$");
+
+    // 处理一下第一行，判断支持一下 task list
+    private MdBlock __B_test_task(MdBlock B) {
+        if (null != B.content && B.content.size() > 0) {
+            String line0 = B.content.get(0);
+            Matcher m2 = _P2.matcher(line0);
+            if (m2.find()) {
+                B.isTask = true;
+                B.isChecked = "[ ]".equals(m2.group(1));
+                B.content.set(0, m2.group(2));
+            }
+        }
+        return B;
+    };
+
     private void __B_to_list(Tag tag, MdBlock B) {
+        __B_test_task(B);
         Tag tList = tag.add(B.type.toLowerCase());
+        if (B.isTask) {
+            tList.attrs(".md-task-list");
+        }
         Tag tLi = tList.add("li");
         this.__B_to_html(tLi, B);
         // 循环查找后续的列表项，或者是嵌套
@@ -217,6 +251,7 @@ public class MarkdownDocParser implements NutDocParser {
             // 继续增加
             if (B.type == B2.type && B2.level == B.level) {
                 tLi = tList.add("li");
+                __B_test_task(B2);
                 this.__B_to_html(tLi, B2);
             }
             // 嵌套
