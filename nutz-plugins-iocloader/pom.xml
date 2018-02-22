@@ -37,6 +37,12 @@
 			<email>Bird.Wyatt@gmail.com</email>
 			<url>https://github.com/juqkai</url>
 		</developer>
+		<developer>
+			<id>denghuafeng</id>
+			<name>denghuafeng</name>
+			<email>denghuafeng@gmail.com</email>
+			<url>https://dhf.ink</url>
+		</developer>
 	</developers>
 	<scm>
 		<connection>scm:git:git://github.com/nutzam/nutzmore.git</connection>
