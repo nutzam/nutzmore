@@ -6,6 +6,7 @@ import org.nutz.ioc.impl.PropertiesProxy;
 
 /**
  * 用于注入的多视图
+ * 
  * @author 邓华锋(http://dhf.ink)
  *
  */
@@ -33,5 +34,5 @@ public class MultiViewResover {
 	public PropertiesProxy getConfig() {
 		return config;
 	}
-	
+
 }

@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.lang.Files;
@@ -24,30 +25,6 @@ import org.nutz.mvc.view.AbstractPathView;
  */
 public abstract class AbstractTemplateViewResolver extends AbstractPathView {
 	protected static final Log log = Logs.get();
-	private static final String DEFAULT_ENCODING = "UTF-8";
-	private static final String DEFAULT_CONTENT_TYPE = "text/html";
-	private static final String DEFAULT_PREFIX = "/WEB-INF/template/";
-	private static final String DEFAULT_SUFFIX = ".html";
-	private static final String OBJ = "obj";
-	private static final String REQUEST = "request";
-	private static final String RESPONSE = "response";
-	private static final String SESSION = "session";
-	private static final String APPLICATION = "application";
-	private static final String VIEW_NAME = "viewName";
-	private static final String PATH = "path";
-	private static final String BASE_PATH = "basePath";
-	private static final String SERVLET_EXTENSION = "servletExtension";
-	private static final String SERVLET_EXTENSION_KEY = "servlet.extension";
-	private static final String TPL_DIR = "tplDir";
-	private static final String RESOURCE_DIR = "resource.dir";
-	private static final String RES_PATH = "resPath";
-	private static final String TPL_RES_PATH = "tplResPath";
-	private static final String WEB_INF = "WEB-INF/";
-	private static final String PROPS = "props";
-	private static final String MVCS = "mvcs";
-	private static final String CFG = "cfg";
-	private static final String EVAL_PATH = "evalPath";
-	private static final String DEST = "dest";
 	private PropertiesProxy config;
 	private String prefix;
 	private String suffix;
@@ -74,39 +51,61 @@ public abstract class AbstractTemplateViewResolver extends AbstractPathView {
 		try {
 			if (obj != null && obj instanceof Map) {
 				sourceMap = org.nutz.castor.Castors.me().castTo(obj, Map.class);
-				if (!sourceMap.containsKey(EVAL_PATH) || !sourceMap.containsKey(DEST)) {// 验证必要的key值
+				if (!sourceMap.containsKey(MultiView.EVAL_PATH) || !sourceMap.containsKey(MultiView.DEST)) {// 验证必要的key值
 					sourceMap = null;
 				}
 			}
-		} catch (Exception e1) {
-			// e1.printStackTrace();
+		} catch (Exception e) {
+			throw e;
 		}
+
 		Map<String, Object> sv = new HashMap<String, Object>();
 		Object objOld = sourceMap == null ? obj : sourceMap.get("obj");
-		sv.put(OBJ, objOld);
-		sv.put(REQUEST, req);
-		sv.put(RESPONSE, resp);
-		sv.put(SESSION, Mvcs.getHttpSession());
-		sv.put(APPLICATION, Mvcs.getServletContext());
-		sv.put(VIEW_NAME, this.getClass().getSimpleName());
-		sv.put(PROPS, System.getProperties());// .get("java.version")
-		Map<String, String> msgs = Mvcs.getMessages(req);
-		sv.put(MVCS, msgs);
-		sv.put(CFG, config);
+		sv.put(MultiView.OBJ, objOld);
+		sv.put(MultiView.REQUEST, req);
+		sv.put(MultiView.RESPONSE, resp);
+		HttpSession session = Mvcs.getHttpSession();
+		sv.put(MultiView.SESSION, session);
+		ServletContext application = Mvcs.getServletContext();
+		sv.put(MultiView.APPLICATION, application);
+		sv.put(MultiView.VIEW_NAME, this.getClass().getSimpleName());
+		sv.put(MultiView.PROPS, System.getProperties());// .get("java.version")
+		sv.put(MultiView.MSGS, Mvcs.getMessages(req));// Map<String, String>
+		sv.put(MultiView.CFG, config);
+
 		if (resp != null && Strings.isBlank(resp.getContentType()) && !Strings.isBlank(this.getContentType())) {// resp的contentType优先级高
 			resp.setContentType(this.getContentType() + "; charset=" + this.getCharacterEncoding());// 配置文件设置的contentType
 			resp.setCharacterEncoding(this.getCharacterEncoding());
 		}
-
 		String evalPath = null;
-		if (sourceMap != null && sourceMap.get(DEST) != null && Strings.isBlank(evalPath)) {
-			sv.put(DEST, sourceMap.get(EVAL_PATH).toString());
-			evalPath = sourceMap.get(EVAL_PATH).toString();
+		if (sourceMap != null && sourceMap.get(MultiView.DEST) != null && Strings.isBlank(evalPath)) {
+			sv.put(MultiView.DEST, sourceMap.get(MultiView.EVAL_PATH).toString());
+			evalPath = sourceMap.get(MultiView.EVAL_PATH).toString();
 		} else {
 			evalPath = evalPath(req, obj);
 		}
 		String tplDir = this.getPrefix();// 模板路径
+		// application级别 动态切换模板路径
+		Object viewPrefix = application.getAttribute(MultiView.VIEW_PREFIX);
+		if (viewPrefix != null) {
+			tplDir = viewPrefix.toString();
+		}
+		// session级别 动态切换模板路径
+		viewPrefix = session.getAttribute(MultiView.VIEW_PREFIX);
+		if (viewPrefix != null) {
+			tplDir = viewPrefix.toString();
+		}
 		String ext = this.getSuffix();// 模板文件扩展名
+		// application级别 动态切换模板路径
+		Object viewSuffix = application.getAttribute(MultiView.VIEW_SUFFIX);
+		if (viewSuffix != null) {
+			ext = viewSuffix.toString();
+		}
+		// session级别 动态切换模板后缀
+		viewSuffix = session.getAttribute(MultiView.VIEW_SUFFIX);
+		if (viewSuffix != null) {
+			ext = viewSuffix.toString();
+		}
 
 		if (Strings.isBlank(tplDir)) {
 			tplDir = "";
@@ -128,7 +127,7 @@ public abstract class AbstractTemplateViewResolver extends AbstractPathView {
 
 		String resDir = "";
 		if (config != null) {
-			resDir = config.get(RESOURCE_DIR);
+			resDir = config.get(MultiView.RESOURCE_DIR);
 		}
 
 		String path = req.getContextPath();
@@ -136,31 +135,31 @@ public abstract class AbstractTemplateViewResolver extends AbstractPathView {
 			int serverPort = req.getServerPort();
 			String basePath = req.getScheme() + "://" + req.getServerName() + (serverPort != 80 ? ":" + serverPort : "")
 					+ path + "/";
-			sv.put(BASE_PATH, basePath);
+			sv.put(MultiView.BASE_PATH, basePath);
 		} catch (Exception e) {// 为了测试，而try的，Mock没有ServerPort Scheme ServerName
 			if (Strings.equals("Not implement yet!", e.getMessage())) {
 			}
 		}
 
-		sv.put(PATH, path);
+		sv.put(MultiView.PATH, path);
 
 		String servletExtension = "";
 		if (config != null) {
-			servletExtension = config.get(SERVLET_EXTENSION_KEY);
+			servletExtension = config.get(MultiView.SERVLET_EXTENSION_KEY);
 		}
-		sv.put(SERVLET_EXTENSION, servletExtension);
-		sv.put(TPL_DIR, tplDir);
+		sv.put(MultiView.SERVLET_EXTENSION, servletExtension);
+		sv.put(MultiView.TPL_DIR, tplDir);
 		if (!resDir.startsWith("http")) {// 如果是http开头，说明是CDN静态地址
 			resDir = path + "/" + resDir;
 		}
-		sv.put(RES_PATH, resDir);// 资源路径
-		sv.put(TPL_RES_PATH, resDir + tplDir.replace(WEB_INF, "") + "/");// 模板对应的资源路径
+		sv.put(MultiView.RES_PATH, resDir);// 资源路径
+		sv.put(MultiView.TPL_RES_PATH, resDir + tplDir.replace(MultiView.WEB_INF, "") + "/");// 模板对应的资源路径
 		this.render(req, resp, evalPath, sv);
 	}
 
 	public String getPrefix() {
 		if (Strings.isBlank(prefix)) {
-			return DEFAULT_PREFIX;
+			return MultiView.DEFAULT_PREFIX;
 		}
 		return prefix;
 	}
@@ -171,7 +170,7 @@ public abstract class AbstractTemplateViewResolver extends AbstractPathView {
 
 	public String getSuffix() {
 		if (Strings.isBlank(suffix)) {
-			return DEFAULT_SUFFIX;
+			return MultiView.DEFAULT_SUFFIX;
 		}
 		return suffix;
 	}
@@ -182,7 +181,7 @@ public abstract class AbstractTemplateViewResolver extends AbstractPathView {
 
 	public String getContentType() {
 		if (Strings.isBlank(contentType)) {
-			return DEFAULT_CONTENT_TYPE;
+			return MultiView.DEFAULT_CONTENT_TYPE;
 		}
 		return contentType;
 	}
@@ -225,7 +224,7 @@ public abstract class AbstractTemplateViewResolver extends AbstractPathView {
 
 	public String getCharacterEncoding() {
 		if (Strings.isBlank(this.characterEncoding)) {
-			return DEFAULT_ENCODING;
+			return MultiView.DEFAULT_ENCODING;
 		}
 		return this.characterEncoding;
 	}
