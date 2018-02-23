@@ -122,6 +122,7 @@
 		<module>nutz-plugins-cache</module>
 		<module>nutz-plugins-daocache</module>
 		<module>nutz-plugins-daomapping</module>
+		<module>nutz-plugins-dict</module>
 		<module>nutz-plugins-event</module>
 		<module>nutz-plugins-hotplug</module>
 		<module>nutz-plugins-ip2region</module>
