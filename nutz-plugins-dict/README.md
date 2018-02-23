@@ -121,6 +121,30 @@ public enum JQGridOrder {
 	}
 }
 ```
+枚举让代码可维护性，可读性高
+看以下示例：
+```Java
+String oper="edit";
+if (StringUtils.equals(oper, JQGridOper.add.name())) {
+	//TODO add
+}else if (StringUtils.equals(oper, JQGridOper.del.name())) {
+	//TODO delete
+}else if(StringUtils.equals(oper, JQGridOper.edit.name())) {
+	//TODO update
+}
+```
+
+或 
+```Java
+int oper=1;
+if (oper==JQGridOper.add.value()) {
+	//TODO add
+}else if (oper==JQGridOper.del.value()) {
+	//TODO delete
+}else if(oper==JQGridOper.edit.value()) {
+	//TODO update
+}
+```
 
 执行生成字典代码
 ```Java
@@ -237,6 +261,17 @@ var editableSelect={
 ```
 
 如果要自定义实现字典生成，只需实现SelectProcessor接口，具体方法实现参考GlobalSelectProcessor、JqgridSelectProcessor和EditableSelectProcessor。
+前段使用方法：以globalSelect.js为例,假如globalSelect.js生成的路径在web服务器的项目目录里
+* 首先在页面引用这个js文件
+```HTML
+<script type="text/javascript" src="http://dhf.ink/dict/globalSelect.js"></script>
+```
+
+* 然后js可以这样调用
+```javascript
+var opName=globalSelect["jQGridGroupOP"]["or"];
+console.log(opName);
+```
 
 
 计划：
