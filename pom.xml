@@ -125,6 +125,7 @@
 		<module>nutz-plugins-event</module>
 		<module>nutz-plugins-hotplug</module>
 		<module>nutz-plugins-ip2region</module>
+		<module>nutz-plugins-jqgrid</module>
 		<module>nutz-plugins-jsonrpc</module>
 		<module>nutz-plugins-mock</module>
 		<module>nutz-plugins-multiview</module>
