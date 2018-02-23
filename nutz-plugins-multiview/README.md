@@ -6,19 +6,33 @@
 集合N种模板引擎,可配置性强
 
 ###### 适应nutz 1.r.55以上，以下版本暂时未测试
-#1.65版本更新日志：
-###### 1.增加默认视图设置
-###### 2.增加配置视图扩展属性
-###### 3.增加全局属性文件的可配置功能
 
-#1.65之前版本更新日志：
-###### 1.把所有属性配置文件里的变量及值加载到全局里，例如，在配置文件中配置了CDN地址，想在页面中能调用，默认全局变量是cfg变量，通过cfg调用相应的键值。
-###### 2.支持直接调用视图 AbstractTemplateViewResolver atvr=new org.nutz.plugins.view.JspView("abc.bcd");
-###### 3.代码重构，去除了AbstractUrlBasedView.java和ViewResolver
 针对
 https://github.com/nutzam/nutz/issues/603#issuecomment-35709620  
 上提出的问题，开发了此插件、
 <br/>目的是用于开发博客社交类等程序，这些可能会经常要更换模板，路径写死在代码不合适。
+
+开发此插件有啥优点了,所有配置都可以在配置文件中实现，而不用硬编码：
+
+1.配置视图的路径
+
+2.配置视图扩展名
+
+3.配置默认视图
+
+4.配置默认内容类型
+
+5.配置字符编码
+
+6.其他扩展属性配置
+
+7.配置全局的属性文件
+
+8.可单独配置视图的属性文件
+
+9.支持session和application级别切换模板路径、后缀及引擎功能
+
+
 
 使用步骤：
 
@@ -105,7 +119,66 @@ https://github.com/nutzam/nutz/issues/603#issuecomment-35709620
 ```
 当然要创建对应配置的目录，上面beetl的configPath是指这个视图的配置文件目录，相对于项目根目录来说的，可配置或不配置，分情况而定。 
 
-4.在module的方法里返回相应的视图，当然要创建相应的视图文件，如下：
+4.由于已经设置了默认的视图如果已经设置了的话，以下是配置@Ok情况：
+
+```Java
+@At("/user")
+@IocBean
+public class UserModule {
+	@At
+	@Ok("user.index")
+	public void index() {
+
+	}
+	
+	@At
+	@Ok("user.info")
+	public void info() {
+
+	}
+} 
+```
+默认视图，将会走默认的视图，此例子中走beetl视图，因为上面view.js里配置了defaultView的值为 btl 即此视图的前缀标识。
+默认视图的好处是@Ok里不用再加“视图前缀:”来标识，直接通过配置文件就能改变视图模板引擎。
+
+session和application切换视图示例
+
+```Java
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpSession;
+
+import org.nutz.ioc.loader.annotation.IocBean;
+import org.nutz.mvc.Mvcs;
+import org.nutz.mvc.annotation.At;
+import org.nutz.mvc.annotation.Ok;
+import org.nutz.plugins.view.MultiView;
+
+@IocBean
+public class IndexModule {
+	@At("/session/change")
+	@Ok("index")
+	public void sessioinChange() {
+		HttpSession session = Mvcs.getHttpSession();
+		session.setAttribute(MultiView.DEFAULT_VIEW, "ftl");
+		session.setAttribute(MultiView.VIEW_PREFIX, "/templates/freemarker");
+		session.setAttribute(MultiView.DEFAULT_SUFFIX, ".html");
+	}
+
+	/**
+	 * 
+	 */
+	@At("/application/change")
+	@Ok("index")
+	public void applicationChange() {
+		ServletContext application = Mvcs.getServletContext();
+		application.setAttribute(MultiView.DEFAULT_VIEW, "jsp");
+		application.setAttribute(MultiView.VIEW_PREFIX, "/templates/jsp");
+		application.setAttribute(MultiView.DEFAULT_SUFFIX, ".jsp");
+	}
+}
+```
+
+在module的方法里返回相应的视图，当然要创建相应的视图文件，如下：
 
 ```Java
 @At("/beetl")
@@ -163,28 +236,6 @@ public class JspModule {
 
 访问相应的链接，就会找到相应的视图，
 
-默认的视图如果已经设置了的话，将会是配置@Ok情况：
-
-```Java
-@At("/user")
-@IocBean
-public class UserModule {
-	@At
-	@Ok("user.index")
-	public void index() {
-
-	}
-	
-	@At
-	@Ok("user.info")
-	public void info() {
-
-	}
-} 
-```
-默认视图，将会走默认的视图，此例子中走beetl视图，因为上面view.js里配置了defaultView的值为 btl 即此视图的前缀标识。
-默认视图的好处是@Ok里不用再加“视图前缀:”来标识，直接通过配置文件就能改变视图模板引擎。
-
 注意的地方：
 
 1.如果beetl.properties里设置了RESOURCE.root=WEB-INF ，则view.js配置的beetl视图的路径则在WEB-INF下面。例如
@@ -224,26 +275,6 @@ $loader.reloadable =false
 ```
 
 既这时候的root路径不起作用。
-
-
-开发此插件有啥优点了,所有配置都可以在配置文件中实现，而不用硬编码：
-
-1.配置视图的路径
-
-2.配置视图扩展名
-
-3.配置默认视图
-
-4.配置默认内容类型
-
-5.配置字符编码
-
-6.其他扩展属性配置
-
-7.配置全局的属性文件
-
-8.可单独配置视图的属性文件
-
 
 插件中包含了对beetl、freemarker、JetTemplate和jsp的视图实现，其实把这些代码抽离出来，按需使用可让插件体积更小。
 
@@ -372,6 +403,8 @@ vr.render(req, resp, evalPath, sv);
 	}
 
 ```
+注意：以上方式已经废弃，不起作用，请使用以下新方式
+
 新：
 ```javascript
 multiViewResover : {
@@ -424,3 +457,20 @@ resource.dir  资源根路径 对应页面变量resPath,此路径可以设置为
 ###### 2.支持Ajax视图，此需要特殊处理。例如，前段Ajax请求，需要处理获取的数据、本次请求状态、提示信息等。
 
 ###### 3.增加对pdf、velocity、thymeleaf、captcha视图支持，增强Freemarker视图可配置性。 
+
+
+# 更新日志：
+#1.66版本：
+###### 1.增加session和application级别切换模板路径、后缀及引擎功能
+###### 2.增加MultiViewResover获取方式的灵活性
+###### 3.去除约定的获取MultiViewResover和conf的方式
+
+#1.65版本：
+###### 1.增加默认视图设置
+###### 2.增加配置视图扩展属性
+###### 3.增加全局属性文件的可配置功能
+
+#1.65之前版本：
+###### 1.把所有属性配置文件里的变量及值加载到全局里，例如，在配置文件中配置了CDN地址，想在页面中能调用，默认全局变量是cfg变量，通过cfg调用相应的键值。
+###### 2.支持直接调用视图 AbstractTemplateViewResolver atvr=new org.nutz.plugins.view.JspView("abc.bcd");
+###### 3.代码重构，去除了AbstractUrlBasedView.java和ViewResolver
