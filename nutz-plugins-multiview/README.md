@@ -7,45 +7,29 @@
 
 ###### 适应nutz 1.r.55以上，以下版本暂时未测试
 
-针对
-https://github.com/nutzam/nutz/issues/603#issuecomment-35709620  
-上提出的问题，开发了此插件、
+针对 [nutz 没有可以配置视图前缀功能，即配置模板路径](https://github.com/nutzam/nutz/issues/603#issuecomment-35709620) 此问题，开发了此插件。
 <br/>目的是用于开发博客社交类等程序，这些可能会经常要更换模板，路径写死在代码不合适。
 
 开发此插件有啥优点了,所有配置都可以在配置文件中实现，而不用硬编码：
-
-1.配置视图的路径
-
-2.配置视图扩展名
-
-3.配置默认视图
-
-4.配置默认内容类型
-
-5.配置字符编码
-
-6.其他扩展属性配置
-
-7.配置全局的属性文件
-
-8.可单独配置视图的属性文件
-
-9.支持session和application级别切换模板路径、后缀及引擎功能
-
-
+-------------------------
+* 配置视图的路径
+* 配置视图扩展名
+* 配置默认视图
+* 配置默认内容类型
+* 配置字符编码
+* 其他扩展属性配置
+* 配置全局的属性文件
+* 可单独配置视图的属性文件
+* 支持session和application级别切换模板路径、后缀及引擎功能
 
 使用步骤：
-
- 1.引用nutz-plugins-multiview.jar插件及相关视图的引用包，在pom.xml里有注释引用。
-
- 2.配置MainModule的视图为ResourceBundleViewResolver 
-
+-------------------------
+* 引用nutz-plugins-multiview.jar插件及相关视图的引用包，在pom.xml里有注释引用。
+* 配置MainModule的视图为ResourceBundleViewResolver 
 ```Java
 @Views({ResourceBundleViewResolver.class})
 ```
-
-3.配置json文件，创建view.js文件，内容如下：
-
+* 配置json文件，创建view.js文件，内容如下：
 ```javascript
  var ioc = {
 	conf : {//默认约定的视图配置文件conf
@@ -119,8 +103,10 @@ https://github.com/nutzam/nutz/issues/603#issuecomment-35709620
 ```
 当然要创建对应配置的目录，上面beetl的configPath是指这个视图的配置文件目录，相对于项目根目录来说的，可配置或不配置，分情况而定。 
 
-4.由于已经设置了默认的视图如果已经设置了的话，以下是配置@Ok情况：
+* 在module中使用情况如下
 
+默认视图使用示例
+-------------------------
 ```Java
 @At("/user")
 @IocBean
@@ -142,7 +128,7 @@ public class UserModule {
 默认视图的好处是@Ok里不用再加“视图前缀:”来标识，直接通过配置文件就能改变视图模板引擎。
 
 session和application切换视图示例
-
+-------------------------
 ```Java
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
@@ -178,7 +164,8 @@ public class IndexModule {
 }
 ```
 
-在module的方法里返回相应的视图，当然要创建相应的视图文件，如下：
+其他视图使用
+-------------------------
 
 ```Java
 @At("/beetl")
@@ -344,27 +331,20 @@ public class BeetlView extends AbstractTemplateViewResolver {
 ```
 <br/>注意上面的getConfigPath()方法的代码，是为了实现beetl放在公共的lib目录获取不到beetl配置文件的问题而补救的一个解决方案，configPath是父类AbstractTemplateViewResolver 的属性,可在ioc配置文件中配置。 
 <br/>init方法只执行一次，一般用于加载视图的配置相关的代码，且某些对象只需实例化一次，后面就不用实例化。
-<br/>render方法的sharedVars是全局的变量，有这些：
-<br/>
-path 项目根路径，
+<br/>render方法的sharedVars是全局的变量。
 
-完整的项目连接路径basePath，
-
-请求连接的后缀servletExtension，
-
-模板所在目录tplDir,
-
-资源根路径resPath，
-
-模板对应的资源路径tplResPath，
-
-当前系统java边聊props，
-
-国际语言mvcs，
-
-所有配置文件信息cfg，
-
-还有个viewName变量，用于显示使用的模板视图的名称。
+内置变量
+-------------------------
+* path 项目根路径
+* 完整的项目连接路径basePath
+* 请求连接的后缀servletExtension
+* 模板所在目录tplDir
+* 资源根路径resPath
+* 模板对应的资源路径tplResPath
+* 当前系统环境props
+* 国际语言msgs
+* 所有配置文件信息cfg
+* 还有个viewName变量，用于显示使用的模板视图的名称。
 
 这几个变量对于做博客论坛等经常更换模板的程序很有用。 
 
@@ -451,26 +431,22 @@ resource.dir  资源根路径 对应页面变量resPath,此路径可以设置为
 
 
 # 功能改进计划：
-
 ###### 1.支持全局变量的添加，例如，把一些字典的类加载到全局里，供页面调用。
-
 ###### 2.支持Ajax视图，此需要特殊处理。例如，前段Ajax请求，需要处理获取的数据、本次请求状态、提示信息等。
-
 ###### 3.增加对pdf、velocity、thymeleaf、captcha视图支持，增强Freemarker视图可配置性。 
 
-
 # 更新日志：
-#1.66版本：
+# 1.66版本：
 ###### 1.增加session和application级别切换模板路径、后缀及引擎功能
 ###### 2.增加MultiViewResover获取方式的灵活性
 ###### 3.去除约定的获取MultiViewResover和conf的方式
 
-#1.65版本：
+# 1.65版本：
 ###### 1.增加默认视图设置
 ###### 2.增加配置视图扩展属性
 ###### 3.增加全局属性文件的可配置功能
 
-#1.65之前版本：
+# 1.65之前版本：
 ###### 1.把所有属性配置文件里的变量及值加载到全局里，例如，在配置文件中配置了CDN地址，想在页面中能调用，默认全局变量是cfg变量，通过cfg调用相应的键值。
 ###### 2.支持直接调用视图 AbstractTemplateViewResolver atvr=new org.nutz.plugins.view.JspView("abc.bcd");
 ###### 3.代码重构，去除了AbstractUrlBasedView.java和ViewResolver
