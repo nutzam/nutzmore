@@ -4,13 +4,19 @@
 ==================================
 
 前段jqGrid提交到后端通用处理方法：简单、易用
+示例IocBy配置
+----------------------------------------------
+```Java
+@IocBy(type=ComboIocProvider.class, args={"*js", "ioc/","*anno", "ink.dhf","org.nutz.plugins.jqgrid"})
+```
+										   
 前段jqGrid配置：
 ```javascript
 jQuery(grid_selector).jqGrid({
-			url:"${base}/user/list",
-			datatype: "json",
-			......省略
-			editurl: "${basePath}/user/oper",//nothing is saved
+	url:"${base}/user/bean/list",//${base}/user/tname/list
+	datatype: "json",
+	......省略
+	editurl: "${basePath}/user/oper",//nothing is saved
 });
 ```
 
@@ -33,10 +39,10 @@ public class UserModule {
 	@Inject
 	JQGridService jQGridService;
 
-	@At
+	@At("/bean/list")
 	@Fail(">>:/index")
 	@Ok("json")
-	public JQGridResult list(Integer userId, @Param("..") JQGridPage jqGridPage) {
+	public JQGridResult beanList(Integer userId, @Param("..") JQGridPage jqGridPage) {
 		Cnd cnd = Cnd.where("1", "=", 1);
 		if(userId!=null&&userId>0) {
 			cnd.and("userId", "=", userId);
@@ -46,10 +52,10 @@ public class UserModule {
 	}
 
 
-	@At
+	@At("/tname/list")
 	@Fail(">>:/index")
 	@Ok("json")
-	public JQGridResult list(Integer userId, @Param("..") JQGridPage jqGridPage) {
+	public JQGridResult tableNamelist(Integer userId, @Param("..") JQGridPage jqGridPage) {
 		Cnd cnd = Cnd.where("1", "=", 1);
 		if(userId!=null&&userId>0) {
 			cnd.and("userId", "=", userId);
