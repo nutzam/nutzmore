@@ -19,9 +19,10 @@ ioc.main.module=
 ioc.by=*js, ioc/dao.js, *anno, ink.dhf, org.nutz.integration.quartz,org.nutz.plugins.ioc.loader
 #需要在ioc初始化后，单独调用的类以","分割
 ioc.loader.classes=org.nutz.integration.quartz.NutQuartzCronJobFactory,org.nutz.plugins.ioc.loader.TestIocBean1
-#ioc加载后初始化动作
+#ioc加载后初始化动作 前后顺序
 ioc.setup.first=
 ioc.setup.last=
+#ioc初始化后，后加入的IocLoader  以“,”分割
 ioc.combo.loader=org.nutz.plugins.ioc.loader.dao.DaoIocLoader
 ```
 
@@ -34,8 +35,9 @@ System.out.println(ThreadIocLoader.getIoc().get(PropertiesProxy.class, "config")
 DaoIocLoader 默认是从当前ioc的dao实例的数据源中 t_iocbean 表 取出数据  bean的名称对应的字段名(默认是nm),
   配置对应在的字段名(默认是val). 
 
- 可在test里的db配置文件，指定数据库，创建默认的表字段，添加上测试数据，运行以上代码来进行测试。
- 例如以上的测试数据是：
+ 可在test里的db配置文件，指定数据库，创建默认的表字段，添加上测试数据，运行以上代码来进行测试,最终获取的是db配置文件里的db.url的值
+
+ 以上的测试数据是：
  config | {
 		type : "org.nutz.ioc.impl.PropertiesProxy",
 		fields : {
