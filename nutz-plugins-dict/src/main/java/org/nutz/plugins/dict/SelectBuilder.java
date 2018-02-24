@@ -101,7 +101,7 @@ public class SelectBuilder {
 			selectProcessorCopy = b.build();
 		}
 		// 全局 用于生成文件
-		Map<String, Object> globalDictVal = new HashMap<>();
+		Map<String, Object> globalDictVal = new HashMap<String, Object>();
 		for (String pk : this.packages) {
 			for (Class<?> clazz : Scans.me().scanPackage(pk)) {
 				Select select = clazz.getAnnotation(Select.class);
