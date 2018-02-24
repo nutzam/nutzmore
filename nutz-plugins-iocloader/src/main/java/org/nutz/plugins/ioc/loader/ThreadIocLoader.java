@@ -17,6 +17,7 @@ import org.nutz.plugins.ioc.loader.chain.IocSetupBuilder;
 
 /**
  * 定时任务、线程环境下ioc加载
+ * 
  * @author 邓华锋 http://dhf.ink
  *
  */
@@ -31,10 +32,12 @@ public final class ThreadIocLoader {
 	private static final String LOADER_CLASSES = "ioc.loader.classes";
 	private static final String SETUP_FIRST = "ioc.setup.first";
 	private static final String SETUP_LAST = "ioc.setup.last";
+	private static final String IOC_COMBO_LOADER = "ioc.combo.loader";
 	private static final String PROPERTIES_NAME = "comboIocLoader.properties";
 	private static final String SEPARATOR_CHAR = ",";
 	private static PropertiesProxy config;
 	private static IocSetup iocSetupCopy;
+	public static ComboIocLoader comboIocLoader;
 
 	public static Ioc getMvcFilterIoc() {
 		if (ioc == null) {
@@ -71,6 +74,7 @@ public final class ThreadIocLoader {
 				} catch (Exception e) {
 					log.error("ioc实例失败", e);
 				}
+
 			}
 		}
 		return ioc;
@@ -91,13 +95,22 @@ public final class ThreadIocLoader {
 	 * 用户自定义初始化过程, 在ioc容器初始化完成后及本对象的属性注入完成后执行
 	 */
 	public static void _init() throws Exception {
+		// 添加各种组合IocLoader
+		String iocComboLoader = config.get(IOC_COMBO_LOADER);
+		if (Strings.isNotBlank(iocComboLoader)) {
+			String[] iocComboLoaders = Strings.splitIgnoreBlank(iocComboLoader, SEPARATOR_CHAR);
+			for (String icl : iocComboLoaders) {
+				IocLoader loader = (IocLoader) Class.forName(icl).newInstance();
+				comboIocLoader.addLoader(loader);
+			}
+		}
+
 		// 添加执行链
 		if (iocSetupCopy == null) {
 			final IocSetupBuilder b = IocSetupBuilder.create();
 			String iocSetupFirstStr = config.get(SETUP_FIRST);// 从comboIocLoader配置文件中加载复合配置
-			String[] iocSetupFirsts = null;
 			if (Strings.isNotBlank(iocSetupFirstStr)) {
-				iocSetupFirsts = Strings.splitIgnoreBlank(iocSetupFirstStr, SEPARATOR_CHAR);
+				String[] iocSetupFirsts = Strings.splitIgnoreBlank(iocSetupFirstStr, SEPARATOR_CHAR);
 				for (String isf : iocSetupFirsts) {
 					IocSetup is = (IocSetup) ioc.get(Class.forName(isf));
 					b.addFirst(is);
@@ -105,9 +118,8 @@ public final class ThreadIocLoader {
 			}
 
 			String iocSetupLastStr = config.get(SETUP_LAST);// 从comboIocLoader配置文件中加载复合配置
-			String[] iocSetupLasts = null;
 			if (Strings.isNotBlank(iocSetupLastStr)) {
-				iocSetupLasts = Strings.splitIgnoreBlank(iocSetupLastStr, SEPARATOR_CHAR);
+				String[] iocSetupLasts = Strings.splitIgnoreBlank(iocSetupLastStr, SEPARATOR_CHAR);
 				for (String isl : iocSetupLasts) {
 					IocSetup is = (IocSetup) ioc.get(Class.forName(isl));
 					b.addLast(is);
@@ -129,7 +141,8 @@ public final class ThreadIocLoader {
 	 * 获取IocLoader,默认是ComboIocLoader实例, 子类可以自定义
 	 */
 	public static IocLoader getIocLoader() throws Exception {
-		return new ComboIocLoader(getIocConfigure());
+		comboIocLoader = new ComboIocLoader(getIocConfigure());
+		return comboIocLoader;
 	}
 
 	/**

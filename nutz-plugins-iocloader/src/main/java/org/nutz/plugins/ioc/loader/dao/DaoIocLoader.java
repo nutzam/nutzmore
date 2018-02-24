@@ -12,7 +12,7 @@ import org.nutz.ioc.loader.json.JsonLoader;
 import org.nutz.ioc.meta.IocObject;
 import org.nutz.json.Json;
 import org.nutz.lang.Lang;
-import org.nutz.mvc.Mvcs;
+import org.nutz.plugins.ioc.loader.ThreadIocLoader;
 
 /**
  * <p>从数据库加载ioc配置, 需要4个参数,
@@ -33,7 +33,12 @@ public class DaoIocLoader extends JsonLoader {
     protected String nameField = "nm";
     protected String valueField = "val";
     protected Dao dao;
-    public DaoIocLoader(String ... args) {
+    
+    public DaoIocLoader() {
+		super();
+	}
+
+	public DaoIocLoader(String ... args) {
         if (args.length > 0) {
             name = args[0];
             if (args.length > 1) {
@@ -56,10 +61,10 @@ public class DaoIocLoader extends JsonLoader {
             throw new ObjectLoadException("Object '" + name + "' without define!");
         Map<String, Object> map = Json.fromJsonAsMap(Object.class, re.getString(valueField));
         try {
-            map.put(name, map);
+        	getMap().put(name, map);
             return super.load(loading, name);
         } catch (Throwable e) {
-            map.remove(name);
+        	getMap().remove(name);
             throw Lang.wrapThrow(e);
         }
     }
@@ -80,8 +85,8 @@ public class DaoIocLoader extends JsonLoader {
     }
     
     protected Dao dao() {
-        if (dao == null)
-            dao = Mvcs.getIoc().get(Dao.class, name);
+        if (dao == null)//dao = Mvcs.getIoc().get(Dao.class, name);
+            dao = ThreadIocLoader.getIoc().get(Dao.class, name);
         return dao;
     }
 }
