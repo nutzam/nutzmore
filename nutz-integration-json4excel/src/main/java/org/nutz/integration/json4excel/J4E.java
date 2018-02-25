@@ -132,13 +132,14 @@ public class J4E {
                 }
             }
         }
-        int rnum = j4eConf.getPassRow();
+        int passRow = j4eConf.getPassRow();
+        int passColumn = j4eConf.getPassColumn();
         int cindex = 0;
         if (j4eConf.isPassHead()) {
-            rnum++;
+            passRow++;
         } else {
             // 写入head
-            Row rhead = sheet.createRow(rnum++);
+            Row rhead = sheet.createRow(passRow++);
             for (J4EColumn jcol : j4eConf.getColumns()) {
                 if (jcol.isIgnore()) {
                     continue;
@@ -157,12 +158,12 @@ public class J4E {
             if (log.isDebugEnabled()) {
                 log.debugf("add Row : %s", Json.toJson(dval, JsonFormat.compact()));
             }
-            int crow = rnum++;
+            int crow = passRow++;
             Row row = sheet.getRow(crow);
             if (row == null) {
                 row = sheet.createRow(crow);
             }
-            cindex = 0;
+            cindex = passColumn;
             for (J4EColumn jcol : j4eConf.getColumns()) {
                 if (jcol.isIgnore()) {
                     continue;
@@ -206,6 +207,10 @@ public class J4E {
                     }
                 }
             }
+        }
+
+        if (out == null) {
+            return true;
         }
         return saveExcel(out, wb);
     }
@@ -541,7 +546,7 @@ public class J4E {
      * @param wb
      * @return
      */
-    private static boolean saveExcel(OutputStream out, Workbook wb) {
+    public static boolean saveExcel(OutputStream out, Workbook wb) {
         try {
             wb.write(out);
             return true;
