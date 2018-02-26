@@ -8,6 +8,7 @@ import org.nutz.dao.Dao;
 import org.nutz.dao.entity.Record;
 import org.nutz.ioc.IocLoading;
 import org.nutz.ioc.ObjectLoadException;
+import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.ioc.loader.json.JsonLoader;
 import org.nutz.ioc.meta.IocObject;
 import org.nutz.json.Json;
@@ -24,18 +25,28 @@ import org.nutz.plugins.ioc.loader.ThreadIocLoader;
  * select val from t_iocbean where nm="mqtt"
  * </code>
  * @author wendal(wendal1985@gmail.com)
- *
+ * @rewriter 邓华锋 http://dhf.ink
  */
 public class DaoIocLoader extends JsonLoader {
-
+	private static final String IOC_DAO_NAME="ioc.dao.name";
+	private static final String IOC_TABLE="ioc.table";
+	private static final String IOC_NAME_FIELD="ioc.name.field";
+	private static final String IOC_VALUE_FIELD="ioc.value.field";
+	private static final String PROPERTIES_NAME = "daoIocLoader.properties";
     protected String name = "dao";
     protected String table = "t_iocbean";
     protected String nameField = "nm";
     protected String valueField = "val";
+    		
     protected Dao dao;
     
     public DaoIocLoader() {
 		super();
+		PropertiesProxy config = new PropertiesProxy(PROPERTIES_NAME);
+		name=config.get(IOC_DAO_NAME, name);
+		table=config.get(IOC_TABLE, table);
+		nameField=config.get(IOC_NAME_FIELD, nameField);
+		valueField=config.get(IOC_VALUE_FIELD, valueField);
 	}
 
 	public DaoIocLoader(String ... args) {
