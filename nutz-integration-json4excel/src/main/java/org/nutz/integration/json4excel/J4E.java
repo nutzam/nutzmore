@@ -382,7 +382,13 @@ public class J4E {
                                            jcol.getColumnIndex()));
                 }
                 String cVal = (null == cell ? "" : cellValue(cell, jcol));
-                mc.setValue(rVal, jfield, cVal);
+                if (jcol.getFromExcelFun() != null) {
+                    J4ECellFromExcel cellFun = jcol.getFromExcelFun();
+                    Object setVal = cellFun.fromExcel(cVal);
+                    mc.setValue(rVal, jfield, setVal);
+                } else {
+                    mc.setValue(rVal, jfield, cVal);
+                }
             }
         }
         return rVal;
@@ -397,7 +403,7 @@ public class J4E {
             colType = J4EColumnType.STRING;
         }
         try {
-            @SuppressWarnings({"deprecation"}) // 3.1.5之后将可直接调用c.getCellType返回枚举
+            // 3.1.5之后将可直接调用c.getCellType返回枚举
             CellType cType = c.getCellTypeEnum();
             switch (cType) {
             case NUMERIC: // 数字
