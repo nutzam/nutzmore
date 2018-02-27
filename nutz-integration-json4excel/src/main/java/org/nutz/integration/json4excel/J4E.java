@@ -265,6 +265,8 @@ public class J4E {
         int passRow = j4eConf.getPassRow();
         int passColumn = j4eConf.getPassColumn();
         int passContentRow = j4eConf.getPassContentRow();
+        J4EEmptyRow<T> emptyRowChecker = (J4EEmptyRow<T>) j4eConf.getPassEmptyRow();
+        boolean needCheckEmptyRow = emptyRowChecker != null;
         int currRow = 0;
         int currColumn = 0;
         boolean firstRow = true;
@@ -339,7 +341,13 @@ public class J4E {
                     j4eConf.getEachModify().doEach(rVal, row, j4eConf.getColumns());
                 }
                 if (!j4eConf.isNoReturn()) {
-                    dataList.add(rVal);
+                    if (needCheckEmptyRow) {
+                        if (!emptyRowChecker.isEmpty(rVal)) {
+                            dataList.add(rVal);
+                        }
+                    } else {
+                        dataList.add(rVal);
+                    }
                 }
             }
             currRow++;

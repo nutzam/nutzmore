@@ -5,6 +5,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.nutz.integration.json4excel.J4EEmptyRow;
+import org.nutz.integration.json4excel.J4EEmptyRowImpl;
+
 /**
  * 额外的配置
  * 
@@ -22,4 +25,6 @@ public @interface J4EExt {
     int passColumn() default 0;;
 
     boolean passHead() default false;
+
+    Class<? extends J4EEmptyRow<?>> passEmptyRow() default J4EEmptyRowImpl.class;
 }

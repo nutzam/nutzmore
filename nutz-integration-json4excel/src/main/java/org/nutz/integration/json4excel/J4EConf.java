@@ -40,6 +40,9 @@ public class J4EConf {
     // 跳过标头
     private boolean passHead;
 
+    // 跳过空行检查
+    private J4EEmptyRow passEmptyRow;
+
     // sheet中对应的列
     private List<J4EColumn> columns;
 
@@ -175,6 +178,15 @@ public class J4EConf {
         this.eachModify = eachModify;
     }
 
+    public J4EEmptyRow<?> getPassEmptyRow() {
+        return passEmptyRow;
+    }
+
+    public void setPassEmptyRow(Class<? extends J4EEmptyRow> cellFun) {
+        Mirror<? extends J4EEmptyRow> mc = Mirror.me(cellFun);
+        passEmptyRow = mc.born();
+    }
+
     public static J4EConf from(Class<?> clz) {
         J4EConf jc = new J4EConf();
         // Ext
@@ -184,6 +196,10 @@ public class J4EConf {
             jc.passColumn = ecnf.passColumn();
             jc.passHead = ecnf.passHead();
             jc.passContentRow = ecnf.passContentRow();
+            Class<? extends J4EEmptyRow<?>> perow = ecnf.passEmptyRow();
+            if (!perow.isAssignableFrom(J4EEmptyRowImpl.class)) {
+                jc.setPassEmptyRow(perow);
+            }
         }
         // sheet
         String sheetName = null;
