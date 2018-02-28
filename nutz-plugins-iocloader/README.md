@@ -46,8 +46,9 @@ ioc.value.field=val
  可在test里的db配置文件，指定数据库，创建默认的表字段，添加上测试数据，运行以上代码来进行测试,最终获取的是db配置文件里的db.url的值
 
 
- 以上的测试数据是：
- nm     | val
+ 以上的测试数据nm和val字段是：
+
+
  config | {
 		type : "org.nutz.ioc.impl.PropertiesProxy",
 		fields : {
