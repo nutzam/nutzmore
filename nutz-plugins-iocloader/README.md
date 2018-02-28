@@ -19,7 +19,7 @@ ioc.main.module=
 ioc.by=*js, ioc/dao.js, *anno, ink.dhf, org.nutz.integration.quartz,org.nutz.plugins.ioc.loader
 #需要在ioc初始化后，单独调用的类以","分割
 ioc.loader.classes=org.nutz.integration.quartz.NutQuartzCronJobFactory,org.nutz.plugins.ioc.loader.TestIocBean1
-#ioc加载后初始化动作 前后顺序
+#ioc加载后初始化动作 前后顺序  用户可以自定义实现org.nutz.plugins.ioc.loader.chain.IocSetup 接口  类似于mvc环境下的org.nutz.mvc.Setup接口  只不过参数改成ioc
 ioc.setup.first=
 ioc.setup.last=
 #ioc初始化后，后加入的IocLoader  以“,”分割
