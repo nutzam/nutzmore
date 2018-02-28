@@ -33,11 +33,21 @@ System.out.println(ThreadIocLoader.getIoc().get(PropertiesProxy.class, "config")
 ```
 
 DaoIocLoader 默认是从当前ioc的dao实例的数据源中 t_iocbean 表 取出数据  bean的名称对应的字段名(默认是nm),
-  配置对应在的字段名(默认是val). 
+  配置对应在的字段名(默认是val). 现在可通过配置文件daoIocLoader.properties来配置。
+
+```Shell
+ioc.dao.name=dao
+ioc.table=t_iocbean
+ioc.name.field=nm
+ioc.value.field=val
+```
+
 
  可在test里的db配置文件，指定数据库，创建默认的表字段，添加上测试数据，运行以上代码来进行测试,最终获取的是db配置文件里的db.url的值
 
+
  以上的测试数据是：
+ nm     | val
  config | {
 		type : "org.nutz.ioc.impl.PropertiesProxy",
 		fields : {
