@@ -64,6 +64,8 @@ public class MyWebsocket extends AbstractWsEndpoint {
 }
 ```
 
+**特别提醒: 已知限制, Endpoint类不能使用@Aop或者aop相关的注解(如@Async/@SLog)**
+
 ### 页面端js示例
 
 假设是jsp页面, 其中的base是项目的Context Path, home是房间的名称
