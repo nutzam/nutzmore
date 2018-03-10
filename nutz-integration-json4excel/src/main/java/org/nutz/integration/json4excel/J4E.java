@@ -265,12 +265,20 @@ public class J4E {
         int passRow = j4eConf.getPassRow();
         int passColumn = j4eConf.getPassColumn();
         int passContentRow = j4eConf.getPassContentRow();
+        long maxRead = j4eConf.getMaxRead();
         J4EEmptyRow<T> emptyRowChecker = (J4EEmptyRow<T>) j4eConf.getPassEmptyRow();
         boolean needCheckEmptyRow = emptyRowChecker != null;
         int currRow = 0;
         int currColumn = 0;
         boolean firstRow = true;
+        long readNum = 0;
         while (rlist.hasNext()) {
+            // 最大值
+            if (maxRead > 0) {
+                if (readNum >= maxRead) {
+                    break;
+                }
+            }
             Row row = rlist.next();
             if (currRow >= passRow) {
                 currColumn = 0;
@@ -333,6 +341,8 @@ public class J4E {
                     passContentRow--;
                     continue;
                 }
+
+                readNum++;
                 // 开始读数据
                 T rVal = rowValue(row, j4eConf, mc);
                 if (null != j4eConf.getEachPrepare()) {

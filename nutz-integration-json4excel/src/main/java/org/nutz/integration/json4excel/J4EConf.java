@@ -40,6 +40,12 @@ public class J4EConf {
     // 跳过标头
     private boolean passHead;
 
+    // 最大写入行数
+    private long maxWrite;
+
+    // 最大读取行数
+    private long maxRead;
+
     // 跳过空行检查
     private J4EEmptyRow passEmptyRow;
 
@@ -187,6 +193,22 @@ public class J4EConf {
         passEmptyRow = mc.born();
     }
 
+    public long getMaxWrite() {
+        return maxWrite;
+    }
+
+    public void setMaxWrite(long maxWrite) {
+        this.maxWrite = maxWrite;
+    }
+
+    public long getMaxRead() {
+        return maxRead;
+    }
+
+    public void setMaxRead(long maxRead) {
+        this.maxRead = maxRead;
+    }
+
     public static J4EConf from(Class<?> clz) {
         J4EConf jc = new J4EConf();
         // Ext
@@ -196,6 +218,8 @@ public class J4EConf {
             jc.passColumn = ecnf.passColumn();
             jc.passHead = ecnf.passHead();
             jc.passContentRow = ecnf.passContentRow();
+            jc.maxRead = ecnf.maxRead();
+            jc.maxWrite = ecnf.maxWrite();
             Class<? extends J4EEmptyRow<?>> perow = ecnf.passEmptyRow();
             if (!perow.isAssignableFrom(J4EEmptyRowImpl.class)) {
                 jc.setPassEmptyRow(perow);
