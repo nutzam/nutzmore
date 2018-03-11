@@ -247,6 +247,9 @@ public class J4EConf {
             if (define != null) {
                 jcol.setColumnType(define.type());
                 jcol.setPrecision(define.precision());
+                if (define.columnIndex() > -1) {
+                    jcol.setColumnIndex(define.columnIndex());
+                }
             }
             J4EIgnore ignore = cf.getAnnotation(J4EIgnore.class);
             if (ignore != null) {

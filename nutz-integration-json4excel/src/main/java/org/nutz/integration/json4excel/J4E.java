@@ -263,8 +263,8 @@ public class J4E {
         List<T> dataList = j4eConf.isNoReturn() ? null : new ArrayList<T>();
         Iterator<Row> rlist = sheet.rowIterator();
         int passRow = j4eConf.getPassRow();
-        int passColumn = j4eConf.getPassColumn();
         int passContentRow = j4eConf.getPassContentRow();
+        boolean passHead = j4eConf.isPassHead();
         long maxRead = j4eConf.getMaxRead();
         J4EEmptyRow<T> emptyRowChecker = (J4EEmptyRow<T>) j4eConf.getPassEmptyRow();
         boolean needCheckEmptyRow = emptyRowChecker != null;
@@ -283,29 +283,33 @@ public class J4E {
             if (currRow >= passRow) {
                 currColumn = 0;
                 if (firstRow) {
-                    // TODO passColumn的测试
-                    // 确定column的index
-                    Iterator<Cell> clist = row.cellIterator();
-                    int cindex = 0;
-                    Map<String, Integer> headIndexMap = new HashMap<String, Integer>();
-                    while (clist.hasNext()) {
-                        Cell chead = clist.next();
-                        headIndexMap.put(cellValue(chead, null), cindex++);
+                    if (!passHead) {
+                        // 确定column的index
+                        Iterator<Cell> clist = row.cellIterator();
+                        int cindex = 0;
+                        Map<String, Integer> headIndexMap = new HashMap<String, Integer>();
+                        while (clist.hasNext()) {
+                            Cell chead = clist.next();
+                            headIndexMap.put(cellValue(chead, null), cindex++);
+                        }
+                        for (J4EColumn jcol : j4eConf.getColumns()) {
+                            if (null != headIndexMap.get(jcol.getColumnName())) {
+                                // by columnName
+                                jcol.setColumnIndex(headIndexMap.get(jcol.getColumnName()));
+                            } else if (null != headIndexMap.get(jcol.getFieldName())) {
+                                // by field
+                                jcol.setColumnIndex(headIndexMap.get(jcol.getFieldName()));
+                            } else if (null != jcol.getColumnIndex()
+                                       && jcol.getColumnIndex() >= 0) {
+                                // 已经设置过的index ??? 这个提醒一下
+                                log.warnf("J4EColumn has already set index[%d], but not sure It is right",
+                                          jcol.getColumnIndex());
+                            } else {
+                                jcol.setColumnIndex(null);
+                            }
+                        }
                     }
                     for (J4EColumn jcol : j4eConf.getColumns()) {
-                        if (null != headIndexMap.get(jcol.getColumnName())) {
-                            // by columnName
-                            jcol.setColumnIndex(headIndexMap.get(jcol.getColumnName()));
-                        } else if (null != headIndexMap.get(jcol.getFieldName())) {
-                            // by field
-                            jcol.setColumnIndex(headIndexMap.get(jcol.getFieldName()));
-                        } else if (null != jcol.getColumnIndex() && jcol.getColumnIndex() >= 0) {
-                            // 已经设置过的index ??? 这个提醒一下
-                            log.warnf("J4EColumn has already set index[%d], but not sure It is right",
-                                      jcol.getColumnIndex());
-                        } else {
-                            jcol.setColumnIndex(null);
-                        }
                         // 查找field
                         if (jcol.getColumnIndex() != null && jcol.getColumnIndex() >= 0) {
                             try {
@@ -393,7 +397,7 @@ public class J4E {
         for (J4EColumn jcol : j4eConf.getColumns()) {
             Field jfield = jcol.getField();
             if (null != jfield) {
-                Cell cell = row.getCell(jcol.getColumnIndex());
+                Cell cell = row.getCell(jcol.getColumnIndex() + j4eConf.getPassColumn());
                 if (null == cell) {
                     log.warn(String.format("cell [%d, %d] has null, so value is ''",
                                            row.getRowNum(),

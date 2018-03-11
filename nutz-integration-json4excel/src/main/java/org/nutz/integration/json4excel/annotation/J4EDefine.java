@@ -21,4 +21,6 @@ public @interface J4EDefine {
 
     int precision() default 0;
 
+    int columnIndex() default -1;
+
 }

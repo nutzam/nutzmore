@@ -157,22 +157,32 @@ public class IssueRun extends TestUtil {
         econf.setPassColumn(0).setPassRow(1).setMaxRead(3); // 只读3行数据
         List<I91Bean> dlist01 = J4E.fromSheet(sheet1, I91Bean.class, econf, false);
         assertEquals(3, dlist01.size());
-        assertEquals("电耗（度）", dlist01.get(0).name);
+        assertEquals("我是上面1", dlist01.get(0).name);
 
         // 第一排右边
         econf.setPassColumn(5).setPassRow(1).setMaxRead(2); // 只读2行数据
         List<I91Bean> dlist02 = J4E.fromSheet(sheet1, I91Bean.class, econf, false);
         assertEquals(2, dlist02.size());
-        assertEquals("新水耗（kg）", dlist02.get(1).name);
+        assertEquals("我是右边的2", dlist02.get(1).name);
 
-        // 第二排同上
+        // 第二排左边
+        econf.setPassColumn(0).setPassRow(9).setMaxRead(3); // 只读3行数据
+        List<I91Bean> dlist03 = J4E.fromSheet(sheet1, I91Bean.class, econf, false);
+        assertEquals(3, dlist03.size());
+        assertEquals("我是下面3", dlist03.get(2).name);
+
+        // 第二排右边
+        econf.setPassColumn(5).setPassRow(9).setMaxRead(2); // 只读2行数据
+        List<I91Bean> dlist04 = J4E.fromSheet(sheet1, I91Bean.class, econf, false);
+        assertEquals(2, dlist04.size());
+        assertEquals("我是下面右边2", dlist04.get(1).name);
 
         // 第二个sheet
         Sheet sheet2 = wb.getSheet("第二个");
         // 第一排左边
         econf.setPassColumn(0).setPassRow(1).setMaxRead(1); // 只读1行数据
-        List<I91Bean> dlist03 = J4E.fromSheet(sheet2, I91Bean.class, econf, false);
-        assertEquals(1, dlist03.size());
+        List<I91Bean> dlist05 = J4E.fromSheet(sheet2, I91Bean.class, econf, false);
+        assertEquals(1, dlist05.size());
 
     }
 }
