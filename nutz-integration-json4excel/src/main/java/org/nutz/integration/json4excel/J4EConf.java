@@ -247,6 +247,8 @@ public class J4EConf {
             if (define != null) {
                 jcol.setColumnType(define.type());
                 jcol.setPrecision(define.precision());
+                jcol.setImgHeight(define.imgHeight());
+                jcol.setImgWidth(define.imgWidth());
                 if (define.columnIndex() > -1) {
                     jcol.setColumnIndex(define.columnIndex());
                 }

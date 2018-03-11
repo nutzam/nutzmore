@@ -1,5 +1,6 @@
 package org.nutz.integration.json4excel;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -18,7 +19,11 @@ import java.util.Map;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.ClientAnchor;
+import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.Drawing;
+import org.apache.poi.ss.usermodel.Picture;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -101,7 +106,7 @@ public class J4E {
         }
     }
 
-    @SuppressWarnings({"unchecked", "deprecation"})
+    @SuppressWarnings({"unchecked"})
     public static <T> boolean toExcel(Workbook wb,
                                       OutputStream out,
                                       List<T> dataList,
@@ -171,38 +176,78 @@ public class J4E {
                 Field jfield = jcol.getField();
                 if (null != jfield) {
                     int ccin = cindex++;
+                    J4EColumnType columnType = jcol.getColumnType();
+                    Object dfv = mc.getValue(dval, jfield);
                     Cell c = row.getCell(ccin);
                     if (c == null) {
                         c = row.createCell(ccin);
                     }
-                    J4EColumnType columnType = jcol.getColumnType();
-                    Object dfv = mc.getValue(dval, jfield);
-                    // 数字
-                    if (columnType == J4EColumnType.NUMERIC) {
-                        c.setCellType(CellType.NUMERIC);
-                        int precision = jcol.getPrecision();
-                        if (precision == 0) {
-                            Integer intRe = Castors.me().castTo(dfv, Integer.class);
-                            if (intRe != null) {
-                                c.setCellValue(intRe);
-                            }
-                        } else {
-                            Double dbRe = Castors.me().castTo(dfv, Double.class);
-                            if (dbRe != null) {
-                                c.setCellValue(dbRe);
+                    // 图片
+                    if (columnType == J4EColumnType.IMAGE) {
+                        try {
+                            sheet.setColumnWidth(ccin, jcol.getImgWidth() * 43);
+                            row.setHeight((short) (jcol.getImgHeight() * 20));
+                            InputStream imgIn = (InputStream) dfv;
+                            // BufferedImage bufImgIn =
+                            // Images.scale(Images.read(imgIn),
+                            // jcol.getImgWidth(),
+                            // jcol.getImgHeight());
+                            ByteArrayOutputStream outImg = new ByteArrayOutputStream();
+                            Streams.writeAndClose(outImg, imgIn);
+                            int pictureIdx = wb.addPicture(outImg.toByteArray(),
+                                                           Workbook.PICTURE_TYPE_PNG);
+                            CreationHelper helper = wb.getCreationHelper();
+                            Drawing drawing = sheet.createDrawingPatriarch();
+                            ClientAnchor anchor = helper.createClientAnchor();
+                            anchor.setRow1(row.getRowNum());
+                            anchor.setCol1(ccin);
+                            anchor.setDx1(0);
+                            anchor.setDy1(0);
+                            anchor.setRow2(row.getRowNum() + 1);
+                            anchor.setCol2(ccin + 1);
+                            anchor.setDx1(5);
+                            anchor.setDy1(5);
+                            anchor.setDx2(-5);
+                            anchor.setDy2(-5);
+                            // anchor.setDx2(getAnchorX(jcol.getImgWidth() + 5,
+                            // COL_WIDTH,
+                            // jcol.getImgWidth()));
+                            // anchor.setDy2(getAnchorY(jcol.getImgHeight() + 5,
+                            // ROW_HEIGHT,
+                            // jcol.getImgHeight()));
+                            Picture pict = drawing.createPicture(anchor, pictureIdx);
+                        }
+                        catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        // 数字
+                        if (columnType == J4EColumnType.NUMERIC) {
+                            c.setCellType(CellType.NUMERIC);
+                            int precision = jcol.getPrecision();
+                            if (precision == 0) {
+                                Integer intRe = Castors.me().castTo(dfv, Integer.class);
+                                if (intRe != null) {
+                                    c.setCellValue(intRe);
+                                }
+                            } else {
+                                Double dbRe = Castors.me().castTo(dfv, Double.class);
+                                if (dbRe != null) {
+                                    c.setCellValue(dbRe);
+                                }
                             }
                         }
-                    }
-                    // 字符串
-                    else {
-                        c.setCellType(CellType.STRING);
-                        if (jcol.getToExcelFun() != null) {
-                            J4ECellToExcel cellFun = jcol.getToExcelFun();
-                            Object setVal = cellFun.toExecl(dfv);
-                            c.setCellValue(Castors.me().castTo(setVal, String.class));
-                        } else {
-                            c.setCellValue(dfv != null ? Castors.me().castTo(dfv, String.class)
-                                                       : "");
+                        // 字符串
+                        else {
+                            c.setCellType(CellType.STRING);
+                            if (jcol.getToExcelFun() != null) {
+                                J4ECellToExcel cellFun = jcol.getToExcelFun();
+                                Object setVal = cellFun.toExecl(dfv);
+                                c.setCellValue(Castors.me().castTo(setVal, String.class));
+                            } else {
+                                c.setCellValue(dfv != null ? Castors.me().castTo(dfv, String.class)
+                                                           : "");
+                            }
                         }
                     }
                 }
@@ -214,6 +259,22 @@ public class J4E {
         }
         return saveExcel(out, wb);
     }
+
+    private final static int COL_WIDTH = 1300 * 3;
+    private final static int ROW_HEIGHT = 500 * 3;
+
+    private static int getAnchorX(int px, int colWidth, int tarWidth) {
+        return (int) Math.round((701 * 16000.0 / tarWidth) * ((double) 1 / colWidth) * px);
+    }
+
+    private static int getAnchorY(int px, int rowHeight, int tarHeight) {
+        return (int) Math.round(((double) 144 * 8000 / tarHeight) * ((double) 1 / rowHeight) * px);
+    }
+
+    //
+    // public int getColWidth(int px, int tarWidth) {
+    // return (int) Math.round(((double) 10971 / tarWidth) * px);
+    // }
 
     private static <T> J4EConf checkJ4EConf(J4EConf j4eConf, Class<T> objClz) {
         if (null == j4eConf) {
