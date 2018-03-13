@@ -127,18 +127,20 @@ public class MarkdownDocParser implements NutDocParser {
                 // 特殊文字
                 if ("?".equals(s2)) {
                     tag.add("span").add("i", ".fa fa-question-circle-o");
-                }
-                // fa
-                else if (s2.matches("^fa-.+$")) {
-                    tag.add("span").add("i", ".fa " + s2);
-                }
-                // zmdi
-                else if (s2.matches("^zmdi-.+$")) {
-                    tag.add("span").add("i", ".zmdi " + s2);
-                }
-                // 默认
-                else {
-                    tag.add("code").setText(s2);
+                } else {
+                    Matcher mfa = Pattern.compile("^(fa[rs]?)-(.+)$").matcher(s2);
+                    // fa
+                    if (mfa.find()) {
+                        tag.add("span").add("i", "." + mfa.group(1) + " fa-" + mfa.group(2));
+                    }
+                    // zmdi
+                    else if (s2.matches("^zmdi-.+$")) {
+                        tag.add("span").add("i", ".zmdi " + s2);
+                    }
+                    // 默认
+                    else {
+                        tag.add("code").setText(s2);
+                    }
                 }
                 // 记录标签
                 if (null != tagNames)
