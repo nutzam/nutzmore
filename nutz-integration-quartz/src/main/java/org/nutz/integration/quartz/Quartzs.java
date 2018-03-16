@@ -82,6 +82,14 @@ public class Quartzs {
     public static JobDetail makeJob(JobKey jobKey, Class<?> klass, JobDataMap data) {
         if (data == null)
             data = new JobDataMap();
-        return JobBuilder.newJob((Class<? extends Job>) klass).withIdentity(jobKey).setJobData(data).build();
+        JobBuilder jb = JobBuilder.newJob((Class<? extends Job>) klass).withIdentity(jobKey);
+        if (data != null)
+            try {
+                jb.setJobData(data);
+            }
+            catch (NoSuchMethodError e) {
+                // nop
+            }
+        return jb.build();
     }
 }

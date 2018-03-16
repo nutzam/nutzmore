@@ -19,6 +19,21 @@ public @interface J4EDefine {
 
     J4EColumnType type() default J4EColumnType.STRING;
 
+    /**
+     * 数字类型才需要设置该参数
+     */
     int precision() default 0;
+
+    /**
+     * 手动设置index的位置
+     */
+    int columnIndex() default -1;
+
+    /**
+     * 图片导入时才需要设置
+     */
+    int imgWidth() default 100;
+
+    int imgHeight() default 100;
 
 }

@@ -19,6 +19,10 @@ public class J4EColumn {
     // 列按照什么类型读取
     private J4EColumnType columnType;
 
+    private int imgWidth;
+
+    private int imgHeight;
+
     // 自定义处理方法
     private J4ECellToExcel toExcelFun;
     private J4ECellFromExcel fromExcelFun;
@@ -114,6 +118,22 @@ public class J4EColumn {
     public void setFromExcelFun(Class<? extends J4ECellFromExcel> cellFun) {
         Mirror<? extends J4ECellFromExcel> mc = Mirror.me(cellFun);
         fromExcelFun = mc.born();
+    }
+
+    public int getImgWidth() {
+        return imgWidth;
+    }
+
+    public void setImgWidth(int imgWidth) {
+        this.imgWidth = imgWidth;
+    }
+
+    public int getImgHeight() {
+        return imgHeight;
+    }
+
+    public void setImgHeight(int imgHeight) {
+        this.imgHeight = imgHeight;
     }
 
 }

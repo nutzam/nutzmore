@@ -40,6 +40,15 @@ public class J4EConf {
     // 跳过标头
     private boolean passHead;
 
+    // 最大写入行数
+    private long maxWrite;
+
+    // 最大读取行数
+    private long maxRead;
+
+    // 跳过空行检查
+    private J4EEmptyRow passEmptyRow;
+
     // sheet中对应的列
     private List<J4EColumn> columns;
 
@@ -175,6 +184,31 @@ public class J4EConf {
         this.eachModify = eachModify;
     }
 
+    public J4EEmptyRow<?> getPassEmptyRow() {
+        return passEmptyRow;
+    }
+
+    public void setPassEmptyRow(Class<? extends J4EEmptyRow> cellFun) {
+        Mirror<? extends J4EEmptyRow> mc = Mirror.me(cellFun);
+        passEmptyRow = mc.born();
+    }
+
+    public long getMaxWrite() {
+        return maxWrite;
+    }
+
+    public void setMaxWrite(long maxWrite) {
+        this.maxWrite = maxWrite;
+    }
+
+    public long getMaxRead() {
+        return maxRead;
+    }
+
+    public void setMaxRead(long maxRead) {
+        this.maxRead = maxRead;
+    }
+
     public static J4EConf from(Class<?> clz) {
         J4EConf jc = new J4EConf();
         // Ext
@@ -184,6 +218,12 @@ public class J4EConf {
             jc.passColumn = ecnf.passColumn();
             jc.passHead = ecnf.passHead();
             jc.passContentRow = ecnf.passContentRow();
+            jc.maxRead = ecnf.maxRead();
+            jc.maxWrite = ecnf.maxWrite();
+            Class<? extends J4EEmptyRow<?>> perow = ecnf.passEmptyRow();
+            if (!perow.isAssignableFrom(J4EEmptyRowImpl.class)) {
+                jc.setPassEmptyRow(perow);
+            }
         }
         // sheet
         String sheetName = null;
@@ -207,6 +247,11 @@ public class J4EConf {
             if (define != null) {
                 jcol.setColumnType(define.type());
                 jcol.setPrecision(define.precision());
+                jcol.setImgHeight(define.imgHeight());
+                jcol.setImgWidth(define.imgWidth());
+                if (define.columnIndex() > -1) {
+                    jcol.setColumnIndex(define.columnIndex());
+                }
             }
             J4EIgnore ignore = cf.getAnnotation(J4EIgnore.class);
             if (ignore != null) {

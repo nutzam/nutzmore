@@ -12,7 +12,7 @@ Nutz集成Quartz的插件
 使用方法
 -------------------------
 
-* 添加quartz的jar, 支持2.x版本,建议用最新版
+* 添加quartz的jar, 支持2.2.1或以上的版本,建议用最新版
 * 在src或maven的resources目录下添加一个 quartz.properties
 * 在MainModule的IocBy中引用QuartzIocLoader
 * 在需要使用quartz的类中引用Scheduler即可

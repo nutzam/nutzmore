@@ -1,6 +1,6 @@
 # nutz-plugins-multiview 多视图插件
 
-简介(可用性:生产,维护者:邓华锋(http://dhf.ink))
+简介(可用性:生产,维护者:[邓华锋](http://dhf.ink))
 ==================================
 
 集合N种模板引擎,可配置性强
@@ -223,7 +223,20 @@ public class JspModule {
 
 访问相应的链接，就会找到相应的视图，
 
-注意的地方：
+插件的核心类
+-------------------------
+* ResourceBundleViewResolver 实现的MultiView接口 MultiView继承ViewMaker2，用于从 IOC 容器配置文件中查找视图。
+* AbstractTemplateViewResolver 抽象出通用的视图请求操作，填充全局变量，资源路径计算
+* MultiViewResover 主要用于注入多视图，设置默认视图，配置文件
+* MultiView  MultiView继承ViewMaker2接口，主要在此接口里定义常量
+
+MultiViewResover灵活性
+-------------------------
+view.js配置文件中，multiViewResover不再是约定的名称，只要定义 org.nutz.plugins.view.MultiViewResover类型，插件都能加载，可灵活定义多个MultiViewResover。
+
+
+注意
+-------------------------
 
 1.如果beetl.properties里设置了RESOURCE.root=WEB-INF ，则view.js配置的beetl视图的路径则在WEB-INF下面。例如
 
@@ -265,11 +278,7 @@ $loader.reloadable =false
 
 插件中包含了对beetl、freemarker、JetTemplate和jsp的视图实现，其实把这些代码抽离出来，按需使用可让插件体积更小。
 
-插件的核心类，包括ResourceBundleViewResolver（接口 ViewMaker2的实现，用于从 IOC 容器配置文件中查找视图。）、
 
-AbstractTemplateViewResolver、MultiViewResover和ViewResolver
-
-view.js配置文件中，multiViewResover是约定的名称。
 
 如果想添加别的视图，只需继承于AbstractTemplateViewResolver，实现init和render方法即可。
 <br/>例如以下是在此插件下beetl模板视图的实现：

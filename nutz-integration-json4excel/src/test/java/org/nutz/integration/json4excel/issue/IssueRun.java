@@ -2,9 +2,13 @@ package org.nutz.integration.json4excel.issue;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.junit.Test;
 import org.nutz.integration.json4excel.J4E;
 import org.nutz.integration.json4excel.J4EColumn;
@@ -12,11 +16,13 @@ import org.nutz.integration.json4excel.J4EConf;
 import org.nutz.integration.json4excel.TestUtil;
 import org.nutz.integration.json4excel.bean.DashayuChild;
 import org.nutz.integration.json4excel.bean.I68Bean;
+import org.nutz.integration.json4excel.bean.I91Bean;
 import org.nutz.lang.Files;
 import org.nutz.lang.util.Disks;
 
 public class IssueRun extends TestUtil {
 
+    // https://github.com/nutzam/nutzmore/issues/16
     @Test
     public void testIssue16() throws Exception {
         List<VideoRate> vrList = J4E.fromExcel(this.getClass().getResourceAsStream("Book1.xlsx"),
@@ -32,6 +38,7 @@ public class IssueRun extends TestUtil {
         assertEquals(1015, vr1.getSearchCount());
     }
 
+    // https://github.com/nutzam/nutzmore/issues/68
     @Test
     public void testIssue68() throws Exception {
         I68Bean d1 = new I68Bean();
@@ -47,6 +54,7 @@ public class IssueRun extends TestUtil {
                     null);
     }
 
+    // https://github.com/nutzam/nutzmore/issues/86
     @Test
     public void testIssue86() throws Exception {
         // 准备数据
@@ -83,5 +91,98 @@ public class IssueRun extends TestUtil {
         J4E.toExcel(Files.createFileIfNoExists2(Disks.normalize("~/tmp/issue86.xls")),
                     dataList,
                     j4eConf);
+    }
+
+    // https://github.com/nutzam/nutzmore/issues/91
+    @Test
+    public void testIssue91() throws Exception {
+        // 默认配置
+        J4EConf econf = J4EConf.from(I91Bean.class);
+        // 制作点假数据，三行就够了
+        I91Bean c1 = new I91Bean();
+        c1.name = "电耗（度）";
+        c1.ref = 20030.23d;
+        c1.d1 = 40277.39d;
+        c1.d2 = 35.00d;
+        c1.d3 = 20050.00d;
+
+        I91Bean c2 = new I91Bean();
+        c2.name = "新水耗（kg）";
+        c2.ref = 20039.00d;
+        c2.d1 = 40531.00d;
+        c2.d2 = 0.00d;
+        c2.d3 = 19833.00d;
+
+        I91Bean c3 = new I91Bean();
+        c3.name = "中水耗（kg）";
+        c3.ref = 18372.34d;
+        c3.d1 = 49883.03d;
+        c3.d2 = 2.00d;
+        c3.d3 = 20001.00d;
+
+        List<I91Bean> clist = new ArrayList<I91Bean>();
+        clist.add(c1);
+        clist.add(c2);
+        clist.add(c3);
+
+        // 加载模板
+        Workbook wb = J4E.loadExcel(this.getClass().getResourceAsStream("i91.xls"));
+        // 第一排左边
+        econf.setPassColumn(0).setPassRow(1);
+        J4E.toExcel(wb, null, clist, econf);
+        // 第一排右边
+        econf.setPassColumn(5).setPassRow(1);
+        J4E.toExcel(wb, null, clist, econf);
+
+        // 第二排左边
+        econf.setPassColumn(0).setPassRow(9);
+        J4E.toExcel(wb, null, clist, econf);
+        // 第二排右边
+        econf.setPassColumn(5).setPassRow(9);
+        J4E.toExcel(wb, null, clist, econf);
+
+        File outFile = Files.createFileIfNoExists2(Disks.normalize("~/tmp/issue91.xls"));
+        J4E.saveExcel(new FileOutputStream(outFile), wb);
+    }
+
+    @Test
+    public void testIssue91Read() throws Exception {
+        // 默认配置
+        J4EConf econf = J4EConf.from(I91Bean.class);
+        // 加载模板
+        Workbook wb = J4E.loadExcel(this.getClass().getResourceAsStream("i91Read.xls"));
+        // 第一个sheet
+        Sheet sheet1 = wb.getSheet("第一个");
+        // 第一排左边
+        econf.setPassColumn(0).setPassRow(1).setMaxRead(3); // 只读3行数据
+        List<I91Bean> dlist01 = J4E.fromSheet(sheet1, I91Bean.class, econf, false);
+        assertEquals(3, dlist01.size());
+        assertEquals("我是上面1", dlist01.get(0).name);
+
+        // 第一排右边
+        econf.setPassColumn(5).setPassRow(1).setMaxRead(2); // 只读2行数据
+        List<I91Bean> dlist02 = J4E.fromSheet(sheet1, I91Bean.class, econf, false);
+        assertEquals(2, dlist02.size());
+        assertEquals("我是右边的2", dlist02.get(1).name);
+
+        // 第二排左边
+        econf.setPassColumn(0).setPassRow(9).setMaxRead(3); // 只读3行数据
+        List<I91Bean> dlist03 = J4E.fromSheet(sheet1, I91Bean.class, econf, false);
+        assertEquals(3, dlist03.size());
+        assertEquals("我是下面3", dlist03.get(2).name);
+
+        // 第二排右边
+        econf.setPassColumn(5).setPassRow(9).setMaxRead(2); // 只读2行数据
+        List<I91Bean> dlist04 = J4E.fromSheet(sheet1, I91Bean.class, econf, false);
+        assertEquals(2, dlist04.size());
+        assertEquals("我是下面右边2", dlist04.get(1).name);
+
+        // 第二个sheet
+        Sheet sheet2 = wb.getSheet("第二个");
+        // 第一排左边
+        econf.setPassColumn(0).setPassRow(1).setMaxRead(1); // 只读1行数据
+        List<I91Bean> dlist05 = J4E.fromSheet(sheet2, I91Bean.class, econf, false);
+        assertEquals(1, dlist05.size());
+
     }
 }

@@ -10,6 +10,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.ws.Endpoint;
 
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
@@ -45,12 +46,13 @@ public abstract class AbstractCxfModule extends CXFNonSpringServlet {
 
     @At("/*")
     public void service() throws Exception {
-        HttpServletRequest req = Mvcs.getReq();
+        final HttpServletRequest req = Mvcs.getReq();
         HttpServletResponse resp = Mvcs.getResp();
         // 下面代码, 源于doFilter方法.
         // 因为原方法中的loader和controller均为private属性,无法直接获取,所以需要中转一下
         ClassLoaderHolder origLoader = null;
         Bus origBus = null;
+        final int trimLen = req.getContextPath().length() + pathROOT.length();
         try {
             if (_loader != null) {
                 origLoader = ClassLoaderUtils.setThreadContextClassloader(_loader);
@@ -61,7 +63,11 @@ public abstract class AbstractCxfModule extends CXFNonSpringServlet {
             if (_controller.filter(new HttpServletRequestWrapper(req) {
                 @Override
                 public String getServletPath() {
-                    return "/cxf/";
+                    return pathROOT;
+                }
+                @Override
+                public String getPathInfo() {
+                    return req.getRequestURI().substring(trimLen);
                 }
             }, resp)) {
                 return;
@@ -134,9 +140,13 @@ public abstract class AbstractCxfModule extends CXFNonSpringServlet {
                 continue;
             }
             log.debugf("add WebService addr=/%s type=%s", ws.serviceName(), klass.getName());
+            //Endpoint.publish("/" + ws.serviceName(), ioc.get(klass));
             JaxWsServerFactoryBean sfb = new JaxWsServerFactoryBean();
             sfb.setServiceBean(ioc.get(klass));
+            sfb.setBus(b);
+            sfb.setAddress("/" + ws.serviceName());
             sfb.create();
+            //System.out.println(sfb.getAddress());
         }
 
     }
