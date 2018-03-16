@@ -148,10 +148,20 @@ public class MarkdownDocParser implements NutDocParser {
             }
             // IMG: ![](xxxx)
             else if (null != m.group(11)) {
-                Tag img = tag.add("img").attr("src", m.group(13));
-                if (!Strings.isBlank(m.group(12))) {
-                    img.attr("alt", m.group(12));
+                String src = m.group(13);
+
+                // 如果是视频
+                if (src.matches("^.+[.](mp4|avi|mov)$")) {
+                    tag.add("video").attr("controls", "yes").attr("src", src);
                 }
+                // 那就是图片咯
+                else {
+                    Tag img = tag.add("img").attr("src", src);
+                    if (!Strings.isBlank(m.group(12))) {
+                        img.attr("alt", m.group(12));
+                    }
+                }
+
                 // 记录标签
                 if (null != tagNames)
                     tagNames.put("img", true);
@@ -438,6 +448,9 @@ public class MarkdownDocParser implements NutDocParser {
             // 代码: code
             else if ("code" == B.type) {
                 Tag tCode = top.add("pre");
+                if (!Strings.isBlank(B.codeType)) {
+                    tCode.attr("code-type", B.codeType);
+                }
                 tCode.setText(Strings.join("\n", B.content));
             }
             // 列表: OL | UL
