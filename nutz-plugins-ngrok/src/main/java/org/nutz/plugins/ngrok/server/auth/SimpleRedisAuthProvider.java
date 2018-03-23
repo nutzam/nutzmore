@@ -35,7 +35,7 @@ public class SimpleRedisAuthProvider implements NgrokAuthProvider {
         Jedis jedis = null;
         try {
             jedis = jedis();
-            boolean re = "nil" != jedis.hget(key, token);
+            boolean re = !"nil".equals(jedis.hget(key, token));
             if (re) {
                 jedis.zadd("ngrok:lv", System.currentTimeMillis(), token);
                 return true;
