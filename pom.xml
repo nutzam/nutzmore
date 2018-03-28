@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.nutz</groupId>
 	<artifactId>nutzmore</artifactId>
-	<version>1.r.65-SNAPSHOT</version>
+	<version>1.r.66-SNAPSHOT</version>
 	<name>nutzmore</name>
 	<description>Nutz, which is a collections of lightweight frameworks, each of them can be used independently</description>
 
@@ -122,9 +122,12 @@
 		<module>nutz-plugins-cache</module>
 		<module>nutz-plugins-daocache</module>
 		<module>nutz-plugins-daomapping</module>
+		<module>nutz-plugins-dict</module>
 		<module>nutz-plugins-event</module>
 		<module>nutz-plugins-hotplug</module>
+		<module>nutz-plugins-iocloader</module>
 		<module>nutz-plugins-ip2region</module>
+		<module>nutz-plugins-jqgrid</module>
 		<module>nutz-plugins-jsonrpc</module>
 		<module>nutz-plugins-mock</module>
 		<module>nutz-plugins-multiview</module>
@@ -147,6 +150,7 @@
 		<module>nutz-plugins-xmlentitymaker</module>
 		<module>nutz-plugins-zcron</module>
 		<module>nutz-plugins-zdoc</module>
+		<module>nutz-plugins-fiddler</module>
 	</modules>
 	<distributionManagement>
 		<snapshotRepository>

@@ -18,7 +18,7 @@ import org.nutz.lang.Lang;
 
 /**
  * JetTemplate视图。
- * @author denghuafeng(it@denghuafeng.com)
+ * @author 邓华锋(http://dhf.ink)
  *
  */
 public class JetTemplateView extends AbstractTemplateViewResolver {

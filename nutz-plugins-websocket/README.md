@@ -64,6 +64,8 @@ public class MyWebsocket extends AbstractWsEndpoint {
 }
 ```
 
+**特别提醒: 已知限制, Endpoint类不能使用@Aop或者aop相关的注解(如@Async/@SLog)**
+
 ### 页面端js示例
 
 假设是jsp页面, 其中的base是项目的Context Path, home是房间的名称
@@ -131,7 +133,7 @@ ws.send(JSON.stringify({"action":"nickname", "nickname" : "wendal"}));
 ```java
 // 在Service或Module中,通过ioc注入上述的MyWebsocket
 @Inject
-protected MyWsHandler myWsHandler;
+protected MyWebsocket myWebsocket;
 
 // 按业务需要,调用myWebsocket提供的各种api
 public void send_job_notify(String room, final String from) {
@@ -139,7 +141,7 @@ public void send_job_notify(String room, final String from) {
     myWsHandler.each(room, new Each<Session>() {
     	public void invoke(int index, Session ele, int length) {
     	        // 逐个会话发送消息
-                myWsHandler.sendJson(ele.getId(), new NutMap("action", "layer").setv("notify", "你有新的待办事宜,请查看收件箱 from=" + from));
+                myWebsocket.sendJson(ele.getId(), new NutMap("action", "layer").setv("notify", "你有新的待办事宜,请查看收件箱 from=" + from));
             }
     });
 }

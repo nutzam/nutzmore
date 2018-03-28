@@ -2,17 +2,21 @@ package org.nutz.integration.rabbitmq.aop;
 
 import org.nutz.aop.InterceptorChain;
 import org.nutz.aop.MethodInterceptor;
+import org.nutz.ioc.loader.annotation.Inject;
+import org.nutz.ioc.loader.annotation.IocBean;
 import org.nutz.lang.Streams;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
+@IocBean(name="rabbitmq")
 public class RabbitmqMethodInterceptor implements MethodInterceptor {
     
     protected static ThreadLocal<Connection> _connection = new ThreadLocal<>();
     protected static ThreadLocal<Channel> _channel = new ThreadLocal<>();
 
+    @Inject("refer:rabbitmq_cf")
     protected ConnectionFactory factory;
     
     @Override

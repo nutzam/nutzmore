@@ -9,6 +9,16 @@ import org.nutz.plugins.wkcache.annotation.*;
 @CacheDefaults(cacheName = "nutzwk_cache",cacheLiveTime = 3000)
 @IocBean
 public class MyCacheTest {
+    @CacheResult(cacheName = "cache_time_1",cacheKey = "test")
+    public Object cache_time_1(String txt) {
+        return txt;
+    }
+
+    @CacheResult(cacheName = "cache_time_2",cacheKey = "test")
+    public Object cache_time_2(String txt) {
+        return txt;
+    }
+
     @CacheResult(cacheKey = "test")
     public Object testCache(String txt) {
         return txt;

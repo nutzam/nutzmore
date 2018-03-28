@@ -8,11 +8,12 @@ import org.nutz.dao.Dao;
 import org.nutz.dao.entity.Record;
 import org.nutz.ioc.IocLoading;
 import org.nutz.ioc.ObjectLoadException;
+import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.ioc.loader.json.JsonLoader;
 import org.nutz.ioc.meta.IocObject;
 import org.nutz.json.Json;
 import org.nutz.lang.Lang;
-import org.nutz.mvc.Mvcs;
+import org.nutz.plugins.ioc.loader.ThreadIocLoader;
 
 /**
  * <p>从数据库加载ioc配置, 需要4个参数,
@@ -24,16 +25,31 @@ import org.nutz.mvc.Mvcs;
  * select val from t_iocbean where nm="mqtt"
  * </code>
  * @author wendal(wendal1985@gmail.com)
- *
+ * @rewriter 邓华锋 http://dhf.ink
  */
 public class DaoIocLoader extends JsonLoader {
-
+	private static final String IOC_DAO_NAME="ioc.dao.name";
+	private static final String IOC_TABLE="ioc.table";
+	private static final String IOC_NAME_FIELD="ioc.name.field";
+	private static final String IOC_VALUE_FIELD="ioc.value.field";
+	private static final String PROPERTIES_NAME = "daoIocLoader.properties";
     protected String name = "dao";
     protected String table = "t_iocbean";
     protected String nameField = "nm";
     protected String valueField = "val";
+    		
     protected Dao dao;
-    public DaoIocLoader(String ... args) {
+    
+    public DaoIocLoader() {
+		super();
+		PropertiesProxy config = new PropertiesProxy(PROPERTIES_NAME);
+		name=config.get(IOC_DAO_NAME, name);
+		table=config.get(IOC_TABLE, table);
+		nameField=config.get(IOC_NAME_FIELD, nameField);
+		valueField=config.get(IOC_VALUE_FIELD, valueField);
+	}
+
+	public DaoIocLoader(String ... args) {
         if (args.length > 0) {
             name = args[0];
             if (args.length > 1) {
@@ -56,10 +72,10 @@ public class DaoIocLoader extends JsonLoader {
             throw new ObjectLoadException("Object '" + name + "' without define!");
         Map<String, Object> map = Json.fromJsonAsMap(Object.class, re.getString(valueField));
         try {
-            map.put(name, map);
+        	getMap().put(name, map);
             return super.load(loading, name);
         } catch (Throwable e) {
-            map.remove(name);
+        	getMap().remove(name);
             throw Lang.wrapThrow(e);
         }
     }
@@ -80,8 +96,8 @@ public class DaoIocLoader extends JsonLoader {
     }
     
     protected Dao dao() {
-        if (dao == null)
-            dao = Mvcs.getIoc().get(Dao.class, name);
+        if (dao == null)//dao = Mvcs.getIoc().get(Dao.class, name);
+            dao = ThreadIocLoader.getIoc().get(Dao.class, name);
         return dao;
     }
 }

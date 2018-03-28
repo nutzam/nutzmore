@@ -1,5 +1,6 @@
 package org.nutz.integration.json4excel;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -18,7 +19,11 @@ import java.util.Map;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.ClientAnchor;
+import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.Drawing;
+import org.apache.poi.ss.usermodel.Picture;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -73,7 +78,7 @@ public class J4E {
                                                                : new HSSFWorkbook();
         OutputStream out = null;
         try {
-        	out = new FileOutputStream(excel);
+            out = new FileOutputStream(excel);
             return toExcel(wb, out, dataList, j4eConf);
         }
         catch (FileNotFoundException e) {
@@ -81,8 +86,8 @@ public class J4E {
             return false;
         }
         finally {
-        	Streams.safeClose(wb);
-        	Streams.safeClose(out);
+            Streams.safeClose(wb);
+            Streams.safeClose(out);
         }
     }
 
@@ -101,7 +106,7 @@ public class J4E {
         }
     }
 
-    @SuppressWarnings({"unchecked", "deprecation"})
+    @SuppressWarnings({"unchecked"})
     public static <T> boolean toExcel(Workbook wb,
                                       OutputStream out,
                                       List<T> dataList,
@@ -132,13 +137,14 @@ public class J4E {
                 }
             }
         }
-        int rnum = j4eConf.getPassRow();
+        int passRow = j4eConf.getPassRow();
+        int passColumn = j4eConf.getPassColumn();
         int cindex = 0;
         if (j4eConf.isPassHead()) {
-            rnum++;
+            passRow++;
         } else {
             // 写入head
-            Row rhead = sheet.createRow(rnum++);
+            Row rhead = sheet.createRow(passRow++);
             for (J4EColumn jcol : j4eConf.getColumns()) {
                 if (jcol.isIgnore()) {
                     continue;
@@ -157,12 +163,12 @@ public class J4E {
             if (log.isDebugEnabled()) {
                 log.debugf("add Row : %s", Json.toJson(dval, JsonFormat.compact()));
             }
-            int crow = rnum++;
+            int crow = passRow++;
             Row row = sheet.getRow(crow);
             if (row == null) {
                 row = sheet.createRow(crow);
             }
-            cindex = 0;
+            cindex = passColumn;
             for (J4EColumn jcol : j4eConf.getColumns()) {
                 if (jcol.isIgnore()) {
                     continue;
@@ -170,42 +176,105 @@ public class J4E {
                 Field jfield = jcol.getField();
                 if (null != jfield) {
                     int ccin = cindex++;
+                    J4EColumnType columnType = jcol.getColumnType();
+                    Object dfv = mc.getValue(dval, jfield);
                     Cell c = row.getCell(ccin);
                     if (c == null) {
                         c = row.createCell(ccin);
                     }
-                    J4EColumnType columnType = jcol.getColumnType();
-                    if (columnType == J4EColumnType.STRING) {
-                        c.setCellType(CellType.STRING);
-                    } else if (columnType == J4EColumnType.NUMERIC) {
-                        c.setCellType(CellType.NUMERIC);
-                    } else if (columnType == J4EColumnType.DATE) {
-                        c.setCellType(CellType.STRING);
-                    } else {
-                        // TODO 根据field获取对应的类型
-                        c.setCellType(CellType.STRING);
-                    }
-                    Object dfv = mc.getValue(dval, jfield);
-                    int ctp = c.getCellType();
-                    switch (ctp) {
-                    case 1: // STRING
-                        c.setCellValue(dfv != null ? Castors.me().castTo(dfv, String.class) : "");
-                        break;
-                    case 0: // NUMERIC
-                        Integer intRe = Castors.me().castTo(dfv, Integer.class);
-                        if (intRe != null) {
-                            c.setCellValue(intRe);
+                    // 图片
+                    if (columnType == J4EColumnType.IMAGE) {
+                        try {
+                            sheet.setColumnWidth(ccin, jcol.getImgWidth() * 43);
+                            row.setHeight((short) (jcol.getImgHeight() * 20));
+                            InputStream imgIn = (InputStream) dfv;
+                            // BufferedImage bufImgIn =
+                            // Images.scale(Images.read(imgIn),
+                            // jcol.getImgWidth(),
+                            // jcol.getImgHeight());
+                            ByteArrayOutputStream outImg = new ByteArrayOutputStream();
+                            Streams.writeAndClose(outImg, imgIn);
+                            int pictureIdx = wb.addPicture(outImg.toByteArray(),
+                                                           Workbook.PICTURE_TYPE_PNG);
+                            CreationHelper helper = wb.getCreationHelper();
+                            Drawing drawing = sheet.createDrawingPatriarch();
+                            ClientAnchor anchor = helper.createClientAnchor();
+                            anchor.setRow1(row.getRowNum());
+                            anchor.setCol1(ccin);
+                            anchor.setDx1(0);
+                            anchor.setDy1(0);
+                            anchor.setRow2(row.getRowNum() + 1);
+                            anchor.setCol2(ccin + 1);
+                            anchor.setDx1(5);
+                            anchor.setDy1(5);
+                            anchor.setDx2(-5);
+                            anchor.setDy2(-5);
+                            // anchor.setDx2(getAnchorX(jcol.getImgWidth() + 5,
+                            // COL_WIDTH,
+                            // jcol.getImgWidth()));
+                            // anchor.setDy2(getAnchorY(jcol.getImgHeight() + 5,
+                            // ROW_HEIGHT,
+                            // jcol.getImgHeight()));
+                            Picture pict = drawing.createPicture(anchor, pictureIdx);
                         }
-                        break;
-                    default:
-                        break;
+                        catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        // 数字
+                        if (columnType == J4EColumnType.NUMERIC) {
+                            c.setCellType(CellType.NUMERIC);
+                            int precision = jcol.getPrecision();
+                            if (precision == 0) {
+                                Integer intRe = Castors.me().castTo(dfv, Integer.class);
+                                if (intRe != null) {
+                                    c.setCellValue(intRe);
+                                }
+                            } else {
+                                Double dbRe = Castors.me().castTo(dfv, Double.class);
+                                if (dbRe != null) {
+                                    c.setCellValue(dbRe);
+                                }
+                            }
+                        }
+                        // 字符串
+                        else {
+                            c.setCellType(CellType.STRING);
+                            if (jcol.getToExcelFun() != null) {
+                                J4ECellToExcel cellFun = jcol.getToExcelFun();
+                                Object setVal = cellFun.toExecl(dfv);
+                                c.setCellValue(Castors.me().castTo(setVal, String.class));
+                            } else {
+                                c.setCellValue(dfv != null ? Castors.me().castTo(dfv, String.class)
+                                                           : "");
+                            }
+                        }
                     }
-
                 }
             }
         }
+
+        if (out == null) {
+            return true;
+        }
         return saveExcel(out, wb);
     }
+
+    private final static int COL_WIDTH = 1300 * 3;
+    private final static int ROW_HEIGHT = 500 * 3;
+
+    private static int getAnchorX(int px, int colWidth, int tarWidth) {
+        return (int) Math.round((701 * 16000.0 / tarWidth) * ((double) 1 / colWidth) * px);
+    }
+
+    private static int getAnchorY(int px, int rowHeight, int tarHeight) {
+        return (int) Math.round(((double) 144 * 8000 / tarHeight) * ((double) 1 / rowHeight) * px);
+    }
+
+    //
+    // public int getColWidth(int px, int tarWidth) {
+    // return (int) Math.round(((double) 10971 / tarWidth) * px);
+    // }
 
     private static <T> J4EConf checkJ4EConf(J4EConf j4eConf, Class<T> objClz) {
         if (null == j4eConf) {
@@ -255,39 +324,53 @@ public class J4E {
         List<T> dataList = j4eConf.isNoReturn() ? null : new ArrayList<T>();
         Iterator<Row> rlist = sheet.rowIterator();
         int passRow = j4eConf.getPassRow();
-        int passColumn = j4eConf.getPassColumn();
         int passContentRow = j4eConf.getPassContentRow();
+        boolean passHead = j4eConf.isPassHead();
+        long maxRead = j4eConf.getMaxRead();
+        J4EEmptyRow<T> emptyRowChecker = (J4EEmptyRow<T>) j4eConf.getPassEmptyRow();
+        boolean needCheckEmptyRow = emptyRowChecker != null;
         int currRow = 0;
         int currColumn = 0;
         boolean firstRow = true;
+        long readNum = 0;
         while (rlist.hasNext()) {
+            // 最大值
+            if (maxRead > 0) {
+                if (readNum >= maxRead) {
+                    break;
+                }
+            }
             Row row = rlist.next();
             if (currRow >= passRow) {
                 currColumn = 0;
                 if (firstRow) {
-                    // TODO passColumn的测试
-                    // 确定column的index
-                    Iterator<Cell> clist = row.cellIterator();
-                    int cindex = 0;
-                    Map<String, Integer> headIndexMap = new HashMap<String, Integer>();
-                    while (clist.hasNext()) {
-                        Cell chead = clist.next();
-                        headIndexMap.put(cellValue(chead, null), cindex++);
+                    if (!passHead) {
+                        // 确定column的index
+                        Iterator<Cell> clist = row.cellIterator();
+                        int cindex = 0;
+                        Map<String, Integer> headIndexMap = new HashMap<String, Integer>();
+                        while (clist.hasNext()) {
+                            Cell chead = clist.next();
+                            headIndexMap.put(cellValue(chead, null), cindex++);
+                        }
+                        for (J4EColumn jcol : j4eConf.getColumns()) {
+                            if (null != headIndexMap.get(jcol.getColumnName())) {
+                                // by columnName
+                                jcol.setColumnIndex(headIndexMap.get(jcol.getColumnName()));
+                            } else if (null != headIndexMap.get(jcol.getFieldName())) {
+                                // by field
+                                jcol.setColumnIndex(headIndexMap.get(jcol.getFieldName()));
+                            } else if (null != jcol.getColumnIndex()
+                                       && jcol.getColumnIndex() >= 0) {
+                                // 已经设置过的index ??? 这个提醒一下
+                                log.warnf("J4EColumn has already set index[%d], but not sure It is right",
+                                          jcol.getColumnIndex());
+                            } else {
+                                jcol.setColumnIndex(null);
+                            }
+                        }
                     }
                     for (J4EColumn jcol : j4eConf.getColumns()) {
-                        if (null != headIndexMap.get(jcol.getColumnName())) {
-                            // by columnName
-                            jcol.setColumnIndex(headIndexMap.get(jcol.getColumnName()));
-                        } else if (null != headIndexMap.get(jcol.getFieldName())) {
-                            // by field
-                            jcol.setColumnIndex(headIndexMap.get(jcol.getFieldName()));
-                        } else if (null != jcol.getColumnIndex() && jcol.getColumnIndex() >= 0) {
-                            // 已经设置过的index ??? 这个提醒一下
-                            log.warnf("J4EColumn has already set index[%d], but not sure It is right",
-                                      jcol.getColumnIndex());
-                        } else {
-                            jcol.setColumnIndex(null);
-                        }
                         // 查找field
                         if (jcol.getColumnIndex() != null && jcol.getColumnIndex() >= 0) {
                             try {
@@ -323,6 +406,8 @@ public class J4E {
                     passContentRow--;
                     continue;
                 }
+
+                readNum++;
                 // 开始读数据
                 T rVal = rowValue(row, j4eConf, mc);
                 if (null != j4eConf.getEachPrepare()) {
@@ -331,7 +416,13 @@ public class J4E {
                     j4eConf.getEachModify().doEach(rVal, row, j4eConf.getColumns());
                 }
                 if (!j4eConf.isNoReturn()) {
-                    dataList.add(rVal);
+                    if (needCheckEmptyRow) {
+                        if (!emptyRowChecker.isEmpty(rVal)) {
+                            dataList.add(rVal);
+                        }
+                    } else {
+                        dataList.add(rVal);
+                    }
                 }
             }
             currRow++;
@@ -367,14 +458,20 @@ public class J4E {
         for (J4EColumn jcol : j4eConf.getColumns()) {
             Field jfield = jcol.getField();
             if (null != jfield) {
-                Cell cell = row.getCell(jcol.getColumnIndex());
+                Cell cell = row.getCell(jcol.getColumnIndex() + j4eConf.getPassColumn());
                 if (null == cell) {
                     log.warn(String.format("cell [%d, %d] has null, so value is ''",
                                            row.getRowNum(),
                                            jcol.getColumnIndex()));
                 }
                 String cVal = (null == cell ? "" : cellValue(cell, jcol));
-                mc.setValue(rVal, jfield, cVal);
+                if (jcol.getFromExcelFun() != null) {
+                    J4ECellFromExcel cellFun = jcol.getFromExcelFun();
+                    Object setVal = cellFun.fromExcel(cVal);
+                    mc.setValue(rVal, jfield, setVal);
+                } else {
+                    mc.setValue(rVal, jfield, cVal);
+                }
             }
         }
         return rVal;
@@ -389,7 +486,7 @@ public class J4E {
             colType = J4EColumnType.STRING;
         }
         try {
-            @SuppressWarnings({"deprecation"}) // 4.2之后将可直接调用c.getCellType返回枚举
+            // 3.1.5之后将可直接调用c.getCellType返回枚举
             CellType cType = c.getCellTypeEnum();
             switch (cType) {
             case NUMERIC: // 数字
@@ -538,7 +635,7 @@ public class J4E {
      * @param wb
      * @return
      */
-    private static boolean saveExcel(OutputStream out, Workbook wb) {
+    public static boolean saveExcel(OutputStream out, Workbook wb) {
         try {
             wb.write(out);
             return true;

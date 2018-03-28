@@ -16,6 +16,10 @@ class MdBlock {
     List<String> content;
 
     String[] cellAligns;
+    
+    boolean isTask;
+    
+    boolean isChecked;
 
     MdBlock() {
         this.level = 0;

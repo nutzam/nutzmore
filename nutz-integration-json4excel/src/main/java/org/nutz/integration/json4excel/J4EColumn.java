@@ -3,6 +3,7 @@ package org.nutz.integration.json4excel;
 import java.lang.reflect.Field;
 
 import org.nutz.json.JsonField;
+import org.nutz.lang.Mirror;
 
 public class J4EColumn {
 
@@ -17,6 +18,14 @@ public class J4EColumn {
 
     // 列按照什么类型读取
     private J4EColumnType columnType;
+
+    private int imgWidth;
+
+    private int imgHeight;
+
+    // 自定义处理方法
+    private J4ECellToExcel toExcelFun;
+    private J4ECellFromExcel fromExcelFun;
 
     private int precision;
 
@@ -91,6 +100,40 @@ public class J4EColumn {
 
     public void setIgnore(boolean isIgnore) {
         this.isIgnore = isIgnore;
+    }
+
+    public J4ECellToExcel getToExcelFun() {
+        return toExcelFun;
+    }
+
+    public J4ECellFromExcel getFromExcelFun() {
+        return fromExcelFun;
+    }
+
+    public void setToExcelFun(Class<? extends J4ECellToExcel> cellFun) {
+        Mirror<? extends J4ECellToExcel> mc = Mirror.me(cellFun);
+        toExcelFun = mc.born();
+    }
+
+    public void setFromExcelFun(Class<? extends J4ECellFromExcel> cellFun) {
+        Mirror<? extends J4ECellFromExcel> mc = Mirror.me(cellFun);
+        fromExcelFun = mc.born();
+    }
+
+    public int getImgWidth() {
+        return imgWidth;
+    }
+
+    public void setImgWidth(int imgWidth) {
+        this.imgWidth = imgWidth;
+    }
+
+    public int getImgHeight() {
+        return imgHeight;
+    }
+
+    public void setImgHeight(int imgHeight) {
+        this.imgHeight = imgHeight;
     }
 
 }

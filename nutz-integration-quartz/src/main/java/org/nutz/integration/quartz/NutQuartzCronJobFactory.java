@@ -7,6 +7,7 @@ import org.nutz.lang.Strings;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.resource.Scans;
+import org.quartz.JobDataMap;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 
@@ -67,6 +68,14 @@ public class NutQuartzCronJobFactory {
             log.debugf("job define name=%s fixedRate=%s count=%s initialDelay=%s", 
                     name, scheduled.fixedRate(), scheduled.count(), scheduled.initialDelay());
             Quartzs.simple(scheduler, klass, scheduled.fixedRate(), scheduled.count(), scheduled.initialDelay());
+        }
+    }
+    
+    public void add(Class<?> klass, String cron, JobDataMap data,String jobKeyName,String jobKeyGroup) throws SchedulerException {
+        String name = klass.getName();
+        if (!Strings.isBlank(cron)) {
+            log.debugf("job define name=%s cron=%s", name, cron);
+            Quartzs.cron(scheduler, cron, klass, data ,jobKeyName ,jobKeyGroup);
         }
     }
 }

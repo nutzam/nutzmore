@@ -156,3 +156,20 @@ var ioc = {
 
 有用户反映ehcache在shiro.ini的配置顺序会导致获取到CacheManager为null,请确保
 ehcache的声明在其他所有realm声明之前
+
+## 使用redis
+
+dao.js中的cacheProvider变更一下
+
+```js
+		// 基于Ehcache的DaoCacheProvider
+		cacheProvider : {
+			type : "org.nutz.plugins.cache.dao.impl.provider.RedisDaoCacheProvider",
+			fields : {
+				jedisPool : {refer:"jedisPool"} // 引用nutz-integration-jedis的JedisPool
+			},
+			events : {
+				create : "init"
+			}
+		}
+```

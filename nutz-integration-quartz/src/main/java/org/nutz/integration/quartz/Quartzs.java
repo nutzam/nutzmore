@@ -31,6 +31,18 @@ public class Quartzs {
         }
     }
     
+    public static void cron(Scheduler scheduler, String cron, Class<?> klass, JobDataMap data,String name,String group) {
+        try {
+            JobKey jobKey = new JobKey(name, group);
+            if (scheduler.checkExists(jobKey))
+                scheduler.deleteJob(jobKey);
+            scheduler.scheduleJob(makeJob(jobKey, klass,data), makeCronTrigger(name, group, cron));
+        }
+        catch (SchedulerException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
     public static void simple(Scheduler scheduler, Class<?> klass, int fixedRate, int count, long initialDelay) {
         try {
             String name = klass.getName();
@@ -82,6 +94,14 @@ public class Quartzs {
     public static JobDetail makeJob(JobKey jobKey, Class<?> klass, JobDataMap data) {
         if (data == null)
             data = new JobDataMap();
-        return JobBuilder.newJob((Class<? extends Job>) klass).withIdentity(jobKey).setJobData(data).build();
+        JobBuilder jb = JobBuilder.newJob((Class<? extends Job>) klass).withIdentity(jobKey);
+        if (data != null)
+            try {
+                jb.setJobData(data);
+            }
+            catch (NoSuchMethodError e) {
+                // nop
+            }
+        return jb.build();
     }
 }

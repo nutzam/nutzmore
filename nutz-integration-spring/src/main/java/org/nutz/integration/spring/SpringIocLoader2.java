@@ -31,7 +31,7 @@ public class SpringIocLoader2 implements IocLoader {
     }
 
     public boolean has(String name) {
-        return Arrays.binarySearch(names, name) > -1;
+        return Arrays.asList(names).contains(name);
     }
 
 }

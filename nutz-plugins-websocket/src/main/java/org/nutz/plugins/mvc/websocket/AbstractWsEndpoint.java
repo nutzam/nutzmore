@@ -78,7 +78,13 @@ public abstract class AbstractWsEndpoint {
         handler.setHttpSession((HttpSession) config.getUserProperties().get("HttpSession"));
         handler.setEndpoint(this);
         handler.init();
-        session.addMessageHandler(handler);
+        if (!isUndertowSession(session))
+            try {
+                session.addMessageHandler(handler);
+            }
+            catch (Exception e) {
+                log.debug("skip addMessageHandler");
+            }
         sessions.put(wsid, session);
         handlers.put(wsid, handler);
     }
@@ -129,6 +135,9 @@ public abstract class AbstractWsEndpoint {
      */
     protected void changeSessionId(Session session) {
         try {
+            if (isUndertowSession(session)) { // undertow的id挺长的,而且叫sessionId, 不叫id
+                return;
+            }
             if (idField == null) {
                 idField = session.getClass().getDeclaredField("id");
                 idField.setAccessible(true);
@@ -361,5 +370,9 @@ public abstract class AbstractWsEndpoint {
 
     public void setRoomPrefix(String roomPrefix) {
         this.roomPrefix = roomPrefix;
+    }
+    
+    public boolean isUndertowSession(Session session) {
+        return session.getClass().getName().equals("io.undertow.websockets.jsr.UndertowSession");
     }
 }

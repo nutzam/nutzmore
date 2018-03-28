@@ -32,10 +32,20 @@ public class MarkdownDocParser implements NutDocParser {
     // 定义内容输出函数
     private void __B_to_html(Tag tag, MdBlock B) {
         boolean isFirstLine = true;
+
+        // 处理任务列表
+        if (B.isTask) {
+            Tag jInput = tag.add("input").attr("disabled", "true").attr("type", "checkbox");
+            if (B.isChecked) {
+                jInput.attr("checked", "true");
+            }
+        }
+
+        // 收集一下块内标签
         NutMap tagNames = new NutMap();
         for (String line : B.content) {
             // 忽略空行
-            if(Strings.isBlank(line))
+            if (Strings.isBlank(line))
                 continue;
             // 首行
             if (isFirstLine) {
@@ -52,6 +62,10 @@ public class MarkdownDocParser implements NutDocParser {
         if (tagNames.size() == 1 && tagNames.getBoolean("img")) {
             tag.attr("md-img-only", "yes");
         }
+        // 标识一下任务列表
+        if (B.isTask) {
+            tag.attrs(".md-task-list-item");
+        }
     }
 
     private void __line_to_html(Tag tag, String str, NutMap tagNames) {
@@ -61,7 +75,9 @@ public class MarkdownDocParser implements NutDocParser {
                      + "|(~~([^~]+)~~)"
                      + "|(`([^`]+)`)"
                      + "|(!\\[([^\\]]*)\\]\\(([^\\)]+)\\))"
-                     + "|(\\[([^\\]]*)\\]\\(([^\\)]*)\\))"
+                     + "|(\\[("
+                     + "(!\\[([^\\]]*)\\]\\(([^\\)]+)\\))|([^\\]]*)"
+                     + ")\\]\\(([^\\)]*)\\))"
                      + "|(https?:\\/\\/[^ ]+)";
         Pattern REG = Pattern.compile(reg);
         Matcher m = REG.matcher(str);
@@ -111,18 +127,20 @@ public class MarkdownDocParser implements NutDocParser {
                 // 特殊文字
                 if ("?".equals(s2)) {
                     tag.add("span").add("i", ".fa fa-question-circle-o");
-                }
-                // fa
-                else if (s2.matches("^fa-.+$")) {
-                    tag.add("span").add("i", ".fa " + s2);
-                }
-                // zmdi
-                else if (s2.matches("^zmdi-.+$")) {
-                    tag.add("span").add("i", ".zmdi " + s2);
-                }
-                // 默认
-                else {
-                    tag.add("code").setText(s2);
+                } else {
+                    Matcher mfa = Pattern.compile("^(fa[rs]?)-(.+)$").matcher(s2);
+                    // fa
+                    if (mfa.find()) {
+                        tag.add("span").add("i", "." + mfa.group(1) + " fa-" + mfa.group(2));
+                    }
+                    // zmdi
+                    else if (s2.matches("^zmdi-.+$")) {
+                        tag.add("span").add("i", ".zmdi " + s2);
+                    }
+                    // 默认
+                    else {
+                        tag.add("code").setText(s2);
+                    }
                 }
                 // 记录标签
                 if (null != tagNames)
@@ -130,7 +148,20 @@ public class MarkdownDocParser implements NutDocParser {
             }
             // IMG: ![](xxxx)
             else if (null != m.group(11)) {
-                tag.add("img").attr("title", m.group(12)).attr("src", m.group(13));
+                String src = m.group(13);
+
+                // 如果是视频
+                if (src.matches("^.+[.](mp4|avi|mov)$")) {
+                    tag.add("video").attr("controls", "yes").attr("src", src);
+                }
+                // 那就是图片咯
+                else {
+                    Tag img = tag.add("img").attr("src", src);
+                    if (!Strings.isBlank(m.group(12))) {
+                        img.attr("alt", m.group(12));
+                    }
+                }
+
                 // 记录标签
                 if (null != tagNames)
                     tagNames.put("img", true);
@@ -138,28 +169,42 @@ public class MarkdownDocParser implements NutDocParser {
             // A: [](xxxx)
             else if (null != m.group(14)) {
                 // 得到超链
-                String href = m.group(16);
+                String href = m.group(20);
                 if (null != href && href.endsWith(".md")) {
                     href = Files.renameSuffix(href, ".html");
                 }
-                // 得到文字
-                String text = Strings.sBlank(m.group(15), Files.getMajorName(href));
-                // 锚点
-                if (Strings.isBlank(href) && text.matches("^#.+$")) {
-                    tag.add("a").attr("name", text.substring(1));
+                // 如果内部是一个图片
+                if (!Strings.isBlank(m.group(16))) {
+                    String src = m.group(18);
+                    Tag img = tag.add("a").attr("href", href).add("img").attr("src", src);
+                    if (!Strings.isBlank(m.group(17))) {
+                        img.attr("alt", m.group(17));
+                    }
+                    // 记录标签
+                    if (null != tagNames) {
+                        tagNames.put("img", true);
+                    }
                 }
-                // 链接
+                // 得到文字
                 else {
-                    Tag a = tag.add("a").attr("href", href);
-                    this.__line_to_html(a, text, tagNames);
+                    String text = Strings.sBlank(m.group(19), Files.getMajorName(href));
+                    // 锚点
+                    if (Strings.isBlank(href) && text.matches("^#.+$")) {
+                        tag.add("a").attr("name", text.substring(1));
+                    }
+                    // 链接
+                    else {
+                        Tag a = tag.add("a").attr("href", href);
+                        this.__line_to_html(a, text, tagNames);
+                    }
                 }
                 // 记录标签
                 if (null != tagNames)
                     tagNames.put("a", true);
             }
             // A: http://xxxx
-            else if (null != m.group(17)) {
-                tag.add("a").attr("href", m.group(17)).setText(Strings.sBlank(m.group(17)));
+            else if (null != m.group(21)) {
+                tag.add("a").attr("href", m.group(21)).setText(Strings.sBlank(m.group(21)));
                 // 记录标签
                 if (null != tagNames)
                     tagNames.put("a", true);
@@ -188,8 +233,28 @@ public class MarkdownDocParser implements NutDocParser {
         this.index--;
     }
 
+    private static final Pattern _P2 = Pattern.compile("^[ \t]*(\\[[xX ]\\])[ ](.+)$");
+
+    // 处理一下第一行，判断支持一下 task list
+    private MdBlock __B_test_task(MdBlock B) {
+        if (null != B.content && B.content.size() > 0) {
+            String line0 = B.content.get(0);
+            Matcher m2 = _P2.matcher(line0);
+            if (m2.find()) {
+                B.isTask = true;
+                B.isChecked = "[ ]".equals(m2.group(1));
+                B.content.set(0, m2.group(2));
+            }
+        }
+        return B;
+    };
+
     private void __B_to_list(Tag tag, MdBlock B) {
+        __B_test_task(B);
         Tag tList = tag.add(B.type.toLowerCase());
+        if (B.isTask) {
+            tList.attrs(".md-task-list");
+        }
         Tag tLi = tList.add("li");
         this.__B_to_html(tLi, B);
         // 循环查找后续的列表项，或者是嵌套
@@ -198,6 +263,7 @@ public class MarkdownDocParser implements NutDocParser {
             // 继续增加
             if (B.type == B2.type && B2.level == B.level) {
                 tLi = tList.add("li");
+                __B_test_task(B2);
                 this.__B_to_html(tLi, B2);
             }
             // 嵌套
@@ -382,6 +448,9 @@ public class MarkdownDocParser implements NutDocParser {
             // 代码: code
             else if ("code" == B.type) {
                 Tag tCode = top.add("pre");
+                if (!Strings.isBlank(B.codeType)) {
+                    tCode.attr("code-type", B.codeType);
+                }
                 tCode.setText(Strings.join("\n", B.content));
             }
             // 列表: OL | UL

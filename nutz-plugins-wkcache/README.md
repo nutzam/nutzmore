@@ -1,7 +1,7 @@
 nutz-plugins-wkcache
 ==================================
 
-简介(可用性:试用,维护者:大鲨鱼)
+简介(可用性:生产,维护者:大鲨鱼)
 ==================================
 
 
@@ -40,6 +40,14 @@ redis.maxTotal=100
 #redis集群模式设置 redis.mode=cluster
 redis.mode=normal
 #redis.nodes=
+```
+
+## wkcache.properties 配置文件
+```
+#缓存存活时间配置(单位:秒)
+wkcache.nutzwk_cache=1800 
+wkcache.cache_time_1=18000
+wkcache.cache_time_2=28000
 ```
 ## 示例代码
 

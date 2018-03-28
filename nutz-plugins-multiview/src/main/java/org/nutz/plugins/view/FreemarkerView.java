@@ -1,12 +1,7 @@
 package org.nutz.plugins.view;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.servlet.GenericServlet;
 import javax.servlet.ServletContext;
@@ -14,7 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.nutz.lang.Files;
+import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.mvc.Mvcs;
 
 import freemarker.ext.jsp.TaglibFactory;
@@ -42,13 +37,13 @@ public class FreemarkerView extends AbstractTemplateViewResolver {
 	private static final String KEY_EXCEPTION = "exception";
 	private static final String KEY_JSP_TAGLIBS = "JspTaglibs";
 	private Configuration cfg;
-	
+
 	public FreemarkerView(String dest) {
 		super(dest);
 	}
 
 	@Override
-	protected void init(String appRoot,ServletContext sc) {
+	protected void init(String appRoot, ServletContext sc) {
 		cfg = (Configuration) sc.getAttribute(CONFIG_SERVLET_CONTEXT_KEY);
 		if (cfg == null) {
 			cfg = new Configuration(Configuration.VERSION_2_3_23);
@@ -63,8 +58,7 @@ public class FreemarkerView extends AbstractTemplateViewResolver {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void render(HttpServletRequest request,
-			HttpServletResponse response, String evalPath,
+	public void render(HttpServletRequest request, HttpServletResponse response, String evalPath,
 			Map<String, Object> vars) throws Throwable {
 		// 添加数据模型
 		// root.put(BASE, request.getContextPath());
@@ -74,8 +68,7 @@ public class FreemarkerView extends AbstractTemplateViewResolver {
 			vars.put(strKey, request.getAttribute(strKey));
 		}
 		// 让freemarker支持jsp 标签
-		jspTaglibs(Mvcs.getServletContext(), request, response, vars,
-				cfg.getObjectWrapper());
+		jspTaglibs(Mvcs.getServletContext(), request, response, vars, cfg.getObjectWrapper());
 		// 模版路径
 		Template t = cfg.getTemplate(evalPath);
 		response.setContentType("text/html; charset=" + t.getEncoding());
@@ -83,32 +76,17 @@ public class FreemarkerView extends AbstractTemplateViewResolver {
 	}
 
 	protected void loadSettings(Configuration config) {
-		InputStream in = null;
 		try {
-			in = new BufferedInputStream(new FileInputStream(
-					Files.findFile("freemarker.properties")));
-			if (in != null) {
-				Properties p = new Properties();
-				p.load(in);
-				config.setSettings(p);
+			if (viewProperties == null) {
+				viewProperties = new PropertiesProxy("freemarker.properties");
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
+			config.setSettings(viewProperties.toProperties());
 		} catch (TemplateException e) {
 			e.printStackTrace();
-		} finally {
-			if (in != null) {
-				try {
-					in.close();
-				} catch (IOException io) {
-					io.printStackTrace();
-				}
-			}
 		}
 	}
 
-	protected void jspTaglibs(ServletContext servletContext,
-			HttpServletRequest request, HttpServletResponse response,
+	protected void jspTaglibs(ServletContext servletContext, HttpServletRequest request, HttpServletResponse response,
 			Map<String, Object> model, ObjectWrapper wrapper) {
 		synchronized (servletContext) {
 			ServletContextHashModel servletContextModel = (ServletContextHashModel) servletContext
@@ -121,30 +99,24 @@ public class FreemarkerView extends AbstractTemplateViewResolver {
 				// won't exist
 				// if it hasn't been accessed, and a JSP page is accessed
 				if (servlet != null) {
-					servletContextModel = new ServletContextHashModel(servlet,
-							wrapper);
-					servletContext.setAttribute(ATTR_APPLICATION_MODEL,
-							servletContextModel);
+					servletContextModel = new ServletContextHashModel(servlet, wrapper);
+					servletContext.setAttribute(ATTR_APPLICATION_MODEL, servletContextModel);
 					TaglibFactory taglibs = new TaglibFactory(servletContext);
-					servletContext
-							.setAttribute(ATTR_JSP_TAGLIBS_MODEL, taglibs);
+					servletContext.setAttribute(ATTR_JSP_TAGLIBS_MODEL, taglibs);
 				}
 
 			}
 
 			model.put(KEY_APPLICATION, servletContextModel);
-			model.put(KEY_JSP_TAGLIBS, (TemplateModel) servletContext
-					.getAttribute(ATTR_JSP_TAGLIBS_MODEL));
+			model.put(KEY_JSP_TAGLIBS, (TemplateModel) servletContext.getAttribute(ATTR_JSP_TAGLIBS_MODEL));
 		}
 
 		HttpSession session = request.getSession(false);
 		if (session != null) {
-			model.put(KEY_SESSION_MODEL, new HttpSessionHashModel(session,
-					wrapper));
+			model.put(KEY_SESSION_MODEL, new HttpSessionHashModel(session, wrapper));
 		}
 
-		HttpRequestHashModel requestModel = (HttpRequestHashModel) request
-				.getAttribute(ATTR_REQUEST_MODEL);
+		HttpRequestHashModel requestModel = (HttpRequestHashModel) request.getAttribute(ATTR_REQUEST_MODEL);
 
 		if ((requestModel == null) || (requestModel.getRequest() != request)) {
 			requestModel = new HttpRequestHashModel(request, response, wrapper);
@@ -156,17 +128,14 @@ public class FreemarkerView extends AbstractTemplateViewResolver {
 				.getAttribute(ATTR_REQUEST_PARAMETERS_MODEL);
 		if (reqParametersModel == null || requestModel.getRequest() != request) {
 			reqParametersModel = new HttpRequestParametersHashModel(request);
-			request.setAttribute(ATTR_REQUEST_PARAMETERS_MODEL,
-					reqParametersModel);
+			request.setAttribute(ATTR_REQUEST_PARAMETERS_MODEL, reqParametersModel);
 		}
 		model.put(KEY_REQUEST_PARAMETER_MODEL, reqParametersModel);
 
-		Throwable exception = (Throwable) request
-				.getAttribute("javax.servlet.error.exception");
+		Throwable exception = (Throwable) request.getAttribute("javax.servlet.error.exception");
 
 		if (exception == null) {
-			exception = (Throwable) request
-					.getAttribute("javax.servlet.error.JspException");
+			exception = (Throwable) request.getAttribute("javax.servlet.error.JspException");
 		}
 
 		if (exception != null) {
@@ -174,5 +143,3 @@ public class FreemarkerView extends AbstractTemplateViewResolver {
 		}
 	}
 }
-
-
