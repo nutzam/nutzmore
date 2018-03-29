@@ -1,9 +1,15 @@
 package org.nutz.plugins.ioc.loader.chain;
 
 import java.util.List;
+import java.util.Map;
 
 import org.nutz.ioc.Ioc;
 
+/**
+ * 
+ * @author 邓华锋 http://dhf.ink
+ *
+ */
 public class ImmutableIocSetup implements IocSetup {
 	private final IocSetup[] IocSetups;
 
@@ -29,16 +35,16 @@ public class ImmutableIocSetup implements IocSetup {
 	}
 
 	@Override
-	public void init(Ioc ioc) {
+	public void init(Map<String, Ioc> iocs) {
 		for (final IocSetup setup : this.IocSetups) {
-			setup.init(ioc);
+			setup.init(iocs);
 		}
 	}
 
 	@Override
-	public void destroy(Ioc ioc) {
+	public void destroy(Map<String, Ioc> iocs) {
 		for (final IocSetup setup : this.IocSetups) {
-			setup.destroy(ioc);
+			setup.destroy(iocs);
 		}
 	}
 }
