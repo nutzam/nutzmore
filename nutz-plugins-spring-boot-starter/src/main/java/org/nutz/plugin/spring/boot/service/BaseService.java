@@ -13,6 +13,7 @@ import org.nutz.dao.Condition;
 import org.nutz.dao.Dao;
 import org.nutz.dao.FieldFilter;
 import org.nutz.dao.Sqls;
+import org.nutz.dao.entity.MappingField;
 import org.nutz.dao.entity.Record;
 import org.nutz.dao.entity.annotation.Column;
 import org.nutz.dao.entity.annotation.Id;
@@ -464,17 +465,9 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 	private Chain makeChain(T t, String[] fields) {
 		NutMap map = NutMap.NEW();
 		// 获取数据库字段名称和对象值键值对
-		Mirror<T> clazzMirror = Mirror.me(t);// 获取类型的镜像
 		for (String field : fields) {
-			Field f = null;
-			try {
-				f = clazzMirror.getField(field);
-			} catch (NoSuchFieldException e) {
-				e.printStackTrace();
-			}
-			if (f != null) {
-				map.addv(f.getAnnotation(Column.class).value(), clazzMirror.getValue(t, f));
-			}
+			MappingField mf = getEntity().getField(field);
+                        map.put(mf.getColumnName(), mf.getValue(t));
 		}
 		return Chain.from(map);
 	}
