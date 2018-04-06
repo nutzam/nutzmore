@@ -68,18 +68,21 @@ public class MarkdownDocParser implements NutDocParser {
         }
     }
 
+    private static final Pattern p2 = Pattern.compile("^([0-9.]*(px|%|rem|em)?)[|\\/]?([0-9.]*(px|%|rem|em)?)$");
+
+    private static final String reg = "(\\*([^*]+)\\*)"
+                                      + "|(\\*\\*([^*]+)\\*\\*)"
+                                      + "|(__([^_]+)__)"
+                                      + "|(~~([^~]+)~~)"
+                                      + "|(`([^`]+)`)"
+                                      + "|(!\\[([^\\]]*)\\]\\(([^\\)]+)\\))"
+                                      + "|(\\[("
+                                      + "(!\\[([^\\]]*)\\]\\(([^\\)]+)\\))|([^\\]]*)"
+                                      + ")\\]\\(([^\\)]*)\\))"
+                                      + "|(https?:\\/\\/[^ ]+)";
+    private static final Pattern REG = Pattern.compile(reg);
+
     private void __line_to_html(Tag tag, String str, NutMap tagNames) {
-        String reg = "(\\*([^*]+)\\*)"
-                     + "|(\\*\\*([^*]+)\\*\\*)"
-                     + "|(__([^_]+)__)"
-                     + "|(~~([^~]+)~~)"
-                     + "|(`([^`]+)`)"
-                     + "|(!\\[([^\\]]*)\\]\\(([^\\)]+)\\))"
-                     + "|(\\[("
-                     + "(!\\[([^\\]]*)\\]\\(([^\\)]+)\\))|([^\\]]*)"
-                     + ")\\]\\(([^\\)]*)\\))"
-                     + "|(https?:\\/\\/[^ ]+)";
-        Pattern REG = Pattern.compile(reg);
         Matcher m = REG.matcher(str);
         int pos = 0;
         while (m.find()) {
@@ -150,17 +153,42 @@ public class MarkdownDocParser implements NutDocParser {
             else if (null != m.group(11)) {
                 String src = m.group(13);
 
+                // 处理一下 alt
+                String alt = Strings.trim(m.group(12));
+
+                Matcher m2 = p2.matcher(alt);
+                String iW = "";
+                String iH = "";
+                if (m2.find()) {
+                    iW = m2.group(1);
+                    iH = m2.group(3);
+                    alt = "";
+                }
+                // 宽高
+                ArrayList<String> cssImg = new ArrayList<>(2);
+                if (!Strings.isBlank(iW)) {
+                    cssImg.add("width:" + iW + (iW.matches("^[0-9]+$") ? "px;" : ";"));
+                }
+                if (!Strings.isBlank(iH)) {
+                    cssImg.add("height:" + iH + (iW.matches("^[0-9]+$") ? "px;" : ";"));
+                }
+
+                Tag img;
                 // 如果是视频
                 if (src.matches("^.+[.](mp4|avi|mov)$")) {
-                    tag.add("video").attr("controls", "yes").attr("src", src);
+                    img = tag.add("video").attr("controls", "yes").attr("src", src);
                 }
                 // 那就是图片咯
                 else {
-                    Tag img = tag.add("img").attr("src", src);
+                    img = tag.add("img").attr("src", src);
                     if (!Strings.isBlank(m.group(12))) {
                         img.attr("alt", m.group(12));
                     }
                 }
+
+                // 处理宽高
+                if (cssImg.size() > 0)
+                    img.attr("style", Strings.join("", cssImg));
 
                 // 记录标签
                 if (null != tagNames)
@@ -194,7 +222,16 @@ public class MarkdownDocParser implements NutDocParser {
                     }
                     // 链接
                     else {
+                        // 判断一下是否是新窗口打开
+                        boolean newtab = false;
+                        if (text.startsWith("+")) {
+                            text = Strings.trim(text.substring(1));
+                            newtab = true;
+                        }
+                        // 生成 DOM
                         Tag a = tag.add("a").attr("href", href);
+                        if (newtab)
+                            a.attr("target", "_blank");
                         this.__line_to_html(a, text, tagNames);
                     }
                 }
