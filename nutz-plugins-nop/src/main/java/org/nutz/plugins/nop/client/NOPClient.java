@@ -8,6 +8,8 @@ import org.nutz.http.Sender;
 import org.nutz.lang.Strings;
 import org.nutz.lang.Times;
 import org.nutz.lang.random.R;
+import org.nutz.log.Log;
+import org.nutz.log.Logs;
 import org.nutz.plugins.nop.NOPConfig;
 import org.nutz.plugins.nop.core.sign.DigestSigner;
 
@@ -65,6 +67,8 @@ public class NOPClient {
 	private NOPClient() {
 	}
 
+	Log log = Logs.get();
+
 	public static NOPClient create(String appKey, String appSecret, String endpoint, String digestName) {
 		NOPClient client = new NOPClient();
 		client.setAppKey(appKey);
@@ -79,6 +83,8 @@ public class NOPClient {
 		req.setParams(request.getParams());
 		req.setData(request.getData());
 		req.setHeader(signHeader(request));
+		Header header = req.getHeader();
+		log.debugf("send headers %s", header);
 		return req;
 	}
 

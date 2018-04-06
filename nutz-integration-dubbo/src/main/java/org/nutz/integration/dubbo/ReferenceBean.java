@@ -1,11 +1,13 @@
 package org.nutz.integration.dubbo;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.nutz.ioc.Ioc;
 import org.nutz.ioc.meta.IocObject;
+import org.nutz.lang.Lang;
 
 import com.alibaba.dubbo.config.ApplicationConfig;
 import com.alibaba.dubbo.config.ConsumerConfig;
@@ -24,6 +26,17 @@ public class ReferenceBean<T> extends ReferenceConfig<T> {
     protected Map<String, IocObject> iobjs;
     
     protected String beanName;
+    
+    protected static Field _initialized;
+    
+    static {
+        try {
+            _initialized = ReferenceConfig.class.getDeclaredField("initialized");
+            _initialized.setAccessible(true);
+        }
+        catch (Throwable e) {
+        }
+    }
     
     public ReferenceBean() {}
 
@@ -131,5 +144,20 @@ public class ReferenceBean<T> extends ReferenceConfig<T> {
     
     public void depose() {
         this.destroy();
+    }
+    
+    @Override
+    public synchronized T get() {
+        try {
+            return super.get();
+        }
+        catch (Throwable e) {
+            try {
+                _initialized.set(this, false);
+            }
+            catch (Throwable e2) {
+            }
+            throw Lang.wrapThrow(e);
+        }
     }
 }

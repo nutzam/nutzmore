@@ -234,7 +234,9 @@ public abstract class AbstractSinger implements Signer {
 				Strings.isBlank(request.getHeader(NOPConfig.signKey))) {
 			return false;
 		}
-		return Strings.equalsIgnoreCase(sign(request, fetcher), request.getHeader(NOPConfig.signKey));
+		String sign = request.getHeader(NOPConfig.signKey);
+		log.debugf("Expected sign is %s", sign);
+		return Strings.equalsIgnoreCase(sign(request, fetcher), sign);
 	}
 
 }

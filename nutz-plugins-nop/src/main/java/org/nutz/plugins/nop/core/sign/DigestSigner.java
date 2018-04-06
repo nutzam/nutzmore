@@ -47,6 +47,7 @@ public class DigestSigner extends AbstractSinger {
 	public String sign(String appSecret, String timestamp, String gateway, String nonce, String dataMate) {
 		String[] temp = Lang.array(appSecret, timestamp, gateway, nonce, dataMate);
 		Arrays.sort(temp);
+		log.debugf("sign with %s args %s", name(), temp);
 		return Lang.digest(name(), Strings.join("", temp));
 	}
 
