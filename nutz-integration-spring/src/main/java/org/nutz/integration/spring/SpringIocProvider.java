@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 
 import org.nutz.ioc.Ioc;
 import org.nutz.ioc.IocException;
+import org.nutz.ioc.ObjectLoadException;
 import org.nutz.ioc.annotation.InjectName;
 import org.nutz.lang.Lang;
 import org.nutz.lang.Strings;
@@ -103,5 +104,9 @@ public class SpringIocProvider implements IocProvider, Ioc {
             ((SingletonBeanRegistry)this).registerSingleton(name, obj);
         }
         return this;
+    }
+
+    public Class<?> getType(String name) throws ObjectLoadException {
+        return applicationContext.getType(name);
     }
 }
