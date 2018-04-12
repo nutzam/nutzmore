@@ -5,7 +5,7 @@ import org.activiti.engine.impl.interceptor.CommandInterceptor;
 
 public class NutProcessEngineConfiguration extends StandaloneProcessEngineConfiguration {
 
-    protected CommandInterceptor createTransactionInterceptor() {
+    public CommandInterceptor createTransactionInterceptor() {
         return new NutTransactionInterceptor();
     }
 }
