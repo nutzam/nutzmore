@@ -1,11 +1,10 @@
 spring:
   datasource:
     name: test
-    url: jdbc:oracle:thin:@localhost:49161:xe
-    username: test
+    url: jdbc:mysql://127.0.0.1:3306/nutz-demo?useUnicode=true&characterEncoding=utf8&useSSL=false
+    username: root
     password: 123456
-    type: org.nutz.dao.impl.SimpleDataSource
-    driver-class-name: oracle.jdbc.driver.OracleDriver
+    driver-class-name: com.mysql.jdbc.Driver
     filters: stat,wall,log4j
     connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
     maxActive: 20
