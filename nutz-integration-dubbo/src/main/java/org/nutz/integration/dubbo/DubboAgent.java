@@ -29,7 +29,8 @@ public class DubboAgent {
     public static void checkIocObject(String beanName, IocObject iobj) {
         if (iobj.getType() == ServiceBean.class 
                 || iobj.getType() == ReferenceBean.class
-                || iobj.getType() == AnnotationBean.class) {
+                || iobj.getType() == AnnotationBean.class
+                || iobj.getType() == DubboManager.class) {
             IocEventSet events = new IocEventSet();
             events.setCreate("_init");
             events.setDepose("depose");

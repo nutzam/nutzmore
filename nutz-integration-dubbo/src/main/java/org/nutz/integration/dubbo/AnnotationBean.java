@@ -81,4 +81,8 @@ public class AnnotationBean {
     }
     
     public void depose(){}
+    
+    public void setPackages(String[] annotationPackages) {
+		this.annotationPackages = annotationPackages;
+	}
 }
