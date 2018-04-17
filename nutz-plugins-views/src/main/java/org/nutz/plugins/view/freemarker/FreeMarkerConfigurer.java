@@ -36,7 +36,7 @@ public class FreeMarkerConfigurer {
 	private Map<String, Object> tags = new HashMap<String, Object>();
 
 	public FreeMarkerConfigurer() {
-		Configuration configuration = new Configuration(Configuration.VERSION_2_3_26);
+		Configuration configuration = new Configuration(Configuration.VERSION_2_3_28);
 		this.initp(configuration, Mvcs.getServletContext(), "/WEB-INF", ".ftl", new FreemarkerDirectiveFactory());
 	}
 
@@ -144,7 +144,7 @@ public class FreeMarkerConfigurer {
 	public FreeMarkerConfigurer addTags(Map<String, Object> map) {
 		if (map != null) {
 			try {
-				configuration.setAllSharedVariables(new SimpleHash(map, new DefaultObjectWrapper(Configuration.VERSION_2_3_26)));
+				configuration.setAllSharedVariables(new SimpleHash(map, new DefaultObjectWrapper(Configuration.VERSION_2_3_28)));
 			} catch (TemplateModelException e) {
 				log.error(e);
 			}

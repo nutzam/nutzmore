@@ -46,7 +46,7 @@ public class FreemarkerView extends AbstractTemplateViewResolver {
 	protected void init(String appRoot, ServletContext sc) {
 		cfg = (Configuration) sc.getAttribute(CONFIG_SERVLET_CONTEXT_KEY);
 		if (cfg == null) {
-			cfg = new Configuration(Configuration.VERSION_2_3_23);
+			cfg = new Configuration(Configuration.VERSION_2_3_28);
 			cfg.setServletContextForTemplateLoading(sc, "/");
 			cfg.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
 			// 读取freemarker配置文件
