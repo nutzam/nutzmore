@@ -71,7 +71,7 @@ mapTags : {
 这样可以在模板中直接调用标签
 `<@currentTime /> ${rekoe} ${conf['emai.to']} ${abc}`
 
-## thymeleaf 视图使用方法（现已支持 `thymeleaf 3.0.5.RELEASE` 版本，并自带 `thymeleaf-layout-dialect 2.2.1`）：
+## thymeleaf 视图使用方法（现已支持 `thymeleaf 3.0.9.RELEASE` 版本，并自带 `thymeleaf-layout-dialect 2.3.0`）：
 
 1. 在 MainModule 的 `@IocBy` 中增加 "*org.nutz.plugins.view.freemarker.ThymeleafIocLoader"
 2. 在 MainModule 中增加 `@Views(ThymeleafViewMaker.class)`
