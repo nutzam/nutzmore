@@ -381,7 +381,7 @@ public class J4E {
                                 if (dFormat != null) {
                                     String f = dFormat.from();
                                     String t = dFormat.to();
-                                    if (!Strings.isBlank(f) && !Strings.isBlank(t)) {
+                                    if (!Strings.isBlank(f) || !Strings.isBlank(t)) {
                                         jcol.setDtFormat(new String[]{f, t});
                                     }
                                 }

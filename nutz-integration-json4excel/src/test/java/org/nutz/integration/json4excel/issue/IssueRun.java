@@ -15,6 +15,7 @@ import org.nutz.integration.json4excel.J4EColumn;
 import org.nutz.integration.json4excel.J4EConf;
 import org.nutz.integration.json4excel.TestUtil;
 import org.nutz.integration.json4excel.bean.DashayuChild;
+import org.nutz.integration.json4excel.bean.I100Bean;
 import org.nutz.integration.json4excel.bean.I68Bean;
 import org.nutz.integration.json4excel.bean.I91Bean;
 import org.nutz.lang.Files;
@@ -184,5 +185,18 @@ public class IssueRun extends TestUtil {
         List<I91Bean> dlist05 = J4E.fromSheet(sheet2, I91Bean.class, econf, false);
         assertEquals(1, dlist05.size());
 
+    }
+
+    // https://github.com/nutzam/nutzmore/issues/100
+    @Test
+    public void testIssue100() throws Exception {
+        List<I100Bean> list = J4E.fromExcel(this.getClass().getResourceAsStream("i100.xlsx"),
+                                            I100Bean.class,
+                                            null);
+        for (I100Bean flashSale : list) {
+            String fromStr = flashSale.getFrom();
+            String toStr = flashSale.getTo();
+            System.out.println(fromStr + " ," + toStr);
+        }
     }
 }
