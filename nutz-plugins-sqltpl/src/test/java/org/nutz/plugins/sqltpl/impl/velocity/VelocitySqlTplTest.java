@@ -7,8 +7,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.nutz.dao.Sqls;
 import org.nutz.dao.impl.FileSqlManager;
+import org.nutz.dao.impl.NutDao;
+import org.nutz.dao.impl.SimpleDataSource;
 import org.nutz.dao.impl.sql.NutSql;
 import org.nutz.dao.sql.Sql;
+import org.nutz.plugins.sqltpl.impl.bean.SqlTplUser;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -32,6 +35,14 @@ public class VelocitySqlTplTest {
 
     @Test
     public void test_c() {
+        
+        SimpleDataSource ds = new SimpleDataSource();
+        ds.setJdbcUrl("jdbc:h2:~/nutztest");
+        NutDao dao = new NutDao(ds);
+        
+        dao.create(SqlTplUser.class, true);
+        
+        
         FileSqlManager sqlm = new FileSqlManager("org/nutz/plugins/sqltpl/impl/velocity/sqls");
         assertTrue(sqlm.count() > 0);
         Sql sql = null;
@@ -51,5 +62,20 @@ public class VelocitySqlTplTest {
 
         dst = sql.toPreparedStatement().replaceAll("[ \\t\\n\\r]", "");
         assertEquals("select * from t_user where token = ?".replaceAll(" ", ""), dst);
+        
+        
+        // 走一下dao接口,测试一下
+        sql = sqlm.create("user.fetch");
+        sql.params().set("name", "wendal");
+        sql.params().set("passwd", "123456");
+        dao.execute(sql);
+        
+        
+        
+        
+        
+        
+        
+        
     }
 }
