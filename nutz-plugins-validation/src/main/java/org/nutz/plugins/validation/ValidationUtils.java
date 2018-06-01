@@ -304,8 +304,14 @@ public abstract class ValidationUtils {
 		Object val = El.eval(context, el);
 		if (val == null)
 		    return true;
-		if (val instanceof Boolean)
-		    return (Boolean)val;
+		if (val instanceof Boolean) {
+			if ((Boolean) val) {
+				return (Boolean) val;
+			} else {
+				errors.add(fieldName, errorMsg);
+				return false;
+			}
+		}
 		errors.add(fieldName, errorMsg);
         return false;
 	}
