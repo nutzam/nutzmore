@@ -151,6 +151,7 @@
 		<module>nutz-plugins-zcron</module>
 		<module>nutz-plugins-zdoc</module>
 		<module>nutz-plugins-fiddler</module>
+		<module>nutz-plugins-jetty-client</module>
 	</modules>
 	<distributionManagement>
 		<snapshotRepository>
