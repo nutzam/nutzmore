@@ -35,6 +35,7 @@ import org.nutz.integration.json4excel.annotation.J4EFormat;
 import org.nutz.integration.json4excel.annotation.J4EName;
 import org.nutz.json.Json;
 import org.nutz.json.JsonFormat;
+import org.nutz.lang.Lang;
 import org.nutz.lang.Mirror;
 import org.nutz.lang.Streams;
 import org.nutz.lang.Strings;
@@ -322,6 +323,9 @@ public class J4E {
                                         boolean onlyHeader) {
         Mirror<T> mc = Mirror.me(objClz);
         List<T> dataList = j4eConf.isNoReturn() ? null : new ArrayList<T>();
+        if(!Lang.equals(sheet.getSheetName(), j4eConf.getSheetName())){
+        	return dataList;
+        }
         Iterator<Row> rlist = sheet.rowIterator();
         int passRow = j4eConf.getPassRow();
         int passContentRow = j4eConf.getPassContentRow();
