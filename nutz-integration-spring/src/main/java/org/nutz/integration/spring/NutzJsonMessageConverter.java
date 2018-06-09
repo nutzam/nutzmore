@@ -44,16 +44,19 @@ public class NutzJsonMessageConverter extends AbstractGenericHttpMessageConverte
 	}
 
 	public NutzJsonMessageConverter() {
-		super(new MediaType[] { MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON_UTF8, new MediaType("application", "*+json") });
+		super(new MediaType[] { MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON_UTF8,
+				new MediaType("application", "*+json") });
 	}
 
 	@Override
-	public Object read(Type type, Class<?> contextClass, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
+	public Object read(Type type, Class<?> contextClass, HttpInputMessage inputMessage)
+			throws IOException, HttpMessageNotReadableException {
 		return Json.fromJson(type, new InputStreamReader(inputMessage.getBody()));
 	}
 
 	@Override
-	protected void writeInternal(Object t, Type type, HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
+	protected void writeInternal(Object t, Type type, HttpOutputMessage outputMessage)
+			throws IOException, HttpMessageNotWritableException {
 		Json.toJson(new OutputStreamWriter(outputMessage.getBody()), t, format);
 	}
 
@@ -64,23 +67,26 @@ public class NutzJsonMessageConverter extends AbstractGenericHttpMessageConverte
 
 	@Override
 	public boolean canWrite(Type type, Class<?> clazz, MediaType mediaType) {
+
 		/**
 		 * 放过swagger
 		 */
-		if (Pattern.matches(".*springfox.*", clazz.getName())) {
+		if (Pattern.matches(".*springfox.*", clazz.getName()) || Pattern.matches(".*springfox.*", type.getTypeName())) {
 			return false;
 		}
 		/**
 		 * 放过spring 本身的各种玩意儿
 		 */
-		if (Pattern.matches("org.springframework.*", clazz.getName())) {
+		if (Pattern.matches("org.springframework.*", clazz.getName())
+				|| Pattern.matches("org.springframework.*", type.getTypeName())) {
 			return false;
 		}
 		return ignoreType == null || !ignoreType.matcher(clazz.getName()).matches();
 	}
 
 	@Override
-	protected Object readInternal(Class<? extends Object> clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
+	protected Object readInternal(Class<? extends Object> clazz, HttpInputMessage inputMessage)
+			throws IOException, HttpMessageNotReadableException {
 		return Json.fromJson(clazz, new InputStreamReader(inputMessage.getBody()));
 	}
 }

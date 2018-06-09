@@ -33,4 +33,4 @@
 '                                                                                                     
  
  
- 					powered by nutz.cn  version 1.r.63
+ 					powered by nutz.cn  version 1.r.65

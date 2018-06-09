@@ -31,7 +31,7 @@ management:
     enabled: false
 nutz:
   json:
-    enabled: false
+    enabled: true
     mode: compact
     date-format: yyyyMMdd HH:mm:ss
   dao:
