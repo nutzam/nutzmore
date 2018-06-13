@@ -62,10 +62,10 @@ public class J4ETest extends TestUtil {
         List<Hero> heroList = new ArrayList<Hero>();
         Hero h1 = new Hero();
         h1.name = "金刚狼";
-        h1.avatar1 = this.getClass().getResourceAsStream("/金刚狼.jpg");
+        h1.avatar1 = Streams.fileIn(new File(Disks.absolute("金刚狼.jpg")));
         Hero h2 = new Hero();
         h2.name = "死侍";
-        h2.avatar1 = this.getClass().getResourceAsStream("/死侍.jpg");
+        h2.avatar1 = Streams.fileIn(new File(Disks.absolute("死侍.jpg")));
 
         heroList.add(h1);
         heroList.add(h2);
