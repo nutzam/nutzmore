@@ -19,6 +19,7 @@ import org.nutz.integration.json4excel.bean.I100Bean;
 import org.nutz.integration.json4excel.bean.I68Bean;
 import org.nutz.integration.json4excel.bean.I91Bean;
 import org.nutz.lang.Files;
+import org.nutz.lang.Streams;
 import org.nutz.lang.util.Disks;
 
 public class IssueRun extends TestUtil {
@@ -26,7 +27,8 @@ public class IssueRun extends TestUtil {
     // https://github.com/nutzam/nutzmore/issues/16
     @Test
     public void testIssue16() throws Exception {
-        List<VideoRate> vrList = J4E.fromExcel(this.getClass().getResourceAsStream("Book1.xlsx"),
+        File e = new File(Disks.absolute("./issue/Book1.xlsx"));
+        List<VideoRate> vrList = J4E.fromExcel(Streams.fileIn(e),
                                                VideoRate.class,
                                                null);
         assertEquals(31, vrList.size());
@@ -127,7 +129,8 @@ public class IssueRun extends TestUtil {
         clist.add(c3);
 
         // 加载模板
-        Workbook wb = J4E.loadExcel(this.getClass().getResourceAsStream("i91.xls"));
+        File e = new File(Disks.absolute("./issue/i91.xls"));
+        Workbook wb = J4E.loadExcel(Streams.fileIn(e));
         // 第一排左边
         econf.setPassColumn(0).setPassRow(1);
         J4E.toExcel(wb, null, clist, econf);
@@ -151,7 +154,8 @@ public class IssueRun extends TestUtil {
         // 默认配置
         J4EConf econf = J4EConf.from(I91Bean.class);
         // 加载模板
-        Workbook wb = J4E.loadExcel(this.getClass().getResourceAsStream("i91Read.xls"));
+        File e = new File(Disks.absolute("./issue/i91Read.xls"));
+        Workbook wb = J4E.loadExcel(Streams.fileIn(e));
         // 第一个sheet
         Sheet sheet1 = wb.getSheet("第一个");
         // 第一排左边
@@ -190,7 +194,8 @@ public class IssueRun extends TestUtil {
     // https://github.com/nutzam/nutzmore/issues/100
     @Test
     public void testIssue100() throws Exception {
-        List<I100Bean> list = J4E.fromExcel(this.getClass().getResourceAsStream("i100.xlsx"),
+        File e = new File(Disks.absolute("./issue/i100.xls"));
+        List<I100Bean> list = J4E.fromExcel(Streams.fileIn(e),
                                             I100Bean.class,
                                             null);
         for (I100Bean flashSale : list) {
