@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.nutz.integration.json4excel.annotation.J4ECell;
+import org.nutz.integration.json4excel.annotation.J4ECellStyle;
 import org.nutz.integration.json4excel.annotation.J4EDefine;
 import org.nutz.integration.json4excel.annotation.J4EExt;
 import org.nutz.integration.json4excel.annotation.J4EIgnore;
@@ -102,7 +103,8 @@ public class J4EConf {
         return modifyOut;
     }
 
-    public J4EConf setEachModify(J4EEachRowModify eachModify, OutputStream out) {
+    public J4EConf setEachModify(J4EEachRowModify eachModify,
+                                 OutputStream out) {
         this.eachModify = eachModify;
         this.modifyOut = out;
         this.noReturn = true;
@@ -268,6 +270,13 @@ public class J4EConf {
                     jcol.setFromExcelFun(fromExcelFun);
                 }
             }
+            J4ECellStyle cellStyle = cf.getAnnotation(J4ECellStyle.class);
+            if (cellStyle != null) {
+                Class<? extends J4ECellSetStyle> toExcelFun = cellStyle.setStyle();
+                if (!toExcelFun.isAssignableFrom(J4ECellSetStyleImpl.class)) {
+                    jcol.setCellStyle(toExcelFun);
+                }
+            }
             jclist.add(jcol);
         }
         jc.setColumns(jclist);
@@ -279,7 +288,8 @@ public class J4EConf {
     }
 
     public static J4EConf from(String confPath) {
-        return Json.fromJsonFile(J4EConf.class, new File(Disks.absolute(confPath)));
+        return Json.fromJsonFile(J4EConf.class,
+                                 new File(Disks.absolute(confPath)));
     }
 
     public static J4EConf from(Reader confReader) {
@@ -287,7 +297,8 @@ public class J4EConf {
     }
 
     public static J4EConf from(InputStream confInputStream) {
-        return Json.fromJson(J4EConf.class, new InputStreamReader(confInputStream));
+        return Json.fromJson(J4EConf.class,
+                             new InputStreamReader(confInputStream));
     }
 
     public static J4EConf fromConf(CharSequence confStr) {

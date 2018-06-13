@@ -27,6 +27,9 @@ public class J4EColumn {
     private J4ECellToExcel toExcelFun;
     private J4ECellFromExcel fromExcelFun;
 
+    // 设置表格样式
+    private J4ECellSetStyle cellStyle;
+
     private int precision;
 
     private boolean isIgnore;
@@ -118,6 +121,15 @@ public class J4EColumn {
     public void setFromExcelFun(Class<? extends J4ECellFromExcel> cellFun) {
         Mirror<? extends J4ECellFromExcel> mc = Mirror.me(cellFun);
         fromExcelFun = mc.born();
+    }
+
+    public J4ECellSetStyle getCellStyle() {
+        return cellStyle;
+    }
+
+    public void setCellStyle(Class<? extends J4ECellSetStyle> cellStyle) {
+        Mirror<? extends J4ECellSetStyle> mc = Mirror.me(cellStyle);
+        this.cellStyle = mc.born();
     }
 
     public int getImgWidth() {
