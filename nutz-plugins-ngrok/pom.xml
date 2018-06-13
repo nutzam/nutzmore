@@ -40,17 +40,17 @@
 		<dependency>
 			<groupId>redis.clients</groupId>
 			<artifactId>jedis</artifactId>
-			<version>2.9.0</version>
+			<version>${jedis.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz-integration-jedis</artifactId>
-			<version>1.r.66-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.netty</groupId>
 			<artifactId>netty-all</artifactId>
-			<version>4.1.16.Final</version>
+			<version>${netty-all.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.nutz</groupId>
@@ -61,7 +61,7 @@
 		<dependency>
 			<groupId>com.ibeetl</groupId>
 			<artifactId>beetl</artifactId>
-			<version>2.7.22</version>
+			<version>${beetl.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
