@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.nutz</groupId>
     <artifactId>nutzmore</artifactId>
-    <version>1.r.66-SNAPSHOT</version>
+    <version>1.r.67-SNAPSHOT</version>
   </parent>
   <artifactId>nutz-plugins-ngrok</artifactId>
 
@@ -55,7 +55,7 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz-web</artifactId>
-			<version>1.r.66-SNAPSHOT</version>
+			<version>1.r.67-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
