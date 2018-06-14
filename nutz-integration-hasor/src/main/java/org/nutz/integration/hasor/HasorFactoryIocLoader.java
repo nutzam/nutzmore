@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 package org.nutz.integration.hasor;
-import net.hasor.core.*;
+
+import java.io.IOException;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import org.nutz.integration.hasor.annotation.HasorConfiguration;
 import org.nutz.ioc.Ioc;
 import org.nutz.ioc.impl.PropertiesProxy;
@@ -24,9 +28,12 @@ import org.nutz.lang.util.NutMap;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 
-import java.io.IOException;
-import java.util.Map.Entry;
-import java.util.Set;
+import net.hasor.core.ApiBinder;
+import net.hasor.core.AppContext;
+import net.hasor.core.BindInfo;
+import net.hasor.core.Hasor;
+import net.hasor.core.LifeModule;
+import net.hasor.core.Module;
 /**
  * 用法：ioc.get(HasorFactoryIocLoader.class, "hasor");
  * @version : 2017年02月20日
