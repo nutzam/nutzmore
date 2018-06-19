@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.r.66-SNAPSHOT</version>
+		<version>1.r.67-SNAPSHOT</version>
 	</parent>
 	<artifactId>nutz-integration-json4excel</artifactId>
 	<name>nutz-integration-json4excel</name>
@@ -37,7 +37,6 @@
 	</scm>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<poi.version>3.17</poi.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -49,13 +48,13 @@
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-			<version>5.1.40</version>
+			<version>${mysql-connector-java.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>druid</artifactId>
-			<version>1.0.26</version>
+			<version>${druid.version}</version>
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>
@@ -71,7 +70,7 @@
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
-			<version>1.2.17</version>
+			<version>${log4j.version}</version>
 			<optional>true</optional>
 			<scope>provided</scope>
 		</dependency>

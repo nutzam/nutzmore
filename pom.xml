@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.nutz</groupId>
 	<artifactId>nutzmore</artifactId>
-	<version>1.r.66-SNAPSHOT</version>
+	<version>1.r.67-SNAPSHOT</version>
 	<name>nutzmore</name>
 	<description>Nutz, which is a collections of lightweight frameworks, each of them can be used independently</description>
 
@@ -14,6 +14,25 @@
 	</issueManagement>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<antlr4-runtime.version>4.7.1</antlr4-runtime.version>
+		<beetl.version>2.8.4</beetl.version>
+		<commons-lang3.version>3.7</commons-lang3.version>
+		<druid.version>1.1.10</druid.version>
+		<ehcache.version>2.10.5</ehcache.version>
+		<freemarker.version>2.3.28</freemarker.version>
+		<h2.version>1.4.197</h2.version>
+		<itext-asian.version>5.2.0</itext-asian.version>
+		<itextpdf.version>5.5.13</itextpdf.version>
+		<javax.websocket-api.version>1.1</javax.websocket-api.version>
+		<jedis.version>2.9.0</jedis.version>
+		<jetbrick-template.version>2.1.6</jetbrick-template.version>
+		<log4j.version>1.2.17</log4j.version>
+		<mysql-connector-java.version>5.1.46</mysql-connector-java.version>
+		<netty-all.version>4.1.25.Final</netty-all.version>
+		<poi.version>3.17</poi.version>
+		<shiro-ehcache.version>1.3.2</shiro-ehcache.version>
+		<slf4j-log4j12.version>1.7.25</slf4j-log4j12.version>
+		<velocity.version>1.7</velocity.version>
 	</properties>
 	<licenses>
 		<license>
@@ -116,7 +135,6 @@
 		<module>nutz-integration-rabbitmq</module>
 		<module>nutz-integration-shiro</module>
 		<module>nutz-integration-spring</module>
-		
 		<module>nutz-integration-zbus</module>
 		<module>nutz-plugins-apidoc</module>
 		<module>nutz-plugins-cache</module>
@@ -151,6 +169,7 @@
 		<module>nutz-plugins-zcron</module>
 		<module>nutz-plugins-zdoc</module>
 		<module>nutz-plugins-fiddler</module>
+		<module>nutz-plugins-jetty-client</module>
 	</modules>
 	<distributionManagement>
 		<snapshotRepository>

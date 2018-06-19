@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.r.66-SNAPSHOT</version>
+		<version>1.r.67-SNAPSHOT</version>
 	</parent>
 	<artifactId>nutz-integration-shiro</artifactId>
 	<name>nutz-integration-shiro</name>
@@ -66,25 +66,25 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.25</version>
+			<version>${slf4j-log4j12.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>redis.clients</groupId>
 			<artifactId>jedis</artifactId>
-			<version>2.9.0</version>
+			<version>${jedis.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.ehcache</groupId>
 			<artifactId>ehcache</artifactId>
-			<version>2.10.4</version>
+			<version>${ehcache.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz-plugins-cache</artifactId>
-			<version>1.r.66-SNAPSHOT</version>
+			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -101,13 +101,13 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz-plugins-mock</artifactId>
-			<version>1.r.66-SNAPSHOT</version>
+			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.shiro</groupId>
 			<artifactId>shiro-ehcache</artifactId>
-			<version>1.3.2</version>
+			<version>${shiro-ehcache.version}</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>

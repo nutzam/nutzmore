@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.r.66-SNAPSHOT</version>
+		<version>1.r.67-SNAPSHOT</version>
 	</parent>
 	<artifactId>nutz-plugins-sqltpl</artifactId>
 	<description>
@@ -61,7 +61,7 @@
 		<dependency>
 			<groupId>com.ibeetl</groupId>
 			<artifactId>beetl</artifactId>
-			<version>2.7.22</version>
+			<version>${beetl.version}</version>
 			<optional>true</optional>
 			<exclusions>
 				<exclusion>
@@ -79,19 +79,19 @@
 		<dependency>
 			<groupId>org.apache.velocity</groupId>
 			<artifactId>velocity</artifactId>
-			<version>1.7</version>
+			<version>${velocity.version}</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.freemarker</groupId>
 			<artifactId>freemarker</artifactId>
-			<version>2.3.26-incubating</version>
+			<version>${freemarker.version}</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>com.github.subchen</groupId>
 			<artifactId>jetbrick-template</artifactId>
-			<version>2.1.5</version>
+			<version>${jetbrick-template.version}</version>
 			<optional>true</optional>
 			<exclusions>
 				<exclusion>
@@ -103,7 +103,7 @@
 		<dependency>
 			<groupId>org.antlr</groupId>
 			<artifactId>antlr4-runtime</artifactId>
-			<version>4.7</version>
+			<version>${antlr4-runtime.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.h2database</groupId>

@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.nutz</groupId>
     <artifactId>nutzmore</artifactId>
-    <version>1.r.66-SNAPSHOT</version>
+    <version>1.r.67-SNAPSHOT</version>
   </parent>
   <artifactId>nutz-plugins-daomapping</artifactId>
   
@@ -72,7 +72,7 @@
   	<dependency>
   		<groupId>com.h2database</groupId>
   		<artifactId>h2</artifactId>
-  		<version>1.4.193</version>
+  		<version>${h2.version}</version>
   		<scope>test</scope>
   	</dependency>
   	<dependency>
@@ -84,7 +84,7 @@
   	<dependency>
   		<groupId>com.alibaba</groupId>
   		<artifactId>druid</artifactId>
-  		<version>1.0.27</version>
+  		<version>${druid.version}</version>
   		<scope>test</scope>
   	</dependency>
   </dependencies>

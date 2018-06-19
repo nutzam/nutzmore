@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.r.66-SNAPSHOT</version>
+		<version>1.r.67-SNAPSHOT</version>
 	</parent>
 	<artifactId>nutz-plugins-views</artifactId>
 	<description>Nutz More Views</description>
@@ -57,14 +57,14 @@
 		<dependency>
 			<groupId>org.freemarker</groupId>
 			<artifactId>freemarker</artifactId>
-			<version>2.3.28</version>
+			<version>${freemarker.version}</version>
 			<scope>provided</scope>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.velocity</groupId>
 			<artifactId>velocity</artifactId>
-			<version>1.7</version>
+			<version>${velocity.version}</version>
 			<optional>true</optional>
 			<scope>provided</scope>
 		</dependency>
@@ -92,13 +92,13 @@
 		<dependency>
 			<groupId>com.itextpdf</groupId>
 			<artifactId>itextpdf</artifactId>
-			<version>5.5.8</version>
+			<version>${itextpdf.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.itextpdf</groupId>
 			<artifactId>itext-asian</artifactId>
-			<version>5.2.0</version>
+			<version>${itext-asian.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -111,7 +111,7 @@
 		<dependency>
 			<groupId>com.ibeetl</groupId>
 			<artifactId>beetl</artifactId>
-			<version>2.7.28</version>
+			<version>${beetl.version}</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>

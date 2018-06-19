@@ -5,7 +5,7 @@
     <parent>
         <artifactId>nutzmore</artifactId>
         <groupId>org.nutz</groupId>
-        <version>1.r.66-SNAPSHOT</version>
+        <version>1.r.67-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -15,12 +15,12 @@
         <dependency>
             <groupId>org.nutz</groupId>
             <artifactId>nutz-integration-jedis</artifactId>
-            <version>1.r.66-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
-            <version>2.9.0</version>
+            <version>${jedis.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

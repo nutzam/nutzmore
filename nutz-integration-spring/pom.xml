@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.r.66-SNAPSHOT</version>
+		<version>1.r.67-SNAPSHOT</version>
 	</parent>
 	<artifactId>nutz-integration-spring</artifactId>
 	<url>https://nutzam.com</url>
@@ -45,23 +45,24 @@
 	</scm>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<spring.version>5.0.6.RELEASE</spring.version>
 	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
-			<version>5.0.0.RELEASE</version>
+			<version>${spring.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-jdbc</artifactId>
-			<version>5.0.0.RELEASE</version>
+			<version>${spring.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-web</artifactId>
-			<version>5.0.0.RELEASE</version>
+			<version>${spring.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -73,13 +74,13 @@
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>druid</artifactId>
-			<version>1.0.26</version>
+			<version>${druid.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<version>1.4.193</version>
+			<version>${h2.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
