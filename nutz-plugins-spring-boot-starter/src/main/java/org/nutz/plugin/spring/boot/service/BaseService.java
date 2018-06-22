@@ -15,7 +15,6 @@ import org.nutz.dao.FieldFilter;
 import org.nutz.dao.Sqls;
 import org.nutz.dao.entity.MappingField;
 import org.nutz.dao.entity.Record;
-import org.nutz.dao.entity.annotation.Column;
 import org.nutz.dao.entity.annotation.Id;
 import org.nutz.dao.pager.Pager;
 import org.nutz.dao.sql.Sql;

@@ -46,7 +46,7 @@
 	</scm>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<spring-boot.version>1.5.13.RELEASE</spring-boot.version>
+		<spring-boot.version>2.0.3.RELEASE</spring-boot.version>
 	</properties>
 
 	<build>
@@ -131,12 +131,13 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz-integration-spring</artifactId>
-			<version>${project.version}</version>
+			<version>1.r.67-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz-plugins-sqlmanager</artifactId>
-			<version>${project.version}</version>
+			<version>1.r.67-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
+	<version>2.0.3.SNAPSHOT</version>
 </project>

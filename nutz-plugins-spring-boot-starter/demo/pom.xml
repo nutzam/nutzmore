@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>club.zhcs</groupId>
@@ -7,13 +8,13 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.5.13.RELEASE</version>
+		<version>2.0.3.RELEASE</version>
 	</parent>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
-		<swagger.version>2.7.0</swagger.version>
+		<swagger.version>2.9.0</swagger.version>
 	</properties>
 	<repositories>
 		<repository>
@@ -44,12 +45,19 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>com.alibaba</groupId>
-			<artifactId>druid</artifactId>
-			<version>1.0.27</version>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-log4j2</artifactId>
+		    <version>2.0.3.RELEASE</version>
 		</dependency>
+		
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
@@ -63,15 +71,22 @@
 			<artifactId>nutz-plugins-spring-boot-starter</artifactId>
 			<version>1.r.66-SNAPSHOT</version>
 		</dependency>
+		
+		<dependency>
+		    <groupId>com.alibaba</groupId>
+		    <artifactId>druid-spring-boot-starter</artifactId>
+		    <version>1.1.10</version>
+		</dependency>
+		
 		<dependency>
 			<groupId>club.zhcs</groupId>
 			<artifactId>axe-swagger</artifactId>
-			<version>1.5</version>
+			<version>1.5.14</version>
 		</dependency>
 		<dependency>
 			<groupId>club.zhcs</groupId>
 			<artifactId>axe-captcha</artifactId>
-			<version>1.5</version>
+			<version>1.5.14</version>
 		</dependency>
 		<dependency>
 			<groupId>com.oracle</groupId>
@@ -81,7 +96,7 @@
 		<dependency>
 			<groupId>club.zhcs</groupId>
 			<artifactId>axe-common</artifactId>
-			<version>1.5</version>
+			<version>1.5.14</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

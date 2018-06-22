@@ -1,24 +1,25 @@
 spring:
   datasource:
-    name: test
-    url: jdbc:mysql://127.0.0.1:3306/nutz-demo?useUnicode=true&characterEncoding=utf8&useSSL=false
-    username: root
-    password: 123456
-    driver-class-name: com.mysql.jdbc.Driver
-    filters: stat,wall,log4j
-    connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
-    maxActive: 20
-    initialSize: 1
-    maxWait: 60000
-    minIdle: 1
-    timeBetweenEvictionRunsMillis: 60000
-    minEvictableIdleTimeMillis: 300000
-    validationQuery: select 'x'
-    testWhileIdle: true
-    testOnBorrow: false
-    testOnReturn: false
-    poolPreparedStatements: true
-    maxOpenPreparedStatements: 20
+    druid:
+      name: test
+      url: jdbc:mysql://127.0.0.1:3306/nutz-demo?useUnicode=true&characterEncoding=utf8&useSSL=false
+      username: root
+      password: 123456
+      driver-class-name: com.mysql.jdbc.Driver
+      filters: stat,wall,log4j2
+      connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+      maxActive: 20
+      initialSize: 1
+      maxWait: 60000
+      minIdle: 1
+      timeBetweenEvictionRunsMillis: 60000
+      minEvictableIdleTimeMillis: 300000
+      validationQuery: select 'x'
+      testWhileIdle: true
+      testOnBorrow: false
+      testOnReturn: false
+      poolPreparedStatements: true
+      maxOpenPreparedStatements: 20
 swagger:
   base-package: demo
 logging:
@@ -27,8 +28,11 @@ logging:
     org.nutz: debug
     demo: debug
 management:
-  security:
-    enabled: false
+  endpoints:
+    web:
+      exposure:
+        include:
+        - '*'
 nutz:
   json:
     enabled: true

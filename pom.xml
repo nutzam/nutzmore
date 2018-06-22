@@ -78,7 +78,7 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz</artifactId>
-			<version>${project.version}</version>
+			<version>1.r.67-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 
