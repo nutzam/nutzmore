@@ -124,6 +124,8 @@ public class ZMo {
      */
     public ZMoDoc toDoc(Object obj, ZMoEntity en) {
         ZMoDoc doc = ZMoDoc.NEW();
+        if (en == null)
+        	en = getEntity(obj.getClass());
         Set<String> javaNames = en.getJavaNames(obj);
         // 获取字段过滤器
         ZMoFF ff = ZMoFF.get();
@@ -201,7 +203,7 @@ public class ZMo {
      */
     public ZMoDoc[] toDocArray(ZMoEntity en, Object[] objs) {
         ZMoDoc[] docs = new ZMoDoc[objs.length];
-        if (objs.length > 0)
+        if (en == null && objs.length > 0)
             en = this.getEntity(objs[0].getClass());
         int i = 0;
         for (Object obj : objs)
@@ -261,8 +263,10 @@ public class ZMo {
      */
     public List<ZMoDoc> toDocList(ZMoEntity en, Object[] objs) {
         List<ZMoDoc> docs = new ArrayList<ZMoDoc>(objs.length);
+        if (en == null && objs.length > 0)
+        	en = getEntity(objs[0].getClass());
         for (Object obj : objs)
-            docs.add(toDoc(obj, null));
+            docs.add(toDoc(obj, en));
         return docs;
     }
 
@@ -277,8 +281,10 @@ public class ZMo {
      */
     public List<ZMoDoc> toDocList(ZMoEntity en, List<?> objs) {
         List<ZMoDoc> docs = new ArrayList<ZMoDoc>(objs.size());
+        if (en == null && objs.size() > 0)
+        	en = getEntity(objs.get(0).getClass());
         for (Object obj : objs)
-            docs.add(toDoc(obj, null));
+            docs.add(toDoc(obj, en));
         return docs;
     }
 
