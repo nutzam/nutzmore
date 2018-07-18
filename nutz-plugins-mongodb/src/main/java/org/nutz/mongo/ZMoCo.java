@@ -14,7 +14,6 @@ import org.nutz.log.Logs;
 import org.nutz.mongo.entity.ZMoEntity;
 
 import com.mongodb.AggregationOptions;
-import com.mongodb.AggregationOutput;
 import com.mongodb.CommandResult;
 import com.mongodb.Cursor;
 import com.mongodb.DBCollection;
@@ -27,11 +26,9 @@ import com.mongodb.GroupCommand;
 import com.mongodb.MapReduceCommand;
 import com.mongodb.MapReduceCommand.OutputType;
 import com.mongodb.MapReduceOutput;
-import com.mongodb.MongoNamespace;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 import com.mongodb.WriteResult;
-import com.mongodb.operation.AggregateOperation;
 
 /**
  * 对于集合类的薄封装
@@ -68,13 +65,13 @@ public class ZMoCo {
 
     public WriteResult insert(ZMoDoc... arr) {
         if (log.isDebugEnabled())
-            log.debug(log_format("insert", (Object)arr));
+            log.debug(log_format("insert", (Object) arr));
         return dbc.insert(arr);
     }
 
     public WriteResult insert(WriteConcern concern, ZMoDoc... arr) {
         if (log.isDebugEnabled())
-            log.debug(log_format("insert", concern, (Object)arr));
+            log.debug(log_format("insert", concern, (Object) arr));
         return dbc.insert(concern, arr);
     }
 
@@ -164,7 +161,14 @@ public class ZMoCo {
                                 boolean returnNew,
                                 boolean upsert) {
         if (log.isDebugEnabled())
-            log.debug(log_format("findAndModify", query, fields, sort, remove, update, returnNew, upsert));
+            log.debug(log_format("findAndModify",
+                                 query,
+                                 fields,
+                                 sort,
+                                 remove,
+                                 update,
+                                 returnNew,
+                                 upsert));
         return ZMoDoc.WRAP(dbc.findAndModify(query,
                                              fields,
                                              sort,
@@ -182,7 +186,7 @@ public class ZMoCo {
 
     public ZMoDoc findAndModify(ZMoDoc query, ZMoDoc update) {
         if (log.isDebugEnabled())
-            log.debug(log_format("findAndModify", query,update));
+            log.debug(log_format("findAndModify", query, update));
         return ZMoDoc.WRAP(dbc.findAndModify(query, update));
     }
 
@@ -463,23 +467,27 @@ public class ZMoCo {
         return dbc.mapReduce(command);
     }
 
-    public AggregationOutput aggregate(final List<DBObject> pipeline) {
+    @Deprecated
+    public com.mongodb.AggregationOutput aggregate(final List<DBObject> pipeline) {
         if (log.isDebugEnabled())
             log.debug(log_format("aggregate", pipeline));
         return dbc.aggregate(pipeline);
     }
-    
+
     public Cursor aggregate(final List<DBObject> pipeline, final AggregationOptions options) {
         if (log.isDebugEnabled())
             log.debug(log_format("aggregate", pipeline));
         return dbc.aggregate(pipeline, options);
     }
-    
-    public void aggregate(final List<DBObject> pipeline, final AggregationOptions options, Callback<Cursor> callback) {
+
+    public void aggregate(final List<DBObject> pipeline,
+                          final AggregationOptions options,
+                          Callback<Cursor> callback) {
         Cursor cursor = aggregate(pipeline, options);
         try {
             callback.invoke(cursor);
-        } finally {
+        }
+        finally {
             cursor.close();
         }
     }
@@ -607,12 +615,16 @@ public class ZMoCo {
     protected String _to_json(Object obj) {
         return Json.toJson(obj, JsonFormat.compact().setIgnoreNull(false));
     }
-    
-    protected String log_format(String op, Object...args) {
-        StringBuilder sb = new StringBuilder("db.").append(getName()).append('.').append(op).append('(');
+
+    protected String log_format(String op, Object... args) {
+        StringBuilder sb = new StringBuilder("db.").append(getName())
+                                                   .append('.')
+                                                   .append(op)
+                                                   .append('(');
         for (int i = 0; i < args.length; i++) {
             Object arg = args[i];
-            if (arg != null && (arg instanceof Map || arg.getClass().isArray() || arg instanceof Collection))
+            if (arg != null
+                && (arg instanceof Map || arg.getClass().isArray() || arg instanceof Collection))
                 sb.append(_to_json(arg));
             else
                 sb.append(arg);
@@ -622,36 +634,52 @@ public class ZMoCo {
         sb.append(')');
         return sb.toString();
     }
-    
-    //----------------------------------------------------------------------------------
+
+    // ----------------------------------------------------------------------------------
     // ORM 相关的方法, 类似的
     /**
      * 查询符合条件的对象
-     * @param klass 需要映射的对象
-     * @param ref 查询条件
-     * @param keys 需要检出的键,可以是null
-     * @param pager 分页对象,recordCount会自动设置, 可以是null
+     * 
+     * @param klass
+     *            需要映射的对象
+     * @param ref
+     *            查询条件
+     * @param keys
+     *            需要检出的键,可以是null
+     * @param pager
+     *            分页对象,recordCount会自动设置, 可以是null
      * @return 符合条件的对象
      */
     public <T> List<T> query(Class<T> klass, ZMoDoc ref, ZMoDoc keys, Pager pager) {
         return query(ZMo.me().getEntity(klass), ref, keys, pager);
     }
+
     /**
      * 查询符合条件的对象
-     * @param klass 需要映射的对象
-     * @param ref 查询条件
-     * @param pager 分页对象,recordCount会自动设置, 可以是null
+     * 
+     * @param klass
+     *            需要映射的对象
+     * @param ref
+     *            查询条件
+     * @param pager
+     *            分页对象,recordCount会自动设置, 可以是null
      * @return 符合条件的对象
      */
     public <T> List<T> query(Class<T> klass, ZMoDoc ref, Pager pager) {
         return query(ZMo.me().getEntity(klass), ref, null, pager);
     }
+
     /**
      * 查询符合条件的对象
-     * @param klass 需要映射的对象
-     * @param ref 查询条件
-     * @param pageNumber 页数,例如2
-     * @param pageSize 分页大小,例如10
+     * 
+     * @param klass
+     *            需要映射的对象
+     * @param ref
+     *            查询条件
+     * @param pageNumber
+     *            页数,例如2
+     * @param pageSize
+     *            分页大小,例如10
      * @return 符合条件的对象
      */
     public <T> List<T> query(Class<T> klass, ZMoDoc ref, int pageNumber, int pageSize) {
@@ -660,22 +688,38 @@ public class ZMoCo {
 
     /**
      * 查询符合条件的对象
-     * @param klass 需要映射的对象
-     * @param ref 查询条件
-     * @param keys 需要检出的键,可以是null
-     * @param pageNumber 页数,例如2
-     * @param pageSize 分页大小,例如10
+     * 
+     * @param klass
+     *            需要映射的对象
+     * @param ref
+     *            查询条件
+     * @param keys
+     *            需要检出的键,可以是null
+     * @param pageNumber
+     *            页数,例如2
+     * @param pageSize
+     *            分页大小,例如10
      * @return 符合条件的对象
      */
-    public <T> List<T> query(Class<T> klass, ZMoDoc ref, ZMoDoc keys, int pageNumber, int pageSize) {
+    public <T> List<T> query(Class<T> klass,
+                             ZMoDoc ref,
+                             ZMoDoc keys,
+                             int pageNumber,
+                             int pageSize) {
         return query(ZMo.me().getEntity(klass), ref, keys, new Pager(pageNumber, pageSize));
     }
+
     /**
      * 查询符合条件的对象ZMoEntity
-     * @param en 需要映射的实体
-     * @param ref 查询条件
-     * @param keys 需要检出的键,可以是null
-     * @param pager 分页对象
+     * 
+     * @param en
+     *            需要映射的实体
+     * @param ref
+     *            查询条件
+     * @param keys
+     *            需要检出的键,可以是null
+     * @param pager
+     *            分页对象
      * @return 符合条件的对象
      */
     @SuppressWarnings("unchecked")
@@ -687,34 +731,48 @@ public class ZMoCo {
         }
         List<T> list = new ArrayList<T>();
         while (cur.hasNext()) {
-            list.add((T)ZMo.me().fromDoc(cur.next(), en));
+            list.add((T) ZMo.me().fromDoc(cur.next(), en));
         }
         return list;
     }
+
     /**
      * 查询符合条件的一个对象
-     * @param klass 需要映射的类
-     * @param ref 查询条件
-     * @param keys 需要检出的键,可以是null
+     * 
+     * @param klass
+     *            需要映射的类
+     * @param ref
+     *            查询条件
+     * @param keys
+     *            需要检出的键,可以是null
      * @return 符合条件的一个对象
      */
     public <T> T fetch(Class<T> klass, ZMoDoc ref, ZMoDoc keys) {
         return fetch(ZMo.me().getEntity(klass), ref, keys);
     }
+
     /**
      * 查询符合条件的一个对象
-     * @param klass 需要映射的类
-     * @param ref 查询条件
+     * 
+     * @param klass
+     *            需要映射的类
+     * @param ref
+     *            查询条件
      * @return 符合条件的一个对象
      */
     public <T> T fetch(Class<T> klass, ZMoDoc keys) {
         return fetch(ZMo.me().getEntity(klass), null, keys);
     }
+
     /**
      * 查询符合条件的一个对象
-     * @param en 需要映射的实体
-     * @param ref 查询条件
-     * @param keys 需要检出的键,可以是null
+     * 
+     * @param en
+     *            需要映射的实体
+     * @param ref
+     *            查询条件
+     * @param keys
+     *            需要检出的键,可以是null
      * @return 符合条件的一个对象
      */
     public <T> T fetch(ZMoEntity en, ZMoDoc ref, ZMoDoc keys) {
@@ -723,5 +781,5 @@ public class ZMoCo {
             return null;
         return list.get(0);
     }
-    
+
 }
