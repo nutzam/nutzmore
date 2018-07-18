@@ -193,10 +193,6 @@ public class J4E {
                     if (c == null) {
                         c = row.createCell(ccin);
                     }
-                    J4ECellSetStyle cellSetStyle = jcol.getCellStyle();
-                    if (cellSetStyle != null) {
-                        cellSetStyle.setStyle(c);
-                    }
                     // 图片
                     if (columnType == J4EColumnType.IMAGE) {
                         try {
@@ -272,6 +268,10 @@ public class J4E {
                                                            : "");
                             }
                         }
+                    }
+                    J4ECellSetStyle cellSetStyle = jcol.getCellStyle();
+                    if (cellSetStyle != null) {
+                        cellSetStyle.setStyle(c);
                     }
                 }
             }
