@@ -2,9 +2,10 @@ var ioc = {
 		// 参考 https://github.com/xetorthio/jedis/wiki/Getting-started
 		jedisPoolConfig : {
 			type : "redis.clients.jedis.JedisPoolConfig",
+			factory : "$conf#make",
+			args : ["redis.clients.jedis.JedisPoolConfig", "redis.pool."],
 			fields : {
-				testWhileIdle : true, // 空闲时测试,免得redis连接空闲时间长了断线
-				maxTotal : {java : "$conf.getInt('redis.maxTotal', 100)"} // 一般都够了吧
+				maxTotal : {java : "$conf.getInt('redis.maxTotal', 100)"}, // 一般都够了吧
 			}
 		},
 		jedisPool : {
