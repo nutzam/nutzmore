@@ -11,7 +11,7 @@ public abstract class NutD {
     /**
      * 指向自己所属集合
      */
-    private NutDSet parent;
+    private transient NutDSet parent;
 
     /**
      * 缓存文档路径中的名称部分
@@ -21,7 +21,7 @@ public abstract class NutD {
     /**
      * 存储对象的原始内容，比如，本地文件或者目录对象，或者对应的某条数据库记录
      */
-    protected Object primerObj;
+    protected transient Object primerObj;
 
     /**
      * 文档的一些元数据，固定的元数据有
@@ -129,7 +129,7 @@ public abstract class NutD {
     }
 
     public boolean hasAuthor() {
-        return meta.has("author");
+        return meta.has("authors");
     }
 
     public List<String> getAuthors() {
@@ -137,11 +137,11 @@ public abstract class NutD {
     }
 
     public void addAuthors(String... authors) {
-        meta.pushTo("tags", authors);
+        meta.pushTo("authors", authors);
     }
 
     public void addAuthors(List<String> authors) {
-        meta.pushTo("tags", authors);
+        meta.pushTo("authors", authors);
     }
 
     public boolean hasTags() {

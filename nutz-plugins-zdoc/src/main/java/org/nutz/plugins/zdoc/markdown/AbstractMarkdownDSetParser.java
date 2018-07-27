@@ -40,6 +40,10 @@ public abstract class AbstractMarkdownDSetParser implements NutDSetParser {
     protected abstract void loadTreeByPaths(NutDSet home, String paths);
 
     protected abstract void loadTreeByRecur(NutDSet home);
+    
+    protected void loadTreeByPath(NutDSet home, String path) {
+        
+    }
 
     @Override
     public void parse(NutDSet home, String path, String configPath) {
