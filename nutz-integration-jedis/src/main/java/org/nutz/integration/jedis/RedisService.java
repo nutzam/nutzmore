@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.nutz.lang.Lang;
 import org.nutz.lang.Streams;
 
 import redis.clients.jedis.*;
@@ -4224,17 +4225,12 @@ public class RedisService extends Jedis {
      * @see https://github.com/xetorthio/jedis/pull/498
      */
     public List<Object> pipelined(PipelineBlock jedisPipeline) {
-        Jedis jedis = getJedis();
-        try {
-            return jedis.pipelined(jedisPipeline);
-        } finally {Streams.safeClose(jedis);}
+        throw Lang.noImplement();
     }
 
+    @Deprecated
     public Pipeline pipelined() {
-        Jedis jedis = getJedis();
-        try {
-            return jedis.pipelined();
-        } finally {Streams.safeClose(jedis);}
+        throw Lang.noImplement();
     }
 
     public Long zcount(byte[] key, double min, double max) {
