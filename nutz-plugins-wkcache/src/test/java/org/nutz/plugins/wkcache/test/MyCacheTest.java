@@ -3,6 +3,8 @@ package org.nutz.plugins.wkcache.test;
 import org.nutz.ioc.loader.annotation.IocBean;
 import org.nutz.plugins.wkcache.annotation.*;
 
+import java.util.List;
+
 /**
  * Created by wizzer on 2017/6/14.
  */
@@ -31,6 +33,13 @@ public class MyCacheTest {
 
     @CacheResult(cacheKey = "${args[0].id}_${args[0].name}")
     public Object testCacheObj(TestBean test) {
+        System.out.println("我被执行了...");
+        return test;
+    }
+
+    @CacheResult
+    public Object testCacheList(List test) {
+        System.out.println("我被执行了...");
         return test;
     }
 

@@ -1,8 +1,5 @@
 package org.nutz.plugins.wkcache;
 
-import java.lang.reflect.Method;
-import java.util.Arrays;
-
 import org.nutz.aop.InterceptorChain;
 import org.nutz.el.El;
 import org.nutz.ioc.impl.PropertiesProxy;
@@ -15,7 +12,8 @@ import org.nutz.lang.util.Context;
 import org.nutz.plugins.wkcache.annotation.CacheDefaults;
 import org.nutz.plugins.wkcache.annotation.CacheResult;
 
-import redis.clients.jedis.Jedis;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 
 /**
  * Created by wizzer on 2017/6/14.
@@ -58,22 +56,27 @@ public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
             liveTime = cacheDefaults != null ? cacheDefaults.cacheLiveTime() : 0;
         }
         if (conf != null && conf.size() > 0) {
-            int confLiveTime = conf.getInt("wkcache."+cacheName, 0);
+            int confLiveTime = conf.getInt("wkcache." + cacheName, 0);
             if (confLiveTime > 0)
                 liveTime = confLiveTime;
         }
         Object obj;
-        try (Jedis jedis = jedisAgent().getResource()) {
-            byte[] bytes = jedis.get((cacheName + ":" + cacheKey).getBytes());
-            if (bytes == null) {
-                chain.doChain();
-                obj = chain.getReturn();
-                jedis.set((cacheName + ":" + cacheKey).getBytes(), Lang.toBytes(obj));
-                if (liveTime > 0) {
-                    jedis.expire((cacheName + ":" + cacheKey).getBytes(), liveTime);
-                }
-            } else {
+        byte[] bytes = redisService().get((cacheName + ":" + cacheKey).getBytes());
+        if (bytes == null) {
+            chain.doChain();
+            obj = chain.getReturn();
+            redisService.set((cacheName + ":" + cacheKey).getBytes(), Lang.toBytes(obj));
+            if (liveTime > 0) {
+                redisService.expire((cacheName + ":" + cacheKey).getBytes(), liveTime);
+            }
+        } else {
+            try {
                 obj = Lang.fromBytes(bytes, method.getReturnType());
+            } catch (Exception e) {
+                //对象转换失败则清除缓存
+                redisService().del((cacheName + ":" + cacheKey).getBytes());
+                obj = chain.getReturn();
+                e.printStackTrace();
             }
         }
         chain.setReturnValue(obj);

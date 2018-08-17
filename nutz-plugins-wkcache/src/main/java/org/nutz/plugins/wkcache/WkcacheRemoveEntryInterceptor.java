@@ -1,9 +1,5 @@
 package org.nutz.plugins.wkcache;
 
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Set;
-
 import org.nutz.aop.InterceptorChain;
 import org.nutz.el.El;
 import org.nutz.ioc.loader.annotation.IocBean;
@@ -14,7 +10,9 @@ import org.nutz.lang.util.Context;
 import org.nutz.plugins.wkcache.annotation.CacheDefaults;
 import org.nutz.plugins.wkcache.annotation.CacheRemove;
 
-import redis.clients.jedis.Jedis;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Set;
 
 /**
  * Created by wizzer on 2017/6/14.
@@ -52,15 +50,13 @@ public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
                     .getAnnotation(CacheDefaults.class);
             cacheName = cacheDefaults != null ? cacheDefaults.cacheName() : "wk";
         }
-        try (Jedis jedis = jedisAgent().getResource()) {
-            if (cacheKey.endsWith("*")) {
-                Set<String> set = jedis.keys(cacheName + ":" + cacheKey);
-                for (String it : set) {
-                    jedis.del(it.getBytes());
-                }
-            } else
-                jedis.del(cacheName + ":" + cacheKey);
-        }
+        if (cacheKey.endsWith("*")) {
+            Set<byte[]> set = redisService().keys((cacheName + ":" + cacheKey).getBytes());
+            for (byte[] it : set) {
+                redisService().del(it);
+            }
+        } else
+            redisService().del((cacheName + ":" + cacheKey).getBytes());
         chain.doChain();
     }
 }
