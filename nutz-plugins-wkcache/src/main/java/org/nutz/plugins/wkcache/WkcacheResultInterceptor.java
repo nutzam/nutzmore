@@ -2,8 +2,6 @@ package org.nutz.plugins.wkcache;
 
 import org.nutz.aop.InterceptorChain;
 import org.nutz.el.El;
-import org.nutz.ioc.impl.PropertiesProxy;
-import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
 import org.nutz.lang.Lang;
 import org.nutz.lang.Strings;
@@ -20,8 +18,6 @@ import java.util.Arrays;
  */
 @IocBean
 public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
-    @Inject
-    private PropertiesProxy conf;
 
     public void filter(InterceptorChain chain) throws Throwable {
         Method method = chain.getCallingMethod();
@@ -55,8 +51,8 @@ public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
             cacheName = cacheDefaults != null ? cacheDefaults.cacheName() : "wk";
             liveTime = cacheDefaults != null ? cacheDefaults.cacheLiveTime() : 0;
         }
-        if (conf != null && conf.size() > 0) {
-            int confLiveTime = conf.getInt("wkcache." + cacheName, 0);
+        if (getConf() != null && getConf().size() > 0) {
+            int confLiveTime = getConf().getInt("wkcache." + cacheName, 0);
             if (confLiveTime > 0)
                 liveTime = confLiveTime;
         }
@@ -65,9 +61,9 @@ public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
         if (bytes == null) {
             chain.doChain();
             obj = chain.getReturn();
-            redisService.set((cacheName + ":" + cacheKey).getBytes(), Lang.toBytes(obj));
+            redisService().set((cacheName + ":" + cacheKey).getBytes(), Lang.toBytes(obj));
             if (liveTime > 0) {
-                redisService.expire((cacheName + ":" + cacheKey).getBytes(), liveTime);
+                redisService().expire((cacheName + ":" + cacheKey).getBytes(), liveTime);
             }
         } else {
             try {
