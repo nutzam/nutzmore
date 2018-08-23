@@ -1,6 +1,8 @@
 package org.nutz.plugins.validation;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -8,6 +10,8 @@ import org.nutz.el.El;
 import org.nutz.lang.Lang;
 import org.nutz.lang.Mirror;
 import org.nutz.lang.Strings;
+import org.nutz.lang.reflect.FastClassFactory;
+import org.nutz.lang.reflect.FastMethod;
 import org.nutz.lang.util.Context;
 
 /**
@@ -316,6 +320,7 @@ public abstract class ValidationUtils {
         return false;
 	}
 
+	protected static Map<String, FastMethod> customMethods = new HashMap<String, FastMethod>();
 	/**
 	 * 自定义验证方法
 	 * 
@@ -331,22 +336,51 @@ public abstract class ValidationUtils {
 		Mirror<?> mirror = Mirror.me(obj.getClass());
 		Method[] mds = mirror.getMethods();
 		boolean find = false;
+		// 如果只写了个一个下划线,那就是自动找方法模式
+        if ("_".equals(customFunction))
+            customFunction = "verify" + Strings.upperFirst(fieldName);
+        FastMethod fm = customMethods.get(obj.getClass().getName() + "#" + fieldName);
+        if (fm != null) {
+            try {
+                Boolean ret = (Boolean) fm.invoke(obj, fieldName, errorMsg, errors);
+                if (ret != null && !ret) {
+                    errors.add(fieldName, errorMsg);
+                    return false;
+                }
+                return true;
+            }
+            catch (Exception e) {
+            }
+        }
 		for (Method md : mds) {
 			if (md.getName().equals(customFunction)) {
-				find = true;
-				try {
-					Boolean ret = (Boolean) md.invoke(obj);
-					if (ret != null && !ret) {
-						errors.add(fieldName, errorMsg);
-						return false;
-					}
-					return true;
-				}
-				catch (Exception e) {
-					errors.add(fieldName, errorMsg);
-					e.printStackTrace();
-					return false;
-				}
+			    int paramCount = md.getParameterTypes().length;
+                try {
+                    Boolean ret = null;
+                    // 兼容老写法, 只传一个参数,请用新方法
+                    if (paramCount == 1) {
+                        find = true;
+                        ret = (Boolean) md.invoke(obj);
+                    }
+                    // 新写法更强大, 传4个参数, 用户代码通过Errors自行添加错误信息
+                    // public boolean checkUserAge(String fieldName, String errorMsg, Errors errors)
+                    else if (paramCount == 4) {
+                        fm = FastClassFactory.get(md);
+                        ret = (Boolean)fm.invoke(obj, fieldName, errorMsg, errors);
+                    }
+                    else {
+                        continue;
+                    }
+                    if (ret != null && !ret) {
+                        errors.add(fieldName, errorMsg);
+                        return false;
+                    }
+                    return true;
+                }
+                catch (Throwable e) {
+                    errors.add(fieldName, errorMsg);
+                    return false;
+                }
 			}
 		}
 

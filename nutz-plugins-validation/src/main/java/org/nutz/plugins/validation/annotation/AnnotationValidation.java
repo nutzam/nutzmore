@@ -35,16 +35,14 @@ public class AnnotationValidation implements Validation {
 			return;
 		}
 		// 遍历对象的所有字段
-		Mirror<?> mirror = Mirror.me(target.getClass());
+		Mirror<?> mirror = Mirror.me(target);
 		Field[] fields = mirror.getFields(Validations.class);
 		for (Field field : fields) {
 			// 检查该字段是否声明了需要验证
 			Validations vals = field.getAnnotation(Validations.class);
 			String errMsg = vals.errorMsg();
 			try {
-				Method getMethod = mirror.getGetter(field);
-
-				Object value = getMethod.invoke(target, new Object[]{}); // 这个对象字段get方法的值
+				Object value = mirror.getValue(target, field);
 
 				// 验证该字段是否必须
 				if (vals.required() && !ValidationUtils.required(field.getName(), value, errMsg, errors)) {
