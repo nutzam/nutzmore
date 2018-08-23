@@ -9,7 +9,6 @@ import org.nutz.lang.segment.CharSegment;
 import org.nutz.lang.util.Context;
 import org.nutz.plugins.wkcache.annotation.CacheDefaults;
 import org.nutz.plugins.wkcache.annotation.CacheUpdate;
-import redis.clients.jedis.Jedis;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -53,13 +52,11 @@ public class WkcacheUpdateInterceptor extends AbstractWkcacheInterceptor {
             liveTime = cacheDefaults != null ? cacheDefaults.cacheLiveTime() : 0;
         }
         Object obj;
-        try (Jedis jedis = jedisAgent().getResource()) {
-            chain.doChain();
-            obj = chain.getReturn();
-            jedis.set((cacheName + ":" + cacheKey).getBytes(), Lang.toBytes(obj));
-            if (liveTime > 0) {
-                jedis.expire((cacheName + ":" + cacheKey).getBytes(), liveTime);
-            }
+        chain.doChain();
+        obj = chain.getReturn();
+        redisService().set((cacheName + ":" + cacheKey).getBytes(), Lang.toBytes(obj));
+        if (liveTime > 0) {
+            redisService().expire((cacheName + ":" + cacheKey).getBytes(), liveTime);
         }
         chain.setReturnValue(obj);
     }
