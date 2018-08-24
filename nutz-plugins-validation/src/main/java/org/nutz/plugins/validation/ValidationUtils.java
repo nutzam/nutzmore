@@ -362,10 +362,11 @@ public abstract class ValidationUtils {
                         find = true;
                         ret = (Boolean) md.invoke(obj);
                     }
-                    // 新写法更强大, 传4个参数, 用户代码通过Errors自行添加错误信息
+                    // 新写法更强大, 传3个参数, 用户代码通过Errors自行添加错误信息
                     // public boolean checkUserAge(String fieldName, String errorMsg, Errors errors)
-                    else if (paramCount == 4) {
+                    else if (paramCount == 3) {
                         fm = FastClassFactory.get(md);
+                        customMethods.put(obj.getClass().getName() + "#" + fieldName, fm);
                         ret = (Boolean)fm.invoke(obj, fieldName, errorMsg, errors);
                     }
                     else {
