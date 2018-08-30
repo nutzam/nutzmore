@@ -170,6 +170,7 @@
 		<module>nutz-plugins-zdoc</module>
 		<module>nutz-plugins-fiddler</module>
 		<module>nutz-plugins-jetty-client</module>
+		<module>nutz-plugins-xmlbind</module>
 	</modules>
 	<distributionManagement>
 		<snapshotRepository>
