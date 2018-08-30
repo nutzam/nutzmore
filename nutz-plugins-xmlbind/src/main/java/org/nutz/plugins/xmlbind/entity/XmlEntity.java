@@ -106,24 +106,29 @@ public class XmlEntity<T> {
             }
         }
         // 处理节点数据
+        NodeList allChildren = _ele.getChildNodes();
         for (Map.Entry<String, XmlEntity<?>> en : nodes.entrySet()) {
             String key = en.getKey();
-            NodeList nodeList = _ele.getElementsByTagName(key);
-            int len = nodeList.getLength();
-            if (len == 0)
+            List<Element> eles = new ArrayList<Element>();
+            for (int i = 0; i < allChildren.getLength(); i++) {
+                Node node = allChildren.item(i);
+                if (node instanceof Element) {
+                    if (node.getNodeName().equalsIgnoreCase(key)) {
+                        eles.add((Element) node);
+                    }
+                }
+            }
+            if (eles.isEmpty())
                 continue;
             XmlEntity<?> en2 = en.getValue();
             if (en2.isSimpleNode()) {
-                String value = ((Element)nodeList.item(0)).getTextContent();
+                String value = eles.get(0).getTextContent();
                 en2.getInjecting().inject(t, value);
             }
             else {
-                ArrayList list = new ArrayList(len);
-                for (int i = 0; i < len; i++) {
-                    Node node = nodeList.item(i);
-                    if (node instanceof Element) {
-                        list.add(en2.read((Element) node));
-                    }
+                ArrayList list = new ArrayList(eles.size());
+                for (Element element : eles) {
+                    list.add(en2.read(element));
                 }
                 if (en2.isUseList()) {
                     en2.getInjecting().inject(t, list);
