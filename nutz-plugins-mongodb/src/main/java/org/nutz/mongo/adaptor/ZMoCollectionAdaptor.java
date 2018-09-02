@@ -88,7 +88,7 @@ public class ZMoCollectionAdaptor implements ZMoAdaptor {
                 }
                 // 普通的 DBObject
                 else if (objPojo instanceof DBObject) {
-                    objMongo = obj;
+                    objMongo = objPojo;
                 }
                 // Map 或者 POJO
                 else if (mi.isMap() || mi.isPojo()) {
