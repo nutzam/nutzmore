@@ -56,7 +56,7 @@ public class PageredData<T> {
 
 	public PageredData<T> addParam(String key, Object value) {
 		if (this.paras == null) {
-			this.paras = new HashMap<String, Object>();
+			this.paras = new HashMap<>();
 		}
 		this.paras.put(key, value);
 		return this;

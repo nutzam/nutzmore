@@ -88,7 +88,6 @@ public class XmlEntityUtil {
 		doc.appendChild(top);
 	}
 	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void add(NutEntity en) {
 		Element ee = doc.createElement(E_ENTITY);
 		
@@ -121,7 +120,7 @@ public class XmlEntityUtil {
 		List<EntityIndex> indexs = en.getIndexes();
 		for (EntityIndex index : indexs) {
 			Element tmp = doc.createElement(E_INDEX);
-			tmp.setAttribute(A_NAME, index.getName());
+			tmp.setAttribute(A_NAME, index.getName(en));
 			List<String> fieldNames = new ArrayList<String>();
 			for(EntityField mf : index.getFields()) {
 				fieldNames.add(mf.getName());

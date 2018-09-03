@@ -26,9 +26,6 @@ public class SqlManagerAutoConfiguration extends ApplicationObjectSupport {
 
 	Log log = Logs.get();
 
-	public SqlManagerAutoConfiguration() {
-	}
-
 	@Autowired
 	private SqlManagerProperties sqlManagerProperties;
 
