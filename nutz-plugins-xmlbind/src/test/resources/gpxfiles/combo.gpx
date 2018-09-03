@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx>
+<metadata>
+  <!--主办方.赛事.赛项-->
+  <name>coolrunner.xihu2018.100KM</name>
+  <!--主办方信息-->
+  <author>
+    <name>酷跑一族</name>
+    <email>sa@coolrunner.com</email>
+    <!--可以增加多个扩展链接，譬如主办方自己的网站-->
+    <link href="http://xxx">
+      <name>酷跑官网</name>
+      <type>text/html</type>
+    </link> 
+  </author>
+  <!--赛区的经纬度边界-->
+  <bounds minlat="47.644548"
+          minlon="-122.326897"
+          maxlat="67.644548"
+          maxlon="-118.326897"/>
+  <!--文件生成时间-->
+  <time>2009-10-17T22:58:43Z</time>
+</metadata>
+  <!--
+  描述了路线: 按顺序连成一个路径，第一个元素为路径开始点，最后一个是结束点
+  -->
+  <rte>
+    <extensions>
+      <!--
+      线路的宽度，表示线路的有效区，以便能知道选手离开比赛线路，默认单位为 `米`
+      -->
+      <width>100</width>
+    </extensions>
+    <rtept lat="47.644548" lon="-122.326897"><ele>4.46</ele></rtept>
+    <rtept lat="47.644548" lon="-122.326897"><ele>4.46</ele></rtept>
+    <rtept lat="47.644548" lon="-122.326897"><ele>4.46</ele></rtept>
+  </rte>
+  <!--
+  描述了路线上的赛点，可以有多个赛点
+  -->
+  <wpt lat="47.644548" lon="-122.326897">
+    <ele>4.46</ele>
+    <!--赛点名称，整个文档中必须唯一-->
+    <name>P1</name>
+    <!--
+    赛点的类型
+     - C : 打卡
+     - D : 饮料
+     - M : 医疗
+     - F : 食物
+     - T : 厕所
+     - W : 换装
+    类型字符串可以多选，譬如 
+    CD : 表示打卡+饮料
+    CDMFTW : 表示全部功能
+    类型字符必须从小到大排序
+    -->
+    <type>CDMFTW</type>
+  </wpt>
+    <trk>
+    <!--主办方.赛事.赛项:选手`-->
+    <name>coolrunner.xihu2018.100KM:xiaobai</name>
+    <trkseg>
+      <!--追踪点的经纬度-->
+      <trkpt lat="47.644548" lon="-122.326897">
+        <ele>4.46</ele>  <!--海拔-->
+        <time>2009-10-17T18:37:26Z</time> <!--时间-->
+      </trkpt>
+      <trkpt lat="47.644548" lon="-122.326897">
+        <ele>4.94</ele>
+        <time>2009-10-17T18:37:31Z</time>
+      </trkpt>
+      <trkpt lat="47.644548" lon="-122.326897">
+        <ele>6.87</ele>
+        <time>2009-10-17T18:37:34Z</time>
+      </trkpt>
+    </trkseg>
+  </trk>
+</gpx>

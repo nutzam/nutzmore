@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx>
+  <metadata><!-- 参见前面概述的 标准头部元数据例子 --></metadata>
+  <trk>
+    <!--主办方.赛事.赛项:选手`-->
+    <name>coolrunner.xihu2018.100KM:xiaobai</name>
+    <trkseg>
+      <!--追踪点的经纬度-->
+      <trkpt lat="47.644548" lon="-122.326897">
+        <ele>4.46</ele>  <!--海拔-->
+        <time>2009-10-17T18:37:26Z</time> <!--时间-->
+      </trkpt>
+      <trkpt lat="47.644548" lon="-122.326897">
+        <ele>4.94</ele>
+        <time>2009-10-17T18:37:31Z</time>
+      </trkpt>
+      <trkpt lat="47.644548" lon="-122.326897">
+        <ele>6.87</ele>
+        <time>2009-10-17T18:37:34Z</time>
+      </trkpt>
+    </trkseg>
+  </trk>
+</gpx>
