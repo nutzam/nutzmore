@@ -86,6 +86,12 @@ public class GpxTrkpt {
 
 ### XML转POJO
 
+简便写法
+```
+GpxFile gpx = XmlBind.fromXml(gpx, getClass().getClassLoader().getResourceAsStream("gpxfiles/trk.gpx"));
+```
+
+完整写法
 ```
 // 首先,将需要映射的类变成抽象的XmlEntity
 XmlEntity<GpxFile> en = new XmlEntityAnnotationMaker().makeEntity(null, GpxFile.class);
@@ -100,8 +106,6 @@ System.out.println(Json.toJson(gpx));
 ### POJO转XML
 
 ```
-// 首先,将需要映射的类变成抽象的XmlEntity
-XmlEntity<GpxFile> en = new XmlEntityAnnotationMaker().makeEntity(null, GpxFile.class);
 // 然后,将GpxFile对象传入write方法,生成XML即可
-String xml = en.write(gpx, "gpx");
+String xml = XmlBind.toXml(gpx, "gpx");
 ```

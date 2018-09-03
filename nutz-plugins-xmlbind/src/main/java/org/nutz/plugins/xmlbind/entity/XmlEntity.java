@@ -141,12 +141,18 @@ public class XmlEntity<T> {
         return t;
     }
     
-    public String write(T t, String tagName) {
-        Tag tag = asTag(t, tagName);
+    @SuppressWarnings("unchecked")
+    public String write(Object t, String tagName) {
+        Tag tag = asTag((T)t, tagName);
         StringBuilder sb = new StringBuilder();
         tag.toXml(sb, 0);
         //return Xmls.HEAD + tag.toString(0);
         return sb.toString();
+    }
+    
+    @SuppressWarnings("unchecked")
+    public void write(Object t, String tagName, StringBuilder sb) {
+        asTag((T)t, tagName).toXml(sb, 0);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
