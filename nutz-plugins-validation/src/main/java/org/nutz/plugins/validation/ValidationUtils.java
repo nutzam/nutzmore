@@ -358,13 +358,14 @@ public abstract class ValidationUtils {
                 try {
                     Boolean ret = null;
                     // 兼容老写法, 只传一个参数,请用新方法
-                    if (paramCount == 1) {
-                        find = true;
-                        ret = (Boolean) md.invoke(obj);
+                    if (paramCount == 0) {
+						find = true;
+						ret = (Boolean) md.invoke(obj);
                     }
                     // 新写法更强大, 传3个参数, 用户代码通过Errors自行添加错误信息
                     // public boolean checkUserAge(String fieldName, String errorMsg, Errors errors)
                     else if (paramCount == 3) {
+						find = true;
                         fm = FastClassFactory.get(md);
                         customMethods.put(obj.getClass().getName() + "#" + fieldName, fm);
                         ret = (Boolean)fm.invoke(obj, fieldName, errorMsg, errors);
@@ -384,10 +385,9 @@ public abstract class ValidationUtils {
                 }
 			}
 		}
-
 		if (!find) {
-			// 没有找到指定的方法
-			errors.add(fieldName, errorMsg);
+			// 没有找到指定的方法，为用户指出明确错误信息
+			errors.add(fieldName, "没有找到指定的效验方法");
 			return false;
 		}
 		return true;
