@@ -23,7 +23,6 @@ import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Drawing;
-import org.apache.poi.ss.usermodel.Picture;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -220,13 +219,7 @@ public class J4E {
                             anchor.setDy1(5);
                             anchor.setDx2(-5);
                             anchor.setDy2(-5);
-                            // anchor.setDx2(getAnchorX(jcol.getImgWidth() + 5,
-                            // COL_WIDTH,
-                            // jcol.getImgWidth()));
-                            // anchor.setDy2(getAnchorY(jcol.getImgHeight() + 5,
-                            // ROW_HEIGHT,
-                            // jcol.getImgHeight()));
-                            Picture pict = drawing.createPicture(anchor,
+                            drawing.createPicture(anchor,
                                                                  pictureIdx);
                         }
                         catch (Exception e) {
@@ -283,25 +276,7 @@ public class J4E {
         return saveExcel(out, wb);
     }
 
-    private final static int COL_WIDTH = 1300 * 3;
-    private final static int ROW_HEIGHT = 500 * 3;
-
-    private static int getAnchorX(int px, int colWidth, int tarWidth) {
-        return (int) Math.round((701 * 16000.0 / tarWidth)
-                                * ((double) 1 / colWidth)
-                                * px);
-    }
-
-    private static int getAnchorY(int px, int rowHeight, int tarHeight) {
-        return (int) Math.round(((double) 144 * 8000 / tarHeight)
-                                * ((double) 1 / rowHeight)
-                                * px);
-    }
-
-    //
-    // public int getColWidth(int px, int tarWidth) {
-    // return (int) Math.round(((double) 10971 / tarWidth) * px);
-    // }
+    
 
     private static <T> J4EConf checkJ4EConf(J4EConf j4eConf, Class<T> objClz) {
         if (null == j4eConf) {
@@ -362,7 +337,6 @@ public class J4E {
         J4EEmptyRow<T> emptyRowChecker = (J4EEmptyRow<T>) j4eConf.getPassEmptyRow();
         boolean needCheckEmptyRow = emptyRowChecker != null;
         int currRow = 0;
-        int currColumn = 0;
         boolean firstRow = true;
         long readNum = 0;
         while (rlist.hasNext()) {
@@ -374,7 +348,6 @@ public class J4E {
             }
             Row row = rlist.next();
             if (currRow >= passRow) {
-                currColumn = 0;
                 if (firstRow) {
                     if (!passHead) {
                         // 确定column的index

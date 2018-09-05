@@ -4,6 +4,7 @@ package org.nutz.plugin.spring.boot.service;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 
@@ -15,7 +16,6 @@ import org.nutz.dao.FieldFilter;
 import org.nutz.dao.Sqls;
 import org.nutz.dao.entity.MappingField;
 import org.nutz.dao.entity.Record;
-import org.nutz.dao.entity.annotation.Column;
 import org.nutz.dao.entity.annotation.Id;
 import org.nutz.dao.pager.Pager;
 import org.nutz.dao.sql.Sql;
@@ -38,7 +38,7 @@ import org.nutz.service.IdNameEntityService;
  */
 public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T> {
 
-	protected int PAGESIZE = 15;
+	private int defaultPageSize = 15;
 
 	@Resource(type = Dao.class)
 	public void init(Dao dao) {
@@ -50,8 +50,7 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 	/**
 	 * 保存实体
 	 *
-	 * @param t
-	 *            待保存实体
+	 * @param t 待保存实体
 	 * @return 保存后的实体, 根据配置可能将产生 id 等其他属性
 	 */
 	public T save(T t) {
@@ -62,10 +61,8 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 	/**
 	 * 保存对象指定字段
 	 *
-	 * @param obj
-	 *            待保存对象
-	 * @param filter
-	 *            字段过滤器
+	 * @param obj    待保存对象
+	 * @param filter 字段过滤器
 	 * @return
 	 */
 	public T save(final T obj, FieldFilter filter) {
@@ -75,10 +72,8 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 	/**
 	 * 保存
 	 *
-	 * @param tableName
-	 *            表名
-	 * @param chain
-	 *            数据链
+	 * @param tableName 表名
+	 * @param chain     数据链
 	 */
 	public void save(String tableName, Chain chain) {
 		dao().insert(tableName, chain);
@@ -87,10 +82,8 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 	/**
 	 * 保存
 	 *
-	 * @param classOfT
-	 *            类
-	 * @param chain
-	 *            数据链
+	 * @param classOfT 类
+	 * @param chain    数据链
 	 */
 	public void save(Class<?> classOfT, Chain chain) {
 		dao().insert(classOfT, chain);
@@ -99,14 +92,10 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 	/**
 	 * 保存
 	 *
-	 * @param t
-	 *            数据对象
-	 * @param ignoreNull
-	 *            是否忽略空值
-	 * @param ignoreZero
-	 *            是否忽略零值
-	 * @param ignoreBlankStr
-	 *            是否忽略空字符串
+	 * @param t              数据对象
+	 * @param ignoreNull     是否忽略空值
+	 * @param ignoreZero     是否忽略零值
+	 * @param ignoreBlankStr 是否忽略空字符串
 	 * @return
 	 */
 	public T insert(final T t, boolean ignoreNull, boolean ignoreZero, boolean ignoreBlankStr) {
@@ -116,10 +105,8 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 	/**
 	 * 保存指定字段
 	 *
-	 * @param obj
-	 *            待保存对象
-	 * @param regex
-	 *            字段正则
+	 * @param obj   待保存对象
+	 * @param regex 字段正则
 	 * @return
 	 */
 	public T insertWith(T obj, String regex) {
@@ -129,10 +116,8 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 	/**
 	 * 保存关联数据
 	 *
-	 * @param obj
-	 *            对象
-	 * @param regex
-	 *            管理字段正则
+	 * @param obj   对象
+	 * @param regex 管理字段正则
 	 * @return
 	 */
 	public T insertLinks(T obj, String regex) {
@@ -164,12 +149,9 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 	/**
 	 * 分页查询
 	 *
-	 * @param condition
-	 *            条件
-	 * @param currentPage
-	 *            当前页码
-	 * @param pageSize
-	 *            页面大小
+	 * @param condition   条件
+	 * @param currentPage 当前页码
+	 * @param pageSize    页面大小
 	 * @return
 	 */
 	public List<T> query(Condition condition, int currentPage, int pageSize) {
@@ -183,23 +165,19 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 	/**
 	 * 分页查询
 	 *
-	 * @param condition
-	 *            条件
-	 * @param currentPage
-	 *            页码
+	 * @param condition   条件
+	 * @param currentPage 页码
 	 * @return
 	 */
 	public List<T> query(Condition condition, int currentPage) {
-		return query(condition, currentPage, PAGESIZE);
+		return query(condition, currentPage, defaultPageSize);
 	}
 
 	/**
 	 * 根据指定字段查询(仅限唯一属性,非唯一属性查询第一个满足条件的数据)
 	 *
-	 * @param field
-	 *            字段
-	 * @param value
-	 *            值
+	 * @param field 字段
+	 * @param value 值
 	 * @return 单个对象
 	 */
 	public T findByField(String field, Object value) {
@@ -211,8 +189,7 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 	/**
 	 * 执行sql并返回记录
 	 * 
-	 * @param sql
-	 *            待执行sql
+	 * @param sql 待执行sql
 	 * @return
 	 */
 	public Record fetch(Sql sql) {
@@ -224,8 +201,7 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 	/**
 	 * 执行sql并返回记录列表
 	 * 
-	 * @param sql
-	 *            待执行sql
+	 * @param sql 待执行sql
 	 * @return
 	 */
 	public List<Record> search(Sql sql) {
@@ -237,8 +213,7 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 	/**
 	 * 执行sql并返回map列表,列别名作为key
 	 * 
-	 * @param sql
-	 *            待执行sql
+	 * @param sql 待执行sql
 	 * @return
 	 */
 	public List<NutMap> searchAsMap(Sql sql) {
@@ -250,8 +225,7 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 	/**
 	 * 执行sql并返回对象
 	 * 
-	 * @param sql
-	 *            待执行sql
+	 * @param sql 待执行sql
 	 * @return
 	 */
 	public T fetchObj(Sql sql) {
@@ -264,8 +238,7 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 	/**
 	 * 执行sql并返回对象列表
 	 * 
-	 * @param sql
-	 *            待执行sql
+	 * @param sql 待执行sql
 	 * @return
 	 */
 	public List<T> searchObj(Sql sql) {
@@ -278,8 +251,7 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 	/**
 	 * 执行删除或者更新语句
 	 * 
-	 * @param sql
-	 *            待执行sql
+	 * @param sql 待执行sql
 	 * @return 影响的记录条数
 	 */
 	public int deleteOrUpdate(Sql sql) {
@@ -303,8 +275,7 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 	/**
 	 * 分页查询
 	 *
-	 * @param page
-	 *            页码
+	 * @param page 页码
 	 * @return
 	 */
 	public PageredData<T> searchByPage(int page) {
@@ -314,29 +285,24 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 	/**
 	 * 分页查询
 	 *
-	 * @param page
-	 *            页码
-	 * @param condition
-	 *            条件
+	 * @param page      页码
+	 * @param condition 条件
 	 * @return 分页对象
 	 */
 	public PageredData<T> searchByPage(int page, Condition condition) {
-		return searchByPage(page, PAGESIZE, condition);
+		return searchByPage(page, defaultPageSize, condition);
 	}
 
 	/**
 	 * 根据条件分页查询
 	 * 
-	 * @param page
-	 *            页码
-	 * @param pageSize
-	 *            页面大小
-	 * @param condition
-	 *            条件
+	 * @param page      页码
+	 * @param pageSize  页面大小
+	 * @param condition 条件
 	 * @return
 	 */
 	public PageredData<T> searchByPage(int page, int pageSize, Condition condition) {
-		PageredData<T> data = new PageredData<T>();
+		PageredData<T> data = new PageredData<>();
 		Pager pager = new Pager(page, pageSize);
 		data.setDataList(query(condition, pager));
 		pager.setRecordCount(count(condition));
@@ -347,14 +313,10 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 	/**
 	 * 根据条件及关键词进行分页查询
 	 * 
-	 * @param key
-	 *            关键词
-	 * @param page
-	 *            页面
-	 * @param cnd
-	 *            条件
-	 * @param fields
-	 *            关键词匹配的字段列表
+	 * @param key    关键词
+	 * @param page   页面
+	 * @param cnd    条件
+	 * @param fields 关键词匹配的字段列表
 	 * @return
 	 */
 	public PageredData<T> searchByKeyAndPage(String key, int page, Cnd cnd, String... fields) {
@@ -372,18 +334,15 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 			}
 			index++;
 		}
-		return searchByPage(page, PAGESIZE, cnd.and(expressionGroup));
+		return searchByPage(page, defaultPageSize, cnd.and(expressionGroup));
 	}
 
 	/**
 	 * 关键词搜索
 	 *
-	 * @param key
-	 *            关键词
-	 * @param page
-	 *            页码
-	 * @param fields
-	 *            检索字段列表
+	 * @param key    关键词
+	 * @param page   页码
+	 * @param fields 检索字段列表
 	 * @return 分页对象
 	 */
 	public PageredData<T> searchByKeyAndPage(String key, int page, String... fields) {
@@ -395,35 +354,18 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 	/**
 	 * 更新对象
 	 * 
-	 * @param obj
-	 *            待更新对象
+	 * @param obj 待更新对象
 	 * @return
 	 */
 	public int update(T obj) {
 		return dao().update(obj);
 	}
 
-	/**
-	 * 更新字段的指定字段
-	 * 
-	 * @param obj
-	 *            待更新对象
-	 * @param regex
-	 *            字段正则
-	 * @return 影响的记录条数
-	 */
-	@Deprecated
-	public int update(final T obj, String regex) {
-		return dao().update(obj, regex);
-	}
-
 	/***
 	 * 更新字段的指定字段
 	 * 
-	 * @param obj
-	 *            待更新对象
-	 * @param regex
-	 *            字段正则
+	 * @param obj   待更新对象
+	 * @param regex 字段正则
 	 * @return 影响的记录条数
 	 */
 	public int updateFields(final T obj, String regex) {
@@ -433,8 +375,7 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 	/**
 	 * 更新对象的非空字段
 	 * 
-	 * @param obj
-	 *            待更新对象
+	 * @param obj 待更新对象
 	 * @return
 	 */
 	public int updateIgnoreNull(final T obj) {
@@ -452,10 +393,8 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 	/**
 	 * 更新对象的指定字段,使用id或者主键作为条件
 	 * 
-	 * @param t
-	 *            待更新对象
-	 * @param fields
-	 *            字段列表
+	 * @param t      待更新对象
+	 * @param fields 字段列表
 	 * @return
 	 */
 	public boolean update(T t, String... fields) {
@@ -467,7 +406,7 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 		// 获取数据库字段名称和对象值键值对
 		for (String field : fields) {
 			MappingField mf = getEntity().getField(field);
-                        map.put(mf.getColumnName(), mf.getValue(t));
+			map.put(mf.getColumnName(), mf.getValue(t));
 		}
 		return Chain.from(map);
 	}
@@ -478,7 +417,7 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 		try {
 			idField = clazzMirror.getField(Id.class);
 		} catch (NoSuchFieldException e) {
-			e.printStackTrace();
+			throw Lang.wrapThrow(e);
 		}
 		String fieldName = idField.getName();
 		Object value = clazzMirror.getValue(t, idField);
@@ -488,19 +427,17 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 	/**
 	 * 根据条件更新数据
 	 * 
-	 * @param t
-	 *            更新目标数据样本
-	 * @param cnd
-	 *            条件
-	 * @param fields
-	 *            待更新的字段列表
+	 * @param t      更新目标数据样本
+	 * @param cnd    条件
+	 * @param fields 待更新的字段列表
 	 * @return 影响的记录条数
 	 */
 	public int update(T t, Condition cnd, String... fields) {
 		Arrays.sort(fields);
 		NutMap map = Lang.map(Json.toJson(t));
 		NutMap data = NutMap.NEW();
-		for (String key : map.keySet()) {
+		for (Map.Entry<String, Object> entry : map.entrySet()) {
+			String key = entry.getKey();
 			if (Arrays.binarySearch(fields, key) >= 0) {
 				data.put(key, map.get(key));
 			}
@@ -516,10 +453,8 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 	/**
 	 * 根据条件更新数据
 	 * 
-	 * @param t
-	 *            更新目标数据样本
-	 * @param cnd
-	 *            条件
+	 * @param t   更新目标数据样本
+	 * @param cnd 条件
 	 * @return
 	 */
 	public int update(T t, Condition cnd) {
@@ -557,8 +492,7 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 	/**
 	 * 删除对象
 	 * 
-	 * @param obj
-	 *            待删除对象
+	 * @param obj 待删除对象
 	 * @return
 	 */
 	public int delete(T obj) {

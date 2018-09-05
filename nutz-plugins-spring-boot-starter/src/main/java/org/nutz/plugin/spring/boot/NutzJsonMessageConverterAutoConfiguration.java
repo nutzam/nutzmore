@@ -30,8 +30,8 @@ public class NutzJsonMessageConverterAutoConfiguration {
 
 	@Bean
 	@ConditionalOnExpression("${nutz.json.enabled:false}")
-	public HttpMessageConverter json() {
-		JsonFormat format = JsonFormat.compact();
+	public HttpMessageConverter<Object> json() {
+		JsonFormat format = null;
 		if (jsonProperties.getMode() != null) {// 直接模式设置
 			switch (jsonProperties.getMode()) {
 			case COMPACT:

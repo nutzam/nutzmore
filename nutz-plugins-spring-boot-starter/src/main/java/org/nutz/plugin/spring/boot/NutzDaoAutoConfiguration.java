@@ -20,8 +20,6 @@ import org.springframework.context.annotation.Configuration;
 @AutoConfigureAfter({ DataSourceAutoConfiguration.class, SqlManagerAutoConfiguration.class })
 public class NutzDaoAutoConfiguration {
 
-	public NutzDaoAutoConfiguration() {
-	}
 
 	@Autowired
 	DataSource dataSource;

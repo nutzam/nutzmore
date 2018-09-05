@@ -1,7 +1,6 @@
 package org.nutz.plugins.validation.annotation;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 
 import org.nutz.lang.Mirror;
 import org.nutz.lang.Strings;
