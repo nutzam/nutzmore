@@ -4,6 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.nutz.lang.ContinueLoop;
+import org.nutz.lang.Each;
+import org.nutz.lang.ExitLoop;
+import org.nutz.lang.Lang;
+import org.nutz.lang.LoopException;
 import org.nutz.lang.Strings;
 import org.nutz.lang.born.Borning;
 import org.nutz.lang.eject.Ejecting;
@@ -122,8 +127,17 @@ public class XmlEntity<T> {
                 continue;
             XmlEntity<?> en2 = en.getValue();
             if (en2.isSimpleNode()) {
-                String value = eles.get(0).getTextContent();
-                en2.getInjecting().inject(t, value);
+                if (en2.isUseList()) {
+                    List<String> strs = new ArrayList<>(eles.size());
+                    for (Element ele : eles) {
+                        strs.add(ele.getTextContent());
+                    }
+                    en2.getInjecting().inject(t, strs);
+                }
+                else {
+                    String value = eles.get(0).getTextContent();
+                    en2.getInjecting().inject(t, value);
+                }
             }
             else {
                 ArrayList list = new ArrayList(eles.size());
@@ -176,7 +190,16 @@ public class XmlEntity<T> {
                 continue;
             XmlEntity en2 = en.getValue();
             if (en2.isSimpleNode()) {
-                tag.add(key).setText(tmp.toString());
+                if (en2.useList) {
+                    Lang.each(tmp, new Each<Object>() {
+                        public void invoke(int index, Object ele, int length) throws ExitLoop, ContinueLoop, LoopException {
+                            tag.add(key).setText(String.valueOf(ele));
+                        }
+                    });
+                }
+                else {
+                    tag.add(key).setText(tmp.toString());
+                }
             }
             else if (en2.isUseList()) {
                 List list = (List)tmp;
