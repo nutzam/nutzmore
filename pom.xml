@@ -171,6 +171,7 @@
 		<module>nutz-plugins-fiddler</module>
 		<module>nutz-plugins-jetty-client</module>
 		<module>nutz-plugins-xmlbind</module>
+		<module>nutz-integration-lettuce</module>
 	</modules>
 	<distributionManagement>
 		<snapshotRepository>
