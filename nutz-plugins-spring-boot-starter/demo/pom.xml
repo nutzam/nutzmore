@@ -61,7 +61,7 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz-plugins-spring-boot-starter</artifactId>
-			<version>1.r.66-SNAPSHOT</version>
+			<version>1.r.67-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>club.zhcs</groupId>
@@ -72,11 +72,6 @@
 			<groupId>club.zhcs</groupId>
 			<artifactId>axe-captcha</artifactId>
 			<version>1.5</version>
-		</dependency>
-		<dependency>
-			<groupId>com.oracle</groupId>
-			<artifactId>ojdbc6</artifactId>
-			<version>11.2.0.3</version>
 		</dependency>
 		<dependency>
 			<groupId>club.zhcs</groupId>

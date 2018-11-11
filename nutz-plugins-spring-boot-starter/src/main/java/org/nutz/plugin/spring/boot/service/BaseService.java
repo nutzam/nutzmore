@@ -314,12 +314,26 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 	 * 根据条件及关键词进行分页查询
 	 * 
 	 * @param key    关键词
-	 * @param page   页面
+	 * @param page   页码
 	 * @param cnd    条件
 	 * @param fields 关键词匹配的字段列表
 	 * @return
 	 */
 	public PageredData<T> searchByKeyAndPage(String key, int page, Cnd cnd, String... fields) {
+		return searchByKeyAndPage(key, page, defaultPageSize, cnd, fields);
+	}
+
+	/**
+	 * 根据条件及关键词进行分页查询
+	 * 
+	 * @param key      关键词
+	 * @param page     页码
+	 * @param pageSize 页面大小
+	 * @param cnd      条件
+	 * @param fields   关键词匹配的字段列表
+	 * @return
+	 */
+	public PageredData<T> searchByKeyAndPage(String key, int page, int pageSize, Cnd cnd, String... fields) {
 		String searchKey = String.format("%%%s%%", key);
 		if (cnd == null) {
 			cnd = Cnd.NEW();
@@ -334,7 +348,20 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 			}
 			index++;
 		}
-		return searchByPage(page, defaultPageSize, cnd.and(expressionGroup));
+		return searchByPage(page, pageSize, cnd.and(expressionGroup));
+	}
+
+	/**
+	 * 关键词搜索
+	 *
+	 * @param key      关键词
+	 * @param page     页码
+	 * @param pageSize 页面大小
+	 * @param fields   检索字段列表
+	 * @return 分页对象
+	 */
+	public PageredData<T> searchByKeyAndPage(String key, int page, int pageSize, String... fields) {
+		return searchByKeyAndPage(key, page, pageSize, null, fields);
 	}
 
 	/**
@@ -346,7 +373,7 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 	 * @return 分页对象
 	 */
 	public PageredData<T> searchByKeyAndPage(String key, int page, String... fields) {
-		return searchByKeyAndPage(key, page, null, fields);
+		return searchByKeyAndPage(key, page, defaultPageSize, null, fields);
 	}
 
 	// U

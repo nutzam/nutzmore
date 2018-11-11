@@ -1,6 +1,10 @@
 package org.nutz.plugin.spring.boot;
 
+import java.io.File;
+import java.io.IOException;
+
 import javax.annotation.PostConstruct;
+import javax.servlet.ServletContext;
 
 import org.nutz.dao.SqlManager;
 import org.nutz.dao.impl.FileSqlManager;
@@ -11,6 +15,7 @@ import org.nutz.plugin.spring.boot.config.SqlManagerProperties;
 import org.nutz.plugin.spring.boot.config.SqlManagerProperties.Mode;
 import org.nutz.plugins.sqlmanager.xml.XmlSqlManager;
 import org.nutz.resource.Scans;
+import org.nutz.resource.impl.FileSystemResourceLocation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -32,9 +37,20 @@ public class SqlManagerAutoConfiguration extends ApplicationObjectSupport {
 	@Autowired
 	private SpringResourceLoaction loaction;
 
+	@Autowired
+	private ServletContext servletContext;
+
 	@PostConstruct
 	public void init() {// 初始化一下nutz的扫描
 		Scans.me().addResourceLocation(loaction);
+		
+		//扫springboot
+		String classesPath = servletContext.getRealPath("/WEB-INF/classes");
+		try {
+			Scans.me().addResourceLocation(new FileSystemResourceLocation(new File(classesPath + "/BOOT-INF/classes")));
+		} catch (IOException e) {
+			log.error(e);
+		}
 	}
 
 	@Bean
