@@ -1,13 +1,12 @@
 package org.nutz.integration.autoloadcache;
 
-import java.lang.reflect.Method;
-
-import org.nutz.aop.InterceptorChain;
-import org.nutz.aop.MethodInterceptor;
-
 import com.jarvis.cache.CacheHandler;
 import com.jarvis.cache.annotation.CacheDelete;
 import com.jarvis.cache.aop.DeleteCacheAopProxyChain;
+import org.nutz.aop.InterceptorChain;
+import org.nutz.aop.MethodInterceptor;
+
+import java.lang.reflect.Method;
 
 public class DelCacheAopInterceptor implements MethodInterceptor {
 
@@ -32,7 +31,7 @@ public class DelCacheAopInterceptor implements MethodInterceptor {
 				cacheHandler.deleteCache(new DeleteCacheAopProxyChain() {
 
 					@Override
-					public Class<?> getTargetClass() {
+					public Class<?> getTarget() {
 						return chain.getCallingMethod().getDeclaringClass();
 					}
 
