@@ -22,72 +22,65 @@ Nutz集成AutoLoadCache的插件
 ```
 
 redis-pool.js文件配置的爲Redis的緩存
-若需要使用内存模式请修改加载类 
-
-```
-com.jarvis.cache.redis.ShardedCachePointCut 为  com.jarvis.cache.map.CachePointCut
-
-```
 
 ```js
 var ioc = {
-	jedisPoolConfig : {
-		type : "redis.clients.jedis.JedisPoolConfig",
-		fields : {
-			testWhileIdle : true,
-			maxTotal : 100
-		}
-	},
-	shardedJedisPool : {
-		type : "redis.clients.jedis.ShardedJedisPool",
-		args : [ {
-			refer : "jedisPoolConfig"
-		}, [ {
-			type : "redis.clients.jedis.JedisShardInfo",
-			args : [ {
-				java : "$conf.get('redis.host', 'localhost')"
-			}, 6379, "instance:01" ]
-		} ] ],
-		events : {
-			depose : "destroy"
-		}
-	},
-	autoLoadConfig : {
-		type : "com.jarvis.cache.to.AutoLoadConfig",
-		fields : {
-			threadCnt : 10,
-			maxElement : 20000,
-			printSlowLog : true,
-			slowLoadTime : 500,
-			sortType : 1,
-			checkFromCacheBeforeLoad : true,
-			autoLoadPeriod : 50
-		}
-	},
-	fastjsonSerializer : {
-		type : "com.jarvis.cache.serializer.FastjsonSerializer"
-	},
-	scriptParser : {
-        type : "com.jarvis.cache.script.OgnlParser"
+    jedisPoolConfig: {
+        type: "redis.clients.jedis.JedisPoolConfig",
+        fields: {
+            testWhileIdle: true,
+            maxTotal: {java: "$conf.getInt('redis.maxTotal', 100)"}
+        }
     },
-	cachePointCut : {
-		type : "com.jarvis.cache.map.CachePointCut",
-		args : [ {
-			refer : "autoLoadConfig",
-		},{
-		  refer : "fastjsonSerializer"
-		} ,{
-          refer : "scriptParser"
-        }],
-		fields : {
-			namespace : 'test_hessian',
-			needPersist : false
-		},
-		events : {
-		    create : "start",
-			depose : "destroy"
-		}
-	}
+    shardedJedisPool: {
+        type: "redis.clients.jedis.ShardedJedisPool",
+        args: [{
+            refer: "jedisPoolConfig"
+        }, [{
+            type: "redis.clients.jedis.JedisShardInfo",
+            args: [{
+                java: "$conf.get('redis.host', 'localhost')"
+            }, {
+                java: "$conf.getInt('redis.port', 6379)"
+            }]
+        }]],
+        events: {
+            depose: "destroy"
+        }
+    },
+    autoLoadConfig: {
+        type: "com.jarvis.cache.to.AutoLoadConfig",
+        fields: {
+            sortType: 1,
+            checkFromCacheBeforeLoad: true
+        }
+    },
+    jacksonJsonSerializer: {
+        type: "com.jarvis.cache.serializer.JacksonJsonSerializer"
+    },
+    javaScriptParser: {
+        type: "com.jarvis.cache.script.JavaScriptParser"
+    },
+    cacheManager: {
+        type: "com.jarvis.cache.redis.ShardedJedisCacheManager",
+        args: [{
+            refer: "shardedJedisPool"
+        }, {
+            refer: "jacksonJsonSerializer"
+        }]
+    },
+    cacheHandler: {
+        type: "com.jarvis.cache.CacheHandler",
+        args: [{
+            refer: "cacheManager"
+        }, {
+            refer: "javaScriptParser"
+        }, {
+            refer: "autoLoadConfig"
+        }, {
+            refer: "jacksonJsonSerializer"
+        }]
+    }
 };
 ```
 
