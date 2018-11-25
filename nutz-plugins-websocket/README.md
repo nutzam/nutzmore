@@ -236,6 +236,7 @@ AbstractWsEndpoint有一个属性叫 roomProvider, 自定义Endpoint的实例,�
 ```txt
 proxy_read_timeout 60m;
 proxy_set_header Upgrade $http_upgrade;
+proxy_http_version 1.1;
 proxy_set_header Connection "upgrade";
 ```
 
