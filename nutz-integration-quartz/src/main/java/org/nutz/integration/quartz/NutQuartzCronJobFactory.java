@@ -67,7 +67,7 @@ public class NutQuartzCronJobFactory {
         else if (scheduled.fixedRate() > 0){
             log.debugf("job define name=%s fixedRate=%s count=%s initialDelay=%s", 
                     name, scheduled.fixedRate(), scheduled.count(), scheduled.initialDelay());
-            Quartzs.simple(scheduler, klass, scheduled.fixedRate(), scheduled.count(), scheduled.initialDelay(),null,null);
+            Quartzs.simple(scheduler, klass, scheduled.fixedRate(), scheduled.count(), scheduled.initialDelay());
         }
     }
     
