@@ -44,17 +44,21 @@ public class Quartzs {
     }
     
     public static void simple(Scheduler scheduler, Class<?> klass, int fixedRate, int count, long initialDelay) {
-        try {
-            String name = klass.getName();
-            String group = Scheduler.DEFAULT_GROUP;
-            JobKey jobKey = new JobKey(name, group);
-            if (scheduler.checkExists(jobKey))
-                scheduler.deleteJob(jobKey);
-            scheduler.scheduleJob(makeJob(jobKey, klass), makeSimpleTrigger(name, group, fixedRate, count, initialDelay));
-        }
-        catch (SchedulerException e) {
-            throw new RuntimeException(e);
-        }
+        simple(scheduler, klass, fixedRate, count, initialDelay, null, null);
+    }
+    
+    public static void simple(Scheduler scheduler, Class<?> klass, int fixedRate, int count, long initialDelay, Date startTime, Date endTime) {
+    	try {
+    		String name = klass.getName();
+    		String group = Scheduler.DEFAULT_GROUP;
+    		JobKey jobKey = new JobKey(name, group);
+    		if (scheduler.checkExists(jobKey))
+    			scheduler.deleteJob(jobKey);
+    		scheduler.scheduleJob(makeJob(jobKey, klass), makeSimpleTrigger(name, group, fixedRate, count, initialDelay, startTime, endTime));
+    	}
+    	catch (SchedulerException e) {
+    		throw new RuntimeException(e);
+    	}
     }
     
     public static CronTrigger makeCronTrigger(String jobName, String jobGroup, String cron) {
@@ -64,18 +68,30 @@ public class Quartzs {
     }
     
     public static SimpleTrigger makeSimpleTrigger(String jobName, String jobGroup, int fixedRate, int count, long initialDelay) {
-        SimpleScheduleBuilder schedule = SimpleScheduleBuilder.simpleSchedule();
-        if (fixedRate > 0)
-            schedule.withIntervalInSeconds(fixedRate);
-        if (count > 0) {
-            schedule.withRepeatCount(count);
-        } else {
-            schedule.repeatForever();
-        }
-        TriggerBuilder<SimpleTrigger> trigger = TriggerBuilder.newTrigger().withIdentity(jobName, jobGroup).withSchedule(schedule);
-        if (initialDelay > 0) 
-            trigger.startAt(new Date(System.currentTimeMillis() + initialDelay*1000));
-        return trigger.build();
+       return makeSimpleTrigger(jobName, jobGroup, fixedRate, count, initialDelay, null, null);
+    }
+    
+    public static SimpleTrigger makeSimpleTrigger(String jobName, String jobGroup, int fixedRate, int count, long initialDelay, Date startTime, Date endTime) {
+    	SimpleScheduleBuilder schedule = SimpleScheduleBuilder.simpleSchedule();
+    	if (fixedRate > 0)
+    		schedule.withIntervalInSeconds(fixedRate / 1000);
+    	if (count > 0) {
+    		schedule.withRepeatCount(count);
+    	} else {
+    		schedule.repeatForever();
+    	}
+    	
+    	TriggerBuilder<SimpleTrigger> trigger = TriggerBuilder.newTrigger().withIdentity(jobName, jobGroup).withSchedule(schedule);
+    	if (startTime != null ) {
+    		trigger.startAt(startTime);
+    	}
+    	if (endTime != null ) {
+    		trigger.endAt(endTime);
+    	}
+    	
+    	if (initialDelay > 0)
+    		trigger.startAt(new Date(System.currentTimeMillis() + initialDelay*1000));
+    	return trigger.build();
     }
     
     public static JobDetail makeJob(String jobName, String jobGroup, Class<?> klass) {
