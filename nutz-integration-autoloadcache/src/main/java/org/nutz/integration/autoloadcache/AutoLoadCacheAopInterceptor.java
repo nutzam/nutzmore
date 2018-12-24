@@ -1,16 +1,15 @@
 package org.nutz.integration.autoloadcache;
 
-import java.lang.reflect.Method;
-
+import com.jarvis.cache.CacheHandler;
+import com.jarvis.cache.annotation.Cache;
+import com.jarvis.cache.aop.CacheAopProxyChain;
 import org.nutz.aop.InterceptorChain;
 import org.nutz.aop.MethodInterceptor;
 import org.nutz.lang.Mirror;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 
-import com.jarvis.cache.CacheHandler;
-import com.jarvis.cache.annotation.Cache;
-import com.jarvis.cache.aop.CacheAopProxyChain;
+import java.lang.reflect.Method;
 
 public class AutoLoadCacheAopInterceptor implements MethodInterceptor {
 
@@ -39,7 +38,7 @@ public class AutoLoadCacheAopInterceptor implements MethodInterceptor {
 				Object obj = cacheHandler.proceed(new CacheAopProxyChain() {
 
 					@Override
-					public Class<?> getTargetClass() {
+					public Class<?> getTarget() {
 						return chain.getCallingMethod().getDeclaringClass();
 					}
 

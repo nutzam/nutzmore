@@ -96,7 +96,7 @@ public class QuartzJob {
     public Trigger getTrigger() {
         if (Strings.isBlank(cron)) {
             NutMap map = Json.fromJson(NutMap.class, scheduled);
-            return Quartzs.makeSimpleTrigger(jobName, jobGroup, map.getInt("rate"), map.getInt("count"), map.getLong("delay"));
+            return Quartzs.makeSimpleTrigger(jobName, jobGroup, map.getInt("rate"), map.getInt("count"), map.getLong("delay") ,map.getTime("startTime"),map.getTime("endTime"));
         } else {
             return Quartzs.makeCronTrigger(jobName, jobGroup, cron);
         }
@@ -111,6 +111,8 @@ public class QuartzJob {
             SimpleTrigger st = (SimpleTrigger)trigger;
             tmp.put("rate", st.getRepeatInterval());
             tmp.put("count", st.getRepeatCount());
+            tmp.put("startTime",st.getStartTime());
+            tmp.put("endTime",st.getEndTime());
             scheduled = Json.toJson(tmp, JsonFormat.compact());
         }
     }
