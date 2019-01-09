@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.nutz</groupId>
 	<artifactId>nutzmore</artifactId>
-	<version>1.r.67-SNAPSHOT</version>
+	<version>1.r.68-SNAPSHOT</version>
 	<name>nutzmore</name>
 	<description>Nutz, which is a collections of lightweight frameworks, each of them can be used independently</description>
 
@@ -157,7 +157,6 @@
 		<module>nutz-plugins-qrcode</module>
 		<module>nutz-plugins-sigar</module>
 		<module>nutz-plugins-slog</module>
-		<module>nutz-plugins-spring-boot-starter</module>
 		<module>nutz-plugins-sqlmanager</module>
 		<module>nutz-plugins-sqltpl</module>
 		<module>nutz-plugins-undertow</module>

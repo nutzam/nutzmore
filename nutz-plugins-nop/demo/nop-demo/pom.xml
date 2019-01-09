@@ -22,7 +22,7 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz-plugins-nop</artifactId>
-			<version>1.r.67-SNAPSHOT</version>
+			<version>1.r.68-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
@@ -39,7 +39,7 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz-plugins-apidoc</artifactId>
-			<version>1.r.67-SNAPSHOT</version>
+			<version>1.r.68-SNAPSHOT</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/junit/junit -->
 		<dependency>

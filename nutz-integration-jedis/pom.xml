@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.r.67-SNAPSHOT</version>
+		<version>1.r.68-SNAPSHOT</version>
 	</parent>
 	<artifactId>nutz-integration-jedis</artifactId>
 	
