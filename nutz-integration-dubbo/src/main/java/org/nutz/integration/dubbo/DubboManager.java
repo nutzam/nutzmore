@@ -41,8 +41,7 @@ public class DubboManager {
 	}
 
 	public void depose() {
-		ProtocolConfig.destroyAll();
-		RegistryConfig.destroyAll();
+
 	}
 
 	public void setIoc(Ioc ioc) {
