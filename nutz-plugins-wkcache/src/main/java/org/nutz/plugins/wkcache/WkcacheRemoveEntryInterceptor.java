@@ -17,7 +17,7 @@ import java.util.Set;
 /**
  * Created by wizzer on 2017/6/14.
  */
-@IocBean
+@IocBean(singleton = false)
 public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
 
     public void filter(InterceptorChain chain) throws Throwable {
