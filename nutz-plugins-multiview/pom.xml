@@ -74,6 +74,22 @@
 			<scope>provided</scope>
 		</dependency>
 		<!--jetbrick jar end-->
+		
+		<!--thymeleaf jar start -->
+		<dependency>
+			<groupId>org.thymeleaf</groupId>
+			<artifactId>thymeleaf</artifactId>
+			<version>${thymeleaf.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>nz.net.ultraq.thymeleaf</groupId>
+			<artifactId>thymeleaf-layout-dialect</artifactId>
+			<version>${thymeleaf-layout-dialect.version}</version>
+			<optional>true</optional>
+			<scope>provided</scope>
+		</dependency>
+		<!--thymeleaf jar end -->
 	</dependencies>
 	<build>
 		<plugins>

@@ -145,4 +145,11 @@ public class ResourceBundleViewResolver implements MultiView {
 		vr.render(req, resp, sourceMap);
 	}
 
+	public LinkedHashMap<String, AbstractTemplateViewResolver> getResolvers() {
+		return resolvers;
+	}
+
+	public void setResolvers(LinkedHashMap<String, AbstractTemplateViewResolver> resolvers) {
+		this.resolvers = resolvers;
+	}
 }
