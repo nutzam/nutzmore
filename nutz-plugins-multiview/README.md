@@ -19,13 +19,13 @@
 
 1. 视图的路径
 2. 视图文件扩展名
-3. 默认视图
+3. [默认视图](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#%E9%BB%98%E8%AE%A4%E8%A7%86%E5%9B%BE%E4%BD%BF%E7%94%A8%E7%A4%BA%E4%BE%8B)
 4. 默认内容类型
 5. 字符编码
-6. 动态可扩展属性配置
+6. [动态可扩展属性配置](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#thymeleaf)
 7. 视图的属性文件
 
-## 支持[在线切换](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#velocity#session和application切换视图示例)模板引擎
+## 支持[在线切换](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#session和application切换视图示例)模板引擎
 
 支持两种模式的在线切换模板引擎、视图路径、视图文件扩展名：
 
@@ -41,7 +41,7 @@
 | [Freemarker](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#freemarker) | 一个基于模板生成文本输出的通用工具。                     | Yes      |
 | [JetTemplate](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#JetTemplate) | 新一代，具有高性能和高扩展性。                           | Yes      |
 | [Velocity](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#velocity) | 允许网页设计者引用Java代码中定义的方法。                 | No       |
-| [Jsp](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#完整配置示例) | java服务器页面，简化的Servlet设计,一种动态网页技术标准。 | Yes      |
+| [Jsp](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#Jsp) | java服务器页面，简化的Servlet设计,一种动态网页技术标准。 | Yes      |
 
 更多模板引擎支持等你来[实现扩展](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#实现扩展)。
 
@@ -180,7 +180,7 @@ thymeleaf : {
 			encoding : "UTF-8",
 			properties : {
 				type : "org.nutz.lang.util.NutMap",
-				args : [ {
+				args : [ {//动态可扩展属性配置
 					"templateMode" : "HTML5",
 					"cacheable" : true,
 					"cacheTTLMs" : 3600000,
@@ -350,6 +350,41 @@ public class JetTemplateModule {
 </dependency>
 ```
 
+#### Jsp
+
+json配置
+
+```javascript
+jetTemplate : {
+	type : "org.nutz.plugins.view.JspView",
+	args : [ null ],
+	fields : {
+		prefix : "/WEB-INF/templates/jsp",
+		uffix : ".jsp"
+	}
+}
+```
+
+java
+
+```java
+@At("/jsp")
+@IocBean
+public class JetTemplateModule {
+	@At
+	@Ok("jsp:index")
+	public void index() {
+
+	}
+    
+    @At
+	@Ok("jsp:test.index")
+	public void index() {
+
+	}
+}
+```
+
 
 
 #### 完整配置示例
@@ -400,14 +435,14 @@ var ioc = {
 			encoding : "UTF-8",
 			properties : {
 				type : "org.nutz.lang.util.NutMap",
-				args : [ {
+				args : [ {//动态可扩展属性配置
 					"templateMode" : "HTML5",
 					"cacheable" : true,
 					"cacheTTLMs" : 3600000,
 					"dialects" : {
 						refer : "java8TimeDialect"
 					} 
-				} ]
+				} ]// //可配置多个插件引用用逗号分隔
 			}
 		}
 	},
@@ -415,7 +450,7 @@ var ioc = {
 		type : "org.nutz.plugins.view.MultiViewResover",
 		fields : {
 			defaultView : "btl",// 默认视图 这里填前缀标识
-			config : {
+			config : {//视图的属性文件配置
 				refer : "conf"
 			},
 			resolvers : {
@@ -436,8 +471,6 @@ var ioc = {
 	}
 }
 ```
-
-
 
 访问相应的链接，就会找到相应的视图。
 
@@ -469,6 +502,27 @@ public class UserModule {
 
 默认视图，将会走默认的视图，此例子中走beetl视图，因为上面view.js里配置了defaultView的值为 btl 即此视图的前缀标识。
 默认视图的好处是@Ok里不用再加“视图前缀:”来标识，直接通过配置文件就能改变视图模板引擎。
+
+##### 支持配置的模板路径以外访问方式
+
+假如配置了模板路径/WEB-INF/templates/beetl，并且默认视图也是beetl
+
+```
+@At("/my/cbd")
+public void someFunc(){
+}
+
+@At("btl:/my/abc")
+public void abc(){
+}
+```
+
+如上示例，则以上两个请求会在项目根路径寻找模板页面：
+
+1. /my/cbd.html
+2. /my/abc.html
+
+而不会去配置好的模板路径去找，例：/WEB-INF/templates/beetl/my/cbd.html
 
 #### session和application切换视图示例
 
