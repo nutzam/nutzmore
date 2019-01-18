@@ -1,7 +1,7 @@
 [nutz-plugins-multiview 多视图插件](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview)
 ====
 
-[快速上手]() | [版本历史]()
+[快速上手](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#%E5%BF%AB%E9%80%9F%E4%B8%8A%E6%89%8B) | [版本历史](https://github.com/nutzam/nutzmore/blob/master/nutz-plugins-multiview/CHANGELOG.md)
 
 # 简介(可用性:生产,维护者:[邓华锋](http://dhf.ink))
 
@@ -15,7 +15,7 @@
 
 # 功能
 
-## 支持N种配置项
+## 支持[N种配置项](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#完整配置示例)
 
 1. 视图的路径
 2. 视图文件扩展名
@@ -25,7 +25,7 @@
 6. 动态可扩展属性配置
 7. 视图的属性文件
 
-## 支持在线切换模板引擎
+## 支持[在线切换](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#velocity#session和application切换视图示例)模板引擎
 
 支持两种模式的在线切换模板引擎、视图路径、视图文件扩展名：
 
@@ -34,16 +34,16 @@
 
 ## 支持N种模板引擎
 
-| 模板引擎    | 描述                                                     | 是否支持 |
-| ----------- | -------------------------------------------------------- | -------- |
-| Beetl       | 新一代典范，功能强大，性能良好，易学易用。               | Yes      |
-| Thymeleaf   | XML/XHTML/HTML5模板引擎，可用于Web与非Web环境中。        | Yes      |
-| Freemarker  | 一个基于模板生成文本输出的通用工具。                     | Yes      |
-| JetTemplate | 新一代，具有高性能和高扩展性。                           | Yes      |
-| Velocity    | 允许网页设计者引用Java代码中定义的方法。                 | No       |
-| Jsp         | java服务器页面，简化的Servlet设计,一种动态网页技术标准。 | Yes      |
+| 模板引擎                                                     | 描述                                                     | 是否支持 |
+| ------------------------------------------------------------ | -------------------------------------------------------- | -------- |
+| [Beetl](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#beetl) | 新一代典范，功能强大，性能良好，易学易用。               | Yes      |
+| [Thymeleaf](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#thymeleaf) | XML/XHTML/HTML5模板引擎，可用于Web与非Web环境中。        | Yes      |
+| [Freemarker](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#freemarker) | 一个基于模板生成文本输出的通用工具。                     | Yes      |
+| [JetTemplate](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#JetTemplate) | 新一代，具有高性能和高扩展性。                           | Yes      |
+| [Velocity](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#velocity) | 允许网页设计者引用Java代码中定义的方法。                 | No       |
+| [Jsp](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#完整配置示例) | java服务器页面，简化的Servlet设计,一种动态网页技术标准。 | Yes      |
 
-更多模板引擎支持等你来[实现扩展]()。
+更多模板引擎支持等你来[实现扩展](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#实现扩展)。
 
 # 快速上手
 
@@ -271,7 +271,7 @@ public class FreemarkerModule {
 
 
 
-#### Jetbrick
+#### JetTemplate
 
 ```xml
 <dependency>
@@ -352,7 +352,7 @@ public class JetTemplateModule {
 
 
 
-完整配置示例：
+#### 完整配置示例
 
 ```javascript
 var ioc = {
@@ -662,7 +662,7 @@ public class BeetlView extends AbstractTemplateViewResolver {
 }
 ```
 
-*See BeetlView.java on GitHub.*
+*See [BeetlView.java](https://github.com/nutzam/nutzmore/blob/master/nutz-plugins-multiview/src/main/java/org/nutz/plugins/view/BeetlView.java) on GitHub.*
 
 注意上面的getConfigPath()方法的代码，是为了实现beetl放在公共的lib目录获取不到beetl配置文件的问题而补救的一个解决方案，configPath是父类AbstractTemplateViewResolver 的属性,可在ioc配置文件中配置。 
 init方法只执行一次，一般用于加载视图的配置相关的代码，且某些对象只需实例化一次，后面就不用实例化。
