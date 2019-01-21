@@ -37,6 +37,7 @@ public class FreemarkerView extends AbstractTemplateViewResolver {
 	private static final String KEY_EXCEPTION = "exception";
 	private static final String KEY_JSP_TAGLIBS = "JspTaglibs";
 	private Configuration cfg;
+	protected PropertiesProxy viewProperties;
 
 	public FreemarkerView(String dest) {
 		super(dest);
