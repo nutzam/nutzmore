@@ -29,7 +29,7 @@ public class ThymeleafView extends AbstractTemplateViewResolver {
 	public ThymeleafView(String dest) {
 		super(dest);
 	}
-	
+
 	@Override
 	protected void init(String appRoot, ServletContext sc) {
 		this.templateResolver = new ServletContextTemplateResolver(Mvcs.getServletContext());

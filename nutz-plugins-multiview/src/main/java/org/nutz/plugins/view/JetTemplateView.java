@@ -9,32 +9,37 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.nutz.lang.Lang;
+
 import jetbrick.template.JetEngine;
 import jetbrick.template.JetTemplate;
 import jetbrick.template.web.JetWebContext;
 import jetbrick.template.web.JetWebEngine;
 
-import org.nutz.lang.Lang;
-
 /**
  * JetTemplate视图。
+ * 
  * @author 邓华锋(http://dhf.ink)
  *
  */
 public class JetTemplateView extends AbstractTemplateViewResolver {
 	private JetEngine engine;
-	
+
 	public JetTemplateView(String dest) {
 		super(dest);
 	}
 
-	public void init(String appRoot,ServletContext sc) {
-		engine = JetWebEngine.create(sc);
+	public void init(String appRoot, ServletContext sc) {
+		if (super.getConfig() != null) {// 如果配置了配置文件
+			engine = JetWebEngine.create(sc, super.getConfig().toProperties(), null);
+		} else {// 没有，则自动查找
+			engine = JetWebEngine.create(sc);
+		}
 	}
 
 	@Override
-	public void render(HttpServletRequest req, HttpServletResponse resp,
-			String evalPath, Map<String, Object> sharedVars) throws Throwable {
+	public void render(HttpServletRequest req, HttpServletResponse resp, String evalPath,
+			Map<String, Object> sharedVars) throws Throwable {
 		String charsetEncoding = engine.getConfig().getOutputEncoding().name();
 		resp.setCharacterEncoding(charsetEncoding);
 		if (resp.getContentType() == null) {

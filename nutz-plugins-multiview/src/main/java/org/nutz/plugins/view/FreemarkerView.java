@@ -56,7 +56,7 @@ public class FreemarkerView extends AbstractTemplateViewResolver {
 		cfg.setWhitespaceStripping(true);
 	}
 
-	//@SuppressWarnings("unchecked")
+	// @SuppressWarnings("unchecked")
 	@Override
 	public void render(HttpServletRequest request, HttpServletResponse response, String evalPath,
 			Map<String, Object> vars) throws Throwable {

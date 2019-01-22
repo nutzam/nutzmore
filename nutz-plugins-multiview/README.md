@@ -15,7 +15,9 @@
 
 # 功能
 
-## 支持[N种配置项](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#完整配置示例)
+## 支持多种配置项
+
+目前支持7中[配置项](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#完整配置示例)：
 
 1. 视图的路径
 2. 视图文件扩展名
@@ -23,14 +25,14 @@
 4. 默认内容类型
 5. 字符编码
 6. [动态可扩展属性配置](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#thymeleaf)
-7. 视图的属性文件
+7. 单个视图的属性文件配置
 
-## 支持[在线切换](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#session和application切换视图示例)模板引擎
+## 支持在线切换模板引擎
 
-支持两种模式的在线切换模板引擎、视图路径、视图文件扩展名：
+支持两种模式的[在线切换](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#session和application切换视图示例)模板引擎、视图路径、视图文件扩展名：
 
-1. session
-2. application
+1. [session](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#session和application切换视图示例)
+2. [application](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#session和application切换视图示例)
 
 ## 支持N种模板引擎
 
@@ -40,6 +42,7 @@
 | [Thymeleaf](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#thymeleaf) | XML/XHTML/HTML5模板引擎，可用于Web与非Web环境中。        | Yes      |
 | [Freemarker](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#freemarker) | 一个基于模板生成文本输出的通用工具。                     | Yes      |
 | [JetTemplate](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#JetTemplate) | 新一代，具有高性能和高扩展性。                           | Yes      |
+| [Captcha](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#Captcha) | 验证码生成                                               | Yes      |
 | [Velocity](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#velocity) | 允许网页设计者引用Java代码中定义的方法。                 | No       |
 | [Jsp](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#Jsp) | java服务器页面，简化的Servlet设计,一种动态网页技术标准。 | Yes      |
 
@@ -78,14 +81,14 @@
 
 ```xml
 <dependency>
-	<groupId>org.antlr</groupId>
-	<artifactId>antlr4-runtime</artifactId>
-	<version>${antlr4-runtime.version}</version>
+    <groupId>org.antlr</groupId>
+    <artifactId>antlr4-runtime</artifactId>
+    <version>4.7.2</version>
 </dependency>
 <dependency>
 	<groupId>com.ibeetl</groupId>
 	<artifactId>beetl</artifactId>
-	<version>${beetl.version}</version>
+	<version>2.9.8</version>
 </dependency>
 ```
 假如模板页面所在路径是WEB-INFO/templates/beetl,有如下页面：
@@ -111,10 +114,37 @@ beetl : {
 			suffix : ".html",
 			configPath : "WEB-INF/classes",//是指这个视图的配置文件目录，相对于项目根目录来说的，可配置或不配置，分情况而定。 
 			contentType : "text/html",
-			characterEncoding : "UTF-8"
+			characterEncoding : "UTF-8",
+            config: {//可指定此视图的配置文件
+				type : "org.nutz.ioc.impl.PropertiesProxy",
+				fields : {
+					paths : [ "beetl.properties" ]
+				}
+			}
 		}
 	}
 ```
+
+配置multiViewResover：
+
+```javascript
+multiViewResover : {
+		type : "org.nutz.plugins.view.MultiViewResover",
+		fields : {
+            defaultView : "btl",// 默认视图 这里填前缀标识
+			config : {//视图的属性文件配置
+				refer : "conf"
+			},
+			resolvers : {
+				"btl" : {// 视图前缀标识
+					refer : "beetl"
+				}
+			}
+		}
+	}
+```
+
+
 
 Java
 
@@ -144,7 +174,7 @@ public class BeetlModule {
 <dependency>
 	<groupId>org.thymeleaf</groupId>
 	<artifactId>thymeleaf</artifactId>
-	<version>${thymeleaf.version}</version>
+	<version>3.0.11.RELEASE</version>
 </dependency>
 <dependency>
 	<groupId>nz.net.ultraq.thymeleaf</groupId>
@@ -155,7 +185,7 @@ public class BeetlModule {
 <dependency>
 	<groupId>org.thymeleaf.extras</groupId>
 	<artifactId>thymeleaf-extras-java8time</artifactId>
-	<version>${thymeleaf.version}</version>
+	<version>3.0.3.RELEASE</version>
 </dependency>
 ```
 
@@ -193,6 +223,27 @@ thymeleaf : {
 	}
 ```
 
+配置multiViewResover：
+
+```javascript
+multiViewResover : {
+		type : "org.nutz.plugins.view.MultiViewResover",
+		fields : {
+            defaultView : "th",// 默认视图 这里填前缀标识
+			config : {//视图的属性文件配置
+				refer : "conf"
+			},
+			resolvers : {
+				"th" : {// 视图前缀标识
+					refer : "thymeleaf"
+				}
+			}
+		}
+	}
+```
+
+
+
 java
 
 ```java
@@ -226,7 +277,7 @@ public class ThymeleafModule {
 <dependency>
 	<groupId>org.freemarker</groupId>
 	<artifactId>freemarker</artifactId>
-	<version>${freemarker.version}</version>
+	<version>2.3.28</version>
 	<scope>compile</scope>
 </dependency>
 ```
@@ -248,6 +299,27 @@ freemarker : {
 		}
 	}
 ```
+
+配置multiViewResover：
+
+```javascript
+multiViewResover : {
+		type : "org.nutz.plugins.view.MultiViewResover",
+		fields : {
+            defaultView : "ftl",// 默认视图 这里填前缀标识
+			config : {//视图的属性文件配置
+				refer : "conf"
+			},
+			resolvers : {
+				"ftl" : {// 视图前缀标识
+					refer : "freemarker"
+				}
+			}
+		}
+	}
+```
+
+
 
 Java
 
@@ -277,12 +349,12 @@ public class FreemarkerModule {
 <dependency>
 	<groupId>com.github.subchen</groupId>
 		<artifactId>jetbrick-template</artifactId>
-		<version>${jetbrick-template.version}</version>
+		<version>2.1.8</version>
 	</dependency>
 <dependency>
 <groupId>com.github.subchen</groupId>
 	<artifactId>jetbrick-template-web</artifactId>
-	<version>${jetbrick-template.version}</version>
+	<version>2.1.8</version>
 </dependency
 ```
 
@@ -308,10 +380,31 @@ jetTemplate : {
 	args : [ null ],
 	fields : {
 		prefix : "/WEB-INF/templates/jetTemplate",
-		uffix : ".html"
+		suffix : ".html"
 	}
 }
 ```
+
+配置multiViewResover：
+
+```javascript
+multiViewResover : {
+		type : "org.nutz.plugins.view.MultiViewResover",
+		fields : {
+            defaultView : "jetx",// 默认视图 这里填前缀标识
+			config : {//视图的属性文件配置
+				refer : "conf"
+			},
+			resolvers : {
+				"jetx" : {// 视图前缀标识
+					refer : "jetTemplate"
+				}
+			}
+		}
+	}
+```
+
+
 
 java
 
@@ -335,18 +428,68 @@ public class JetTemplateModule {
 
 
 
+#### Captcha
+
+```javascript
+	captcha : {
+		type : "org.nutz.plugins.view.CaptchaView",
+		args : [ null ]
+	}
+```
+
+配置multiViewResover：
+
+```javascript
+multiViewResover : {
+		type : "org.nutz.plugins.view.MultiViewResover",
+		fields : {
+			config : {//视图的属性文件配置
+				refer : "conf"
+			},
+			resolvers : {
+				"cap" : {// 视图前缀标识
+					refer : "captcha"
+				}
+			}
+		}
+	}
+```
+
+Java
+
+```java
+
+import org.nutz.ioc.loader.annotation.IocBean;
+import org.nutz.mvc.annotation.At;
+import org.nutz.mvc.annotation.Ok;
+
+@IocBean
+@At("/captcha")
+public class CaptchaModule {
+	@At
+	@Ok("cap")
+	public void get() {
+		
+	}
+}
+```
+
+
+
+
+
 #### Velocity
 
 ```xml
 <dependency>
 	<groupId>org.apache.velocity</groupId>
 	<artifactId>velocity</artifactId>
-	<version>${velocity.version}</version>
+	<version>1.7</version>
 </dependency>
 <dependency>
 	<groupId>org.apache.velocity</groupId>
 	<artifactId>velocity-tools</artifactId>
-	<version>${velocity-tools.version}</version>
+	<version>2.0</version>
 </dependency>
 ```
 
@@ -355,7 +498,7 @@ public class JetTemplateModule {
 json配置
 
 ```javascript
-jetTemplate : {
+jsp : {
 	type : "org.nutz.plugins.view.JspView",
 	args : [ null ],
 	fields : {
@@ -364,6 +507,27 @@ jetTemplate : {
 	}
 }
 ```
+
+配置multiViewResover：
+
+```javascript
+multiViewResover : {
+		type : "org.nutz.plugins.view.MultiViewResover",
+		fields : {
+			defaultView : "jsp",// 默认视图 这里填前缀标识
+			config : {//视图的属性文件配置
+				refer : "conf"
+			},
+			resolvers : {
+				"jsp" : {// 视图前缀标识
+					refer : "jsp"
+				}
+			}
+		}
+	}
+```
+
+
 
 java
 
@@ -446,6 +610,18 @@ var ioc = {
 			}
 		}
 	},
+    captcha : {
+		type : "org.nutz.plugins.view.CaptchaView",
+		args : [ null ]
+	},
+    jsp : {
+        type : "org.nutz.plugins.view.JspView",
+        args : [ null ],
+        fields : {
+            prefix : "/WEB-INF/templates/jsp",
+            uffix : ".jsp"
+        }
+    },
 	multiViewResover : {
 		type : "org.nutz.plugins.view.MultiViewResover",
 		fields : {
@@ -465,6 +641,12 @@ var ioc = {
 				},
 				"jetx" : {// 视图前缀标识
 					refer : "jetTemplate"
+				},
+                "jsp" : {// 视图前缀标识
+					refer : "jsp"
+				},
+				"cap":{
+					refer:"captcha"
 				}
 			}
 		}
@@ -502,6 +684,20 @@ public class UserModule {
 
 默认视图，将会走默认的视图，此例子中走beetl视图，因为上面view.js里配置了defaultView的值为 btl 即此视图的前缀标识。
 默认视图的好处是@Ok里不用再加“视图前缀:”来标识，直接通过配置文件就能改变视图模板引擎。
+
+注意点：
+
+1. `在使用此功能时，请把MainModuled的@Ok("json")注解去除。`
+
+2. `defaultView如果没有配置，则默认按顺序找第一个配置的视图模板引擎。`
+
+3. `默认视图不会跟Nutz里内置支持的视图冲突，如以下是MultiView的常量：`
+
+   ```java
+   String INNER_VIEW_TYPE = "json|raw|re|void|http|redirect|forward|>>|->";
+   ```
+
+   
 
 ##### 支持配置的模板路径以外访问方式
 

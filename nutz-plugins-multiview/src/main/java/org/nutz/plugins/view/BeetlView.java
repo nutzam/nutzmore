@@ -32,10 +32,14 @@ public class BeetlView extends AbstractTemplateViewResolver {
 	protected void init(String appRoot, ServletContext sc) {
 		Configuration cfg = null;
 		try {
-			cfg = Configuration.defaultConfiguration();
-			// 针对beetl放在公共的lib目录获取不到beetl.properties的补救方案
-			if (!Strings.isBlank(appRoot) && !Strings.isBlank(getConfigPath())) {
-				cfg.add(new File(appRoot + "/" + getConfigPath() + "/beetl.properties"));
+			if (this.getConfig() != null) {// 如果配置了配置文件
+				cfg = new Configuration(this.getConfig().toProperties());
+			} else {// 没有，则自动查找
+				cfg = Configuration.defaultConfiguration();
+				// 针对beetl放在公共的lib目录获取不到beetl.properties的补救方案
+				if (!Strings.isBlank(appRoot) && !Strings.isBlank(getConfigPath())) {
+					cfg.add(new File(appRoot + "/" + getConfigPath() + "/beetl.properties"));
+				}
 			}
 		} catch (IOException e) {
 			throw new RuntimeException("加载GroupTemplate失败", e);

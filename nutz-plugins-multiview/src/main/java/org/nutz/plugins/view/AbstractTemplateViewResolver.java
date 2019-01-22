@@ -40,7 +40,6 @@ public abstract class AbstractTemplateViewResolver extends AbstractPathView {
 	public AbstractTemplateViewResolver(String dest) {
 		super(dest);
 	}
-	
 
 	protected abstract void init(String appRoot, ServletContext sc);
 
@@ -137,6 +136,10 @@ public abstract class AbstractTemplateViewResolver extends AbstractPathView {
 		String resDir = "";
 		if (config != null) {
 			resDir = config.get(MultiView.RESOURCE_DIR);
+			// 始终保持空字符串，以防后面出现空指针异常
+			if (Strings.isBlank(resDir)) {
+				resDir = "";
+			}
 		}
 
 		String path = req.getContextPath();
