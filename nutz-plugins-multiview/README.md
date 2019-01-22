@@ -17,7 +17,7 @@
 
 ## 支持多种配置项
 
-目前支持7中[配置项](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#完整配置示例)：
+目前支持7种[配置项](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#完整配置示例)：
 
 1. 视图的路径
 2. 视图文件扩展名
@@ -924,4 +924,4 @@ render方法的sharedVars是全局的变量。
 
 2. 支持Ajax视图，此需要特殊处理。例如，前段Ajax请求，需要处理获取的数据、本次请求状态、提示信息等。
 
-3. ###### 增加对pdf、velocity、captcha视图支持，增强Freemarker视图可配置性。 
+3. ###### 增加对pdf、velocity视图支持，增强Freemarker视图可配置性。 
