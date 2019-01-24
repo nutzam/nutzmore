@@ -1,8 +1,10 @@
 package org.nutz.plugins.view;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -26,7 +28,6 @@ import org.nutz.mvc.view.AbstractPathView;
  */
 public class ResourceBundleViewResolver implements MultiView {
 	private LinkedHashMap<String, AbstractTemplateViewResolver> resolvers = new LinkedHashMap<String, AbstractTemplateViewResolver>();
-	private MultiViewResover[] multiViewResovers;
 	private PropertiesProxy config = new PropertiesProxy();
 	private String defaultView;
 	private String appRoot;
@@ -40,11 +41,11 @@ public class ResourceBundleViewResolver implements MultiView {
 					if (ioc != null) {
 						// 查找MultiViewResover类型的定义名称，进行映射配置
 						String[] names = ioc.getNamesByType(MultiViewResover.class);
-						multiViewResovers = new MultiViewResover[names.length];
+						MultiViewResover defaultMultiViewResover = null;
 						for (int i = 0; i < names.length; i++) {
 							String name = names[i];
 							MultiViewResover multiViewResover = ioc.get(MultiViewResover.class, name);
-							multiViewResovers[i] = multiViewResover;
+							defaultMultiViewResover = multiViewResover;
 							if (multiViewResover != null) {
 								LinkedHashMap<String, AbstractTemplateViewResolver> rs = multiViewResover
 										.getResolvers();
@@ -57,6 +58,13 @@ public class ResourceBundleViewResolver implements MultiView {
 							// 设置默认视图
 							if (Strings.isNotBlank(multiViewResover.getDefaultView())) {
 								defaultView = multiViewResover.getDefaultView();
+							}
+						}
+						//如果默认视图没有设置，则默认为Map列表第一个视图，跟顺序有关
+						if(Strings.isBlank(defaultView)&&defaultMultiViewResover!=null) {
+							Iterator<Entry<String,AbstractTemplateViewResolver>> it=defaultMultiViewResover.getResolvers().entrySet().iterator();
+							if(it.hasNext()) {
+								defaultView=it.next().getKey();
 							}
 						}
 					}
@@ -81,10 +89,6 @@ public class ResourceBundleViewResolver implements MultiView {
 		if (vr == null) {
 			return null;
 		}
-		// 设置全局配置文件
-		if (vr.getConfig() == null) {
-			vr.setConfig(config);
-		}
 
 		if (Strings.isBlank(vr.getPrefix()) || Strings.isBlank(vr.getSuffix())) {
 			throw new NullPointerException(vr.getClass().getSimpleName() + " prefix or suffix is null");
@@ -94,6 +98,12 @@ public class ResourceBundleViewResolver implements MultiView {
 			synchronized (vr) {
 				if (!vr.isInited) {
 					vr.init(appRoot, Mvcs.getServletContext());
+					// 合并到全局配置文件中
+					if (vr.getConfig() != null) {
+						if (config != null) {
+							config.putAll(vr.getConfig().toMap());
+						}
+					}
 					vr.setInited(true);
 				}
 			}
@@ -145,4 +155,11 @@ public class ResourceBundleViewResolver implements MultiView {
 		vr.render(req, resp, sourceMap);
 	}
 
+	public LinkedHashMap<String, AbstractTemplateViewResolver> getResolvers() {
+		return resolvers;
+	}
+
+	public void setResolvers(LinkedHashMap<String, AbstractTemplateViewResolver> resolvers) {
+		this.resolvers = resolvers;
+	}
 }

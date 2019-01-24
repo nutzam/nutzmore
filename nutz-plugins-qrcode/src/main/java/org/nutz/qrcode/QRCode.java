@@ -258,7 +258,7 @@ public final class QRCode {
         catch (WriterException e) {
             throw new RuntimeException(e);
         }
-
+        matrix = deleteWhite(matrix);
         int width = matrix.getWidth();
         int height = matrix.getHeight();
         int fgColor = format.getForeGroundColor().getRGB();
@@ -371,5 +371,21 @@ public final class QRCode {
             return this.format.getImageFormat();
         }
         return path.substring(pos + 1).toUpperCase();
+    }
+
+    private static BitMatrix deleteWhite(BitMatrix matrix) {
+        int[] rec = matrix.getEnclosingRectangle();
+        int resWidth = rec[2] + 1;
+        int resHeight = rec[3] + 1;
+
+        BitMatrix resMatrix = new BitMatrix(resWidth, resHeight);
+        resMatrix.clear();
+        for (int i = 0; i < resWidth; i++) {
+            for (int j = 0; j < resHeight; j++) {
+                if (matrix.get(i + rec[0], j + rec[1]))
+                    resMatrix.set(i, j);
+            }
+        }
+        return resMatrix;
     }
 }

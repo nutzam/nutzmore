@@ -29,12 +29,13 @@ public abstract class AbstractTemplateViewResolver extends AbstractPathView {
 	private String prefix;
 	private String suffix;
 	private String contentType;
-	private String characterEncoding;
+	private String encoding;
 	private String configPath;
-	protected PropertiesProxy viewProperties;
 	// 扩展属性
 	protected NutMap properties = new NutMap();
 	protected boolean isInited;
+	// 是否在init方法里掉用了getPrefix()来设置了前缀，如果有则在拼接路径时不需要加上前缀
+	protected boolean isInitedSetPrefix;
 
 	public AbstractTemplateViewResolver(String dest) {
 		super(dest);
@@ -69,13 +70,13 @@ public abstract class AbstractTemplateViewResolver extends AbstractPathView {
 		ServletContext application = Mvcs.getServletContext();
 		sv.put(MultiView.APPLICATION, application);
 		sv.put(MultiView.VIEW_NAME, this.getClass().getSimpleName());
-		sv.put(MultiView.PROPS, System.getProperties());// .get("java.version")
-		sv.put(MultiView.MSGS, Mvcs.getMessages(req));// Map<String, String>
+		sv.put(MultiView.PROPS, System.getProperties());
+		sv.put(MultiView.MSGS, Mvcs.getMessages(req));
 		sv.put(MultiView.CFG, config);
 
 		if (resp != null && Strings.isBlank(resp.getContentType()) && !Strings.isBlank(this.getContentType())) {// resp的contentType优先级高
-			resp.setContentType(this.getContentType() + "; charset=" + this.getCharacterEncoding());// 配置文件设置的contentType
-			resp.setCharacterEncoding(this.getCharacterEncoding());
+			resp.setContentType(this.getContentType() + "; charset=" + this.getEncoding());// 配置文件设置的contentType
+			resp.setCharacterEncoding(this.getEncoding());
 		}
 		String evalPath = null;
 		if (sourceMap != null && sourceMap.get(MultiView.DEST) != null && Strings.isBlank(evalPath)) {
@@ -88,22 +89,26 @@ public abstract class AbstractTemplateViewResolver extends AbstractPathView {
 		// application级别 动态切换模板路径
 		Object viewPrefix = application.getAttribute(MultiView.VIEW_PREFIX);
 		if (viewPrefix != null) {
+			this.setPrefix(viewPrefix.toString());
 			tplDir = viewPrefix.toString();
 		}
 		// session级别 动态切换模板路径
 		viewPrefix = session.getAttribute(MultiView.VIEW_PREFIX);
 		if (viewPrefix != null) {
+			this.setPrefix(viewPrefix.toString());
 			tplDir = viewPrefix.toString();
 		}
 		String ext = this.getSuffix();// 模板文件扩展名
 		// application级别 动态切换模板路径
 		Object viewSuffix = application.getAttribute(MultiView.VIEW_SUFFIX);
 		if (viewSuffix != null) {
+			this.setSuffix(viewSuffix.toString());
 			ext = viewSuffix.toString();
 		}
 		// session级别 动态切换模板后缀
 		viewSuffix = session.getAttribute(MultiView.VIEW_SUFFIX);
 		if (viewSuffix != null) {
+			this.setSuffix(viewSuffix.toString());
 			ext = viewSuffix.toString();
 		}
 
@@ -122,12 +127,19 @@ public abstract class AbstractTemplateViewResolver extends AbstractPathView {
 			if (!evalPath.toLowerCase().endsWith(ext))
 				evalPath += ext;
 		} else {// 包名形式的路径
+			if (isInitedSetPrefix) {// TODO 考虑Thymeleaf的视图切换问题
+				tplDir = "";
+			}
 			evalPath = tplDir + "/" + evalPath.replace('.', '/') + ext;
 		}
 
 		String resDir = "";
 		if (config != null) {
 			resDir = config.get(MultiView.RESOURCE_DIR);
+			// 始终保持空字符串，以防后面出现空指针异常
+			if (Strings.isBlank(resDir)) {
+				resDir = "";
+			}
 		}
 
 		String path = req.getContextPath();
@@ -222,14 +234,14 @@ public abstract class AbstractTemplateViewResolver extends AbstractPathView {
 		this.properties = new NutMap(properties);
 	}
 
-	public String getCharacterEncoding() {
-		if (Strings.isBlank(this.characterEncoding)) {
+	public String getEncoding() {
+		if (Strings.isBlank(this.encoding)) {
 			return MultiView.DEFAULT_ENCODING;
 		}
-		return this.characterEncoding;
+		return this.encoding;
 	}
 
-	public void setCharacterEncoding(String characterEncoding) {
-		this.characterEncoding = characterEncoding;
+	public void setEncoding(String encoding) {
+		this.encoding = encoding;
 	}
 }

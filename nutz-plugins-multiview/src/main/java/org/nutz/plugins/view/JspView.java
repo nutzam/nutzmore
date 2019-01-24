@@ -12,14 +12,14 @@ import javax.servlet.http.HttpServletResponse;
 import org.nutz.lang.Lang;
 
 public class JspView extends AbstractTemplateViewResolver {
-	
+
 	public JspView(String dest) {
 		super(dest);
 	}
-	
+
 	@Override
-	public void render(HttpServletRequest req, HttpServletResponse resp,
-			String evalPath, Map<String, Object> sharedVars) throws Throwable {
+	public void render(HttpServletRequest req, HttpServletResponse resp, String evalPath,
+			Map<String, Object> sharedVars) throws Throwable {
 		Iterator<Entry<String, Object>> iter = sharedVars.entrySet().iterator();
 		while (iter.hasNext()) {
 			Map.Entry<String, Object> entry = iter.next();
@@ -28,20 +28,21 @@ public class JspView extends AbstractTemplateViewResolver {
 			req.setAttribute(key, val);
 		}
 		RequestDispatcher rd = req.getRequestDispatcher(evalPath);
-        if (rd == null)
-            throw Lang.makeThrow("Fail to find Forward '%s'", evalPath);
-        // Do rendering
-        try {
+		if (rd == null)
+			throw Lang.makeThrow("Fail to find Forward '%s'", evalPath);
+		// Do rendering
+		try {
 			rd.forward(req, resp);
-		} catch (Exception e) {//Mock 没有javax.servlet.ServletException: java.lang.NoSuchMethodError: javax.servlet.http.HttpServletResponse.getStatus()I
+		} catch (Exception e) {// Mock 没有javax.servlet.ServletException: java.lang.NoSuchMethodError:
+								// javax.servlet.http.HttpServletResponse.getStatus()I
 			// TODO Auto-generated catch block
-			//e.printStackTrace();
+			// e.printStackTrace();
 		}
 	}
 
 	@Override
 	protected void init(String appRoot, ServletContext sc) {
-		
+
 	}
 
 }
