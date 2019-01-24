@@ -61,9 +61,10 @@ public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
         if (bytes == null) {
             chain.doChain();
             obj = chain.getReturn();
-            redisService().set((cacheName + ":" + cacheKey).getBytes(), Lang.toBytes(obj));
             if (liveTime > 0) {
-                redisService().expire((cacheName + ":" + cacheKey).getBytes(), liveTime);
+                redisService().setex((cacheName + ":" + cacheKey).getBytes(), liveTime, Lang.toBytes(obj));
+            } else {
+                redisService().set((cacheName + ":" + cacheKey).getBytes(), Lang.toBytes(obj));
             }
         } else {
             try {
