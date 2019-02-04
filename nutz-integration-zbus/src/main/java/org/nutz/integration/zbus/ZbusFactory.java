@@ -34,6 +34,7 @@ public class ZbusFactory implements Closeable {
 	protected Set<Consumer> consumers = new HashSet<Consumer>();
 	protected Map<String, ZbusProducer> producers = new ConcurrentHashMap<String, ZbusProducer>();
 	protected Object lock = new Object();
+	@Inject(value="refer:zbusBroker", optional=true)
 	protected Broker broker;
 	@Inject("refer:$ioc")
 	protected Ioc ioc;
