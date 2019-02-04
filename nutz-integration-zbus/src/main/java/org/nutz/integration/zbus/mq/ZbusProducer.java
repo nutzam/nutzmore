@@ -27,6 +27,8 @@ public class ZbusProducer extends Producer {
 		Message msg = asMessage(obj);
 		if (msg == null)
 			return;
+		if (msg.getTopic() == null)
+		    msg.setTopic(topic);
 		try {
 			this.publishAsync(msg, callback);
 		} catch (IOException e) {
@@ -42,6 +44,8 @@ public class ZbusProducer extends Producer {
 		Message msg = asMessage(obj);
 		if (msg == null)
 			return;
+        if (msg.getTopic() == null)
+            msg.setTopic(topic);
 		try {
 			this.publish(msg, timeout);
 		} catch (IOException | InterruptedException e) {
