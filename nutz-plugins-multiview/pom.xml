@@ -90,6 +90,12 @@
 			<scope>provided</scope>
 		</dependency>
 		<!--thymeleaf jar end -->
+		<dependency>
+			<groupId>org.apache.velocity</groupId>
+			<artifactId>velocity</artifactId>
+			<version>1.7</version>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
