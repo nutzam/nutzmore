@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.r.68-SNAPSHOT</version>
+		<version>1.r.68.v20190220</version>
 	</parent>
 	<artifactId>nutz-plugins-protobuf</artifactId>
 	<name>nutz-plugins-protobuf</name>
