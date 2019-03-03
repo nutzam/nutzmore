@@ -55,6 +55,14 @@ public class NutzDocMain {
         String phCnf = args.length > 3 ? args[3] : null;
         String resources = args.length > 4 ? args[4] : phSrc;
 
+        log.info("------------------------------------------------------");
+        log.info("ctype        : " + ctype);
+        log.info("phSrc        : " + phSrc);
+        log.info("phDst        : " + phDst);
+        log.info("phCnf        : " + phCnf);
+        log.info("resources        : " + resources);
+        log.info("------------------------------------------------------");
+
         // 开始计时
         Stopwatch sw = Stopwatch.begin();
 
