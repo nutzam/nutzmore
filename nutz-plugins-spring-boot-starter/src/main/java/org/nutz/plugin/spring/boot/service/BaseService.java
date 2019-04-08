@@ -22,6 +22,7 @@ import org.nutz.dao.sql.Sql;
 import org.nutz.dao.util.cri.Exps;
 import org.nutz.dao.util.cri.SqlExpressionGroup;
 import org.nutz.json.Json;
+import org.nutz.json.JsonFormat;
 import org.nutz.lang.Lang;
 import org.nutz.lang.Mirror;
 import org.nutz.lang.util.NutMap;
@@ -461,7 +462,7 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 	 */
 	public int update(T t, Condition cnd, String... fields) {
 		Arrays.sort(fields);
-		NutMap map = Lang.map(Json.toJson(t));
+		NutMap map = Lang.map(Json.toJson(t,JsonFormat.compact().ignoreJsonShape()));
 		NutMap data = NutMap.NEW();
 		for (Map.Entry<String, Object> entry : map.entrySet()) {
 			String key = entry.getKey();
