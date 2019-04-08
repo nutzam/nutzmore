@@ -46,7 +46,7 @@
 	</scm>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<spring-boot.version>2.1.1.RELEASE</spring-boot.version>
+		<spring-boot.version>[2.1.1.RELEASE,)</spring-boot.version>
 	</properties>
 
 	<build>

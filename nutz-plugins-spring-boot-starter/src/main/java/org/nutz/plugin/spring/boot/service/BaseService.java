@@ -48,7 +48,7 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
 
 	// C
 
-	/**
+	/**ø
 	 * 保存实体
 	 *
 	 * @param t 待保存实体
