@@ -12,7 +12,6 @@ import org.nutz.json.JsonFormat;
 import org.nutz.lang.ContinueLoop;
 import org.nutz.lang.Each;
 import org.nutz.lang.ExitLoop;
-import org.nutz.lang.LoopException;
 import org.nutz.lang.util.Callback;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
