@@ -2,18 +2,24 @@ package org.nutz.mongo;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import org.nutz.dao.pager.Pager;
 import org.nutz.json.Json;
 import org.nutz.json.JsonFormat;
+import org.nutz.lang.ContinueLoop;
+import org.nutz.lang.Each;
+import org.nutz.lang.ExitLoop;
+import org.nutz.lang.LoopException;
 import org.nutz.lang.util.Callback;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.mongo.entity.ZMoEntity;
 
 import com.mongodb.AggregationOptions;
+import com.mongodb.Bytes;
 import com.mongodb.CommandResult;
 import com.mongodb.Cursor;
 import com.mongodb.DBCollection;
@@ -637,6 +643,68 @@ public class ZMoCo {
 
     // ----------------------------------------------------------------------------------
     // ORM 相关的方法, 类似的
+    public int each(ZMoDoc query, ZMoDoc sort, int skip, int limit, Each<DBObject> callback) {
+        return this.each(query, sort, skip, limit, callback);
+    }
+
+    public int each(ZMoDoc query,
+                    ZMoDoc sort,
+                    int skip,
+                    int limit,
+                    Callback<DBCursor> setupCursor,
+                    Each<DBObject> callback) {
+        if (null == callback)
+            return 0;
+        DBCursor cu = this.find(query);
+
+        try {
+            // 默认游标设置
+            if (null == setupCursor) {
+                cu.addOption(Bytes.QUERYOPTION_NOTIMEOUT);
+            }
+            // 自定义游标设置
+            else {
+                setupCursor.invoke(cu);
+            }
+            int i = 0;
+            int n = 0;
+            int count = cu.count();
+
+            // 分页设置
+            if (skip > 0) {
+                cu.skip(skip);
+            }
+            if (limit > 0) {
+                cu.limit(limit);
+            }
+            // 排序设置
+            cu.sort(sort);
+
+            while (cu.hasNext()) {
+                // 如果设置了分页 ...
+                if (limit > 0 && n >= limit) {
+                    break;
+                }
+                // 获取对象
+                DBObject dbobj = cu.next();
+                ZMoDoc doc = ZMoDoc.WRAP(dbobj);
+                try {
+                    callback.invoke(i++, doc, count);
+                    n++;
+                }
+                catch (ExitLoop e) {
+                    break;
+                }
+                catch (ContinueLoop e) {}
+            }
+
+            return n;
+        }
+        finally {
+            cu.close();
+        }
+    }
+
     /**
      * 查询符合条件的对象
      * 
@@ -733,6 +801,21 @@ public class ZMoCo {
         while (cur.hasNext()) {
             list.add((T) ZMo.me().fromDoc(cur.next(), en));
         }
+        return list;
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public <T> List<T> query2(Class<T> klass, ZMoDoc query, ZMoDoc sort, Pager pager) {
+        int limit = pager.getPageSize();
+        int skip = pager.getOffset();
+        final List<T> list = new LinkedList();
+        final ZMoEntity en = ZMo.me().getEntity(klass);
+        this.each(query, sort, skip, limit, new Each<DBObject>() {
+            public void invoke(int index, DBObject dbobj, int length) {
+                T obj = (T) ZMo.me().fromDoc(dbobj, en);
+                list.add(obj);
+            }
+        });
         return list;
     }
 
