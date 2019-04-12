@@ -804,7 +804,7 @@ public class ZMoCo {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public <T> List<T> query2(Class<T> klass, ZMoDoc query, ZMoDoc sort, Pager pager) {
+    public <T> List<T> querySort(Class<T> klass, ZMoDoc query, ZMoDoc sort, Pager pager) {
         int limit = pager.getPageSize();
         int skip = pager.getOffset();
         final List<T> list = new LinkedList();
