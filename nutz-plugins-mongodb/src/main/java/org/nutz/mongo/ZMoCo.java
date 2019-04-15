@@ -643,7 +643,7 @@ public class ZMoCo {
     // ----------------------------------------------------------------------------------
     // ORM 相关的方法, 类似的
     public int each(ZMoDoc query, ZMoDoc sort, int skip, int limit, Each<DBObject> callback) {
-        return this.each(query, sort, skip, limit, callback);
+        return this.each(query, sort, skip, limit, null, callback);
     }
 
     public int each(ZMoDoc query,
