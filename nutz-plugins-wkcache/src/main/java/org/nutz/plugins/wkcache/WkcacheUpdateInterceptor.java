@@ -26,7 +26,7 @@ public class WkcacheUpdateInterceptor extends AbstractWkcacheInterceptor {
         CacheUpdate cacheResult = method.getAnnotation(CacheUpdate.class);
         String cacheKey = Strings.sNull(cacheResult.cacheKey());
         String cacheName = Strings.sNull(cacheResult.cacheName());
-        int liveTime = 0;
+        int liveTime = cacheResult.cacheLiveTime();
         if (Strings.isBlank(cacheKey)) {
             cacheKey = method.getDeclaringClass().getName()
                     + "."
@@ -58,7 +58,16 @@ public class WkcacheUpdateInterceptor extends AbstractWkcacheInterceptor {
             CacheDefaults cacheDefaults = method.getDeclaringClass()
                     .getAnnotation(CacheDefaults.class);
             cacheName = cacheDefaults != null ? cacheDefaults.cacheName() : "wk";
+        }
+        if (liveTime == 0) {
+            CacheDefaults cacheDefaults = method.getDeclaringClass()
+                    .getAnnotation(CacheDefaults.class);
             liveTime = cacheDefaults != null ? cacheDefaults.cacheLiveTime() : 0;
+        }
+        if (getConf() != null && getConf().size() > 0) {
+            int confLiveTime = getConf().getInt("wkcache." + cacheName, 0);
+            if (confLiveTime > 0)
+                liveTime = confLiveTime;
         }
         Object obj;
         chain.doChain();
