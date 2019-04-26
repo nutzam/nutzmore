@@ -15,6 +15,7 @@ single(单节点)模式
 ```
 redisson.mode=single
 redisson.single.address=redis://127.0.0.1:6379
+redisson.password=123456
 ```
 
 masterslave(主从)模式
@@ -77,6 +78,6 @@ redisson.nettyThreads=32
 编码器配置
 
 ```
-# 可选值有 jason,fst,kryo,lz4,jdk,snappy,snappy2,默认值jason
-redisson.codec=jason
+# 可选值有 jason,fst,kryo,lz4,jdk,snappy,snappy2,默认值fst
+redisson.codec=fst
 ```

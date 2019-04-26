@@ -101,7 +101,7 @@ public class RedissonBeans {
                 break;
             // TODO nutz json codec
             default:
-                config.setCodec(new JsonJacksonCodec());
+                config.setCodec(new FstCodec());
                 break;
             }
         }
