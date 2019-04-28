@@ -62,8 +62,8 @@ public abstract class AbstractWsHandler implements WsHandler {
     }
 
     public void depose() {
-        for (String room : rooms) {
-            left(room);
+        for (Object room : rooms.toArray()) {
+            left(String.valueOf(room));
         }
     }
 

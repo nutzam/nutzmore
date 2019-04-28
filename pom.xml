@@ -173,6 +173,7 @@
 		<module>nutz-plugins-jetty-client</module>
 		<module>nutz-plugins-xmlbind</module>
 		<module>nutz-integration-lettuce</module>
+		<module>nutz-integration-redisson</module>
 	</modules>
 	<distributionManagement>
 		<snapshotRepository>
