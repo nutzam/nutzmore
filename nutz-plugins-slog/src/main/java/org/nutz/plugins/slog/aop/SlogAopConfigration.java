@@ -11,14 +11,17 @@ import org.nutz.plugins.slog.annotation.Slog;
 
 public class SlogAopConfigration extends SimpleAopMaker<Slog> {
 	
+	@Override
 	public List<? extends MethodInterceptor> makeIt(Slog slog, Method method, Ioc ioc) {
 		return Arrays.asList(new SlogAopInterceptor(ioc, slog, method));
 	}
 
+	@Override
 	public String[] getName() {
 		return new String[0];
 	}
 	
+	@Override
 	public boolean has(String name) {
 		return false;
 	}
