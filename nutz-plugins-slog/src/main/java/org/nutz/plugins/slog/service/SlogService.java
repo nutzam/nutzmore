@@ -17,6 +17,7 @@ import org.nutz.aop.interceptor.async.Async;
 import org.nutz.dao.Dao;
 import org.nutz.dao.util.Daos;
 import org.nutz.el.El;
+import org.nutz.json.Json;
 import org.nutz.lang.Lang;
 import org.nutz.lang.Strings;
 import org.nutz.lang.segment.CharSegment;
@@ -102,7 +103,7 @@ public class SlogService {
             sysLog.setLocation(AddressUtils.getRealAddressByIP(sysLog.getIp()));
 
             Map<String, String[]> map = Mvcs.getReq().getParameterMap();
-            String params = JSONObject.toJSONString(map);
+            String params = Json.toJson(map);
             //设置参数值
             if(Strings.isNotBlank(params)){
                 if(params.length() > 255){
