@@ -43,7 +43,7 @@
 | [Freemarker](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#freemarker) | 一个基于模板生成文本输出的通用工具。                     | Yes      |
 | [JetTemplate](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#JetTemplate) | 新一代，具有高性能和高扩展性。                           | Yes      |
 | [Captcha](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#Captcha) | 验证码生成                                               | Yes      |
-| [Velocity](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#velocity) | 允许网页设计者引用Java代码中定义的方法。                 | No       |
+| [Velocity](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#velocity) | 允许网页设计者引用Java代码中定义的方法。                 | Yes      |
 | [Jsp](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#Jsp) | java服务器页面，简化的Servlet设计,一种动态网页技术标准。 | Yes      |
 
 更多模板引擎支持等你来[实现扩展](https://github.com/nutzam/nutzmore/tree/master/nutz-plugins-multiview#实现扩展)。
@@ -81,14 +81,9 @@
 
 ```xml
 <dependency>
-    <groupId>org.antlr</groupId>
-    <artifactId>antlr4-runtime</artifactId>
-    <version>4.7.2</version>
-</dependency>
-<dependency>
 	<groupId>com.ibeetl</groupId>
 	<artifactId>beetl</artifactId>
-	<version>2.9.8</version>
+	<version>3.0.7.RELEASE</version>
 </dependency>
 ```
 假如模板页面所在路径是WEB-INFO/templates/beetl,有如下页面：
