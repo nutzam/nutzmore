@@ -4,7 +4,7 @@
 	<groupId>org.nutz</groupId>
 	<packaging>jar</packaging>
 	<name>Nutz Maven QuickStart</name>
-	<version>1.r.67-SNAPSHOT</version>
+	<version>1.r.68-SNAPSHOT</version>
 	<artifactId>nutz-webapp-quickstart</artifactId>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

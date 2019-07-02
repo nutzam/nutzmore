@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.nutz</groupId>
     <artifactId>nutzmore</artifactId>
-    <version>1.r.67-SNAPSHOT</version>
+    <version>1.r.68-SNAPSHOT</version>
   </parent>
   <artifactId>nutz-plugins-ngrok</artifactId>
 
@@ -41,21 +41,24 @@
 			<groupId>redis.clients</groupId>
 			<artifactId>jedis</artifactId>
 			<version>${jedis.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz-integration-jedis</artifactId>
 			<version>${project.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.netty</groupId>
 			<artifactId>netty-all</artifactId>
 			<version>${netty-all.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz-web</artifactId>
-			<version>1.r.67-SNAPSHOT</version>
+			<version>1.r.67</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>

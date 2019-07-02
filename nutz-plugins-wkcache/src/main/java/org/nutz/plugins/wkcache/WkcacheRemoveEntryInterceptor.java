@@ -7,17 +7,19 @@ import org.nutz.lang.Lang;
 import org.nutz.lang.Strings;
 import org.nutz.lang.segment.CharSegment;
 import org.nutz.lang.util.Context;
+import org.nutz.lang.util.MethodParamNamesScaner;
 import org.nutz.plugins.wkcache.annotation.CacheDefaults;
 import org.nutz.plugins.wkcache.annotation.CacheRemove;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 /**
  * Created by wizzer on 2017/6/14.
  */
-@IocBean
+@IocBean(singleton = false)
 public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
 
     public void filter(InterceptorChain chain) throws Throwable {
@@ -35,7 +37,14 @@ public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
             this.key = new CharSegment(cacheKey);
             if (key.hasKey()) {
                 Context ctx = Lang.context();
-                ctx.set("args", chain.getArgs());
+                Object[] args = chain.getArgs();
+                List<String> names = MethodParamNamesScaner.getParamNames(method);//不支持nutz低于1.60的版本
+                if (names != null) {
+                    for (int i = 0; i < names.size() && i < args.length; i++) {
+                        ctx.set(names.get(i), args[i]);
+                    }
+                }
+                ctx.set("args", args);
                 Context _ctx = Lang.context();
                 for (String key : key.keys()) {
                     _ctx.set(key, new El(key).eval(ctx));

@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.r.67-SNAPSHOT</version>
+		<version>1.r.68-SNAPSHOT</version>
 	</parent>
 	<artifactId>nutz-plugins-qrcode</artifactId>
 	<url>https://nutzam.com</url>
@@ -41,7 +41,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<zxing.value>3.3.0</zxing.value>
+		<zxing.value>3.3.3</zxing.value>
 	</properties>
 
 	<dependencies>

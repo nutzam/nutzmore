@@ -209,9 +209,9 @@ public abstract class AbstractMsWordDSetRender implements NutDSetRender {
         h.setStyle("H" + level);
 
         // 显示标题编号
-        String nbs = this.__assign_heading_nb(level);
+        //String nbs = this.__assign_heading_nb(level);
         XWPFRun run = h.createRun();
-        run.setText(nbs);
+        //run.setText(nbs);
 
         // 返回标题段落
         return h;
@@ -361,7 +361,7 @@ public abstract class AbstractMsWordDSetRender implements NutDSetRender {
             }
             // 当做普通文本
             else {
-                this.__join_run_text(p, ele.getText());
+                this.__join_run_text(p, ele.getTextContent());
             }
         }
         // B/I/U/DEL|CODE
@@ -380,7 +380,7 @@ public abstract class AbstractMsWordDSetRender implements NutDSetRender {
         }
         // 其他
         else {
-            this.__join_run_text(p, ele.getText());
+            this.__join_run_text(p, ele.getTextContent());
         }
     }
 
@@ -440,7 +440,7 @@ public abstract class AbstractMsWordDSetRender implements NutDSetRender {
     private void __join_inline_ele(XWPFRun run, Tag ele) {
         // 文本节点
         if (ele.isTextNode()) {
-            run.setText(ele.getNodeValue());
+            run.setText(ele.getTextContent());
             return;
         }
         // B

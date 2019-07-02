@@ -20,17 +20,10 @@ import org.springframework.context.annotation.Configuration;
 @AutoConfigureAfter({ DataSourceAutoConfiguration.class, SqlManagerAutoConfiguration.class })
 public class NutzDaoAutoConfiguration {
 
-
-	@Autowired
-	DataSource dataSource;
-
-	@Autowired
-	DaoRunner daoRunner;
-
 	@Bean
-	public Dao dao(SqlManager sqlManager) {
+	public Dao dao(DataSource dataSource,SqlManager sqlManager,DaoRunner daoRunner) {
 		NutDao dao = new NutDao(dataSource, sqlManager);
-		dao.setRunner(new SpringDaoRunner());
+		dao.setRunner(daoRunner);
 		return dao;
 	}
 

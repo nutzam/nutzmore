@@ -4,7 +4,7 @@
 	<groupId>net.wendal</groupId>
 	<artifactId>nutz-zbus-demo</artifactId>
 	<packaging>war</packaging>
-	<version>1.r.67-SNAPSHOT</version>
+	<version>1.r.68-SNAPSHOT</version>
 	<name>nutzdemo Maven Webapp</name>
 	<url>http://maven.apache.org</url>
 	<properties>
@@ -53,7 +53,7 @@
 		<dependency>
 			<groupId>org.nutz</groupId>
 			<artifactId>nutz-integration-zbus</artifactId>
-			<version>1.r.67-SNAPSHOT</version>
+			<version>1.r.68-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.alibaba</groupId>

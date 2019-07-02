@@ -4,12 +4,12 @@
 	<groupId>net.wendal</groupId>
 	<artifactId>nutz-quartz-demo</artifactId>
 	<packaging>war</packaging>
-	<version>1.r.67-SNAPSHOT</version>
+	<version>1.r.68-SNAPSHOT</version>
 	<name>nutzdemo Maven Webapp</name>
 	<url>http://maven.apache.org</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<nutz.version>1.r.67-SNAPSHOT</nutz.version>
+		<nutz.version>1.r.68-SNAPSHOT</nutz.version>
 	</properties>
 	<repositories>
 		<repository>

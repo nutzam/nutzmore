@@ -19,10 +19,8 @@ import java.lang.annotation.Target;
 public @interface ZbusConsumer {
 	
 	boolean enable() default true;
-
-	String mq();
 	
-	String topic() default "";
+	String topic();
 	
 	boolean verbose() default false;
 }

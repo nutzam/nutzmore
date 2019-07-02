@@ -1,8 +1,15 @@
 package org.nutz.plugins.zdoc;
 
+import java.io.File;
+import java.io.FileFilter;
+
+import org.nutz.lang.Files;
 import org.nutz.lang.Lang;
 import org.nutz.lang.Stopwatch;
+import org.nutz.lang.Strings;
 import org.nutz.lang.Times;
+import org.nutz.lang.util.Disks;
+import org.nutz.lang.util.FileVisitor;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.plugins.zdoc.html.Htmls;
@@ -46,6 +53,15 @@ public class NutzDocMain {
         String phSrc = args[1];
         String phDst = args.length > 2 ? args[2] : null;
         String phCnf = args.length > 3 ? args[3] : null;
+        String resources = args.length > 4 ? args[4] : phSrc;
+
+        log.info("------------------------------------------------------");
+        log.info("ctype        : " + ctype);
+        log.info("phSrc        : " + phSrc);
+        log.info("phDst        : " + phDst);
+        log.info("phCnf        : " + phCnf);
+        log.info("resources        : " + resources);
+        log.info("------------------------------------------------------");
 
         // 开始计时
         Stopwatch sw = Stopwatch.begin();
@@ -78,6 +94,23 @@ public class NutzDocMain {
         else {
             throw Lang.makeThrow("e.zdoc.main.unknowCType : %s", ctype);
         }
+        
+        // 拷贝资源文件
+        if (phDst != null && new File(phDst).isDirectory()) {
+            for (String path : Strings.splitIgnoreBlank(resources)) {
+                File f = new File(path).getAbsoluteFile();
+                Disks.visitFile(f, new FileVisitor() {
+                    public void visit(File file) {
+                        String dst = phDst + "/" + file.getAbsolutePath().substring(path.length());
+                        Files.copy(file, Files.createFileIfNoExists(new File(dst)));
+                    }
+                }, new FileFilter() {
+                    public boolean accept(File f2) {
+                        return f2.isDirectory() || !f2.getName().endsWith(".md");
+                    }
+                });
+            }
+        }
 
         // 打印结果
         sw.stop();
@@ -86,6 +119,6 @@ public class NutzDocMain {
 
     protected static void usage() {
         System.out.println("ZDoc Usage");
-        System.out.println("  zdoc [md2html|md2docx|md2pdf] source dest");
+        System.out.println("  zdoc [md2html|md2docx|md2pdf] source dest [resources]");
     }
 }

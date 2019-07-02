@@ -4,7 +4,7 @@
     <groupId>com.ywjno</groupId>
     <artifactId>nutz-spring-demo</artifactId>
     <packaging>war</packaging>
-    <version>1.r.67-SNAPSHOT</version>
+    <version>1.r.68-SNAPSHOT</version>
     <name>nutzdemo Maven Webapp</name>
     <url>http://maven.apache.org</url>
     <properties>

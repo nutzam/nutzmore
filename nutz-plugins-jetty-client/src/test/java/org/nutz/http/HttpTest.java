@@ -1,6 +1,9 @@
 package org.nutz.http;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -17,7 +20,7 @@ import org.nutz.http.sender.jetty.JettySenderFactory;
 import org.nutz.json.Json;
 
 public class HttpTest {
-    
+
     @BeforeClass
     public static void beforeClass() throws Exception {
         Sender.setFactory(new JettySenderFactory());
@@ -32,7 +35,7 @@ public class HttpTest {
         assertNotNull(response.getContent());
         assertNotNull(response.getDetail());
         assertNotNull(response.getHeader());
-        assertNotNull(response.getProtocal());
+        assertNotNull(response.getProtocol());
         assertTrue(response.getStatus() > 0);
         assertNotNull(response.getStream());
     }
@@ -112,16 +115,15 @@ public class HttpTest {
         }
     }
 
-     @Test
-     public void test_360safe() throws Throwable {
-     Http.disableJvmHttpsCheck();
-    
-     String url =
-     "https://openapi.360.cn/user/me.json?access_token=1323463692b46eacce7412f3b65877cc54fc6d538db5619b20&fields=id,name,avatar,nick";
-    
-     Response response = Http.get(url);
-     System.out.println(response.getContent());
-     }
+    @Test
+    public void test_360safe() throws Throwable {
+        Http.disableJvmHttpsCheck();
+
+        String url = "https://openapi.360.cn/user/me.json?access_token=1323463692b46eacce7412f3b65877cc54fc6d538db5619b20&fields=id,name,avatar,nick";
+
+        Response response = Http.get(url);
+        System.out.println(response.getContent());
+    }
 
     // @Test
     // public void test_cookie() {
@@ -139,20 +141,20 @@ public class HttpTest {
     // 即同一个session
     // }
 
-     @Test
-     public void test_ys7() {
-     String re = Http.post("https://open.ys7.com/api/method", null, 5*1000);
-     assertNotNull(re);
-     System.out.println(re);
-     }
-    
-     @Test()
-     public void test_weibo_post() {
-     Response resp = Http.post2("http://weibo.com/kuyunhudong", null,10000);
-     System.out.println(resp.getStatus());
-     System.out.println(resp.getContent());
-     System.out.println(resp.getStatus());
-     }
+    @Test
+    public void test_ys7() {
+        String re = Http.post("https://open.ys7.com/api/method", null, 5 * 1000);
+        assertNotNull(re);
+        System.out.println(re);
+    }
+
+    @Test()
+    public void test_weibo_post() {
+        Response resp = Http.post2("http://weibo.com/kuyunhudong", null, 10000);
+        System.out.println(resp.getStatus());
+        System.out.println(resp.getContent());
+        System.out.println(resp.getStatus());
+    }
 
     @Test
     public void test_lets() {

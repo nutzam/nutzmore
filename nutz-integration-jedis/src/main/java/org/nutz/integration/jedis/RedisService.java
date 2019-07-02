@@ -5388,7 +5388,10 @@ public class RedisService extends Jedis {
     }
 
     public void subscribe(JedisPubSub jedisPubSub, String... channels) {
-        jedis().subscribe(jedisPubSub, channels);
+		Jedis jedis = getJedis();
+        try {
+            jedis.subscribe(jedisPubSub, channels);
+        } finally {Streams.safeClose(jedis);}
     }
 
     public Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count) {

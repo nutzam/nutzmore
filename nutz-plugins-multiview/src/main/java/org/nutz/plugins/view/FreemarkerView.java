@@ -56,7 +56,7 @@ public class FreemarkerView extends AbstractTemplateViewResolver {
 		cfg.setWhitespaceStripping(true);
 	}
 
-	@SuppressWarnings("unchecked")
+	// @SuppressWarnings("unchecked")
 	@Override
 	public void render(HttpServletRequest request, HttpServletResponse response, String evalPath,
 			Map<String, Object> vars) throws Throwable {
@@ -75,12 +75,12 @@ public class FreemarkerView extends AbstractTemplateViewResolver {
 		t.process(vars, response.getWriter());
 	}
 
-	protected void loadSettings(Configuration config) {
+	protected void loadSettings(Configuration cfg) {
 		try {
-			if (viewProperties == null) {
-				viewProperties = new PropertiesProxy("freemarker.properties");
+			if (super.getConfig() == null) {
+				super.setConfig(new PropertiesProxy("freemarker.properties"));
 			}
-			config.setSettings(viewProperties.toProperties());
+			cfg.setSettings(super.getConfig().toProperties());
 		} catch (TemplateException e) {
 			e.printStackTrace();
 		}

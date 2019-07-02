@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"  
+    xmlns="http://www.nutzam.com/schema/iocbridge" targetNamespace="http://www.nutzam.com/schema/iocbridge"  
+    elementFormDefault="qualified">  
+    <xsd:element name="bridge">  
+        <xsd:complexType>  
+            <xsd:attribute name="annotated" type="xsd:string" />
+        </xsd:complexType>  
+    </xsd:element>  
+</xsd:schema>

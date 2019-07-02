@@ -127,6 +127,7 @@ public final class ThreadIocLoader {
 	 */
 	private static void _depose() throws Exception {
 		iocSetupCopy.destroy(iocs);
+		mainIoc=null;
 	}
 
 	/**

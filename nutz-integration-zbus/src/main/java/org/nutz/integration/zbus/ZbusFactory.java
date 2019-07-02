@@ -15,8 +15,10 @@ import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
 import org.nutz.lang.Streams;
+import org.nutz.lang.Strings;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
+import org.nutz.resource.Scans;
 
 import io.zbus.mq.Broker;
 import io.zbus.mq.Consumer;
@@ -34,6 +36,7 @@ public class ZbusFactory implements Closeable {
 	protected Set<Consumer> consumers = new HashSet<Consumer>();
 	protected Map<String, ZbusProducer> producers = new ConcurrentHashMap<String, ZbusProducer>();
 	protected Object lock = new Object();
+	@Inject(value="refer:zbusBroker", optional=true)
 	protected Broker broker;
 	@Inject("refer:$ioc")
 	protected Ioc ioc;
@@ -56,7 +59,15 @@ public class ZbusFactory implements Closeable {
 	}
 	
 	public void init() {
-		log.debug("zbus ...");
+	    String pkgs = conf.get("zbus.mq.packageNames");
+	    if (Strings.isBlank(pkgs))
+	        return;
+	    for (String pkg : Strings.splitIgnoreBlank(pkgs)) {
+	        for (Class<?> klass : Scans.me().scanPackage(pkg)) {
+	            addConsumer(klass);
+	        }
+        }
+		
 	}
 
 	public void close() throws IOException {
@@ -65,12 +76,15 @@ public class ZbusFactory implements Closeable {
 	public void addConsumer(Class<?> klass) {
 		ZbusConsumer z = klass.getAnnotation(ZbusConsumer.class);
 		if (z != null && z.enable()) {
+		    log.debug("add @ZbusConsumer " + klass.getName());
 			ConsumerConfig mqConfig = fromAnnotation(broker, z);
 			proxy(mqConfig, (MessageHandler) ioc.get(klass));
+			return;
 		}
 		for (final Method method : klass.getMethods()) {
 			z = method.getAnnotation(ZbusConsumer.class);
 			if (z != null && z.enable()) {
+			    log.debug("add @ZbusConsumer " + method);
 				ConsumerConfig mqConfig = fromAnnotation(broker, z);
 				final Object obj = ioc.get(klass);
 				MessageHandler handler = null;
@@ -131,6 +145,7 @@ public class ZbusFactory implements Closeable {
 		try {
 	        c.start(handler);
 		} catch (Exception e) {
+		    e.printStackTrace();
 			Streams.safeClose(c);
 			throw new RuntimeException("create Consumer fail obj=" + handler.getClass().getName(), e);
 		}

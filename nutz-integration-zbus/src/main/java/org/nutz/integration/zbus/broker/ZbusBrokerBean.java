@@ -45,6 +45,10 @@ public class ZbusBrokerBean {
 		}
 		// zbus.trackerList
 		Map<String, Object> trackerList = Lang.filter((Map)conf.toMap(), "zbus.broker.trackerList", null, null, null);
+        if (trackerList.isEmpty()) {
+            log.debug("add zbus default tracker 127.0.0.1:15555");
+            trackerList.put("zbus.broker.trackerList.default.address", "127.0.0.1:15555");
+        }
 		for (Map.Entry<String, Object> en : trackerList.entrySet()) {
 			String key = en.getKey();
 			if (!key.endsWith(".address")) {

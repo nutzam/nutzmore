@@ -31,7 +31,7 @@ public class MyCacheTest {
         return txt;
     }
 
-    @CacheResult(cacheKey = "${args[0].id}_${args[0].name}")
+    @CacheResult(cacheKey = "${test.id}_${test.name}")
     public Object testCacheObj(TestBean test) {
         System.out.println("我被执行了...");
         return test;

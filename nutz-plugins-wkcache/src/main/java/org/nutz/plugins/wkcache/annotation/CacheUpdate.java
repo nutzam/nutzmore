@@ -13,4 +13,6 @@ public @interface CacheUpdate {
     String cacheName() default "";
 
     String cacheKey() default "";
+
+    int cacheLiveTime() default 0;
 }

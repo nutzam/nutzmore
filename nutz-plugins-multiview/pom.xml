@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.r.67-SNAPSHOT</version>
+		<version>1.r.68-SNAPSHOT</version>
 	</parent>
 	<artifactId>nutz-plugins-multiview</artifactId>
 	<description>Nutz More multiView</description>
@@ -74,6 +74,36 @@
 			<scope>provided</scope>
 		</dependency>
 		<!--jetbrick jar end-->
+		
+		<!--thymeleaf jar start -->
+		<dependency>
+			<groupId>org.thymeleaf</groupId>
+			<artifactId>thymeleaf</artifactId>
+			<version>${thymeleaf.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>nz.net.ultraq.thymeleaf</groupId>
+			<artifactId>thymeleaf-layout-dialect</artifactId>
+			<version>${thymeleaf-layout-dialect.version}</version>
+			<optional>true</optional>
+			<scope>provided</scope>
+		</dependency>
+		<!--thymeleaf jar end -->
+		<dependency>
+			<groupId>org.apache.velocity</groupId>
+			<artifactId>velocity</artifactId>
+			<version>${velocity.version}</version>
+			<optional>true</optional>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.velocity</groupId>
+			<artifactId>velocity-tools</artifactId>
+			<version>2.0</version>
+			<optional>true</optional>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
