@@ -2,8 +2,6 @@ package org.nutz.plugins.event.impl;
 
 import org.nutz.integration.jedis.RedisService;
 import org.nutz.ioc.Ioc;
-import org.nutz.json.Json;
-import org.nutz.json.JsonFormat;
 import org.nutz.lang.Lang;
 import org.nutz.lang.Streams;
 import org.nutz.log.Log;
@@ -99,9 +97,6 @@ public class RedisEventBus implements EventBus {
             return;
         }
         String channelName = prefix + event.getTopic(); //事件名
-
-
-        String message = Json.toJson(event, JsonFormat.compact()); //事件体
 
         redisService.lpush(channelName.getBytes(), to(event));
 
