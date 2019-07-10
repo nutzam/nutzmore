@@ -44,6 +44,8 @@ public final class ThreadIocLoader {
 	static {
 		config = new PropertiesProxy(PROPERTIES_NAME);
 	}
+	//是否在MVC环境下与独立线程任务下 强制使用线程Ioc
+	public static  ThreadLocal<Boolean> isUsedTreadIoc=new ThreadLocal<Boolean>();
 	/**
 	 * 持有Ioc容器,避免被GC, 及完成测试后需要关闭ioc容器
 	 */
@@ -54,7 +56,7 @@ public final class ThreadIocLoader {
 			try {
 				synchronized (lock_get) {
 					if (mainIoc == null) {
-						if (Mvcs.getServletContext() == null) {// Not Mvc Ioc
+						if ((isUsedTreadIoc.get()!=null&&isUsedTreadIoc.get().booleanValue())||Mvcs.getServletContext()==null) {// Not Mvc Ioc
 							mainIoc = new NutIoc(getIocLoader()); // 生成Ioc容器
 							log.info("<<<--- get Not Mvc Ioc --->>>");
 						} else {
