@@ -43,25 +43,27 @@ nutz-plugins-event是一个实现了事件驱动和异步化的nutz框架的插�
 
 ~~~java
 @IocBean
-public class DemoEventListener implements EventListener {
+public class LogEventListener implements EventListener<SimpleEvent> {
 
-	private Log log = Logs.get();
-	/** 本监听器关注的事件主题 */
-	@Override
-	public String subscribeTopic() {
-		return "userReg";
-	}
+    private Log log = Logs.get();
 
-  	/** 事件具体处理方法 */
-	//@Async  //加此注解可实现事件异步处理
-	@Override
-	public void onEvent(Event e) {
-		log.debugf("->into demo event: %s", e.getParam());
-	}
+    @Override
+    public String subscribeTopic() {
+        return "log-event";
+    }
+
+    @Async
+    @Override
+    public void onEvent(SimpleEvent e) {
+        log.debugf("->into log event: %s", e.getParam());
+        Lang.sleep((Integer) e.getParam() * 1000);
+        log.debugf("-> out log event: %s", e.getParam());
+    }
+
 }
 ~~~
 
-默认的事件消费是同步的，用户可以通过在`public void onEvent(Event e)`方法上增加@Async注解的方式实现事件的异步化消费。
+默认的事件消费是同步的，用户可以通过在`public void onEvent(SimpleEvent e)`方法上增加@Async注解的方式实现事件的异步化消费。
 
 异步事件处理完成后，可能通过调用 event.callback(Object result) 方法进行回调通知结果。注意在分布式环境下，这种回调的方式可能无效。
 
@@ -75,7 +77,7 @@ private EventBus eventBus;
 public void regsuccess(User u) {
   dao.insert(u);
   
-  Event regEvent = new Event("userReg", u); //创建事件的包裹对象（事件主题, 携带对象）
+  Event regEvent = new SimpleEvent("userReg", u); //创建事件的包裹对象（事件主题, 携带对象）
   eventBus.fireEvent(regEvent); //发布事件
 }
 ~~~
@@ -107,5 +109,7 @@ public void regsuccess(User u) {
 
 项目如果启动了多个实例，事件的实际消费者会随机产生于这些实例之上。
 
+
+**因为事件改成了接口，基于redis的实现里，之前Json序列化数据就不能再使用了，所以改为了JDK序列化。**
 
 

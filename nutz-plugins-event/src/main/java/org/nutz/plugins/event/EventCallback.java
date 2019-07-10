@@ -11,8 +11,8 @@ public interface EventCallback {
 
 	/**
 	 * 事件完成时回调
-	 * @param result
+	 * @param result result
 	 */
-	public void onEventFinished(Object result);
+	void onEventFinished(Object result);
 
 }
