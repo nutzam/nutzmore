@@ -50,8 +50,7 @@ public class FreeMarkerConfigurer {
 	}
 
 	protected void initp(Configuration configuration, ServletContext sc, String prefix, String suffix, FreemarkerDirectiveFactory freemarkerDirectiveFactory) {
-		this.configuration = configuration;
-		this.prefix = sc.getRealPath(prefix);
+        this.configuration = configuration;
         URL url = ClassTools.getClassLoader().getResource(prefix);
         String path = url.getPath();
         if (path != null) {
@@ -64,21 +63,22 @@ public class FreeMarkerConfigurer {
                 this.prefix = path;
             }
         }
-
         this.suffix = suffix;
         this.freemarkerDirectiveFactory = freemarkerDirectiveFactory;
-        
-		this.configuration.setTagSyntax(Configuration.AUTO_DETECT_TAG_SYNTAX);
-		this.configuration.setTemplateUpdateDelayMilliseconds(-1000);
-		this.configuration.setDefaultEncoding("UTF-8");
-		this.configuration.setURLEscapingCharset("UTF-8");
-		this.configuration.setLocale(Locale.CHINA);
-		this.configuration.setBooleanFormat("true,false");
-		this.configuration.setDateTimeFormat("yyyy-MM-dd HH:mm:ss");
-		this.configuration.setDateFormat("yyyy-MM-dd");
-		this.configuration.setTimeFormat("HH:mm:ss");
-		this.configuration.setNumberFormat("0.######");
-		this.configuration.setWhitespaceStripping(true);
+        if (this.prefix == null)
+            this.prefix = sc.getRealPath("/") + prefix;
+
+        this.configuration.setTagSyntax(Configuration.AUTO_DETECT_TAG_SYNTAX);
+        this.configuration.setTemplateUpdateDelayMilliseconds(-1000);
+        this.configuration.setDefaultEncoding("UTF-8");
+        this.configuration.setURLEscapingCharset("UTF-8");
+        this.configuration.setLocale(Locale.CHINA);
+        this.configuration.setBooleanFormat("true,false");
+        this.configuration.setDateTimeFormat("yyyy-MM-dd HH:mm:ss");
+        this.configuration.setDateFormat("yyyy-MM-dd");
+        this.configuration.setTimeFormat("HH:mm:ss");
+        this.configuration.setNumberFormat("0.######");
+        this.configuration.setWhitespaceStripping(true);
 	}
 
 	public Configuration getConfiguration() {
