@@ -2,6 +2,7 @@ package org.nutz.plugins.view.freemarker;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
@@ -15,10 +16,13 @@ import org.nutz.lang.Files;
 import org.nutz.lang.Lang;
 import org.nutz.lang.Streams;
 import org.nutz.lang.Strings;
+import org.nutz.lang.util.ClassTools;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.mvc.Mvcs;
 
+import freemarker.cache.ClassTemplateLoader;
+import freemarker.cache.TemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.SimpleHash;
@@ -34,6 +38,7 @@ public class FreeMarkerConfigurer {
 	private String suffix;
 	private FreemarkerDirectiveFactory freemarkerDirectiveFactory;
 	private Map<String, Object> tags = new HashMap<String, Object>();
+	private TemplateLoader templateLoader;
 
 	public FreeMarkerConfigurer() {
 		Configuration configuration = new Configuration(Configuration.VERSION_2_3_28);
@@ -47,11 +52,22 @@ public class FreeMarkerConfigurer {
 	protected void initp(Configuration configuration, ServletContext sc, String prefix, String suffix, FreemarkerDirectiveFactory freemarkerDirectiveFactory) {
 		this.configuration = configuration;
 		this.prefix = sc.getRealPath(prefix);
-		this.suffix = suffix;
-		this.freemarkerDirectiveFactory = freemarkerDirectiveFactory;
-		if (this.prefix == null)
-			this.prefix = sc.getRealPath("/") + prefix;
+        URL url = ClassTools.getClassLoader().getResource(prefix);
+        String path = url.getPath();
+        if (path != null) {
+            if (path.contains("jar!")) {
+                this.prefix = prefix;
+                log.info("using classload for TemplateLoading : " + prefix);
+                templateLoader = new ClassTemplateLoader(getClass().getClassLoader(), prefix);
+            }
+            else {
+                this.prefix = path;
+            }
+        }
 
+        this.suffix = suffix;
+        this.freemarkerDirectiveFactory = freemarkerDirectiveFactory;
+        
 		this.configuration.setTagSyntax(Configuration.AUTO_DETECT_TAG_SYNTAX);
 		this.configuration.setTemplateUpdateDelayMilliseconds(-1000);
 		this.configuration.setDefaultEncoding("UTF-8");
@@ -103,14 +119,26 @@ public class FreeMarkerConfigurer {
 
 	protected void initFreeMarkerConfigurer() throws IOException, TemplateException {
 		String path = freemarkerDirectiveFactory.getFreemarker();
-		File file = Files.findFile(path);
-		if (!Lang.isEmpty(file)) {
-			Properties p = new Properties();
-			p.load(Streams.fileIn(file));
-			configuration.setSettings(p);
-		}
-		File f = Files.findFile(prefix);
-		configuration.setDirectoryForTemplateLoading(f);
+        if (templateLoader == null) {
+            File file = Files.findFile(path);
+            if (!Lang.isEmpty(file)) {
+                Properties p = new Properties();
+                p.load(Streams.fileIn(file));
+                configuration.setSettings(p);
+            }
+            File f = Files.findFile(prefix);
+            if (f == null || f.getPath().contains("jar!")) {
+                log.info("using classload for TemplateLoading : " + prefix);
+                configuration.setClassLoaderForTemplateLoading(getClass().getClassLoader(), prefix);
+            }
+            else {
+                log.info("using Directory for TemplateLoading : " + prefix);
+                configuration.setDirectoryForTemplateLoading(f);
+            }
+        }
+        else {
+            configuration.setTemplateLoader(templateLoader);
+        }
 	}
 
 	public void setTags(Map<String, Object> map) {
