@@ -52,7 +52,7 @@ public class FreeMarkerConfigurer {
 	protected void initp(Configuration configuration, ServletContext sc, String prefix, String suffix, FreemarkerDirectiveFactory freemarkerDirectiveFactory) {
         this.configuration = configuration;
         URL url = ClassTools.getClassLoader().getResource(prefix);
-        String path = url.getPath();
+        String path = url == null ? null : url.getPath();
         if (path != null) {
             if (path.contains("jar!")) {
                 this.prefix = prefix;
@@ -65,8 +65,10 @@ public class FreeMarkerConfigurer {
         }
         this.suffix = suffix;
         this.freemarkerDirectiveFactory = freemarkerDirectiveFactory;
-        if (this.prefix == null)
+        if (this.prefix == null) {
+            log.info("using ServletContext path mode " + prefix);
             this.prefix = sc.getRealPath("/") + prefix;
+        }
 
         this.configuration.setTagSyntax(Configuration.AUTO_DETECT_TAG_SYNTAX);
         this.configuration.setTemplateUpdateDelayMilliseconds(-1000);
@@ -79,6 +81,7 @@ public class FreeMarkerConfigurer {
         this.configuration.setTimeFormat("HH:mm:ss");
         this.configuration.setNumberFormat("0.######");
         this.configuration.setWhitespaceStripping(true);
+        log.info("prefix = " + prefix);
 	}
 
 	public Configuration getConfiguration() {
