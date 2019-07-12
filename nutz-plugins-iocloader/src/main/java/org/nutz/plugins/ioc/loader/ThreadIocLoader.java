@@ -1,5 +1,6 @@
 package org.nutz.plugins.ioc.loader;
 
+import java.lang.reflect.Field;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -8,10 +9,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.nutz.ioc.Ioc;
+import org.nutz.ioc.Ioc2;
 import org.nutz.ioc.IocException;
 import org.nutz.ioc.IocLoader;
 import org.nutz.ioc.impl.NutIoc;
 import org.nutz.ioc.impl.PropertiesProxy;
+import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.combo.ComboIocLoader;
 import org.nutz.lang.Strings;
 import org.nutz.log.Log;
@@ -44,27 +47,28 @@ public final class ThreadIocLoader {
 	static {
 		config = new PropertiesProxy(PROPERTIES_NAME);
 	}
-	//是否在MVC环境下与独立线程任务下 强制使用线程Ioc
-	public static  ThreadLocal<Boolean> isUsedTreadIoc=new ThreadLocal<Boolean>();
+	// 是否在MVC环境下与独立线程任务下 强制使用线程Ioc
+	public static ThreadLocal<Boolean> isUsedTreadIoc = new ThreadLocal<Boolean>();
 	/**
 	 * 持有Ioc容器,避免被GC, 及完成测试后需要关闭ioc容器
 	 */
-	private static Ioc mainIoc;
+	private static Ioc2 mainIoc;
 
 	public static ThreadIocLoader getIoc() {
 		if (mainIoc == null) {
 			try {
 				synchronized (lock_get) {
 					if (mainIoc == null) {
-						if ((isUsedTreadIoc.get()!=null&&isUsedTreadIoc.get().booleanValue())||Mvcs.getServletContext()==null) {// Not Mvc Ioc
+						if ((isUsedTreadIoc.get() != null && isUsedTreadIoc.get().booleanValue())
+								|| Mvcs.getServletContext() == null) {// Not Mvc Ioc
 							mainIoc = new NutIoc(getIocLoader()); // 生成Ioc容器
 							log.info("<<<--- get Not Mvc Ioc --->>>");
 						} else {
 							// NutFilter作用域内,通常是请求线程内
-							mainIoc = Mvcs.getIoc();// ctx().iocs.get(getName());
+							mainIoc = (Ioc2) Mvcs.getIoc();// ctx().iocs.get(getName());
 							if (mainIoc == null) {
 								// 独立线程, 例如计划任务,定时任务的线程.
-								mainIoc = Mvcs.ctx().getDefaultIoc();// iocs.values().iterator().next();
+								mainIoc = (Ioc2) Mvcs.ctx().getDefaultIoc();// iocs.values().iterator().next();
 							}
 							log.info("<<<--- get Mvc Ioc --->>>");
 						}
@@ -88,8 +92,27 @@ public final class ThreadIocLoader {
 		if (Strings.isNotBlank(iocComboLoader)) {
 			String[] iocComboLoaders = Strings.splitIgnoreBlank(iocComboLoader, SEPARATOR_CHAR);
 			for (String icl : iocComboLoaders) {
-				IocLoader loader = (IocLoader) Class.forName(icl).newInstance();
+				Class<?> clazz = Class.forName(icl);
+				IocLoader loader = (IocLoader) clazz.newInstance();
+				Field[] fields = clazz.getDeclaredFields();
+				for (Field field : fields) {
+					Inject inject = field.getAnnotation(Inject.class);
+					if (inject == null)
+						continue;
+					String val = inject.value();
+					Object v = null;
+					if (Strings.isBlank(val)) {
+						v = mainIoc.get(field.getType(), field.getName());
+					} else {
+						if (val.startsWith("refer:"))
+							val = val.substring("refer:".length());
+						v = mainIoc.get(field.getType(), val);
+					}
+					field.setAccessible(true);
+					field.set(loader, v);
+				}
 				iocs.put(icl, new NutIoc(new ComboIocLoader(loader)));
+
 			}
 		}
 
@@ -129,7 +152,7 @@ public final class ThreadIocLoader {
 	 */
 	private static void _depose() throws Exception {
 		iocSetupCopy.destroy(iocs);
-		mainIoc=null;
+		mainIoc = null;
 	}
 
 	/**

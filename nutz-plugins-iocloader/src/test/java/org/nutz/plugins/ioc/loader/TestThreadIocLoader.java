@@ -7,6 +7,6 @@ public class TestThreadIocLoader {
 		//ThreadIocLoader.getIoc();
 		//IocLoader daoIocLoader=new DaoIocLoader("dao","t_iocbean","nm","val");
 		//ThreadIocLoader.comboIocLoader.addLoader(daoIocLoader);
-		System.out.println(ThreadIocLoader.getIoc().get(PropertiesProxy.class, "config").get("db.url"));
+		System.out.println(ThreadIocLoader.getIoc().get(PropertiesProxy.class, "cfg").get("db.url"));
 	}
 }
