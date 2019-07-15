@@ -1,3 +1,7 @@
+
+
+
+
 nutz-plugins-iocloader
 ==================================
 
@@ -59,5 +63,12 @@ xxl-job下在执行器execute方法里在使用ThreadIocLoader.get()方法前使
 ```java
 //强制使用线程方式
 ThreadIocLoader.isUsedTreadIoc.set(true);
+```
+
+以上方式废弃，默认使用Thread方式加载Ioc，在Mvc环境下如果不想使用ThreadIoc，则需在调用ThreadIocLoader.get()方法前，调用以下代码：
+
+```
+// 是否在线程环境下与  强制使用MvcIoc
+ThreadIocLoader.isUsedMvcIoc.set(true);
 ```
 

@@ -2,7 +2,7 @@ package org.nutz.plugins.ioc.loader.chain;
 
 import java.util.Map;
 
-import org.nutz.ioc.Ioc;
+import org.nutz.ioc.Ioc2;
 
 /**
  * Ioc启动接口
@@ -17,7 +17,7 @@ public interface IocSetup {
 	 * @param nc
 	 *            配置对象,包含Ioc等你需要的一切资源
 	 */
-	void init(Map<String, Ioc> iocs);
+	void init(Map<String, Ioc2> iocs);
 
 	/**
 	 * 关闭时，额外逻辑
@@ -25,5 +25,5 @@ public interface IocSetup {
 	 * @param nc
 	 *            配置对象,包含Ioc等你需要的一切资源
 	 */
-	void destroy(Map<String, Ioc> iocs);
+	void destroy(Map<String, Ioc2> iocs);
 }
