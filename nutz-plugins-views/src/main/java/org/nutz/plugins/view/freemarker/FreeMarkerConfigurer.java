@@ -182,4 +182,10 @@ public class FreeMarkerConfigurer {
 		}
 		return this;
 	}
+	
+	public void setTemplateLoader(TemplateLoader templateLoader) {
+        this.templateLoader = templateLoader;
+    }
+	
+	
 }
