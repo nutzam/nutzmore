@@ -1,11 +1,14 @@
 package org.nutz.mongo.adaptor;
 
+import java.text.NumberFormat;
 import java.util.regex.Pattern;
 
+import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;
 import org.nutz.lang.Lang;
 import org.nutz.lang.Mirror;
 import org.nutz.mongo.ZMoAdaptor;
+import org.nutz.mongo.entity.ZMoField;
 
 import com.mongodb.DBObject;
 
@@ -38,6 +41,19 @@ public class ZMoAs {
         // ID 对象
         if (mi.isOf(ObjectId.class)) {
             return ZMoAs.id();
+        }
+        else if (mi.is(Decimal128.class)) {
+            return new ZMoAdaptor() {
+                public Object toJava(ZMoField fld, Object obj) {
+                    return ((Decimal128)obj).bigDecimalValue().doubleValue();
+                }
+
+                @Override
+                public Object toMongo(ZMoField fld, Object obj) {
+                    return Decimal128.parse(Double.toString(((Number)obj).doubleValue()));
+                }
+                
+            };
         }
         // 简单类型
         else if (mi.isSimple() || mi.is(Pattern.class)) {
