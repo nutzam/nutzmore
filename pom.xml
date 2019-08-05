@@ -137,6 +137,7 @@
 		<module>nutz-integration-rabbitmq</module>
 		<module>nutz-integration-shiro</module>
 		<module>nutz-integration-spring</module>
+		<module>nutz-plugins-spring-boot-starter</module>
 		<module>nutz-integration-zbus</module>
 		<module>nutz-plugins-apidoc</module>
 		<module>nutz-plugins-cache</module>
