@@ -6,18 +6,18 @@ import org.nutz.json.JsonFormat;
 
 /**
  * 
- * @author guiyuan.wang-N
+ * @author kerbores(kerbores@gmail.com)
  *
  */
 public class DataBaseEntity {
 
-	public <T extends DataBaseEntity> T exchange(Class<T> clazz) {
-		return Castors.me().castTo(this, clazz);
-	}
+    public <T extends DataBaseEntity> T exchange(Class<T> clazz) {
+        return Castors.me().castTo(this, clazz);
+    }
 
-	@Override
-	public String toString() {
-		return Json.toJson(this, JsonFormat.nice());
-	}
+    @Override
+    public String toString() {
+        return Json.toJson(this, JsonFormat.nice());
+    }
 
 }

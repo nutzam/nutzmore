@@ -1,1 +1,1 @@
-provides: nutz-dao,sql-manager,json-converter
+provides: nutz-dao,sql-manager,json-converter,ngrok-client

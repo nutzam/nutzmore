@@ -33,9 +33,8 @@ import org.nutz.service.IdNameEntityService;
 
 /**
  * 
- * @author guiyuan.wang-N
+ * @author kerbores(kerbores@gmail.com)
  *
- * @param <T>
  */
 public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T> {
 
@@ -46,18 +45,27 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
         super.setDao(dao);
     }
 
-    // C
-
     /**
-     * ø 保存实体
+     * 保存实体
      *
      * @param t
      *            待保存实体
      * @return 保存后的实体, 根据配置可能将产生 id 等其他属性
      */
     public T save(T t) {
-
         return dao().insert(t);
+    }
+
+    /**
+     * 保存数据
+     * 
+     * @param ts
+     *            数据列表
+     * @return 存入后的数据列表,结果返回 @see {@link Dao#fastInsert(Object)}
+     * 
+     */
+    public List<T> save(List<T> ts) {
+        return dao().fastInsert(ts);
     }
 
     /**
@@ -151,8 +159,6 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
         return dao().insertRelation(obj, regex);
     }
 
-    // R
-
     /**
      * 查询全部
      *
@@ -174,10 +180,7 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
      * @return
      */
     public List<T> query(Condition condition, int currentPage, int pageSize) {
-        if (condition == null) {// 不传入条件那么我就设置一个排序条件
-            condition = Cnd.orderBy().desc("id");
-        }
-        org.nutz.dao.pager.Pager pager = dao().createPager(currentPage, pageSize);
+        Pager pager = dao().createPager(currentPage, pageSize);
         return dao().query(getEntityClass(), condition, pager);
     }
 
@@ -195,7 +198,7 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
     }
 
     /**
-     * 根据指定字段查询(仅限唯一属性,非唯一属性查询第一个满足条件的数据)
+     * 根据指定字段查询(仅限唯一属性,非唯一属性返回第一个满足条件的数据)
      *
      * @param field
      *            字段
@@ -207,7 +210,21 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
         return dao().fetch(getEntityClass(), Cnd.where(field, "=", value));
     }
 
-    // sql
+    /**
+     * 执行sql并返回记录
+     * 
+     * @deprecated (1.r.69, 更语义化的方法,使用 @see {@link #fetchAsRecord(Sql)} 替换)
+     * 
+     * @param sql
+     *            待执行sql
+     * @return 数据记录
+     */
+    @Deprecated
+    public Record fetch(Sql sql) {
+        sql.setCallback(Sqls.callback.record());
+        dao().execute(sql);
+        return sql.getObject(Record.class);
+    }
 
     /**
      * 执行sql并返回记录
@@ -216,10 +233,26 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
      *            待执行sql
      * @return
      */
-    public Record fetch(Sql sql) {
+    public Record fetchAsRecord(Sql sql) {
         sql.setCallback(Sqls.callback.record());
         dao().execute(sql);
         return sql.getObject(Record.class);
+    }
+
+    /**
+     * 执行sql并返回记录列表
+     * 
+     * @deprecated (1.r.69, 更语义化的方法,使用 @see {@link #searchAsMap(Sql)} 替换)
+     * 
+     * @param sql
+     *            待执行sql
+     * @return 记录列表
+     */
+    @Deprecated
+    public List<Record> search(Sql sql) {
+        sql.setCallback(Sqls.callback.records());
+        dao().execute(sql);
+        return sql.getList(Record.class);
     }
 
     /**
@@ -229,7 +262,7 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
      *            待执行sql
      * @return
      */
-    public List<Record> search(Sql sql) {
+    public List<Record> searchAsRecord(Sql sql) {
         sql.setCallback(Sqls.callback.records());
         dao().execute(sql);
         return sql.getList(Record.class);
@@ -293,20 +326,19 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
      * 创建sql对象
      *
      * @param key
-     * @return
+     *            sqlManager中的sql key
+     * @return Sql 对象
      */
     public Sql create(String key) {
         return dao().sqls().create(key);
     }
-
-    // biz
 
     /**
      * 分页查询
      *
      * @param page
      *            页码
-     * @return
+     * @return 分页数据对象
      */
     public PageredData<T> searchByPage(int page) {
         return searchByPage(page, null);
@@ -334,7 +366,7 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
      *            页面大小
      * @param condition
      *            条件
-     * @return
+     * @return 分页数据对象
      */
     public PageredData<T> searchByPage(int page, int pageSize, Condition condition) {
         PageredData<T> data = new PageredData<>();
@@ -356,7 +388,7 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
      *            条件
      * @param fields
      *            关键词匹配的字段列表
-     * @return
+     * @return 分页数据对象
      */
     public PageredData<T> searchByKeyAndPage(String key, int page, Cnd cnd, String... fields) {
         return searchByKeyAndPage(key, page, defaultPageSize, cnd, fields);
@@ -375,7 +407,7 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
      *            条件
      * @param fields
      *            关键词匹配的字段列表
-     * @return
+     * @return 分页数据对象
      */
     public PageredData<T> searchByKeyAndPage(String key, int page, int pageSize, Cnd cnd, String... fields) {
         String searchKey = String.format("%%%s%%", key);
@@ -426,8 +458,6 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
     public PageredData<T> searchByKeyAndPage(String key, int page, String... fields) {
         return searchByKeyAndPage(key, page, defaultPageSize, null, fields);
     }
-
-    // U
 
     /**
      * 更新对象
@@ -546,7 +576,7 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
      *            更新目标数据样本
      * @param cnd
      *            条件
-     * @return
+     * @return 影响的记录条数
      */
     public int update(T t, Condition cnd) {
         try {
@@ -557,8 +587,6 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
             return 0;
         }
     }
-
-    // D
 
     /**
      * 清除全部数据
@@ -586,7 +614,7 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
      * 
      * @param obj
      *            待删除对象
-     * @return
+     * @return 影响的记录条数
      */
     public int delete(T obj) {
         return dao().delete(obj);

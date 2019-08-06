@@ -63,6 +63,7 @@ logging:
     springfox: off
     io.swagger: off
 nutz:
+  ngrok:    token: abcdef
   dao:
     runtime:
       add-column: true
