@@ -15,6 +15,9 @@ import org.nutz.log.Logs;
 import org.nutz.plugins.slog.annotation.Slog;
 import org.nutz.plugins.slog.service.SlogService;
 
+/**
+ * 日志AOP实现
+ */
 public class SlogAopInterceptor implements MethodInterceptor {
 
     private static final Log log = Logs.get();
@@ -61,24 +64,41 @@ public class SlogAopInterceptor implements MethodInterceptor {
         this.async = slog.async();
     }
 
+    /**
+     * AOP 操纵前后 异常
+     * @param chain
+     * @throws Throwable
+     */
+    @Override
     public void filter(InterceptorChain chain) throws Throwable {
-        if (before != null)
+        if (before != null) {
             doLog("aop.before", before, chain, null);
+        }
         try {
             chain.doChain();
-            if (after != null)
+            if (after != null) {
                 doLog("aop.after", after, chain, null);
+            }
         }
         catch (Throwable e) {
-            if (error != null)
+            if (error != null) {
                 doLog("aop.error", error, chain, e);
+            }
             throw e;
         }
     }
 
+    /**
+     * 记录日志
+     * @param t 日志类型
+     * @param seg 消息模板
+     * @param chain 方法参数 方法返回值 方法实例 被拦截的对象
+     * @param e 异常对象
+     */
     protected void doLog(String t, CharSegment seg, InterceptorChain chain, Throwable e) {
-        if (slogService == null)
+        if (slogService == null) {
             slogService = ioc.get(SlogService.class);
+        }
         try {
             slogService.log(t,
                             tag,

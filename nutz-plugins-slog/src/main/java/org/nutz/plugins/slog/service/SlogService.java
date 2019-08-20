@@ -9,12 +9,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
+import com.alibaba.fastjson.JSONObject;
+import eu.bitwalker.useragentutils.UserAgent;
 import org.apache.shiro.SecurityUtils;
 import org.nutz.Nutz;
 import org.nutz.aop.interceptor.async.Async;
 import org.nutz.dao.Dao;
 import org.nutz.dao.util.Daos;
 import org.nutz.el.El;
+import org.nutz.json.Json;
 import org.nutz.lang.Lang;
 import org.nutz.lang.Strings;
 import org.nutz.lang.segment.CharSegment;
@@ -25,6 +28,7 @@ import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.mvc.Mvcs;
 import org.nutz.plugins.slog.bean.SlogBean;
+import org.nutz.plugins.slog.utils.AddressUtils;
 
 /**
  * slog的服务类
@@ -47,7 +51,7 @@ public class SlogService {
 	
 	/**
 	 * 异步插入日志
-	 * @param slog 日志对象
+	 * @param syslog 日志对象
 	 */
 	@Async
 	public void async(Object syslog) {
@@ -56,7 +60,7 @@ public class SlogService {
 	
 	/**
      * 同步插入日志
-     * @param slog 日志对象
+     * @param syslog 日志对象
      */
 	public void sync(Object syslog) {
 		try {
@@ -65,7 +69,15 @@ public class SlogService {
 			log.info("insert syslog sync fail", e);
 		}
 	}
-    
+
+    /**
+     * 记录 操作链接,参数,客户端,浏览器等
+     * @param t
+     * @param tag
+     * @param source
+     * @param msg
+     * @return
+     */
     public SlogBean c(String t, String tag, String source, String msg) {
         SlogBean sysLog = new SlogBean();
         sysLog.setCreateTime(new Date());
@@ -85,7 +97,30 @@ public class SlogService {
         sysLog.setSource(source);;
         sysLog.setMsg(msg);;
         if (Mvcs.getReq() != null) {
+            sysLog.setUrl(Mvcs.getReq().getRequestURI());
             sysLog.setIp(Lang.getIP(Mvcs.getReq()));
+            //获取地址
+            sysLog.setLocation(AddressUtils.getRealAddressByIP(sysLog.getIp()));
+
+            Map<String, String[]> map = Mvcs.getReq().getParameterMap();
+            String params = Json.toJson(map);
+            //设置参数值
+            if(Strings.isNotBlank(params)){
+                if(params.length() > 255){
+                    sysLog.setParam(params.substring(0, 255));
+                }else {
+                    sysLog.setParam(params);
+                }
+            }
+            UserAgent userAgent = UserAgent.parseUserAgentString(Mvcs.getReq().getHeader("User-Agent"));
+            if(Lang.isNotEmpty(userAgent)){
+                // 获取客户端操作系统
+                String os = userAgent.getOperatingSystem().getName();
+                sysLog.setOs(os);
+                // 获取客户端浏览器
+                String browser = userAgent.getBrowser().getName();
+                sysLog.setBrowser(browser);
+            }
         }
         return sysLog;
     }
@@ -94,31 +129,36 @@ public class SlogService {
         SlogBean slog = c(t, tag, source, msg);
         try {
             Object uid = GET_USER_ID.call();
-            if (uid != null && uid instanceof Number)
-                slog.setUid(((Number)uid).longValue());
+            if (uid != null && uid instanceof Number) {
+                slog.setUid(String.valueOf(uid));
+            }
         }
         catch (Exception e) {
-            if (log.isDebugEnabled())
+            if (log.isDebugEnabled()) {
                 log.debug("get user id fail", e);
+            }
         }
         try {
             Object uname = GET_USER_NAME.call();
             slog.setUsername(Strings.sBlank(uname));
         }
         catch (Exception e) {
-            if (log.isDebugEnabled())
+            if (log.isDebugEnabled()) {
                 log.debug("get user name fail", e);
+            }
         }
-        if (async)
+        if (async) {
             async(slog);
-        else
+        } else {
             sync(slog);
+        }
     }
 	
     /**
      * 获取用户id, 长整型
      */
 	public static Callable<Object> GET_USER_ID = new Callable<Object>() {
+        @Override
         public Object call() throws Exception {
             Object u;
             try {
@@ -137,10 +177,12 @@ public class SlogService {
      * 获取用户名称, 字符串类型
      */
     public static Callable<Object> GET_USER_NAME = new Callable<Object>() {
+        @Override
         public Object call() throws Exception {
             Object uid = GET_USER_ID.call();
-            if (uid != null && ((Number)uid).longValue() > 0)
+            if (uid != null && ((Number)uid).longValue() > 0) {
                 return uid;
+            }
             return "";
         };
     };
@@ -205,12 +247,13 @@ public class SlogService {
             List<String> names = null;
             if (Nutz.majorVersion() == 1 && Nutz.minorVersion() < 60) {
                 Class<?> klass = obj.getClass();
-                if (klass.getName().endsWith("$$NUTZAOP"))
+                if (klass.getName().endsWith("$$NUTZAOP")) {
                     klass = klass.getSuperclass();
+                }
                 String key = klass.getName();
-                if (caches.containsKey(key))
+                if (caches.containsKey(key)) {
                     names = caches.get(key).get(ClassMetaReader.getKey(method));
-                else {
+                } else {
                     try {
                         Map<String, List<String>> tmp = MethodParamNamesScaner.getParamNames(klass);
                         names = tmp.get(ClassMetaReader.getKey(method));
