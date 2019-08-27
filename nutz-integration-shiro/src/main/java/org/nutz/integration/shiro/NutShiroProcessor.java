@@ -121,12 +121,14 @@ public class NutShiroProcessor extends AbstractProcessor {
 		if (match) {
 			try {
 				interceptor.assertAuthorized(new NutShiroInterceptor(ac));
-			}catch (UnauthorizedException e){
-				whenUnauthorized(ac, (UnauthorizedException) e);
-			}catch (UnauthenticatedException e) {
-				whenUnauthenticated(ac, (UnauthenticatedException) e);
 			}catch (Exception e) {
-				whenException(ac, e);
+				if(e instanceof UnauthenticatedException){
+					whenUnauthenticated(ac, (UnauthenticatedException) e);
+				}else if(e instanceof UnauthorizedException){
+					whenUnauthorized(ac, (UnauthorizedException) e);
+				}else {
+					whenException(ac, e);
+				}
 				return;
 			}
 		}
