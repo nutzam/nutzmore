@@ -9,11 +9,11 @@ import org.nutz.dao.entity.Record;
 import org.nutz.ioc.IocLoading;
 import org.nutz.ioc.ObjectLoadException;
 import org.nutz.ioc.impl.PropertiesProxy;
+import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.json.JsonLoader;
 import org.nutz.ioc.meta.IocObject;
 import org.nutz.json.Json;
 import org.nutz.lang.Lang;
-import org.nutz.plugins.ioc.loader.ThreadIocLoader;
 
 /**
  * <p>
@@ -28,7 +28,7 @@ import org.nutz.plugins.ioc.loader.ThreadIocLoader;
  * @rewriter 邓华锋 http://dhf.ink
  */
 public class DaoIocLoader extends JsonLoader {
-	private static final String IOC_DAO_NAME = "ioc.dao.name";
+	//private static final String IOC_DAO_NAME = "ioc.dao.name";
 	private static final String IOC_TABLE = "ioc.table";
 	private static final String IOC_NAME_FIELD = "ioc.name.field";
 	private static final String IOC_VALUE_FIELD = "ioc.value.field";
@@ -37,13 +37,13 @@ public class DaoIocLoader extends JsonLoader {
 	protected String table = "t_iocbean";
 	protected String nameField = "nm";
 	protected String valueField = "val";
-
+	@Inject
 	protected Dao dao;
 
 	public DaoIocLoader() {
 		super();
 		PropertiesProxy config = new PropertiesProxy(PROPERTIES_NAME);
-		name = config.get(IOC_DAO_NAME, name);
+		//name = config.get(IOC_DAO_NAME, name);
 		table = config.get(IOC_TABLE, table);
 		nameField = config.get(IOC_NAME_FIELD, nameField);
 		valueField = config.get(IOC_VALUE_FIELD, valueField);
@@ -81,11 +81,11 @@ public class DaoIocLoader extends JsonLoader {
 	}
 
 	public boolean has(String name) {
-		return 0 != dao().count(table, Cnd.where(nameField, "=", name));
+		return 0 != dao.count(table, Cnd.where(nameField, "=", name));
 	}
 
 	public String[] getName() {
-		List<Record> res = dao().query(table, null);
+		List<Record> res = dao.query(table, null);
 		if (res == null || res.isEmpty())
 			return new String[0];
 		String[] names = new String[res.size()];
@@ -94,10 +94,10 @@ public class DaoIocLoader extends JsonLoader {
 		}
 		return names;
 	}
-
+	/*
 	protected Dao dao() {
 		if (dao == null)// dao = Mvcs.getIoc().get(Dao.class, name);
 			dao = ThreadIocLoader.getIoc().get(Dao.class, name);
 		return dao;
-	}
+	}*/
 }

@@ -1,3 +1,7 @@
+
+
+
+
 nutz-plugins-iocloader
 ==================================
 
@@ -29,14 +33,13 @@ ioc.combo.loader=org.nutz.plugins.ioc.loader.dao.DaoIocLoader
 
 定时任务、线程环境下使用Ioc方式
 ```Java
-System.out.println(ThreadIocLoader.getIoc().get(PropertiesProxy.class, "config").get("db.url"));
+System.out.println(ThreadIocLoader.getIoc().get(PropertiesProxy.class, "cfg").get("db.url"));
 ```
 
 DaoIocLoader 默认是从当前ioc的dao实例的数据源中 t_iocbean 表 取出数据  bean的名称对应的字段名(默认是nm),
   配置对应在的字段名(默认是val). 现在可通过配置文件daoIocLoader.properties来配置。
 
 ```Shell
-ioc.dao.name=dao
 ioc.table=t_iocbean
 ioc.name.field=nm
 ioc.value.field=val
@@ -48,10 +51,24 @@ ioc.value.field=val
 
  以上的测试数据nm和val字段是：
 
-
- config | {
+ cfg| {
 		type : "org.nutz.ioc.impl.PropertiesProxy",
 		fields : {
 			paths : [ "custom/" ]
 		}
 	}
+
+xxl-job下在执行器execute方法里在使用ThreadIocLoader.get()方法前使用
+
+```java
+//强制使用线程方式
+ThreadIocLoader.isUsedTreadIoc.set(true);
+```
+
+以上方式废弃，默认使用Thread方式加载Ioc，在Mvc环境下如果不想使用ThreadIoc，则需在调用ThreadIocLoader.get()方法前，调用以下代码：
+
+```
+// 是否在线程环境下与  强制使用MvcIoc
+ThreadIocLoader.isUsedMvcIoc.set(true);
+```
+

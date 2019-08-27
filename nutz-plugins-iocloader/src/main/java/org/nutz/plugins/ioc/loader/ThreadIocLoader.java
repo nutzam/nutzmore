@@ -1,5 +1,6 @@
 package org.nutz.plugins.ioc.loader;
 
+import java.lang.reflect.Field;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -8,10 +9,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.nutz.ioc.Ioc;
+import org.nutz.ioc.Ioc2;
 import org.nutz.ioc.IocException;
 import org.nutz.ioc.IocLoader;
 import org.nutz.ioc.impl.NutIoc;
 import org.nutz.ioc.impl.PropertiesProxy;
+import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.combo.ComboIocLoader;
 import org.nutz.lang.Strings;
 import org.nutz.log.Log;
@@ -40,29 +43,31 @@ public final class ThreadIocLoader {
 	private static PropertiesProxy config;
 	private static IocSetup iocSetupCopy;
 	private static final ThreadIocLoader lock_get = new ThreadIocLoader();
-	public static Map<String, Ioc> iocs = new LinkedHashMap<String, Ioc>();// 顺序很重要 首先从mainIoc中查找
+	public static Map<String, Ioc2> iocs = new LinkedHashMap<String, Ioc2>();// 顺序很重要 首先从mainIoc中查找
 	static {
 		config = new PropertiesProxy(PROPERTIES_NAME);
 	}
+	// 是否在线程环境下与  强制使用MvcIoc
+	public static ThreadLocal<Boolean> isUsedMvcIoc = new ThreadLocal<Boolean>();
 	/**
 	 * 持有Ioc容器,避免被GC, 及完成测试后需要关闭ioc容器
 	 */
-	private static Ioc mainIoc;
+	private static Ioc2 mainIoc;
+	private static Ioc mvcIoc;
 
 	public static ThreadIocLoader getIoc() {
 		if (mainIoc == null) {
 			try {
 				synchronized (lock_get) {
 					if (mainIoc == null) {
-						if (Mvcs.getServletContext() == null) {// Not Mvc Ioc
-							mainIoc = new NutIoc(getIocLoader()); // 生成Ioc容器
-							log.info("<<<--- get Not Mvc Ioc --->>>");
-						} else {
+						mainIoc = new NutIoc(getIocLoader()); // 生成Ioc容器
+						log.info("<<<--- get Not Mvc Ioc --->>>");
+						if((isUsedMvcIoc.get() != null && isUsedMvcIoc.get().booleanValue())) {
 							// NutFilter作用域内,通常是请求线程内
-							mainIoc = Mvcs.getIoc();// ctx().iocs.get(getName());
-							if (mainIoc == null) {
+							mvcIoc =  Mvcs.getIoc();// ctx().iocs.get(getName());
+							if (mvcIoc == null) {
 								// 独立线程, 例如计划任务,定时任务的线程.
-								mainIoc = Mvcs.ctx().getDefaultIoc();// iocs.values().iterator().next();
+								mvcIoc =  Mvcs.ctx().getDefaultIoc();// iocs.values().iterator().next();
 							}
 							log.info("<<<--- get Mvc Ioc --->>>");
 						}
@@ -86,8 +91,28 @@ public final class ThreadIocLoader {
 		if (Strings.isNotBlank(iocComboLoader)) {
 			String[] iocComboLoaders = Strings.splitIgnoreBlank(iocComboLoader, SEPARATOR_CHAR);
 			for (String icl : iocComboLoaders) {
-				IocLoader loader = (IocLoader) Class.forName(icl).newInstance();
+				Class<?> clazz = Class.forName(icl);
+				@SuppressWarnings("deprecation")
+				IocLoader loader = (IocLoader) clazz.newInstance();
+				Field[] fields = clazz.getDeclaredFields();
+				for (Field field : fields) {
+					Inject inject = field.getAnnotation(Inject.class);
+					if (inject == null)
+						continue;
+					String val = inject.value();
+					Object v = null;
+					if (Strings.isBlank(val)) {
+						v = mainIoc.get(field.getType(), field.getName());
+					} else {
+						if (val.startsWith("refer:"))
+							val = val.substring("refer:".length());
+						v = mainIoc.get(field.getType(), val);
+					}
+					field.setAccessible(true);
+					field.set(loader, v);
+				}
 				iocs.put(icl, new NutIoc(new ComboIocLoader(loader)));
+
 			}
 		}
 
@@ -127,6 +152,7 @@ public final class ThreadIocLoader {
 	 */
 	private static void _depose() throws Exception {
 		iocSetupCopy.destroy(iocs);
+		mainIoc = null;
 	}
 
 	/**
@@ -169,9 +195,9 @@ public final class ThreadIocLoader {
 		try {
 			_depose();
 		} finally {
-			Iterator<Entry<String, Ioc>> it = iocs.entrySet().iterator();
+			Iterator<Entry<String, Ioc2>> it = iocs.entrySet().iterator();
 			while (it.hasNext()) {
-				Entry<String, Ioc> entry = it.next();
+				Entry<String, Ioc2> entry = it.next();
 				entry.getValue().depose();
 			}
 		}
@@ -180,9 +206,9 @@ public final class ThreadIocLoader {
 
 	public <T> T get(Class<T> type, String name) throws IocException {
 		IocException ex = null;
-		Iterator<Entry<String, Ioc>> it = iocs.entrySet().iterator();
+		Iterator<Entry<String, Ioc2>> it = iocs.entrySet().iterator();
 		while (it.hasNext()) {
-			Entry<String, Ioc> entry = it.next();
+			Entry<String, Ioc2> entry = it.next();
 			try {
 				return entry.getValue().get(type, name);
 			} catch (IocException e) {// 这里异常不做处理，等实在找不着时，再抛出异常
@@ -194,23 +220,30 @@ public final class ThreadIocLoader {
 
 	public <T> T get(Class<T> type) throws IocException {
 		IocException ex = null;
-		Iterator<Entry<String, Ioc>> it = iocs.entrySet().iterator();
+		Iterator<Entry<String, Ioc2>> it = iocs.entrySet().iterator();
 		while (it.hasNext()) {
-			Entry<String, Ioc> entry = it.next();
+			Entry<String, Ioc2> entry = it.next();
 			try {
 				return entry.getValue().get(type);
 			} catch (IocException e) {// 这里异常不做处理，等实在找不着时，再抛出异常
 				ex = e;
 			}
 		}
+		try {
+			if(mvcIoc!=null) {
+				return mvcIoc.get(type);
+			}
+		} catch (Exception e) {
+			
+		}
 		throw ex;
 	}
 
 	public boolean has(String name) throws IocException {
 		IocException ex = null;
-		Iterator<Entry<String, Ioc>> it = iocs.entrySet().iterator();
+		Iterator<Entry<String, Ioc2>> it = iocs.entrySet().iterator();
 		while (it.hasNext()) {
-			Entry<String, Ioc> entry = it.next();
+			Entry<String, Ioc2> entry = it.next();
 			try {
 				boolean bl = entry.getValue().has(name);
 				if (bl) {
@@ -221,6 +254,9 @@ public final class ThreadIocLoader {
 			}
 		}
 		if (ex != null) {
+			if(mvcIoc!=null) {
+				return mvcIoc.has(name);
+			}
 			throw ex;
 		} else {
 			return false;
@@ -230,9 +266,9 @@ public final class ThreadIocLoader {
 	public String[] getNames() {
 		List<String[]> nameList = new LinkedList<String[]>();
 		int arrLen = 0;
-		Iterator<Entry<String, Ioc>> it = iocs.entrySet().iterator();
+		Iterator<Entry<String, Ioc2>> it = iocs.entrySet().iterator();
 		while (it.hasNext()) {
-			Entry<String, Ioc> entry = it.next();
+			Entry<String, Ioc2> entry = it.next();
 			String[] names = entry.getValue().getNames();
 			nameList.add(names);
 			arrLen += names.length;
@@ -247,33 +283,39 @@ public final class ThreadIocLoader {
 	}
 
 	public void reset() {
-		Iterator<Entry<String, Ioc>> it = iocs.entrySet().iterator();
+		Iterator<Entry<String, Ioc2>> it = iocs.entrySet().iterator();
 		while (it.hasNext()) {
-			Entry<String, Ioc> entry = it.next();
+			Entry<String, Ioc2> entry = it.next();
 			entry.getValue().reset();
 		}
 	}
 
 	public String[] getNamesByType(Class<?> klass) {
-		Iterator<Entry<String, Ioc>> it = iocs.entrySet().iterator();
+		Iterator<Entry<String, Ioc2>> it = iocs.entrySet().iterator();
 		while (it.hasNext()) {
-			Entry<String, Ioc> entry = it.next();
+			Entry<String, Ioc2> entry = it.next();
 			String[] t = entry.getValue().getNamesByType(klass);
 			if (t != null) {
 				return t;
 			}
 		}
+		if(mvcIoc!=null) {
+			return mvcIoc.getNamesByType(klass);
+		}
 		return null;
 	}
 
 	public <K> K getByType(Class<K> klass) {
-		Iterator<Entry<String, Ioc>> it = iocs.entrySet().iterator();
+		Iterator<Entry<String, Ioc2>> it = iocs.entrySet().iterator();
 		while (it.hasNext()) {
-			Entry<String, Ioc> entry = it.next();
+			Entry<String, Ioc2> entry = it.next();
 			K k = entry.getValue().getByType(klass);
 			if (k != null) {
 				return k;
 			}
+		}
+		if(mvcIoc!=null) {
+			return mvcIoc.getByType(klass);
 		}
 		return null;
 	}

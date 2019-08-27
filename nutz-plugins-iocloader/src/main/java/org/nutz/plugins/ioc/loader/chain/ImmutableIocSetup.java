@@ -3,7 +3,7 @@ package org.nutz.plugins.ioc.loader.chain;
 import java.util.List;
 import java.util.Map;
 
-import org.nutz.ioc.Ioc;
+import org.nutz.ioc.Ioc2;
 
 /**
  * 
@@ -35,14 +35,14 @@ public class ImmutableIocSetup implements IocSetup {
 	}
 
 	@Override
-	public void init(Map<String, Ioc> iocs) {
+	public void init(Map<String, Ioc2> iocs) {
 		for (final IocSetup setup : this.IocSetups) {
 			setup.init(iocs);
 		}
 	}
 
 	@Override
-	public void destroy(Map<String, Ioc> iocs) {
+	public void destroy(Map<String, Ioc2> iocs) {
 		for (final IocSetup setup : this.IocSetups) {
 			setup.destroy(iocs);
 		}

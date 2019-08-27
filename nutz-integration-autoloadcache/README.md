@@ -15,13 +15,11 @@ Nutz集成AutoLoadCache的插件
 示例IocBy配置
 ----------------------------------------------
 ```java
-	@IocBy(type=ComboIocProvider.class, args={"*js", "ioc/",
-										   "*anno", "net.wendal.nutzbook",
-										   "*org.nutz.integration.autoloadcache.AutoLoadCacheIocLoader"})
+	@IocBy(type=ComboIocProvider.class, args={"*js", "ioc/","*anno", "net.wendal.nutzbook", "*org.nutz.integration.autoloadcache.AutoLoadCacheIocLoader"})
 										   								   
 ```
 
-redis-pool.js文件配置的爲Redis的緩存
+redis-pool.js文件配置的为Redis的缓存
 
 ```js
 var ioc = {

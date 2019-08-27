@@ -13,11 +13,14 @@ import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.api.RedissonReactiveClient;
 import org.redisson.api.RedissonRxClient;
+import org.redisson.codec.CborJacksonCodec;
 import org.redisson.codec.FstCodec;
 import org.redisson.codec.JsonJacksonCodec;
 import org.redisson.codec.KryoCodec;
 import org.redisson.codec.LZ4Codec;
+import org.redisson.codec.MsgPackJacksonCodec;
 import org.redisson.codec.SerializationCodec;
+import org.redisson.codec.SmileJacksonCodec;
 import org.redisson.codec.SnappyCodec;
 import org.redisson.codec.SnappyCodecV2;
 import org.redisson.config.ClusterServersConfig;
@@ -50,7 +53,7 @@ public class RedissonBeans {
         switch (mode) {
         case "single": // 单节点模式
             SingleServerConfig ssc = config.useSingleServer();
-            ssc.setAddress(conf.check("redisson.single.address"));
+            ssc.setAddress(conf.get("redisson.single.address", "redis://127.0.0.1:6379"));
             setupBeanByConf(ssc, PRE + "single.");
             break;
         case "masterslave": // 主从
@@ -82,8 +85,17 @@ public class RedissonBeans {
             case "jst":
                 config.setCodec(new FstCodec());
                 break;
-            case "jason":
+            case "json-jackson":
                 config.setCodec(new JsonJacksonCodec());
+                break;
+            case "msgpack-jackson":
+                config.setCodec(new MsgPackJacksonCodec());
+                break;
+            case "cbor-jackson":
+                config.setCodec(new CborJacksonCodec());
+                break;
+            case "smile-jackson":
+                config.setCodec(new SmileJacksonCodec());
                 break;
             case "kryo":
                 config.setCodec(new KryoCodec());
