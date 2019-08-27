@@ -18,7 +18,9 @@ import org.apache.shiro.authz.annotation.RequiresUser;
 import org.nutz.integration.shiro.annotation.NutzRequiresPermissions;
 import org.nutz.json.JsonFormat;
 import org.nutz.lang.Encoding;
+import org.nutz.lang.Lang;
 import org.nutz.lang.util.NutMap;
+import org.nutz.mvc.Mvcs;
 import org.nutz.mvc.view.UTF8JsonView;
 import org.nutz.resource.Scans;
 
@@ -28,39 +30,43 @@ import org.nutz.resource.Scans;
  *
  */
 public class NutShiro {
-
+    /**
+     * 默认与DefaultLoginURL一致
+     */
+    public static String DefaultNoAuthURL;
     public static String DefaultLoginURL = "/user/login";
     public static NutMap DefaultUnauthorizedAjax = new NutMap().setv("ok", false).setv("msg", "user.require.auth").setv("type", "user.require.auth");
     public static NutMap DefaultOtherAjax = new NutMap().setv("ok", false).setv("msg", "user.require.login").setv("type", "user.require.login");
     public static NutMap DefaultUnauthenticatedAjax = new NutMap().setv("ok", false).setv("msg", "user.require.unauthorized").setv("type", "user.require.unauthorized");
-    public static String DefaultNoAuthURL; // 默认与DefaultLoginURL一致
-    
+
+
     public static String SessionKey = "me";
-    
+
     public static String AjaxEncode = Encoding.UTF8;
-    
+
     public static final String DEFAULT_CAPTCHA_PARAM = "captcha";
-	
-	public static boolean isAjax(ServletRequest req) {
-	    String value = ((HttpServletRequest)req).getHeader("X-Requested-With");
+
+    public static boolean isAjax(ServletRequest req) {
+        String value = ((HttpServletRequest)req).getHeader("X-Requested-With");
         if (value != null && "XMLHttpRequest".equalsIgnoreCase(value.trim())) {
             return true;
         }
-		return false;
-	}
-	
-	public static void rendAjaxResp(ServletRequest req, ServletResponse resp, Object re) {
-		try {
-			if (AjaxEncode != null)
-				((HttpServletResponse)resp).setCharacterEncoding(AjaxEncode);
-			new UTF8JsonView(JsonFormat.compact()).render((HttpServletRequest)req, (HttpServletResponse)resp, re);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
+        return false;
+    }
+
+    public static void rendAjaxResp(ServletRequest req, ServletResponse resp, Object re) {
+        try {
+            if (AjaxEncode != null) {
+                ((HttpServletResponse)resp).setCharacterEncoding(AjaxEncode);
+            }
+            new UTF8JsonView(JsonFormat.compact()).render((HttpServletRequest)req, (HttpServletResponse)resp, re);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static boolean match(Method method) {
-        if (method.getAnnotation(RequiresRoles.class) != null 
+        if (method.getAnnotation(RequiresRoles.class) != null
                 || method.getAnnotation(RequiresAuthentication.class) != null
                 || method.getAnnotation(RequiresGuest.class) != null
                 || method.getAnnotation(RequiresPermissions.class) != null
@@ -70,20 +76,20 @@ public class NutShiro {
         }
         return false;
     }
-    
+
     @SuppressWarnings("unchecked")
-	public static Set<String>[] scanRolePermissionInPackage(String pkg, boolean publicOnly) {
-    	Set<String> roles = new HashSet<String>();
-    	Set<String> permissions = new HashSet<String>();
-    	for (Class<?> klass : Scans.me().scanPackage(pkg)) {
-			Method[] methods = publicOnly ? klass.getMethods() : klass.getDeclaredMethods();
-			for (Method method : methods) {
-				RequiresRoles rr = method.getAnnotation(RequiresRoles.class);
-				if (rr != null && rr.value().length > 0) {
-					for (String role : rr.value()) {
-						roles.add(role);
-					}
-				}
+    public static Set<String>[] scanRolePermissionInPackage(String pkg, boolean publicOnly) {
+        Set<String> roles = new HashSet<String>();
+        Set<String> permissions = new HashSet<String>();
+        for (Class<?> klass : Scans.me().scanPackage(pkg)) {
+            Method[] methods = publicOnly ? klass.getMethods() : klass.getDeclaredMethods();
+            for (Method method : methods) {
+                RequiresRoles rr = method.getAnnotation(RequiresRoles.class);
+                if (rr != null && rr.value().length > 0) {
+                    for (String role : rr.value()) {
+                        roles.add(role);
+                    }
+                }
                 RequiresPermissions pr = method.getAnnotation(RequiresPermissions.class);
                 if (pr != null && pr.value().length > 0) {
                     for (String permission : pr.value()) {
@@ -96,8 +102,23 @@ public class NutShiro {
                         permissions.add(permission);
                     }
                 }
-			}
-		}
-    	return new Set[]{roles, permissions};
+            }
+        }
+        return new Set[]{roles, permissions};
+    }
+
+    /**
+     * 获取msg 本地字符串
+     * @param req
+     * @param re
+     * @return
+     */
+    public static NutMap getMessage(ServletRequest req ,NutMap re){
+        if(Lang.isNotEmpty(re.get("msg"))){
+            String msg =  Mvcs.getMessage(req,re.get("msg").toString());
+            re.remove("msg");
+            re.addv("msg",msg);
+        }
+        return re;
     }
 }
