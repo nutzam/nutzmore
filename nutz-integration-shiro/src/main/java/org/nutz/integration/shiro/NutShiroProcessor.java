@@ -101,7 +101,7 @@ public class NutShiroProcessor extends AbstractProcessor {
 
 	/**
 	 * @param method
-	 * @param annotations2
+	 * @param annotations
 	 * @return
 	 */
 	private boolean hasAuthAnnotion(Method method, Class<? extends Annotation>[] annotations) {
@@ -113,18 +113,24 @@ public class NutShiroProcessor extends AbstractProcessor {
 		return false;
 	}
 
-	@Override
-	public void process(ActionContext ac) throws Throwable {
-		if (match) {
-			try {
-				interceptor.assertAuthorized(new NutShiroInterceptor(ac));
-			} catch (Exception e) {
-				whenException(ac, e);
-				return;
-			}
-		}
-		doNext(ac);
-	}
+    @Override
+    public void process(ActionContext ac) throws Throwable {
+        if (match) {
+            try {
+                interceptor.assertAuthorized(new NutShiroInterceptor(ac));
+            }catch (Exception e) {
+                if(e instanceof UnauthenticatedException){
+                    whenUnauthenticated(ac, (UnauthenticatedException) e);
+                }else if(e instanceof UnauthorizedException){
+                    whenUnauthorized(ac, (UnauthorizedException) e);
+                }else {
+                    whenException(ac, e);
+                }
+                return;
+            }
+        }
+        doNext(ac);
+    }
 
 	protected void whenException(ActionContext ac, Exception e) throws Throwable {
 		Object val = ac.getRequest().getAttribute("shiro_auth_error");
@@ -174,14 +180,16 @@ public class NutShiroProcessor extends AbstractProcessor {
 	}
 
 	protected String loginUri() {
-		if (loginUri == null)
-			return NutShiro.DefaultLoginURL;
+		if (loginUri == null) {
+            return NutShiro.DefaultLoginURL;
+        }
 		return loginUri;
 	}
 
 	protected String noAuthUri() {
-		if (noAuthUri == null)
-			return NutShiro.DefaultNoAuthURL == null ? NutShiro.DefaultLoginURL : NutShiro.DefaultNoAuthURL;
+		if (noAuthUri == null) {
+            return NutShiro.DefaultNoAuthURL == null ? NutShiro.DefaultLoginURL : NutShiro.DefaultNoAuthURL;
+        }
 		return noAuthUri;
 	}
 }
