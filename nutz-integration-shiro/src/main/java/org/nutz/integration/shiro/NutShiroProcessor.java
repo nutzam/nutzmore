@@ -131,20 +131,20 @@ public class NutShiroProcessor extends AbstractProcessor {
 		if (match) {
 			try {
 				interceptor.assertAuthorized(new NutShiroInterceptor(ac));
-			}catch (Exception e) {
-				if(e instanceof UnauthenticatedException){
-					whenUnauthenticated(ac, (UnauthenticatedException) e);
-				}else if(e instanceof UnauthorizedException){
-					whenUnauthorized(ac, (UnauthorizedException) e);
-				}else {
-					whenException(ac, e);
-				}
+			} catch (Exception e) {
+				whenException(ac, e);
 				return;
 			}
 		}
 		doNext(ac);
 	}
 
+	/**
+	 * 异常处理
+	 * @param ac
+	 * @param e
+	 * @throws Throwable
+	 */
 	protected void whenException(ActionContext ac, Exception e) throws Throwable {
 		Object val = ac.getRequest().getAttribute("shiro_auth_error");
 		if (val != null && val instanceof View) {
@@ -152,7 +152,13 @@ public class NutShiroProcessor extends AbstractProcessor {
 			return;
 		}
 		WebUtils.saveRequest(ac.getRequest());
-		whenOtherException(ac, e);
+		if (e instanceof UnauthenticatedException) {
+			whenUnauthenticated(ac, (UnauthenticatedException) e);
+		} else if (e instanceof UnauthorizedException) {
+			whenUnauthorized(ac, (UnauthorizedException) e);
+		} else {
+			whenOtherException(ac, e);
+		}
 	}
 
 	/**
