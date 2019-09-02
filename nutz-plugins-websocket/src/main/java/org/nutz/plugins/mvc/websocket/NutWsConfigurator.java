@@ -1,5 +1,6 @@
 package org.nutz.plugins.mvc.websocket;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.websocket.HandshakeResponse;
 import javax.websocket.server.HandshakeRequest;
 import javax.websocket.server.ServerEndpointConfig;
@@ -25,7 +26,12 @@ public class NutWsConfigurator extends ServerEndpointConfig.Configurator {
     public void modifyHandshake(ServerEndpointConfig sec,
                                 HandshakeRequest request,
                                 HandshakeResponse response) {
-        super.modifyHandshake(sec, request, response);
+        // 如果是Nutz MVC环境, 从mvc上下文直接获取Request对象
+        HttpServletRequest req = Mvcs.getReq();
+        if (req != null) {
+            sec.getUserProperties().put("HttpSession", req.getSession(false));
+            return;
+        }
         javax.servlet.http.HttpSession session = (javax.servlet.http.HttpSession) request.getHttpSession();
         if (session != null)
             sec.getUserProperties().put("HttpSession", session);
