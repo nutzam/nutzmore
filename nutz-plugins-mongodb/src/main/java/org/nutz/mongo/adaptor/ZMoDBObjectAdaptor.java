@@ -3,6 +3,7 @@ package org.nutz.mongo.adaptor;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.nutz.json.Json;
 import org.nutz.lang.Lang;
 import org.nutz.mongo.ZMo;
 import org.nutz.mongo.ZMoAdaptor;
@@ -33,19 +34,14 @@ public class ZMoDBObjectAdaptor implements ZMoAdaptor {
         if (obj instanceof List<?>) {
             List<?> list = (List<?>) obj;
             ArrayList arr = new ArrayList(list.size());
-            int i = 0;
             for (Object o : list) {
-                if (o == null) {
-                    arr.add(i++, o);
-                } else if (o instanceof DBObject) {
-                    arr.add(i++, ZMoAs.dbo().toJava(null, o));
+                if (o != null && o instanceof DBObject) {
+                    arr.add(ZMoAs.dbo().toJava(null, o));
                 } else {
                     arr.add(o);
                 }
             }
-
             return arr;
-
         }
         // 普通 DBObject 变 map
         else if (obj instanceof DBObject) {
