@@ -17,7 +17,6 @@ import org.nutz.dao.Sqls;
 import org.nutz.dao.entity.MappingField;
 import org.nutz.dao.entity.Record;
 import org.nutz.dao.entity.annotation.Id;
-import org.nutz.dao.pager.Pager;
 import org.nutz.dao.sql.Sql;
 import org.nutz.dao.util.cri.Exps;
 import org.nutz.dao.util.cri.SqlExpressionGroup;
@@ -28,6 +27,7 @@ import org.nutz.lang.Mirror;
 import org.nutz.lang.util.NutMap;
 import org.nutz.log.Logs;
 import org.nutz.plugin.spring.boot.service.entity.DataBaseEntity;
+import org.nutz.plugin.spring.boot.service.entity.Pager;
 import org.nutz.plugin.spring.boot.service.entity.PageredData;
 import org.nutz.service.IdNameEntityService;
 
@@ -180,8 +180,7 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
      * @return
      */
     public List<T> query(Condition condition, int currentPage, int pageSize) {
-        Pager pager = dao().createPager(currentPage, pageSize);
-        return dao().query(getEntityClass(), condition, pager);
+        return dao().query(getEntityClass(), condition, dao().createPager(currentPage, pageSize));
     }
 
     /**
@@ -340,7 +339,7 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
      *            页码
      * @return 分页数据对象
      */
-    public PageredData<T> searchByPage(int page) {
+    public Pager<T> searchByPage(int page) {
         return searchByPage(page, null);
     }
 
@@ -353,7 +352,7 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
      *            条件
      * @return 分页对象
      */
-    public PageredData<T> searchByPage(int page, Condition condition) {
+    public Pager<T> searchByPage(int page, Condition condition) {
         return searchByPage(page, defaultPageSize, condition);
     }
 
@@ -368,13 +367,11 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
      *            条件
      * @return 分页数据对象
      */
-    public PageredData<T> searchByPage(int page, int pageSize, Condition condition) {
-        PageredData<T> data = new PageredData<>();
+    public Pager<T> searchByPage(int page, int pageSize, Condition condition) {
         Pager pager = new Pager(page, pageSize);
-        data.setDataList(query(condition, pager));
+        pager.setDataList(query(condition, pager));
         pager.setRecordCount(count(condition));
-        data.setPager(pager);
-        return data;
+        return pager;
     }
 
     /**
@@ -390,7 +387,7 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
      *            关键词匹配的字段列表
      * @return 分页数据对象
      */
-    public PageredData<T> searchByKeyAndPage(String key, int page, Cnd cnd, String... fields) {
+    public Pager<T> searchByKeyAndPage(String key, int page, Cnd cnd, String... fields) {
         return searchByKeyAndPage(key, page, defaultPageSize, cnd, fields);
     }
 
@@ -409,8 +406,7 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
      *            关键词匹配的字段列表
      * @return 分页数据对象
      */
-    public PageredData<T> searchByKeyAndPage(String key, int page, int pageSize, Cnd cnd, String... fields) {
-        String searchKey = String.format("%%%s%%", key);
+    public Pager<T> searchByKeyAndPage(String key, int page, int pageSize, Cnd cnd, String... fields) {
         if (cnd == null) {
             cnd = Cnd.NEW();
         }
@@ -418,9 +414,9 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
         int index = 0;
         for (String field : fields) {
             if (index == 0) {
-                expressionGroup.and(field, "like", searchKey);
+                expressionGroup.and(Cnd.likeEX(field, key));
             } else {
-                expressionGroup.or(field, "like", searchKey);
+                expressionGroup.or(Cnd.likeEX(field, key));
             }
             index++;
         }
@@ -440,7 +436,7 @@ public class BaseService<T extends DataBaseEntity> extends IdNameEntityService<T
      *            检索字段列表
      * @return 分页对象
      */
-    public PageredData<T> searchByKeyAndPage(String key, int page, int pageSize, String... fields) {
+    public Pager<T> searchByKeyAndPage(String key, int page, int pageSize, String... fields) {
         return searchByKeyAndPage(key, page, pageSize, null, fields);
     }
 

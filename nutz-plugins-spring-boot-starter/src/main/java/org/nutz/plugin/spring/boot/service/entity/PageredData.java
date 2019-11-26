@@ -10,12 +10,9 @@ import org.nutz.dao.pager.Pager;
  * 
  * @author kerbores(kerbores@gmail.com)
  */
-public class PageredData<T> {
+public class PageredData<T> extends Pager {
 
-    /**
-     * 分页信息
-     */
-    private Pager pager;
+    private static final long serialVersionUID = 1L;
 
     /**
      * 分页参数(带有一堆参数的分页)
@@ -27,12 +24,23 @@ public class PageredData<T> {
      */
     private List<T> dataList;
 
-    public Pager getPager() {
-        return pager;
+    /**
+     * @param page
+     * @param pageSize
+     */
+    public PageredData(int page, int pageSize) {
+        super(page, pageSize);
     }
 
+    public Pager getPager() {
+        return this;
+    }
+
+    @Deprecated
     public void setPager(Pager pager) {
-        this.pager = pager;
+        setPageNumber(pager.getPageNumber());
+        setPageSize(pager.getPageSize());
+        setRecordCount(pager.getRecordCount());
     }
 
     public List<T> getDataList() {

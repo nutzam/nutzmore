@@ -1,6 +1,5 @@
 package org.nutz.plugin.spring.boot.service.entity;
 
-import org.nutz.castor.Castors;
 import org.nutz.json.Json;
 import org.nutz.json.JsonFormat;
 
@@ -12,7 +11,7 @@ import org.nutz.json.JsonFormat;
 public class DataBaseEntity {
 
     public <T extends DataBaseEntity> T exchange(Class<T> clazz) {
-        return Castors.me().castTo(this, clazz);
+        return Json.fromJson(clazz, Json.toJson(this, JsonFormat.compact().ignoreJsonShape()));
     }
 
     @Override
