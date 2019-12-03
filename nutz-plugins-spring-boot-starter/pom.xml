@@ -141,6 +141,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.nutz</groupId>
+			<artifactId>nutz-plugins-sqltpl</artifactId>
+			<version>${nutz.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.nutz</groupId>
 			<artifactId>nutz-plugins-ngrok</artifactId>
 			<version>${nutz.version}</version>
 			<scope>provided</scope>
