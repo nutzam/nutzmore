@@ -67,28 +67,23 @@ nutz:
   dao:
     runtime:
       add-column: true
-      basepackage:
+      basepackage: #        - BOOT-INF.classes.demo.bean # 生成环境如果需要的话需要加上BOOT-INF.classes.
         - demo.bean
-#        - BOOT-INF.classes.demo.bean # 生成环境如果需要的话需要加上BOOT-INF.classes.
       check-index: true
       create: true
       delete-column: true
       foce-create: false
       migration: true
+    sqltpl:
+      enable: true
+      type: beetl
     sqlmanager:
       paths:
         - sqls
   json:
     enabled: true
-    mode: full
+    mode: compact
+    ignore-null: true
 auth:
   without-authentication-url-regulars:
     - /user/login
-    - /app/trader/register
-    - /app/trader/bang/mobile
-    - /app/broker/login
-    - /app/user/user/login
-    - /app/tech/user/login
-    - /app/pay/callback
-    - /app/farmer/user/login
-    - /app/tech/user/login

@@ -2,8 +2,9 @@ package demo.biz;
 
 import javax.annotation.PostConstruct;
 
+import org.nutz.dao.Sqls;
+import org.nutz.dao.sql.Sql;
 import org.nutz.lang.Lang;
-import org.nutz.lang.Times;
 import org.nutz.lang.random.R;
 import org.nutz.lang.util.NutMap;
 import org.nutz.plugin.spring.boot.service.BaseService;
@@ -15,13 +16,19 @@ import demo.bean.T;
 @Service
 public class TService extends BaseService<demo.bean.T> {
 
-	public static void main(String[] args) {
-		System.err.println(Times.D("0000-00-00 00:00:00"));
-	}
 
 	@PostConstruct
 	public void init() {
 		dao().create(getEntityClass(), false);
+	}
+	
+	public int testSqlTemp() {
+		Sql sql = create("test.tpl");
+		sql.vars().set("a", R.random(1, 10));
+		sql.params().set("b", R.random(1, 10));
+		sql.setCallback(Sqls.callback.integer());
+		dao().execute(sql);
+		return sql.getInt();
 	}
 
 	@Transactional

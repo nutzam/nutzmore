@@ -39,6 +39,11 @@ public class App {
     static final Log logger = Logs.get();
     @Autowired
     TService tService;
+    
+    @GetMapping("tpl")
+    public int sqltpl() {
+		return tService.testSqlTemp();
+	}
 
     @GetMapping("captcha/{length}")
     public View captcha(@PathVariable("length") int length) {

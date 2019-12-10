@@ -14,6 +14,7 @@ import org.nutz.plugins.sqltpl.impl.beetl.BeetlSqlTpl;
 import org.nutz.plugins.sqltpl.impl.freemarker.FreeMarkerSqlTpl;
 import org.nutz.plugins.sqltpl.impl.jetbrick.JetbrickSqlTpl;
 import org.nutz.plugins.sqltpl.impl.velocity.VelocitySqlTpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -25,9 +26,12 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConditionalOnClass({ Dao.class })
 @AutoConfigureAfter({ DataSourceAutoConfiguration.class, SqlManagerAutoConfiguration.class })
-@EnableConfigurationProperties(SqlTemplateProperties.class)
+@EnableConfigurationProperties({SqlTemplateProperties.class,SqlTemplateProperties.class})
 public class NutzDaoAutoConfiguration {
 
+	@Autowired
+	SqlTemplateProperties sqlTemplateProperties;
+	
 	@Bean
 	public Dao dao(DataSource dataSource, SqlManager sqlManager, DaoRunner daoRunner) {
 		NutDao dao = new NutDao(dataSource, sqlManager);
@@ -42,7 +46,7 @@ public class NutzDaoAutoConfiguration {
 	}
 
 	@PostConstruct
-	public void initSqlTemplate(SqlTemplateProperties sqlTemplateProperties) {
+	public void initSqlTemplate() {
 		if (sqlTemplateProperties.isEnable()) {
 			switch (sqlTemplateProperties.getType()) {
 			case BEETL:
