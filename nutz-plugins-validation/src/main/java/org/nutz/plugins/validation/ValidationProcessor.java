@@ -26,9 +26,11 @@ public class ValidationProcessor extends AbstractProcessor {
     @Override
     public void init(NutConfig config, ActionInfo ai) throws Throwable {
         Class<?>[] tmp = ai.getMethod().getParameterTypes();
-        for (int i = 0; i < tmp.length; i++) {
-            if (tmp[i].isAssignableFrom(Errors.class))
+        int len = tmp.length;
+        for (int i = 0; i < len; i++) {
+            if (tmp[i].isAssignableFrom(Errors.class)) {
                 index = i;
+            }
         }
     }
 
