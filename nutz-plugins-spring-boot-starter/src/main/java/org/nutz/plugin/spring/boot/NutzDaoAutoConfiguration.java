@@ -24,44 +24,45 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConditionalOnClass({ Dao.class })
-@AutoConfigureAfter({ DataSourceAutoConfiguration.class, SqlManagerAutoConfiguration.class })
-@EnableConfigurationProperties({SqlTemplateProperties.class,SqlTemplateProperties.class})
+@ConditionalOnClass({Dao.class})
+@AutoConfigureAfter({DataSourceAutoConfiguration.class, SqlManagerAutoConfiguration.class})
+@EnableConfigurationProperties({SqlTemplateProperties.class, SqlTemplateProperties.class})
 public class NutzDaoAutoConfiguration {
 
-	@Autowired
-	SqlTemplateProperties sqlTemplateProperties;
-	
-	@Bean
-	public Dao dao(DataSource dataSource, SqlManager sqlManager, DaoRunner daoRunner) {
-		NutDao dao = new NutDao(dataSource, sqlManager);
-		dao.setRunner(daoRunner);
-		return dao;
-	}
+    @Autowired
+    SqlTemplateProperties sqlTemplateProperties;
 
-	@Bean
-	@ConditionalOnMissingBean(DaoRunner.class)
-	public DaoRunner daoRunner() {
-		return new SpringDaoRunner();
-	}
+    @Bean
+    public Dao dao(DataSource dataSource, SqlManager sqlManager, DaoRunner daoRunner) {
+        NutDao dao = new NutDao(dataSource, sqlManager);
+        dao.setRunner(daoRunner);
+        return dao;
+    }
 
-	@PostConstruct
-	public void initSqlTemplate() {
-		if (sqlTemplateProperties.isEnable()) {
-			switch (sqlTemplateProperties.getType()) {
-			case BEETL:
-				Sqls.setSqlBorning(BeetlSqlTpl.class);
-				break;
-			case FREEMARKER:
-				Sqls.setSqlBorning(FreeMarkerSqlTpl.class);
-				break;
-			case JETBRICK:
-				Sqls.setSqlBorning(JetbrickSqlTpl.class);
-			default:
-				Sqls.setSqlBorning(VelocitySqlTpl.class);
-				break;
-			}
-		}
-	}
+    @Bean
+    @ConditionalOnMissingBean(DaoRunner.class)
+    public DaoRunner daoRunner() {
+        return new SpringDaoRunner();
+    }
+
+    @PostConstruct
+    public void initSqlTemplate() {
+        if (sqlTemplateProperties.isEnable()) {
+            switch (sqlTemplateProperties.getType()) {
+            case BEETL:
+                Sqls.setSqlBorning(BeetlSqlTpl.class);
+                break;
+            case FREEMARKER:
+                Sqls.setSqlBorning(FreeMarkerSqlTpl.class);
+                break;
+            case JETBRICK:
+                Sqls.setSqlBorning(JetbrickSqlTpl.class);
+                break;
+            default:
+                Sqls.setSqlBorning(VelocitySqlTpl.class);
+                break;
+            }
+        }
+    }
 
 }
