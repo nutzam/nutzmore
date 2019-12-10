@@ -1,9 +1,9 @@
 /*
 test.tpl
 */
-SELECT 1 FROM 
+SELECT  
 <%if(vars.a > 5){ %>
-	@a
+	$a
 <%}else{ %>
-	$b
+	@b
 <%}%>
