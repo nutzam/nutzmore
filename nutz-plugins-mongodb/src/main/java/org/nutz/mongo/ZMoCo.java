@@ -864,4 +864,12 @@ public class ZMoCo {
         return list.get(0);
     }
 
+    /**
+     * 获取当前的DBCollection
+     * @return
+     */
+    public DBCollection getDbc(){
+        return this.dbc;
+    }
+
 }
