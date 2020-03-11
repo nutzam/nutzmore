@@ -65,19 +65,6 @@ public class JtsGeometryJsonTypeHandler extends JsonTypeHandler {
     }
 
     /**
-     * @param obj
-     * @param mirror
-     * @return
-     * @throws Exception
-     * @see org.nutz.json.JsonTypeHandler#fromJson(java.lang.Object,
-     *      org.nutz.lang.Mirror)
-     */
-    @Override
-    public Object fromJson(Object obj, Mirror<?> mirror) throws Exception {
-        return super.fromJson(obj, mirror);
-    }
-
-    /**
      * @param mirror
      * @param currentObj
      * @param r
@@ -92,11 +79,10 @@ public class JtsGeometryJsonTypeHandler extends JsonTypeHandler {
         if (currentObj == null) {
             return;
         }
-        Geometry geometry = ((JtsGeometry) currentObj).getGeometry();
-        serialize(geometry, render, jf);
+        serialize(((JtsGeometry) currentObj).getGeometry(), render);
     }
 
-    private void serialize(Geometry geometry, JsonRender render, JsonFormat jf) {
+    private void serialize(Geometry geometry, JsonRender render) {
         String className = geometry.getClass().getName();
         switch (className) {
         case "org.locationtech.jts.geom.Point":

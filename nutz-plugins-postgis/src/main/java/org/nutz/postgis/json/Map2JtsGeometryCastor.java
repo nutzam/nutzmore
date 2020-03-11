@@ -15,7 +15,8 @@ import org.nutz.lang.util.NutMap;
 import org.postgis.jts.JtsGeometry;
 
 /**
- * @author wkipy
+ * 
+ * @author Kerbores(kerbores@gmail.com)
  *
  */
 public class Map2JtsGeometryCastor extends Castor<NutMap, JtsGeometry> {
@@ -31,7 +32,7 @@ public class Map2JtsGeometryCastor extends Castor<NutMap, JtsGeometry> {
      *      java.lang.String[])
      */
     @Override
-    public JtsGeometry cast(NutMap map, Class<?> toType, String... args) throws FailToCastObjectException {
+    public JtsGeometry cast(NutMap map, Class<?> toType, String... args) {
         return new JtsGeometry(deserializeGeometry(map));
     }
 

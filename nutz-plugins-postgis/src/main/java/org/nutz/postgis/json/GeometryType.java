@@ -12,7 +12,8 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 
 /**
- * @author wkipy
+ * 
+ * @author Kerbores(kerbores@gmail.com)
  *
  */
 public enum GeometryType {
@@ -46,16 +47,6 @@ public enum GeometryType {
     GEOMETRY_COLLECTION(Type.GEOMETRY_COLLECTION);
 
     private final String type;
-
-    /**
-     * Create a new {@link GeometryType}.
-     *
-     * @param type
-     *            The string type.
-     */
-    GeometryType(String type) {
-        this.type = type;
-    }
 
     /**
      * 

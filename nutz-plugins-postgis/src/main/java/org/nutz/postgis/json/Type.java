@@ -3,7 +3,8 @@ package org.nutz.postgis.json;
 import org.nutz.lang.Strings;
 
 /**
- * @author wkipy
+ * 
+ * @author Kerbores(kerbores@gmail.com)
  *
  */
 public enum Type {
