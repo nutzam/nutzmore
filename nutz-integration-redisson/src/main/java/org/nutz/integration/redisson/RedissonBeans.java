@@ -1,7 +1,9 @@
 package org.nutz.integration.redisson;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.URL;
 
 import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.ioc.loader.annotation.Inject;
@@ -42,10 +44,42 @@ public class RedissonBeans {
     public Config createredissonConfig() throws IOException {
         if (conf.has("redisson.config.fromJson")) {
             String fromJson = conf.get("redisson.config.fromJson");
+            if (fromJson.startsWith("classpath:")) {
+            	String tmp = fromJson.substring("classpath:".length());
+            	URL url = getClass().getClassLoader().getResource(tmp);
+            	if (url == null) {
+            		throw new RuntimeException("classpath resource " + tmp + " not found");
+            	}
+            	return Config.fromJSON(url);
+            }
+            if (fromJson.startsWith("file:")) {
+            	String tmp = fromJson.substring("file:".length());
+            	File file = new File(tmp);
+            	if (!file.exists()) {
+            		throw new RuntimeException("file resource " + tmp + " not found");
+            	}
+            	return Config.fromJSON(file);
+            }
             return Config.fromJSON(fromJson);
         }
         if (conf.has("redisson.config.fromYaml")) {
             String fromYaml = conf.get("redisson.config.fromYaml");
+            if (fromYaml.startsWith("classpath:")) {
+            	String tmp = fromYaml.substring("classpath:".length());
+            	URL url = getClass().getClassLoader().getResource(tmp);
+            	if (url == null) {
+            		throw new RuntimeException("classpath resource " + tmp + " not found");
+            	}
+            	return Config.fromYAML(url);
+            }
+            if (fromYaml.startsWith("file:")) {
+            	String tmp = fromYaml.substring("file:".length());
+            	File file = new File(tmp);
+            	if (!file.exists()) {
+            		throw new RuntimeException("file resource " + tmp + " not found");
+            	}
+            	return Config.fromYAML(file);
+            }
             return Config.fromYAML(fromYaml);
         }
         Config config = conf.make(Config.class, "redisson.");
