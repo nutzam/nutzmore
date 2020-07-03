@@ -62,4 +62,20 @@ public class MyCacheTest {
     public void testRemoveAll() {
 
     }
+
+    @CacheResult(cacheKey = "null")
+    public Object testCacheNull(boolean isNull) {
+        if(isNull) {
+            return null;
+        }
+        return 1;
+    }
+
+    @CacheResult(cacheKey = "ignoreNull",ignoreNull = true)
+    public Object testCacheIgnoreNull(boolean isNull) {
+        if(isNull) {
+            return null;
+        }
+        return 1;
+    }
 }

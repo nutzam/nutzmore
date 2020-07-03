@@ -74,6 +74,11 @@ public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
         if (bytes == null) {
             chain.doChain();
             obj = chain.getReturn();
+            // 如果忽略空值，那么不缓存结果
+            if (null == obj && cacheResult.ignoreNull()) {
+                chain.setReturnValue(null);
+                return;
+            }
             if (liveTime > 0) {
                 redisService().setex((cacheName + ":" + cacheKey).getBytes(), liveTime, Lang.toBytes(obj));
             } else {
