@@ -42,4 +42,17 @@ public class WkcacheTest extends Assert {
     }
 
 
+    @Test
+    public void testCacheNull() throws ClassNotFoundException {
+        NutIoc ioc = new NutIoc(new ComboIocLoader("*anno", "org.nutz.plugins.wkcache", "*jedis", "*wkcache"));
+
+        ioc.getIocContext().save("app", "conf", new ObjectProxy(new PropertiesProxy()));
+        assertTrue(ioc.getNames().length > 0);
+        MyCacheTest myCacheTest = ioc.get(MyCacheTest.class);
+        myCacheTest.testCacheNull(true);
+        assertNull(myCacheTest.testCacheNull(false));
+
+        myCacheTest.testCacheIgnoreNull(true);
+        assertNotNull(myCacheTest.testCacheIgnoreNull(false));
+    }
 }

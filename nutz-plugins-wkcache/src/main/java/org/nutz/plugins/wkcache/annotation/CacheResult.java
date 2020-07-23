@@ -15,4 +15,9 @@ public @interface CacheResult {
     String cacheKey() default "";
 
     int cacheLiveTime() default 0;
+
+    /**
+     * 是否忽略 Null 值，如果为 true，当结果为 Null 时不进行缓存
+     */
+    boolean ignoreNull() default false;
 }
