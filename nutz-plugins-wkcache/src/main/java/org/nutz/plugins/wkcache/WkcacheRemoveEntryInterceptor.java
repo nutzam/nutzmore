@@ -10,6 +10,8 @@ import org.nutz.lang.util.Context;
 import org.nutz.lang.util.MethodParamNamesScaner;
 import org.nutz.plugins.wkcache.annotation.CacheDefaults;
 import org.nutz.plugins.wkcache.annotation.CacheRemove;
+import redis.clients.jedis.ScanParams;
+import redis.clients.jedis.ScanResult;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -59,13 +61,31 @@ public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
                     .getAnnotation(CacheDefaults.class);
             cacheName = cacheDefaults != null ? cacheDefaults.cacheName() : "wk";
         }
-        if (cacheKey.endsWith("*")) {
-            Set<byte[]> set = redisService().keys((cacheName + ":" + cacheKey).getBytes());
-            for (byte[] it : set) {
-                redisService().del(it);
+        if (cacheKey.contains(",")) {
+            for (String key : cacheKey.split(",")) {
+                delCache(cacheName, key);
             }
-        } else
-            redisService().del((cacheName + ":" + cacheKey).getBytes());
+        } else {
+            delCache(cacheName, cacheKey);
+        }
+
         chain.doChain();
+    }
+
+    private void delCache(String cacheName, String cacheKey) {
+        if (cacheKey.endsWith("*")) {
+            // 使用 scan 指令来查找所有匹配到的 Key
+            ScanParams match = new ScanParams().match(cacheName + ":" + cacheKey);
+            ScanResult<String> scan = null;
+            do {
+                scan = redisService().scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
+                for (String key : scan.getResult()) {
+                    redisService().del(key);
+                }
+                // 已经迭代结束了
+            } while (!scan.isCompleteIteration());
+        } else {
+            redisService().del((cacheName + ":" + cacheKey).getBytes());
+        }
     }
 }
