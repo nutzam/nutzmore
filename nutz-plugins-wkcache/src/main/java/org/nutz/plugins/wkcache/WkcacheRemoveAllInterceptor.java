@@ -5,9 +5,10 @@ import org.nutz.ioc.loader.annotation.IocBean;
 import org.nutz.lang.Strings;
 import org.nutz.plugins.wkcache.annotation.CacheDefaults;
 import org.nutz.plugins.wkcache.annotation.CacheRemoveAll;
+import redis.clients.jedis.ScanParams;
+import redis.clients.jedis.ScanResult;
 
 import java.lang.reflect.Method;
-import java.util.Set;
 
 /**
  * Created by wizzer on 2017/6/14.
@@ -24,9 +25,18 @@ public class WkcacheRemoveAllInterceptor extends AbstractWkcacheInterceptor {
                     .getAnnotation(CacheDefaults.class);
             cacheName = cacheDefaults != null ? cacheDefaults.cacheName() : "wk";
         }
-        Set<byte[]> set = redisService().keys((cacheName + ":*").getBytes());
-        for (byte[] it : set) {
-            redisService().del(it);
+        // 使用 scan 指令来查找所有匹配到的 Key
+        ScanParams match = new ScanParams().match(cacheName + ":*");
+        ScanResult<String> scan = null;
+        while (true) {
+            scan = redisService().scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
+            for (String key : scan.getResult()) {
+                redisService().del(key);
+            }
+            // 已经迭代结束了
+            if (scan.isCompleteIteration()) {
+                break;
+            }
         }
         chain.doChain();
     }
