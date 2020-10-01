@@ -25,16 +25,26 @@ public class WkcacheRemoveAllInterceptor extends AbstractWkcacheInterceptor {
                     .getAnnotation(CacheDefaults.class);
             cacheName = cacheDefaults != null ? cacheDefaults.cacheName() : "wk";
         }
+        if (cacheName.contains(",")) {
+            for (String name : cacheName.split(",")) {
+                delCache(name);
+            }
+        } else {
+            delCache(cacheName);
+        }
+        chain.doChain();
+    }
+
+    private void delCache(String cacheName) {
         // 使用 scan 指令来查找所有匹配到的 Key
         ScanParams match = new ScanParams().match(cacheName + ":*");
         ScanResult<String> scan = null;
         do {
             scan = redisService().scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
             for (String key : scan.getResult()) {
-                redisService().del(key);
+                redisService().del(key.getBytes());
             }
             // 已经迭代结束了
         } while (!scan.isCompleteIteration());
-        chain.doChain();
     }
 }

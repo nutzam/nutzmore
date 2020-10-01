@@ -16,7 +16,6 @@ import redis.clients.jedis.ScanResult;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Created by wizzer on 2017/6/14.
@@ -61,18 +60,6 @@ public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
                     .getAnnotation(CacheDefaults.class);
             cacheName = cacheDefaults != null ? cacheDefaults.cacheName() : "wk";
         }
-        if (cacheKey.contains(",")) {
-            for (String key : cacheKey.split(",")) {
-                delCache(cacheName, key);
-            }
-        } else {
-            delCache(cacheName, cacheKey);
-        }
-
-        chain.doChain();
-    }
-
-    private void delCache(String cacheName, String cacheKey) {
         if (cacheKey.endsWith("*")) {
             // 使用 scan 指令来查找所有匹配到的 Key
             ScanParams match = new ScanParams().match(cacheName + ":" + cacheKey);
@@ -80,12 +67,14 @@ public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
             do {
                 scan = redisService().scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
                 for (String key : scan.getResult()) {
-                    redisService().del(key);
+                    redisService().del(key.getBytes());
                 }
                 // 已经迭代结束了
             } while (!scan.isCompleteIteration());
         } else {
             redisService().del((cacheName + ":" + cacheKey).getBytes());
         }
+        chain.doChain();
     }
+
 }
