@@ -28,16 +28,13 @@ public class WkcacheRemoveAllInterceptor extends AbstractWkcacheInterceptor {
         // 使用 scan 指令来查找所有匹配到的 Key
         ScanParams match = new ScanParams().match(cacheName + ":*");
         ScanResult<String> scan = null;
-        while (true) {
+        do {
             scan = redisService().scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
             for (String key : scan.getResult()) {
                 redisService().del(key);
             }
             // 已经迭代结束了
-            if (scan.isCompleteIteration()) {
-                break;
-            }
-        }
+        } while (!scan.isCompleteIteration());
         chain.doChain();
     }
 }
