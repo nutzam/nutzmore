@@ -73,9 +73,9 @@ public class WkcacheUpdateInterceptor extends AbstractWkcacheInterceptor {
         chain.doChain();
         obj = chain.getReturn();
         if (liveTime > 0) {
-            redisService().setex((cacheName + ":" + cacheKey).getBytes(), liveTime, Lang.toBytes(obj));
+            getJedisAgent().jedis().setex((cacheName + ":" + cacheKey).getBytes(), liveTime, Lang.toBytes(obj));
         } else {
-            redisService().set((cacheName + ":" + cacheKey).getBytes(), Lang.toBytes(obj));
+            getJedisAgent().jedis().set((cacheName + ":" + cacheKey).getBytes(), Lang.toBytes(obj));
         }
         chain.setReturnValue(obj);
     }

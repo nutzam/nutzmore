@@ -70,7 +70,7 @@ public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
                 liveTime = confLiveTime;
         }
         Object obj;
-        byte[] bytes = redisService().get((cacheName + ":" + cacheKey).getBytes());
+        byte[] bytes = getJedisAgent().jedis().get((cacheName + ":" + cacheKey).getBytes());
         if (bytes == null) {
             chain.doChain();
             obj = chain.getReturn();
@@ -80,16 +80,16 @@ public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
                 return;
             }
             if (liveTime > 0) {
-                redisService().setex((cacheName + ":" + cacheKey).getBytes(), liveTime, Lang.toBytes(obj));
+                getJedisAgent().jedis().setex((cacheName + ":" + cacheKey).getBytes(), liveTime, Lang.toBytes(obj));
             } else {
-                redisService().set((cacheName + ":" + cacheKey).getBytes(), Lang.toBytes(obj));
+                getJedisAgent().jedis().set((cacheName + ":" + cacheKey).getBytes(), Lang.toBytes(obj));
             }
         } else {
             try {
                 obj = Lang.fromBytes(bytes, method.getReturnType());
             } catch (Exception e) {
                 //对象转换失败则清除缓存
-                redisService().del((cacheName + ":" + cacheKey).getBytes());
+                getJedisAgent().jedis().del((cacheName + ":" + cacheKey).getBytes());
                 obj = chain.getReturn();
                 e.printStackTrace();
             }

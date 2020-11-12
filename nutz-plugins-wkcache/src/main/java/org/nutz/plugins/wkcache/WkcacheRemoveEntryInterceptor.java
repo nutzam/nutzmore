@@ -10,8 +10,7 @@ import org.nutz.lang.util.Context;
 import org.nutz.lang.util.MethodParamNamesScaner;
 import org.nutz.plugins.wkcache.annotation.CacheDefaults;
 import org.nutz.plugins.wkcache.annotation.CacheRemove;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.*;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -61,18 +60,34 @@ public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
             cacheName = cacheDefaults != null ? cacheDefaults.cacheName() : "wk";
         }
         if (cacheKey.endsWith("*")) {
-            // 使用 scan 指令来查找所有匹配到的 Key
-            ScanParams match = new ScanParams().match(cacheName + ":" + cacheKey);
-            ScanResult<String> scan = null;
-            do {
-                scan = redisService().scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
-                for (String key : scan.getResult()) {
-                    redisService().del(key.getBytes());
+            if (getJedisAgent().isClusterMode()) {
+                JedisCluster jedisCluster = getJedisAgent().getJedisClusterWrapper().getJedisCluster();
+                for (JedisPool pool : jedisCluster.getClusterNodes().values()) {
+                    try (Jedis jedis = pool.getResource()) {
+                        ScanParams match = new ScanParams().match(cacheName + ":" + cacheKey);
+                        ScanResult<String> scan = null;
+                        do {
+                            scan = jedis.scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
+                            for (String key : scan.getResult()) {
+                                jedis.del(key.getBytes());
+                            }
+                        } while (!scan.isCompleteIteration());
+                    }
                 }
-                // 已经迭代结束了
-            } while (!scan.isCompleteIteration());
+            } else {
+                // 使用 scan 指令来查找所有匹配到的 Key
+                ScanParams match = new ScanParams().match(cacheName + ":" + cacheKey);
+                ScanResult<String> scan = null;
+                do {
+                    scan = getJedisAgent().jedis().scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
+                    for (String key : scan.getResult()) {
+                        getJedisAgent().jedis().del(key.getBytes());
+                    }
+                    // 已经迭代结束了
+                } while (!scan.isCompleteIteration());
+            }
         } else {
-            redisService().del((cacheName + ":" + cacheKey).getBytes());
+            getJedisAgent().jedis().del((cacheName + ":" + cacheKey).getBytes());
         }
         chain.doChain();
     }
