@@ -4,12 +4,14 @@ import org.nutz.aop.InterceptorChain;
 import org.nutz.el.El;
 import org.nutz.ioc.loader.annotation.IocBean;
 import org.nutz.lang.Lang;
+import org.nutz.lang.Streams;
 import org.nutz.lang.Strings;
 import org.nutz.lang.segment.CharSegment;
 import org.nutz.lang.util.Context;
 import org.nutz.lang.util.MethodParamNamesScaner;
 import org.nutz.plugins.wkcache.annotation.CacheDefaults;
 import org.nutz.plugins.wkcache.annotation.CacheUpdate;
+import redis.clients.jedis.Jedis;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -72,10 +74,16 @@ public class WkcacheUpdateInterceptor extends AbstractWkcacheInterceptor {
         Object obj;
         chain.doChain();
         obj = chain.getReturn();
-        if (liveTime > 0) {
-            getJedisAgent().jedis().setex((cacheName + ":" + cacheKey).getBytes(), liveTime, Lang.toBytes(obj));
-        } else {
-            getJedisAgent().jedis().set((cacheName + ":" + cacheKey).getBytes(), Lang.toBytes(obj));
+        Jedis jedis = null;
+        try {
+            jedis = getJedisAgent().jedis();
+            if (liveTime > 0) {
+                jedis.setex((cacheName + ":" + cacheKey).getBytes(), liveTime, Lang.toBytes(obj));
+            } else {
+                jedis.set((cacheName + ":" + cacheKey).getBytes(), Lang.toBytes(obj));
+            }
+        } finally {
+            Streams.safeClose(jedis);
         }
         chain.setReturnValue(obj);
     }

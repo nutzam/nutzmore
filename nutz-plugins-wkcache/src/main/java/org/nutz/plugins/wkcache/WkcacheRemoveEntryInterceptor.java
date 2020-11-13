@@ -4,6 +4,7 @@ import org.nutz.aop.InterceptorChain;
 import org.nutz.el.El;
 import org.nutz.ioc.loader.annotation.IocBean;
 import org.nutz.lang.Lang;
+import org.nutz.lang.Streams;
 import org.nutz.lang.Strings;
 import org.nutz.lang.segment.CharSegment;
 import org.nutz.lang.util.Context;
@@ -75,19 +76,31 @@ public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
                     }
                 }
             } else {
-                // 使用 scan 指令来查找所有匹配到的 Key
-                ScanParams match = new ScanParams().match(cacheName + ":" + cacheKey);
-                ScanResult<String> scan = null;
-                do {
-                    scan = getJedisAgent().jedis().scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
-                    for (String key : scan.getResult()) {
-                        getJedisAgent().jedis().del(key.getBytes());
-                    }
-                    // 已经迭代结束了
-                } while (!scan.isCompleteIteration());
+                Jedis jedis = null;
+                try {
+                    jedis = getJedisAgent().jedis();
+                    // 使用 scan 指令来查找所有匹配到的 Key
+                    ScanParams match = new ScanParams().match(cacheName + ":" + cacheKey);
+                    ScanResult<String> scan = null;
+                    do {
+                        scan = jedis.scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
+                        for (String key : scan.getResult()) {
+                            jedis.del(key.getBytes());
+                        }
+                        // 已经迭代结束了
+                    } while (!scan.isCompleteIteration());
+                } finally {
+                    Streams.safeClose(jedis);
+                }
             }
         } else {
-            getJedisAgent().jedis().del((cacheName + ":" + cacheKey).getBytes());
+            Jedis jedis = null;
+            try {
+                jedis = getJedisAgent().jedis();
+                jedis.del((cacheName + ":" + cacheKey).getBytes());
+            } finally {
+                Streams.safeClose(jedis);
+            }
         }
         chain.doChain();
     }
