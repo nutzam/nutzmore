@@ -14,6 +14,7 @@ import org.nutz.plugins.wkcache.annotation.CacheRemove;
 import redis.clients.jedis.*;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -63,17 +64,25 @@ public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
         if (cacheKey.endsWith("*")) {
             if (getJedisAgent().isClusterMode()) {
                 JedisCluster jedisCluster = getJedisAgent().getJedisClusterWrapper().getJedisCluster();
+                List<String> keys = new ArrayList<>();
                 for (JedisPool pool : jedisCluster.getClusterNodes().values()) {
                     try (Jedis jedis = pool.getResource()) {
                         ScanParams match = new ScanParams().match(cacheName + ":" + cacheKey);
                         ScanResult<String> scan = null;
                         do {
                             scan = jedis.scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
-                            for (String key : scan.getResult()) {
-                                jedis.del(key.getBytes());
-                            }
+                            keys.addAll(scan.getResult());
                         } while (!scan.isCompleteIteration());
                     }
+                }
+                Jedis jedis = null;
+                try {
+                    jedis = getJedisAgent().jedis();
+                    for (String key : keys) {
+                        jedis.del(key);
+                    }
+                } finally {
+                    Streams.safeClose(jedis);
                 }
             } else {
                 Jedis jedis = null;
