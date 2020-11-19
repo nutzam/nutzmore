@@ -62,12 +62,12 @@ public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
             cacheName = cacheDefaults != null ? cacheDefaults.cacheName() : "wk";
         }
         if (cacheKey.endsWith("*")) {
+            ScanParams match = new ScanParams().match(cacheName + ":" + cacheKey);
             if (getJedisAgent().isClusterMode()) {
                 JedisCluster jedisCluster = getJedisAgent().getJedisClusterWrapper().getJedisCluster();
                 List<String> keys = new ArrayList<>();
                 for (JedisPool pool : jedisCluster.getClusterNodes().values()) {
                     try (Jedis jedis = pool.getResource()) {
-                        ScanParams match = new ScanParams().match(cacheName + ":" + cacheKey);
                         ScanResult<String> scan = null;
                         do {
                             scan = jedis.scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
@@ -88,15 +88,12 @@ public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
                 Jedis jedis = null;
                 try {
                     jedis = getJedisAgent().jedis();
-                    // 使用 scan 指令来查找所有匹配到的 Key
-                    ScanParams match = new ScanParams().match(cacheName + ":" + cacheKey);
                     ScanResult<String> scan = null;
                     do {
                         scan = jedis.scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
                         for (String key : scan.getResult()) {
                             jedis.del(key.getBytes());
                         }
-                        // 已经迭代结束了
                     } while (!scan.isCompleteIteration());
                 } finally {
                     Streams.safeClose(jedis);
