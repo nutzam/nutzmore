@@ -17,6 +17,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by wizzer on 2017/6/14.
@@ -56,54 +57,99 @@ public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
                 cacheKey = key.getOrginalString();
             }
         }
+        CacheDefaults cacheDefaults = method.getDeclaringClass()
+                .getAnnotation(CacheDefaults.class);
+        boolean isHash = cacheDefaults != null && cacheDefaults.isHash();
         if (Strings.isBlank(cacheName)) {
-            CacheDefaults cacheDefaults = method.getDeclaringClass()
-                    .getAnnotation(CacheDefaults.class);
             cacheName = cacheDefaults != null ? cacheDefaults.cacheName() : "wk";
         }
         if (cacheKey.endsWith("*")) {
-            ScanParams match = new ScanParams().match(cacheName + ":" + cacheKey);
-            if (getJedisAgent().isClusterMode()) {
-                JedisCluster jedisCluster = getJedisAgent().getJedisClusterWrapper().getJedisCluster();
-                List<String> keys = new ArrayList<>();
-                for (JedisPool pool : jedisCluster.getClusterNodes().values()) {
-                    try (Jedis jedis = pool.getResource()) {
+            if (isHash) {
+                ScanParams match = new ScanParams().match(cacheName + ":" + cacheKey);
+                if (getJedisAgent().isClusterMode()) {
+                    JedisCluster jedisCluster = getJedisAgent().getJedisClusterWrapper().getJedisCluster();
+                    List<Map.Entry<String, String>> keys = new ArrayList<>();
+                    for (JedisPool pool : jedisCluster.getClusterNodes().values()) {
+                        try (Jedis jedis = pool.getResource()) {
+                            ScanResult<Map.Entry<String, String>> scan = null;
+                            do {
+                                scan = jedis.hscan(cacheName, scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
+                                keys.addAll(scan.getResult());
+                            } while (!scan.isCompleteIteration());
+                        }
+                    }
+                    Jedis jedis = null;
+                    try {
+                        jedis = getJedisAgent().jedis();
+                        for (Map.Entry<String, String> key : keys) {
+                            jedis.hdel(key.getKey(), key.getValue());
+                        }
+                    } finally {
+                        Streams.safeClose(jedis);
+                    }
+                } else {
+                    Jedis jedis = null;
+                    try {
+                        jedis = getJedisAgent().jedis();
+                        ScanResult<Map.Entry<String, String>> scan = null;
+                        do {
+                            scan = jedis.hscan(cacheName, scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
+                            for (Map.Entry<String, String> key : scan.getResult()) {
+                                jedis.hdel(key.getKey(), key.getValue());
+                            }
+                        } while (!scan.isCompleteIteration());
+                    } finally {
+                        Streams.safeClose(jedis);
+                    }
+                }
+            } else {
+                ScanParams match = new ScanParams().match(cacheName + ":" + cacheKey);
+                if (getJedisAgent().isClusterMode()) {
+                    JedisCluster jedisCluster = getJedisAgent().getJedisClusterWrapper().getJedisCluster();
+                    List<String> keys = new ArrayList<>();
+                    for (JedisPool pool : jedisCluster.getClusterNodes().values()) {
+                        try (Jedis jedis = pool.getResource()) {
+                            ScanResult<String> scan = null;
+                            do {
+                                scan = jedis.scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
+                                keys.addAll(scan.getResult());
+                            } while (!scan.isCompleteIteration());
+                        }
+                    }
+                    Jedis jedis = null;
+                    try {
+                        jedis = getJedisAgent().jedis();
+                        for (String key : keys) {
+                            jedis.del(key);
+                        }
+                    } finally {
+                        Streams.safeClose(jedis);
+                    }
+                } else {
+                    Jedis jedis = null;
+                    try {
+                        jedis = getJedisAgent().jedis();
                         ScanResult<String> scan = null;
                         do {
                             scan = jedis.scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
-                            keys.addAll(scan.getResult());
+                            for (String key : scan.getResult()) {
+                                jedis.del(key.getBytes());
+                            }
                         } while (!scan.isCompleteIteration());
+                    } finally {
+                        Streams.safeClose(jedis);
                     }
-                }
-                Jedis jedis = null;
-                try {
-                    jedis = getJedisAgent().jedis();
-                    for (String key : keys) {
-                        jedis.del(key);
-                    }
-                } finally {
-                    Streams.safeClose(jedis);
-                }
-            } else {
-                Jedis jedis = null;
-                try {
-                    jedis = getJedisAgent().jedis();
-                    ScanResult<String> scan = null;
-                    do {
-                        scan = jedis.scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
-                        for (String key : scan.getResult()) {
-                            jedis.del(key.getBytes());
-                        }
-                    } while (!scan.isCompleteIteration());
-                } finally {
-                    Streams.safeClose(jedis);
                 }
             }
         } else {
             Jedis jedis = null;
             try {
                 jedis = getJedisAgent().jedis();
-                jedis.del((cacheName + ":" + cacheKey).getBytes());
+                if (isHash) {
+                    jedis.hdel(cacheName.getBytes(), cacheKey.getBytes());
+                } else {
+                    jedis.del((cacheName + ":" + cacheKey).getBytes());
+                }
             } finally {
                 Streams.safeClose(jedis);
             }

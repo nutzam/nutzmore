@@ -22,17 +22,26 @@ public class WkcacheRemoveAllInterceptor extends AbstractWkcacheInterceptor {
         Method method = chain.getCallingMethod();
         CacheRemoveAll cacheRemoveAll = method.getAnnotation(CacheRemoveAll.class);
         String cacheName = Strings.sNull(cacheRemoveAll.cacheName());
+        CacheDefaults cacheDefaults = method.getDeclaringClass()
+                .getAnnotation(CacheDefaults.class);
+        boolean isHash = cacheDefaults != null && cacheDefaults.isHash();
         if (Strings.isBlank(cacheName)) {
-            CacheDefaults cacheDefaults = method.getDeclaringClass()
-                    .getAnnotation(CacheDefaults.class);
             cacheName = cacheDefaults != null ? cacheDefaults.cacheName() : "wk";
         }
         if (cacheName.contains(",")) {
             for (String name : cacheName.split(",")) {
-                delCache(name);
+                if (isHash) {
+                    delHashCache(name);
+                } else {
+                    delCache(name);
+                }
             }
         } else {
-            delCache(cacheName);
+            if (isHash) {
+                delHashCache(cacheName);
+            } else {
+                delCache(cacheName);
+            }
         }
         chain.doChain();
     }
@@ -74,6 +83,16 @@ public class WkcacheRemoveAllInterceptor extends AbstractWkcacheInterceptor {
             } finally {
                 Streams.safeClose(jedis);
             }
+        }
+    }
+
+    private void delHashCache(String cacheName) {
+        Jedis jedis = null;
+        try {
+            jedis = getJedisAgent().jedis();
+            jedis.del(cacheName.getBytes());
+        } finally {
+            Streams.safeClose(jedis);
         }
     }
 }

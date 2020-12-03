@@ -56,14 +56,13 @@ public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
                 cacheKey = key.getOrginalString();
             }
         }
+        CacheDefaults cacheDefaults = method.getDeclaringClass()
+                .getAnnotation(CacheDefaults.class);
+        boolean isHash = cacheDefaults != null && cacheDefaults.isHash();
         if (Strings.isBlank(cacheName)) {
-            CacheDefaults cacheDefaults = method.getDeclaringClass()
-                    .getAnnotation(CacheDefaults.class);
             cacheName = cacheDefaults != null ? cacheDefaults.cacheName() : "wk";
         }
         if (liveTime == 0) {
-            CacheDefaults cacheDefaults = method.getDeclaringClass()
-                    .getAnnotation(CacheDefaults.class);
             liveTime = cacheDefaults != null ? cacheDefaults.cacheLiveTime() : 0;
         }
         if (getConf() != null && getConf().size() > 0) {
@@ -75,29 +74,52 @@ public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
         Jedis jedis = null;
         try {
             jedis = getJedisAgent().jedis();
-            byte[] bytes = jedis.get((cacheName + ":" + cacheKey).getBytes());
-            if (bytes == null) {
-                chain.doChain();
-                obj = chain.getReturn();
-                // 如果忽略空值，那么不缓存结果
-                if (null == obj && cacheResult.ignoreNull()) {
-                    chain.setReturnValue(null);
-                    return;
-                }
-                if (liveTime > 0) {
-                    jedis.setex((cacheName + ":" + cacheKey).getBytes(), liveTime, Lang.toBytes(obj));
+            if (isHash) {
+                byte[] bytes = jedis.hget(cacheName.getBytes(), cacheKey.getBytes());
+                if (bytes == null) {
+                    chain.doChain();
+                    obj = chain.getReturn();
+                    // 如果忽略空值，那么不缓存结果
+                    if (null == obj && cacheResult.ignoreNull()) {
+                        chain.setReturnValue(null);
+                        return;
+                    }
+                    jedis.hset(cacheName.getBytes(), cacheKey.getBytes(), Lang.toBytes(obj));
                 } else {
-                    jedis.set((cacheName + ":" + cacheKey).getBytes(), Lang.toBytes(obj));
+                    try {
+                        obj = Lang.fromBytes(bytes, method.getReturnType());
+                    } catch (Exception e) {
+                        //对象转换失败则清除缓存
+                        jedis.hdel(cacheName.getBytes(), cacheKey.getBytes());
+                        obj = chain.getReturn();
+                        e.printStackTrace();
+                    }
                 }
             } else {
-                try {
-                    obj = Lang.fromBytes(bytes, method.getReturnType());
-                } catch (Exception e) {
-                    //对象转换失败则清除缓存
-                    jedis.del((cacheName + ":" + cacheKey).getBytes());
-
+                byte[] bytes = jedis.get((cacheName + ":" + cacheKey).getBytes());
+                if (bytes == null) {
+                    chain.doChain();
                     obj = chain.getReturn();
-                    e.printStackTrace();
+                    // 如果忽略空值，那么不缓存结果
+                    if (null == obj && cacheResult.ignoreNull()) {
+                        chain.setReturnValue(null);
+                        return;
+                    }
+                    if (liveTime > 0) {
+                        jedis.setex((cacheName + ":" + cacheKey).getBytes(), liveTime, Lang.toBytes(obj));
+                    } else {
+                        jedis.set((cacheName + ":" + cacheKey).getBytes(), Lang.toBytes(obj));
+                    }
+                } else {
+                    try {
+                        obj = Lang.fromBytes(bytes, method.getReturnType());
+                    } catch (Exception e) {
+                        //对象转换失败则清除缓存
+                        jedis.del((cacheName + ":" + cacheKey).getBytes());
+
+                        obj = chain.getReturn();
+                        e.printStackTrace();
+                    }
                 }
             }
         } finally {

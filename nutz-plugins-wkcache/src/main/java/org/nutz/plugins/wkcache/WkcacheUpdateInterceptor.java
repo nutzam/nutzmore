@@ -56,14 +56,13 @@ public class WkcacheUpdateInterceptor extends AbstractWkcacheInterceptor {
                 cacheKey = key.getOrginalString();
             }
         }
+        CacheDefaults cacheDefaults = method.getDeclaringClass()
+                .getAnnotation(CacheDefaults.class);
+        boolean isHash = cacheDefaults != null && cacheDefaults.isHash();
         if (Strings.isBlank(cacheName)) {
-            CacheDefaults cacheDefaults = method.getDeclaringClass()
-                    .getAnnotation(CacheDefaults.class);
             cacheName = cacheDefaults != null ? cacheDefaults.cacheName() : "wk";
         }
         if (liveTime == 0) {
-            CacheDefaults cacheDefaults = method.getDeclaringClass()
-                    .getAnnotation(CacheDefaults.class);
             liveTime = cacheDefaults != null ? cacheDefaults.cacheLiveTime() : 0;
         }
         if (getConf() != null && getConf().size() > 0) {
@@ -77,10 +76,14 @@ public class WkcacheUpdateInterceptor extends AbstractWkcacheInterceptor {
         Jedis jedis = null;
         try {
             jedis = getJedisAgent().jedis();
-            if (liveTime > 0) {
-                jedis.setex((cacheName + ":" + cacheKey).getBytes(), liveTime, Lang.toBytes(obj));
+            if (isHash) {
+                jedis.hset(cacheName.getBytes(), cacheKey.getBytes(), Lang.toBytes(obj));
             } else {
-                jedis.set((cacheName + ":" + cacheKey).getBytes(), Lang.toBytes(obj));
+                if (liveTime > 0) {
+                    jedis.setex((cacheName + ":" + cacheKey).getBytes(), liveTime, Lang.toBytes(obj));
+                } else {
+                    jedis.set((cacheName + ":" + cacheKey).getBytes(), Lang.toBytes(obj));
+                }
             }
         } finally {
             Streams.safeClose(jedis);

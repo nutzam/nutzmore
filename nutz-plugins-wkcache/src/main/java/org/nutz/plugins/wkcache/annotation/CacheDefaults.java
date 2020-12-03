@@ -13,4 +13,9 @@ public @interface CacheDefaults {
     String cacheName() default "wk";
 
     int cacheLiveTime() default 0;
+
+    /**
+     * 是否采用hash缓存方式(不支持失效时间,但时候缓存数量比较大的情况)
+     */
+    boolean isHash() default false;
 }
