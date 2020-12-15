@@ -65,7 +65,7 @@ public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
         }
         if (cacheKey.endsWith("*")) {
             if (isHash) {
-                ScanParams match = new ScanParams().match(cacheName + ":" + cacheKey);
+                ScanParams match = new ScanParams().match(cacheKey);
                 if (getJedisAgent().isClusterMode()) {
                     JedisCluster jedisCluster = getJedisAgent().getJedisClusterWrapper().getJedisCluster();
                     List<Map.Entry<String, String>> keys = new ArrayList<>();
@@ -82,7 +82,7 @@ public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
                     try {
                         jedis = getJedisAgent().jedis();
                         for (Map.Entry<String, String> key : keys) {
-                            jedis.hdel(key.getKey(), key.getValue());
+                            jedis.hdel(cacheName, key.getKey());
                         }
                     } finally {
                         Streams.safeClose(jedis);
@@ -95,7 +95,7 @@ public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
                         do {
                             scan = jedis.hscan(cacheName, scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
                             for (Map.Entry<String, String> key : scan.getResult()) {
-                                jedis.hdel(key.getKey(), key.getValue());
+                                jedis.hdel(cacheName, key.getKey());
                             }
                         } while (!scan.isCompleteIteration());
                     } finally {
