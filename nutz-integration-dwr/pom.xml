@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.nutz</groupId>
 		<artifactId>nutzmore</artifactId>
-		<version>1.r.68-SNAPSHOT</version>
+		<version>1.r.69-SNAPSHOT</version>
 	</parent>
 	<artifactId>nutz-integration-dwr</artifactId>
 	<url>https://nutzam.com</url>
@@ -67,8 +67,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.1</version>
 				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>1.8</source>
+					<target>1.8</target>
 					<compilerArgs>
 						<arg>-parameters</arg>
 					</compilerArgs>

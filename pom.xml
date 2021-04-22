@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.nutz</groupId>
 	<artifactId>nutzmore</artifactId>
-	<version>1.r.68-SNAPSHOT</version>
+	<version>1.r.69-SNAPSHOT</version>
 	<name>nutzmore</name>
 	<description>Nutz, which is a collections of lightweight frameworks, each of them can be used independently</description>
 
@@ -122,7 +122,6 @@
 	<modules>
 		<module>nutz-integration-activiti</module>
 		<module>nutz-integration-bex5</module>
-		<module>nutz-integration-cxf</module>
 		<module>nutz-integration-dubbo</module>
 		<module>nutz-integration-dwr</module>
 		<module>nutz-integration-grpc</module>
@@ -137,7 +136,6 @@
 		<module>nutz-integration-rabbitmq</module>
 		<module>nutz-integration-shiro</module>
 		<module>nutz-integration-spring</module>
-		<module>nutz-plugins-spring-boot-starter</module>
 		<module>nutz-integration-zbus</module>
 		<module>nutz-plugins-apidoc</module>
 		<module>nutz-plugins-cache</module>
