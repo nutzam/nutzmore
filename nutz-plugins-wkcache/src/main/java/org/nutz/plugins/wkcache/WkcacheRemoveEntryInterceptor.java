@@ -37,7 +37,7 @@ public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
                     + "#"
                     + Arrays.toString(chain.getArgs());
         } else {
-            this.key = new CharSegment(cacheKey);
+            CharSegment key = new CharSegment(cacheKey);
             if (key.hasKey()) {
                 Context ctx = Lang.context();
                 Object[] args = chain.getArgs();
@@ -49,8 +49,8 @@ public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
                 }
                 ctx.set("args", args);
                 Context _ctx = Lang.context();
-                for (String key : key.keys()) {
-                    _ctx.set(key, new El(key).eval(ctx));
+                for (String val : key.keys()) {
+                    _ctx.set(val, new El(val).eval(ctx));
                 }
                 cacheKey = key.render(_ctx).toString();
             } else {

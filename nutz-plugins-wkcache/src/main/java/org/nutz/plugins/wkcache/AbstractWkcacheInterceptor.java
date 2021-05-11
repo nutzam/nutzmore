@@ -6,7 +6,6 @@ import org.nutz.ioc.Ioc;
 import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
-import org.nutz.lang.segment.CharSegment;
 
 @IocBean
 public abstract class AbstractWkcacheInterceptor implements MethodInterceptor {
@@ -15,7 +14,6 @@ public abstract class AbstractWkcacheInterceptor implements MethodInterceptor {
     protected Ioc ioc;
     private JedisAgent jedisAgent;
     private PropertiesProxy conf;
-    protected CharSegment key;
 
     public void setIoc(Ioc ioc) {
         this.ioc = ioc;
