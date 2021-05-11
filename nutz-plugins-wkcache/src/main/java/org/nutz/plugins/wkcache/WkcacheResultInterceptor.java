@@ -15,9 +15,7 @@ import redis.clients.jedis.Jedis;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by wizzer on 2017/6/14.
@@ -72,7 +70,6 @@ public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
             if (confLiveTime > 0)
                 liveTime = confLiveTime;
         }
-        System.out.println("5 cacheName::" + cacheName + " cacheKey:::" + cacheKey + " method::" + method.getName());
         Object obj;
         Jedis jedis = null;
         try {
