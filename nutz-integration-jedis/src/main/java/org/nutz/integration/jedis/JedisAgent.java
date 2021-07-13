@@ -114,4 +114,14 @@ public class JedisAgent {
             return false;
         }
     }
+
+    public boolean isSentinelMode() {
+        try {
+            if (jedisPool == null && jedisClusterWrapper == null && ioc == null && conf == null)
+                ioc();//触发ioc获取
+            return "sentinel".equals(conf.get("redis.mode"));
+        } catch (Throwable e) {
+            return false;
+        }
+    }
 }

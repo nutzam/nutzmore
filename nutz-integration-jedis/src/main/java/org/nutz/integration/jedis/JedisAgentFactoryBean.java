@@ -7,6 +7,7 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisSentinelPool;
 
 public class JedisAgentFactoryBean implements FactoryBean<JedisAgent>, BeanFactoryPostProcessor {
     
@@ -34,6 +35,8 @@ public class JedisAgentFactoryBean implements FactoryBean<JedisAgent>, BeanFacto
             throws BeansException {
         if ("cluster".equals(mode)) {
             jedisAgent = new JedisAgent(beanFactory.getBean(JedisCluster.class));
+        } else if ("sentinel".equals(mode)) {
+            jedisAgent = new JedisAgent(beanFactory.getBean(JedisSentinelPool.class));
         } else {
             jedisAgent = new JedisAgent(beanFactory.getBean(JedisPool.class));
         }
