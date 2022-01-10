@@ -15,7 +15,7 @@ single(单节点)模式
 ```
 redisson.mode=single
 redisson.single.address=redis://127.0.0.1:6379
-redisson.password=123456
+redisson.single.password=123456
 ```
 
 masterslave(主从)模式
