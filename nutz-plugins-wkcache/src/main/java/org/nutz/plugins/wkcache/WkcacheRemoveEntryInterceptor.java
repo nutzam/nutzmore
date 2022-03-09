@@ -69,15 +69,11 @@ public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
                 if (getJedisAgent().isClusterMode()) {
                     JedisCluster jedisCluster = getJedisAgent().getJedisClusterWrapper().getJedisCluster();
                     List<Map.Entry<String, String>> keys = new ArrayList<>();
-                    for (JedisPool pool : jedisCluster.getClusterNodes().values()) {
-                        try (Jedis jedis = pool.getResource()) {
-                            ScanResult<Map.Entry<String, String>> scan = null;
-                            do {
-                                scan = jedis.hscan(cacheName, scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
-                                keys.addAll(scan.getResult());
-                            } while (!scan.isCompleteIteration());
-                        }
-                    }
+                    ScanResult<Map.Entry<String, String>> scan = null;
+                    do {
+                        scan = jedisCluster.hscan(cacheName, scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
+                        keys.addAll(scan.getResult());
+                    } while (!scan.isCompleteIteration());
                     Jedis jedis = null;
                     try {
                         jedis = getJedisAgent().jedis();
