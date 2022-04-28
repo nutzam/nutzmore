@@ -5,12 +5,8 @@ import org.nutz.ioc.Ioc;
 import org.nutz.ioc.aop.config.AopConfigration;
 import org.nutz.ioc.aop.config.InterceptorPair;
 import org.nutz.ioc.loader.annotation.IocBean;
-import org.nutz.plugins.wkcache.annotation.CacheRemove;
-import org.nutz.plugins.wkcache.annotation.CacheRemoveAll;
-import org.nutz.plugins.wkcache.annotation.CacheResult;
-import org.nutz.plugins.wkcache.annotation.CacheUpdate;
+import org.nutz.plugins.wkcache.annotation.*;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,40 +19,52 @@ public class WkcacheAopConfigure implements AopConfigration {
 
     public List<InterceptorPair> getInterceptorPairList(Ioc ioc, Class<?> clazz) {
         List<InterceptorPair> list = new ArrayList<InterceptorPair>();
-        boolean flag = true;
         for (Method method : clazz.getMethods()) {
-            if (method.getAnnotation(CacheResult.class) != null
-                    || method.getAnnotation(CacheUpdate.class) != null
-                    || method.getAnnotation(CacheRemove.class) != null
-                    || method.getAnnotation(CacheRemoveAll.class) != null) {
-                flag = false;
-                break;
+            CacheDefaults cdefaults = clazz.getAnnotation(CacheDefaults.class);
+            CacheResult cresult = method.getAnnotation(CacheResult.class);
+            CacheUpdate cupdate = method.getAnnotation(CacheUpdate.class);
+            CacheRemove cremove = method.getAnnotation(CacheRemove.class);
+            CacheRemoveAll cremoveall = method.getAnnotation(CacheRemoveAll.class);
+            if (cresult != null) {
+                // 取出非单例的拦截器实例
+                WkcacheResultInterceptor wr = ioc.get(WkcacheResultInterceptor.class);
+                // 提前把注解和方法传过去初始化
+                wr.prepare(cdefaults, cresult, method);
+                // 然后基于method == this.method 进行匹配拦截, 这样每个函数都有自己的WkcacheResultInterceptor实例
+                list.add(new InterceptorPair(wr, new WkcacheMethodMatcher(method)));
+            }
+            if (cupdate != null) {
+                WkcacheUpdateInterceptor wu = ioc.get(WkcacheUpdateInterceptor.class);
+                wu.prepare(cdefaults, cupdate, method);
+                list.add(new InterceptorPair(wu, new WkcacheMethodMatcher(method)));
+            }
+            if (cremove != null) {
+                WkcacheRemoveEntryInterceptor wre = ioc.get(WkcacheRemoveEntryInterceptor.class);
+                wre.prepare(cdefaults, cremove, method);
+                list.add(new InterceptorPair(wre, new WkcacheMethodMatcher(method)));
+            }
+            if (cremoveall != null) {
+                WkcacheRemoveAllInterceptor wra = ioc.get(WkcacheRemoveAllInterceptor.class);
+                wra.prepare(cdefaults, cremoveall, method);
+                list.add(new InterceptorPair(wra, new WkcacheMethodMatcher(method)));
             }
         }
-        if (flag)
-            return list;
-        list.add(new InterceptorPair(ioc.get(WkcacheResultInterceptor.class),
-                new WkcacheMethodMatcher(CacheResult.class)));
-        list.add(new InterceptorPair(ioc.get(WkcacheUpdateInterceptor.class),
-                new WkcacheMethodMatcher(CacheUpdate.class)));
-        list.add(new InterceptorPair(ioc.get(WkcacheRemoveEntryInterceptor.class),
-                new WkcacheMethodMatcher(CacheRemove.class)));
-        list.add(new InterceptorPair(ioc.get(WkcacheRemoveAllInterceptor.class),
-                new WkcacheMethodMatcher(CacheRemoveAll.class)));
+        if (list.size() == 0)
+            return null;
         return list;
     }
 }
 
 class WkcacheMethodMatcher implements MethodMatcher {
 
-    protected Class<? extends Annotation> klass;
+    protected Method method;
 
-    public WkcacheMethodMatcher(Class<? extends Annotation> klass) {
-        this.klass = klass;
+    public WkcacheMethodMatcher(Method method) {
+        this.method = method;
     }
 
     public boolean match(Method method) {
-        return method.getAnnotation(klass) != null;
+        return this.method == method;
     }
 
 }

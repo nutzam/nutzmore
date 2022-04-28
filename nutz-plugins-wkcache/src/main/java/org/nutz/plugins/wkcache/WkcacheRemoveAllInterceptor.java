@@ -17,17 +17,18 @@ import java.util.List;
  */
 @IocBean(singleton = false)
 public class WkcacheRemoveAllInterceptor extends AbstractWkcacheInterceptor {
+    private String cacheName;
+    private boolean isHash;
 
-    public void filter(InterceptorChain chain) throws Throwable {
-        Method method = chain.getCallingMethod();
-        CacheRemoveAll cacheRemoveAll = method.getAnnotation(CacheRemoveAll.class);
-        String cacheName = Strings.sNull(cacheRemoveAll.cacheName());
-        CacheDefaults cacheDefaults = method.getDeclaringClass()
-                .getAnnotation(CacheDefaults.class);
-        boolean isHash = cacheDefaults != null && cacheDefaults.isHash();
+    public void prepare(CacheDefaults cacheDefaults, CacheRemoveAll cacheRemoveAll, Method method) {
+        cacheName = Strings.sNull(cacheRemoveAll.cacheName());
+        isHash = cacheDefaults != null && cacheDefaults.isHash();
         if (Strings.isBlank(cacheName)) {
             cacheName = cacheDefaults != null ? cacheDefaults.cacheName() : "wk";
         }
+    }
+
+    public void filter(InterceptorChain chain) throws Throwable {
         if (cacheName.contains(",")) {
             for (String name : cacheName.split(",")) {
                 if (isHash) {

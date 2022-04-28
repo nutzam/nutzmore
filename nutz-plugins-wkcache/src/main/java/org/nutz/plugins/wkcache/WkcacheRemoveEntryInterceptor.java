@@ -24,12 +24,21 @@ import java.util.Map;
  */
 @IocBean(singleton = false)
 public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
+    private String cacheKey;
+    private String cacheName;
+    private boolean isHash;
+
+    public void prepare(CacheDefaults cacheDefaults, CacheRemove cacheRemove, Method method) {
+        cacheKey = Strings.sNull(cacheRemove.cacheKey());
+        cacheName = Strings.sNull(cacheRemove.cacheName());
+        isHash = cacheDefaults != null && cacheDefaults.isHash();
+        if (Strings.isBlank(cacheName)) {
+            cacheName = cacheDefaults != null ? cacheDefaults.cacheName() : "wk";
+        }
+    }
 
     public void filter(InterceptorChain chain) throws Throwable {
         Method method = chain.getCallingMethod();
-        CacheRemove cacheRemove = method.getAnnotation(CacheRemove.class);
-        String cacheKey = Strings.sNull(cacheRemove.cacheKey());
-        String cacheName = Strings.sNull(cacheRemove.cacheName());
         if (Strings.isBlank(cacheKey)) {
             cacheKey = method.getDeclaringClass().getName()
                     + "."
@@ -56,12 +65,6 @@ public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
             } else {
                 cacheKey = key.getOrginalString();
             }
-        }
-        CacheDefaults cacheDefaults = method.getDeclaringClass()
-                .getAnnotation(CacheDefaults.class);
-        boolean isHash = cacheDefaults != null && cacheDefaults.isHash();
-        if (Strings.isBlank(cacheName)) {
-            cacheName = cacheDefaults != null ? cacheDefaults.cacheName() : "wk";
         }
         if (cacheKey.endsWith("*")) {
             if (isHash) {

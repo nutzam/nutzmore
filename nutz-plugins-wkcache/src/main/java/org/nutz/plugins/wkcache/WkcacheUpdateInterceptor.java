@@ -22,13 +22,31 @@ import java.util.List;
  */
 @IocBean(singleton = false)
 public class WkcacheUpdateInterceptor extends AbstractWkcacheInterceptor {
+    private String cacheKey;
+    private String cacheName;
+    private int liveTime;
+    private boolean isHash;
+
+    public void prepare(CacheDefaults cacheDefaults, CacheUpdate cacheUpdate, Method method) {
+        cacheKey = Strings.sNull(cacheUpdate.cacheKey());
+        cacheName = Strings.sNull(cacheUpdate.cacheName());
+        liveTime = cacheUpdate.cacheLiveTime();
+        isHash = cacheDefaults != null && cacheDefaults.isHash();
+        if (Strings.isBlank(cacheName)) {
+            cacheName = cacheDefaults != null ? cacheDefaults.cacheName() : "wk";
+        }
+        if (liveTime == 0) {
+            liveTime = cacheDefaults != null ? cacheDefaults.cacheLiveTime() : 0;
+        }
+        if (getConf() != null && getConf().size() > 0) {
+            int confLiveTime = getConf().getInt("wkcache." + cacheName, 0);
+            if (confLiveTime > 0)
+                liveTime = confLiveTime;
+        }
+    }
 
     public void filter(InterceptorChain chain) throws Throwable {
         Method method = chain.getCallingMethod();
-        CacheUpdate cacheResult = method.getAnnotation(CacheUpdate.class);
-        String cacheKey = Strings.sNull(cacheResult.cacheKey());
-        String cacheName = Strings.sNull(cacheResult.cacheName());
-        int liveTime = cacheResult.cacheLiveTime();
         if (Strings.isBlank(cacheKey)) {
             cacheKey = method.getDeclaringClass().getName()
                     + "."
@@ -55,20 +73,6 @@ public class WkcacheUpdateInterceptor extends AbstractWkcacheInterceptor {
             } else {
                 cacheKey = key.getOrginalString();
             }
-        }
-        CacheDefaults cacheDefaults = method.getDeclaringClass()
-                .getAnnotation(CacheDefaults.class);
-        boolean isHash = cacheDefaults != null && cacheDefaults.isHash();
-        if (Strings.isBlank(cacheName)) {
-            cacheName = cacheDefaults != null ? cacheDefaults.cacheName() : "wk";
-        }
-        if (liveTime == 0) {
-            liveTime = cacheDefaults != null ? cacheDefaults.cacheLiveTime() : 0;
-        }
-        if (getConf() != null && getConf().size() > 0) {
-            int confLiveTime = getConf().getInt("wkcache." + cacheName, 0);
-            if (confLiveTime > 0)
-                liveTime = confLiveTime;
         }
         Object obj;
         chain.doChain();

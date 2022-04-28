@@ -22,13 +22,33 @@ import java.util.List;
  */
 @IocBean(singleton = false)
 public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
+    private String cacheKey;
+    private String cacheName;
+    private int liveTime;
+    private boolean ignoreNull;
+    private boolean isHash;
+
+    public void prepare(CacheDefaults cacheDefaults, CacheResult cacheResult, Method method) {
+        cacheKey = Strings.sNull(cacheResult.cacheKey());
+        cacheName = Strings.sNull(cacheResult.cacheName());
+        liveTime = cacheResult.cacheLiveTime();
+        ignoreNull = cacheResult.ignoreNull();
+        isHash = cacheDefaults != null && cacheDefaults.isHash();
+        if (Strings.isBlank(cacheName)) {
+            cacheName = cacheDefaults != null ? cacheDefaults.cacheName() : "wk";
+        }
+        if (liveTime == 0) {
+            liveTime = cacheDefaults != null ? cacheDefaults.cacheLiveTime() : 0;
+        }
+        if (getConf() != null && getConf().size() > 0) {
+            int confLiveTime = getConf().getInt("wkcache." + cacheName, 0);
+            if (confLiveTime > 0)
+                liveTime = confLiveTime;
+        }
+    }
 
     public void filter(InterceptorChain chain) throws Throwable {
         Method method = chain.getCallingMethod();
-        CacheResult cacheResult = method.getAnnotation(CacheResult.class);
-        String cacheKey = Strings.sNull(cacheResult.cacheKey());
-        String cacheName = Strings.sNull(cacheResult.cacheName());
-        int liveTime = cacheResult.cacheLiveTime();
         if (Strings.isBlank(cacheKey)) {
             cacheKey = method.getDeclaringClass().getName()
                     + "."
@@ -56,20 +76,6 @@ public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
                 cacheKey = key.getOrginalString();
             }
         }
-        CacheDefaults cacheDefaults = method.getDeclaringClass()
-                .getAnnotation(CacheDefaults.class);
-        boolean isHash = cacheDefaults != null && cacheDefaults.isHash();
-        if (Strings.isBlank(cacheName)) {
-            cacheName = cacheDefaults != null ? cacheDefaults.cacheName() : "wk";
-        }
-        if (liveTime == 0) {
-            liveTime = cacheDefaults != null ? cacheDefaults.cacheLiveTime() : 0;
-        }
-        if (getConf() != null && getConf().size() > 0) {
-            int confLiveTime = getConf().getInt("wkcache." + cacheName, 0);
-            if (confLiveTime > 0)
-                liveTime = confLiveTime;
-        }
         Object obj;
         Jedis jedis = null;
         try {
@@ -80,7 +86,7 @@ public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
                     chain.doChain();
                     obj = chain.getReturn();
                     // 如果忽略空值，那么不缓存结果
-                    if (null == obj && cacheResult.ignoreNull()) {
+                    if (null == obj && ignoreNull) {
                         chain.setReturnValue(null);
                         return;
                     }
@@ -101,7 +107,7 @@ public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
                     chain.doChain();
                     obj = chain.getReturn();
                     // 如果忽略空值，那么不缓存结果
-                    if (null == obj && cacheResult.ignoreNull()) {
+                    if (null == obj && ignoreNull) {
                         chain.setReturnValue(null);
                         return;
                     }
@@ -116,7 +122,6 @@ public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
                     } catch (Exception e) {
                         //对象转换失败则清除缓存
                         jedis.del((cacheName + ":" + cacheKey).getBytes());
-
                         obj = chain.getReturn();
                         e.printStackTrace();
                     }
