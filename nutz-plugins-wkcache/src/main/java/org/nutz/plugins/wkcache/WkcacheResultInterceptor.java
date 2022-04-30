@@ -27,6 +27,7 @@ public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
     private int liveTime;
     private boolean ignoreNull;
     private boolean isHash;
+    private List<String> paramNames;
 
     public void prepare(CacheDefaults cacheDefaults, CacheResult cacheResult, Method method) {
         cacheKey = Strings.sNull(cacheResult.cacheKey());
@@ -45,6 +46,7 @@ public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
             if (confLiveTime > 0)
                 liveTime = confLiveTime;
         }
+        paramNames = MethodParamNamesScaner.getParamNames(method);
     }
 
     public void filter(InterceptorChain chain) throws Throwable {
@@ -60,10 +62,9 @@ public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
             if (key.hasKey()) {
                 Context ctx = Lang.context();
                 Object[] args = chain.getArgs();
-                List<String> names = MethodParamNamesScaner.getParamNames(method);//不支持nutz低于1.60的版本
-                if (names != null) {
-                    for (int i = 0; i < names.size() && i < args.length; i++) {
-                        ctx.set(names.get(i), args[i]);
+                if (paramNames != null) {
+                    for (int i = 0; i < paramNames.size() && i < args.length; i++) {
+                        ctx.set(paramNames.get(i), args[i]);
                     }
                 }
                 ctx.set("args", args);
