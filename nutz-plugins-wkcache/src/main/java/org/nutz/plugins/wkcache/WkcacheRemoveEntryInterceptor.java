@@ -24,13 +24,13 @@ import java.util.Map;
  */
 @IocBean(singleton = false)
 public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
-    private String cacheKey;
+    private String cacheKeyTemp;
     private String cacheName;
     private boolean isHash;
     private List<String> paramNames;
 
     public void prepare(CacheDefaults cacheDefaults, CacheRemove cacheRemove, Method method) {
-        cacheKey = Strings.sNull(cacheRemove.cacheKey());
+    	cacheKeyTemp = Strings.sNull(cacheRemove.cacheKey());
         cacheName = Strings.sNull(cacheRemove.cacheName());
         isHash = cacheDefaults != null && cacheDefaults.isHash();
         if (Strings.isBlank(cacheName)) {
@@ -40,6 +40,7 @@ public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
     }
 
     public void filter(InterceptorChain chain) throws Throwable {
+    	String cacheKey = cacheKeyTemp;
         Method method = chain.getCallingMethod();
         if (Strings.isBlank(cacheKey)) {
             cacheKey = method.getDeclaringClass().getName()

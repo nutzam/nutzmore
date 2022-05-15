@@ -22,14 +22,14 @@ import java.util.List;
  */
 @IocBean(singleton = false)
 public class WkcacheUpdateInterceptor extends AbstractWkcacheInterceptor {
-    private String cacheKey;
+    private String cacheKeyTemp;
     private String cacheName;
     private int liveTime;
     private boolean isHash;
     private List<String> paramNames;
 
     public void prepare(CacheDefaults cacheDefaults, CacheUpdate cacheUpdate, Method method) {
-        cacheKey = Strings.sNull(cacheUpdate.cacheKey());
+    	cacheKeyTemp = Strings.sNull(cacheUpdate.cacheKey());
         cacheName = Strings.sNull(cacheUpdate.cacheName());
         liveTime = cacheUpdate.cacheLiveTime();
         isHash = cacheDefaults != null && cacheDefaults.isHash();
@@ -48,6 +48,7 @@ public class WkcacheUpdateInterceptor extends AbstractWkcacheInterceptor {
     }
 
     public void filter(InterceptorChain chain) throws Throwable {
+    	String cacheKey = cacheKeyTemp;
         Method method = chain.getCallingMethod();
         if (Strings.isBlank(cacheKey)) {
             cacheKey = method.getDeclaringClass().getName()

@@ -9,6 +9,8 @@ import org.nutz.lang.Strings;
 import org.nutz.lang.segment.CharSegment;
 import org.nutz.lang.util.Context;
 import org.nutz.lang.util.MethodParamNamesScaner;
+import org.nutz.log.Log;
+import org.nutz.log.Logs;
 import org.nutz.plugins.wkcache.annotation.CacheDefaults;
 import org.nutz.plugins.wkcache.annotation.CacheResult;
 import redis.clients.jedis.Jedis;
@@ -22,7 +24,10 @@ import java.util.List;
  */
 @IocBean(singleton = false)
 public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
-    private String cacheKey;
+	
+	private static Log log = Logs.get();
+	
+    private String cacheKeyTemp;
     private String cacheName;
     private int liveTime;
     private boolean ignoreNull;
@@ -30,7 +35,7 @@ public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
     private List<String> paramNames;
 
     public void prepare(CacheDefaults cacheDefaults, CacheResult cacheResult, Method method) {
-        cacheKey = Strings.sNull(cacheResult.cacheKey());
+    	cacheKeyTemp = Strings.sNull(cacheResult.cacheKey());
         cacheName = Strings.sNull(cacheResult.cacheName());
         liveTime = cacheResult.cacheLiveTime();
         ignoreNull = cacheResult.ignoreNull();
@@ -50,6 +55,7 @@ public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
     }
 
     public void filter(InterceptorChain chain) throws Throwable {
+    	String cacheKey = cacheKeyTemp;
         Method method = chain.getCallingMethod();
         if (Strings.isBlank(cacheKey)) {
             cacheKey = method.getDeclaringClass().getName()
@@ -77,6 +83,7 @@ public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
                 cacheKey = key.getOrginalString();
             }
         }
+        //log.debug("cacheKey " + cacheKey);
         Object obj;
         Jedis jedis = null;
         try {
@@ -84,6 +91,7 @@ public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
             if (isHash) {
                 byte[] bytes = jedis.hget(cacheName.getBytes(), cacheKey.getBytes());
                 if (bytes == null) {
+                	//log.debugf("cache miss %s", cacheKey);
                     chain.doChain();
                     obj = chain.getReturn();
                     // 如果忽略空值，那么不缓存结果
@@ -91,8 +99,10 @@ public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
                         chain.setReturnValue(null);
                         return;
                     }
+                	//log.debugf("cache save %s %s", cacheKey, obj);
                     jedis.hset(cacheName.getBytes(), cacheKey.getBytes(), Lang.toBytes(obj));
                 } else {
+                	//log.debugf("cache found %s", cacheKey);
                     try {
                         obj = Lang.fromBytes(bytes, method.getReturnType());
                     } catch (Exception e) {
@@ -105,6 +115,7 @@ public class WkcacheResultInterceptor extends AbstractWkcacheInterceptor {
             } else {
                 byte[] bytes = jedis.get((cacheName + ":" + cacheKey).getBytes());
                 if (bytes == null) {
+                	//log.debugf("cache miss %s", cacheKey);
                     chain.doChain();
                     obj = chain.getReturn();
                     // 如果忽略空值，那么不缓存结果
