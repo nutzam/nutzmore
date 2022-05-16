@@ -64,7 +64,7 @@ class WkcacheMethodMatcher implements MethodMatcher {
     }
 
     public boolean match(Method method) {
-        return this.method == method;
+        return this.method.equals(method);
     }
 
 }
