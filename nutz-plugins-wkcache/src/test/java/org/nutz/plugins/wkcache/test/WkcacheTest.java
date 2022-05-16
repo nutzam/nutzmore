@@ -38,7 +38,7 @@ public class WkcacheTest extends Assert {
             log.debug(ioc.get(MyCacheTest.class).testCacheObj(test));
         //        ioc.get(MyCacheTest.class).testRemove(test);
         ioc.get(MyCacheTest.class).cache_time_1("hello1");
-        ioc.get(MyCacheTest.class).cache_time_2("hello2");
+        //ioc.get(MyCacheTest.class).cache_time_2("hello2");
     }
 
 
@@ -75,7 +75,7 @@ public class WkcacheTest extends Assert {
         Assert.assertEquals("s_1_" + (flag + 1), myCacheTest.testCacheFlag("s_1", flag + 1));
         Assert.assertEquals("s_2_" + (flag + 1), myCacheTest.testCacheFlag("s_2", flag + 1));
         // 清除缓存
-        myCacheTest.testRemoveAll();
+       // myCacheTest.testRemoveAll();
     }
 
     @Test

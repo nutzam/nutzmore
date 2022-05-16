@@ -30,7 +30,7 @@ public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
     private List<String> paramNames;
 
     public void prepare(CacheDefaults cacheDefaults, CacheRemove cacheRemove, Method method) {
-    	cacheKeyTemp = Strings.sNull(cacheRemove.cacheKey());
+        cacheKeyTemp = Strings.sNull(cacheRemove.cacheKey());
         cacheName = Strings.sNull(cacheRemove.cacheName());
         isHash = cacheDefaults != null && cacheDefaults.isHash();
         if (Strings.isBlank(cacheName)) {
@@ -40,7 +40,7 @@ public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
     }
 
     public void filter(InterceptorChain chain) throws Throwable {
-    	String cacheKey = cacheKeyTemp;
+        String cacheKey = cacheKeyTemp;
         Method method = chain.getCallingMethod();
         if (Strings.isBlank(cacheKey)) {
             cacheKey = method.getDeclaringClass().getName()
@@ -68,6 +68,17 @@ public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
                 cacheKey = key.getOrginalString();
             }
         }
+        if (cacheKey.contains(",")) {
+            for (String key : cacheKey.split(",")) {
+                delCache(cacheName, key);
+            }
+        } else {
+            delCache(cacheName, cacheKey);
+        }
+        chain.doChain();
+    }
+
+    private void delCache(String cacheName, String cacheKey) {
         if (cacheKey.endsWith("*")) {
             if (isHash) {
                 ScanParams match = new ScanParams().match(cacheKey);
@@ -155,7 +166,6 @@ public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
                 Streams.safeClose(jedis);
             }
         }
-        chain.doChain();
     }
 
 }
