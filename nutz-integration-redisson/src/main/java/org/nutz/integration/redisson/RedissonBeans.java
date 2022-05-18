@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
+import java.util.List;
 
 import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.ioc.loader.annotation.Inject;
@@ -98,17 +99,26 @@ public class RedissonBeans {
             break;
         case "cluster": // 集群
             ClusterServersConfig csc = config.useClusterServers();
-            csc.addNodeAddress(conf.check("redisson.cluster.nodeAddress"));
+            List<String> clusterList = conf.getList("redisson.cluster.nodeAddress",",");
+            for(String host: clusterList) {
+                csc.addNodeAddress(host);
+            }
             setupBeanByConf(csc, PRE + "cluster.");
             break;
         case "replicated": // 副本
             ReplicatedServersConfig rsc = config.useReplicatedServers();
-            rsc.addNodeAddress(conf.check("redisson.replicated.nodeAddress"));
+            List<String> replicatedList = conf.getList("redisson.replicated.nodeAddress",",");
+            for(String host: replicatedList) {
+                rsc.addNodeAddress(host);
+            }
             setupBeanByConf(rsc, PRE + "replicated.");
             break;
         case "sentinel": // 分片
             SentinelServersConfig ssc2 = config.useSentinelServers();
-            ssc2.addSentinelAddress(conf.check("redisson.sentinel.sentinelAddress"));
+            List<String> sentinelList = conf.getList("redisson.sentinel.sentinelAddress",",");
+            for(String host: sentinelList) {
+                ssc2.addSentinelAddress(host);
+            }
             setupBeanByConf(ssc2, PRE + "sentinel.");
             break;
         default:
