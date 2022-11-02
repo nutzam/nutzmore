@@ -80,6 +80,7 @@ public class ZbusClientBean implements IocLoader {
 		if (conf.has("zbus.rpc.client.certificate")) {
 			serverAddress.certificate = conf.get("zbus.rpc.client.certificate");
 		}
+		bootstrap.serviceAddress(serverAddress);
 		return bootstrap;
 	}
 	
