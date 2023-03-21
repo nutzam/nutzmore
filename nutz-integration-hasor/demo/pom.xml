@@ -63,7 +63,7 @@
             <dependency>
                 <groupId>org.nutz</groupId>
                 <artifactId>nutz-integration-hasor</artifactId>
-                <version>1.r.69-SNAPSHOT</version>
+                <version>1.r.70-SNAPSHOT</version>
             </dependency>
 
             <!-- Hasor -->
