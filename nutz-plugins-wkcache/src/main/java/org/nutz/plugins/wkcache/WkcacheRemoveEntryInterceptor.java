@@ -96,6 +96,8 @@ public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
                     for (JedisPool pool : jedisCluster.getClusterNodes().values()) {
                         try (Jedis jedis = pool.getResource()) {
                             jedis.eval(lua, Collections.singletonList(cacheName), Collections.singletonList(cacheKey.substring(0, cacheKey.lastIndexOf("*"))));
+                        } catch (Exception e){
+                            //只读节点可能报错,忽略之
                         }
                     }
                 } else {
@@ -117,6 +119,8 @@ public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
                     for (JedisPool pool : jedisCluster.getClusterNodes().values()) {
                         try (Jedis jedis = pool.getResource()) {
                             jedis.eval(lua, 0, cacheName + ":" + cacheKey);
+                        } catch (Exception e){
+                            //只读节点可能报错,忽略之
                         }
                     }
                 } else {

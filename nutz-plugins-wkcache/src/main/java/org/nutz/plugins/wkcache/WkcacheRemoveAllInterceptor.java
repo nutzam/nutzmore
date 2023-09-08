@@ -57,6 +57,8 @@ public class WkcacheRemoveAllInterceptor extends AbstractWkcacheInterceptor {
             for (JedisPool pool : jedisCluster.getClusterNodes().values()) {
                 try (Jedis jedis = pool.getResource()) {
                     jedis.eval(lua, 0, cacheName + ":*");
+                } catch (Exception e){
+                    //只读节点可能报错,忽略之
                 }
             }
         } else {
