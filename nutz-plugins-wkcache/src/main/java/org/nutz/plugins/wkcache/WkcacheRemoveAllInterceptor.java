@@ -6,11 +6,11 @@ import org.nutz.lang.Streams;
 import org.nutz.lang.Strings;
 import org.nutz.plugins.wkcache.annotation.CacheDefaults;
 import org.nutz.plugins.wkcache.annotation.CacheRemoveAll;
-import redis.clients.jedis.*;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.JedisPool;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by wizzer on 2017/6/14.
@@ -48,39 +48,22 @@ public class WkcacheRemoveAllInterceptor extends AbstractWkcacheInterceptor {
     }
 
     private void delCache(String cacheName) {
-        ScanParams match = new ScanParams().match(cacheName + ":*");
+        String lua = "local keysToDelete = redis.call('KEYS', ARGV[1])\n" +
+                "for _, key in ipairs(keysToDelete) do\n" +
+                "    redis.call('DEL', key)\n" +
+                "end";
         if (getJedisAgent().isClusterMode()) {
             JedisCluster jedisCluster = getJedisAgent().getJedisClusterWrapper().getJedisCluster();
-            List<String> keys = new ArrayList<>();
             for (JedisPool pool : jedisCluster.getClusterNodes().values()) {
                 try (Jedis jedis = pool.getResource()) {
-                    ScanResult<String> scan = null;
-                    do {
-                        scan = jedis.scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
-                        keys.addAll(scan.getResult());
-                    } while (!scan.isCompleteIteration());
+                    jedis.eval(lua, 0, cacheName + ":*");
                 }
-            }
-            Jedis jedis = null;
-            try {
-                jedis = getJedisAgent().jedis();
-                for (String key : keys) {
-                    jedis.del(key);
-                }
-            } finally {
-                Streams.safeClose(jedis);
             }
         } else {
             Jedis jedis = null;
             try {
                 jedis = getJedisAgent().jedis();
-                ScanResult<String> scan = null;
-                do {
-                    scan = jedis.scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
-                    for (String key : scan.getResult()) {
-                        jedis.del(key.getBytes());
-                    }
-                } while (!scan.isCompleteIteration());
+                jedis.eval(lua, 0, cacheName + ":*");
             } finally {
                 Streams.safeClose(jedis);
             }

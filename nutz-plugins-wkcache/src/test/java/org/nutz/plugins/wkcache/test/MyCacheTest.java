@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Created by wizzer on 2017/6/14.
  */
-@CacheDefaults(cacheName = "nutzwk_cache", cacheLiveTime = 3000)
+@CacheDefaults(cacheName = "budwk_cache", cacheLiveTime = 3000)
 @IocBean
 public class MyCacheTest {
     @CacheResult(cacheName = "cache_time_1", cacheKey = "test")

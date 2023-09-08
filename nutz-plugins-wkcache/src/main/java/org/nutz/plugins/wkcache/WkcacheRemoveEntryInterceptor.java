@@ -11,13 +11,15 @@ import org.nutz.lang.util.Context;
 import org.nutz.lang.util.MethodParamNamesScaner;
 import org.nutz.plugins.wkcache.annotation.CacheDefaults;
 import org.nutz.plugins.wkcache.annotation.CacheRemove;
-import redis.clients.jedis.*;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.ScanParams;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by wizzer on 2017/6/14.
@@ -81,73 +83,47 @@ public class WkcacheRemoveEntryInterceptor extends AbstractWkcacheInterceptor {
     private void delCache(String cacheName, String cacheKey) {
         if (cacheKey.endsWith("*")) {
             if (isHash) {
-                ScanParams match = new ScanParams().match(cacheKey);
+                String lua = "local hashKey = KEYS[1]\n" +
+                        "local prefix = ARGV[1]\n" +
+                        "local fields = redis.call('HKEYS', hashKey)\n" +
+                        "for _, field in ipairs(fields) do\n" +
+                        "    if string.sub(field, 1, string.len(prefix)) == prefix then\n" +
+                        "        redis.call('HDEL', hashKey, field)\n" +
+                        "    end\n" +
+                        "end";
                 if (getJedisAgent().isClusterMode()) {
                     JedisCluster jedisCluster = getJedisAgent().getJedisClusterWrapper().getJedisCluster();
-                    List<Map.Entry<String, String>> keys = new ArrayList<>();
-                    ScanResult<Map.Entry<String, String>> scan = null;
-                    do {
-                        scan = jedisCluster.hscan(cacheName, scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
-                        keys.addAll(scan.getResult());
-                    } while (!scan.isCompleteIteration());
-                    Jedis jedis = null;
-                    try {
-                        jedis = getJedisAgent().jedis();
-                        for (Map.Entry<String, String> key : keys) {
-                            jedis.hdel(cacheName, key.getKey());
+                    for (JedisPool pool : jedisCluster.getClusterNodes().values()) {
+                        try (Jedis jedis = pool.getResource()) {
+                            jedis.eval(lua, Collections.singletonList(cacheName), Collections.singletonList(cacheKey.substring(0, cacheKey.lastIndexOf("*"))));
                         }
-                    } finally {
-                        Streams.safeClose(jedis);
                     }
                 } else {
                     Jedis jedis = null;
                     try {
                         jedis = getJedisAgent().jedis();
-                        ScanResult<Map.Entry<String, String>> scan = null;
-                        do {
-                            scan = jedis.hscan(cacheName, scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
-                            for (Map.Entry<String, String> key : scan.getResult()) {
-                                jedis.hdel(cacheName, key.getKey());
-                            }
-                        } while (!scan.isCompleteIteration());
+                        jedis.eval(lua, Collections.singletonList(cacheName), Collections.singletonList(cacheKey.substring(0, cacheKey.lastIndexOf("*"))));
                     } finally {
                         Streams.safeClose(jedis);
                     }
                 }
             } else {
-                ScanParams match = new ScanParams().match(cacheName + ":" + cacheKey);
+                String lua = "local keysToDelete = redis.call('KEYS', ARGV[1])\n" +
+                        "for _, key in ipairs(keysToDelete) do\n" +
+                        "    redis.call('DEL', key)\n" +
+                        "end";
                 if (getJedisAgent().isClusterMode()) {
                     JedisCluster jedisCluster = getJedisAgent().getJedisClusterWrapper().getJedisCluster();
-                    List<String> keys = new ArrayList<>();
                     for (JedisPool pool : jedisCluster.getClusterNodes().values()) {
                         try (Jedis jedis = pool.getResource()) {
-                            ScanResult<String> scan = null;
-                            do {
-                                scan = jedis.scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
-                                keys.addAll(scan.getResult());
-                            } while (!scan.isCompleteIteration());
+                            jedis.eval(lua, 0, cacheName + ":" + cacheKey);
                         }
-                    }
-                    Jedis jedis = null;
-                    try {
-                        jedis = getJedisAgent().jedis();
-                        for (String key : keys) {
-                            jedis.del(key);
-                        }
-                    } finally {
-                        Streams.safeClose(jedis);
                     }
                 } else {
                     Jedis jedis = null;
                     try {
                         jedis = getJedisAgent().jedis();
-                        ScanResult<String> scan = null;
-                        do {
-                            scan = jedis.scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
-                            for (String key : scan.getResult()) {
-                                jedis.del(key.getBytes());
-                            }
-                        } while (!scan.isCompleteIteration());
+                        jedis.eval(lua, 0, cacheName + ":" + cacheKey);
                     } finally {
                         Streams.safeClose(jedis);
                     }
