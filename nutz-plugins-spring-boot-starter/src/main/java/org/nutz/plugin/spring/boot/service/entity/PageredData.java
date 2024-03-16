@@ -33,7 +33,9 @@ public class PageredData<T> extends Pager {
     }
 
     public Pager getPager() {
-        return this;
+        Pager pager = new Pager(getPageNumber(), getPageSize());
+        pager.setRecordCount(getRecordCount());
+        return pager;
     }
 
     @Deprecated
