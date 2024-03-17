@@ -25,7 +25,7 @@ public class SqlManagerAutoConfiguration extends ApplicationObjectSupport {
 
   @Bean
   @ConditionalOnMissingBean
-  public SpringResourceLoaction initializeSpringResourceLocation() {
+  public SpringResourceLoaction springResourceLoaction() {
     SpringResourceLoaction springResourceLoaction = new SpringResourceLoaction();
     Scans.me().addResourceLocation(springResourceLoaction);
     return springResourceLoaction;
