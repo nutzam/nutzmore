@@ -90,12 +90,18 @@ public class RedissonBeans {
             SingleServerConfig ssc = config.useSingleServer();
             ssc.setAddress(conf.get("redisson.single.address", "redis://127.0.0.1:6379"));
             setupBeanByConf(ssc, PRE + "single.");
+            if(Strings.isBlank(conf.get("redisson.single.password"))) {
+                ssc.setPassword(null);
+            }
             break;
         case "masterslave": // 主从
             MasterSlaveServersConfig mssc = config.useMasterSlaveServers();
             mssc.setMasterAddress(conf.check("redisson.masterslave.masterAddress"));
             mssc.addSlaveAddress(Strings.splitIgnoreBlank(conf.check("redisson.masterslave.slaveAddress")));
             setupBeanByConf(mssc, PRE + "masterslave.");
+            if(Strings.isBlank(conf.get("redisson.masterslave.password"))) {
+                mssc.setPassword(null);
+            }
             break;
         case "cluster": // 集群
             ClusterServersConfig csc = config.useClusterServers();
@@ -104,6 +110,9 @@ public class RedissonBeans {
                 csc.addNodeAddress(host);
             }
             setupBeanByConf(csc, PRE + "cluster.");
+            if(Strings.isBlank(conf.get("redisson.cluster.password"))) {
+                csc.setPassword(null);
+            }
             break;
         case "replicated": // 副本
             ReplicatedServersConfig rsc = config.useReplicatedServers();
@@ -112,6 +121,9 @@ public class RedissonBeans {
                 rsc.addNodeAddress(host);
             }
             setupBeanByConf(rsc, PRE + "replicated.");
+            if(Strings.isBlank(conf.get("redisson.replicated.password"))) {
+                rsc.setPassword(null);
+            }
             break;
         case "sentinel": // 分片
             SentinelServersConfig ssc2 = config.useSentinelServers();
@@ -120,6 +132,9 @@ public class RedissonBeans {
                 ssc2.addSentinelAddress(host);
             }
             setupBeanByConf(ssc2, PRE + "sentinel.");
+            if(Strings.isBlank(conf.get("redisson.sentinel.password"))) {
+                ssc2.setPassword(null);
+            }
             break;
         default:
             throw Lang.noImplement();
