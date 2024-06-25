@@ -1,12 +1,8 @@
 package org.nutz.plugin.spring.boot;
 
-import javax.annotation.PostConstruct;
-
 import org.nutz.dao.SqlManager;
 import org.nutz.dao.impl.FileSqlManager;
 import org.nutz.integration.spring.SpringResourceLoaction;
-import org.nutz.log.Log;
-import org.nutz.log.Logs;
 import org.nutz.plugin.spring.boot.config.SqlManagerProperties;
 import org.nutz.plugin.spring.boot.config.SqlManagerProperties.Mode;
 import org.nutz.plugins.sqlmanager.xml.XmlSqlManager;
@@ -24,32 +20,25 @@ import org.springframework.context.support.ApplicationObjectSupport;
 @EnableConfigurationProperties(SqlManagerProperties.class)
 public class SqlManagerAutoConfiguration extends ApplicationObjectSupport {
 
-    Log log = Logs.get();
+  @Autowired
+  private SqlManagerProperties sqlManagerProperties;
 
-    @Autowired
-    private SqlManagerProperties sqlManagerProperties;
+  @Bean
+  @ConditionalOnMissingBean
+  public SpringResourceLoaction springResourceLoaction() {
+    SpringResourceLoaction springResourceLoaction = new SpringResourceLoaction();
+    Scans.me().addResourceLocation(springResourceLoaction);
+    return springResourceLoaction;
+  }
 
-    @Autowired
-    private SpringResourceLoaction loaction;
-
-    @PostConstruct
-    public void init() {// 初始化一下nutz的扫描
-        Scans.me().addResourceLocation(loaction);
+  @Bean
+  @ConditionalOnMissingBean
+  public SqlManager sqlManager() {
+    String[] paths = sqlManagerProperties.getPaths();
+    if (paths == null) {
+      paths = new String[]{"sqls"};
     }
-
-    @Bean
-    public SpringResourceLoaction springResourceLoaction() {
-        return new SpringResourceLoaction();
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public SqlManager sqlManager() {
-        String[] paths = sqlManagerProperties.getPaths();
-        if (paths == null) {
-            paths = new String[]{"sqls"};
-        }
-        return sqlManagerProperties.getMode() == Mode.XML ? new XmlSqlManager(paths) : new FileSqlManager(paths);
-    }
+    return sqlManagerProperties.getMode() == Mode.XML ? new XmlSqlManager(paths) : new FileSqlManager(paths);
+  }
 
 }
